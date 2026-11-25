@@ -1,0 +1,27 @@
+%"symseg:high/noinitial" impure.rel,monito.rel,errlog.rel
+exclud.rel,prior.rel
+nexcom.rel,uppmun.rel,waitx.rel,monfil.rel
+montmp.rel,dbpro.rel,defspe.rel,revfun.rel
+rdobj.rel,loaemp.rel,creemp.rel
+movent.rel,deamon.rel,delobj.rel,outent.rel
+prirec.rel,mark.rel,cremar.rel,revtab.rel
+chkrec.rel,chanam.rel,subtra.rel,updlse.rel
+help.rel,alltab.rel,chatab.rel,chapre.rel
+calvid.rel,chatyp.rel,search.rel
+add.rel,prpest.rel
+onlyre.rel,site.rel,member.rel,creloc.rel
+gtname.rel,chknew.rel,zapobj.rel,rdnext.rel
+joinmt.rel,lismee.rel,cremee.rel,creatm.rel
+crepre.rel,lispre.rel,nexlet.rel,mkmess.rel
+mkcomm.rel,review.rel,displa.rel,addlnk.rel
+crelnk.rel,addent.rel,dbcon.rel,oerase.rel
+tertab.rel,objsta.rel,runtab.rel,sysinf.rel
+lisper.rel,reptim.rel,liscom.rel,creper.rel
+crenam.rel,mkmenu.rel,chapgs.rel,wrient.rel
+writee.rel,entcon.rel,adreli.rel,filpro.rel
+filcon.rel,refina.rel,prnews.rel,edit.rel
+enter.rel,addlis.rel,login.rel,newnam.rel
+getnum.rel,comput.rel,strcon.rel,match.rel
+getchr.rel,read.rel,topcom.rel
+terpro.rel,tercon.rel,strpro.rel,find.rel
+updbeg.rel,quit.rel,genera.rel,scndat.rel,texter.rel,new.rel

@@ -85,6 +85,8 @@
 ;	D A T A   A R E A
 
 nrmcoc::BLOCK	2		;<KPJ.44>
+nrmwid::BLOCK	1		;"normal" terminal width (OUTNRM/OUTALL).  Missing
+			;from edit 44; added 2026-11-02 for the TOPS-20 build.
 tmpflg::BLOCK	1		;<KPJ.25> TMP:-flag:
 				;<KPJ.25> =0:	not TMP: created output killed
 				;<KPJ.25> #0:	TMP: created output killed
@@ -189,7 +191,7 @@ T20,<
 
 outnrm::MOVEI	1,.PRIOUT		;<KPJ.42> restore old line width
 	MOVEI	2,.MOSLW		;<KPJ.42> . . .
-	MOVE	3,nrmwid##		;<KPJ.43> . . .
+	MOVE	3,nrmwid		;<KPJ.43> . . .
 	MTOPR%				;<KPJ.42> . . .
 	MOVEI	1,.PRIOUT		;<KPJ.42> restore CCOC words
 	MOVE	2,nrmcoc+0		;<KPJ.43> . . .
@@ -217,7 +219,7 @@ outall::MOVEI	1,.PRIOUT		;<KPJ.42> send all stuff
 	MOVEI	1,.PRIOUT		;<KPJ.42> save line width too
 	MOVEI	2,.MORLW		;<KPJ.42> . . .
 	MTOPR%				;<KPJ.42> . . .
-	MOVEM	3,nrmwid##		;<KPJ.43> . . .
+	MOVEM	3,nrmwid		;<KPJ.43> . . .
 	MOVEI	1,.PRIOUT		;<KPJ.42> make it infinite
 	MOVEI	2,.MOSLW		;<KPJ.42> . . .
 	MOVEI	3,0			;<KPJ.42> . . .

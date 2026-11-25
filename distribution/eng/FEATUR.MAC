@@ -1,0 +1,85 @@
+;FEATUR.MAC - Feature switches for a stock TOPS-20 build of KOM 6.
+;
+;This file is assembled in front of KOMMAC.MAC (see KOMBLD.CTL):
+;	*kommac.unv=featur.mac,kommac.mac
+;so it must contain only assignments and DEFINEs, no END.
+;
+;The original QZ FEATUR.MAC was not included in the distribution; this
+;one is reconstructed from the switch list in KOMMAC.MAC.  Any switch
+;left undefined is zeroed by KOMMAC with a warning, so everything is
+;set explicitly here.
+;
+;Beware: FTQZ, FTFOA and FTRUN are "old style" switches where 0 = YES.
+
+;Machine and operating system.
+	ftcpu==0		;0=KL10/KS10, 1=KI10, 2=KA10, 3=PDP-6
+	fttwx==1		;0=Tops-10, 1=TOPS-20, 2=Tenex, 3=ITS
+
+;Site-local monitor JSYSes.  KOM% (661) and GTKOM% (663) only existed
+;in the patched QZ monitor; the local PANDA 7.1(21734) monitor has them.
+	ftjsys==1		;1=use KOM% (JSYS 661) instead of OPENF%
+	ftjsy2==1		;1=use GTKOM% (JSYS 663) instead of GTJFN%
+
+;Site hacks (old style: 0 = YES, 1 = NO).
+	ftqz==1			;no QZ hacks
+	ftfoa==1		;no FOA hacks
+	ftrun==0		;CALL commands (run EMACS, KERMIT etc. from SYS:)
+
+;Language of the dialogue and of the data base.
+;FTLAN: 0=SWE, 1=ENG, 2=NOR, 3=GER, 4=FRE
+;FTDB:  0=SWE, 1=ENG, 2=GER, 3=NOR, 4=QOM
+	ftlan==1		;English dialogue
+	ftdb==1			;English data base (initialize with INIENG.CTL)
+
+	pasmin==0		;minimum password length (0 = no check)
+
+;Optional features (0 = No, nonzero = Yes).
+	ftphon==0		;Swedish PTT text phones
+	ftview==0		;Viewdata support
+	ftcomp==1		;COMPUTE command.  Must be 1: IMPURE.MAC uses STASIZ,
+				;ZELSIZ and NOTHIN outside IFN FTCOMP, so 0 does not build
+	ftptym==0		;PTY mode (PTYKOM is not used on TOPS-20)
+	ftuser==0		;CREATE USER is privileged
+	ftconf==0		;CREATE CONF is privileged
+	ftsubj==0		;conference type 'Subject'
+	ftenq==0		;0 = use ENQ/DEQ locking (do not flush it)
+	ftanon==0		;anonymity supported
+	ftphys==0		;use /PHYSICAL
+	ftsave==0		;<0 SSAVE%, 0 internal routines, >0 SAVE% for dumps
+	ftempl==0		;EMPLOYEE support
+	ftemp2==0		;EMP file in data base (required if FTEMPL<>0)
+	ftremo==0		;no admin mode on remote TTY
+	ftcach==0		;name cache (<0 separate in/out, >0 shared)
+	fthalf==0		;half-duplex support
+	ftcour==1		;EN/DISCOURAGEMENT commands.  Must be 1: MONITO.MAC
+				;has EXTERN UPPMUN unconditionally
+
+;Error logging (KOM:ERRLOG.ymm, ERRLOG.MAC).  KOMMAC gives FTLOG a default
+;only on Tops-10, so it MUST be set here on TOPS-20, or KOMMAC.UNV fails
+;with "FTLOG UNASSIGNED".  KOMLNK.CMD always links ERRLOG.REL.
+	ftlog==1		;error logging enabled
+
+;Macros KOMMAC complains about if missing.
+DEFINE	nameid	<ASCIZ !KOM 6.3!>	;system name ("Welcome to KOM 6.3")
+DEFINE	fzexec	<DEFAULT-EXEC:>	;EXEC to run for PUSH
+
+;Data base and temporary file names (used by SITE.MAC).
+;On TOPS-20 XCENAM is the ASCIZ data base file name; KOM appends
+;";P776464" (CENPRO) itself.  XTMPKO becomes PS:<user>KOM-TMPCOR.TMP.
+DEFINE	xcenam	<ASCIZ !KOM:KOM.DATABASE!>
+DEFINE	xtmpko	<ASCIZ !KOM-TMPCOR.TMP!>
+
+;Data base size.  Each value is log2 of the number of records in that
+;sub-file (see META in KOMMAC.MAC and METBAS in GENERA.MAC).  The QZ
+;values are unknown; these are guesses.  Changing them changes the data
+;base layout, so an existing data base must be converted with GENERATE.
+	maxper==^D10		;1024 persons
+	maxmee==^D10		;1024 conferences
+	maxtex==^D15		;32768 texts
+	maxdir==^D15		;32768 text headers
+	maxlnk==^D15		;links
+	maxmar==^D12		;marks
+	maxpre==^D11		;presentations
+	maxloc==^D12		;LOC/LAC records
+	maxsub==^D9		;SUB/SAC records
+	maxemp==^D10		;EMP/ENA records (used only if FTEMP2<>0)

@@ -1,0 +1,125 @@
+;GTKOM.MAC - KOM% (JSYS 661) and GTKOM% (JSYS 663) for the PANDA 7.1 monitor
+;
+;[KOM] 2026-11-24: Uppsala/AIDA code (originally inside STG.MAC, see the
+;edit history below), made into a module of its own for MONGEN.CTL:
+;  SEARCH PROLOG / TTITLE / SWAPCD (section 1, = MSEC1 in the DEFJS lines
+;  in MONSYM.MAC) / TNXEND / END added; the local SFEXO renamed KOMEXO
+;  because PROLOG already has DEFSTR SFEXO (same bit, 1B1).
+;Needs: MONSYM.MAC with DEFJS KOM,661,MSEC1 and DEFJS GTKOM,663,MSEC1
+;(LDINIT builds JSTAB from them), and R:GTKOM in the MONGEN.CTL link.
+
+	SEARCH PROLOG
+	TTITLE GTKOM
+
+	SWAPCD
+
+; Aida::Ss:<6-1-Monitor.Upsala>Stg.Mac.8,  8-May-87 18:17:58, Ed: Zot
+;  Installed GTKOM% Jsys, which is to GTJFN% as KOM% is to OPENF%.
+;  In doing this, implemented the DoWhel macro.
+; AIDA::SOURCE:<5-SOURCES.AIDA>STG.MAC.16, 28-Jan-83 00:25:53, Ed: PER-D
+; 	Added KOM% JSYS. At .KOM we start.
+
+;;; Macro to perform an internal call to a Jsys, possibly
+;;; with Wheel caps enabled.
+;;; Will return +1 with error code in AC 1 if the jsys fails,
+;;; else returns +2.
+
+;;; first arg is address of jsys code, i.e. .OPENF## (not OPENF or
+;;; OPENF%!). Second arg is address of routine to check if Wheel caps
+;;; should be enabled. The routine should return +1 to deny, and +2 to
+;;; grant caps.
+
+Define	DoWhel(code,chkrou)<blcal. DoWhe0,<<.,[imcall code,msec1
+					    erjmpr r
+					    nop      ;; to handle Erstr%
+					    retskp]>,<.,chkrou>> >
+
+;;; Support code for DoWhel. 
+;;; CALROU: routine to perform the internal call
+;;; CHKROU: routine to check if wheel caps legal
+Dowhe0:	blsub.	<calrou,chkrou>,<oldcap,newcap,dwerr>
+
+	move	t1,capenb	; get current caps
+	movem	t1,oldcap	; save them.
+	movem	t1,newcap	; also make them default caps for call.
+
+	call	@chkrou		; Wheel caps OK?
+	IFSKP.
+	 movx	t1,sc%whl
+	 iorm	t1,newcap	; Yes, use it.
+	ENDIF.
+	
+	NOINT			; PSI off
+	 move	t1,newcap	; get caps to use
+	 movem	t1,capenb	; use them
+	 setzm	dwerr		; default to no error
+	 call	@calrou		; perform the call
+	  movem	t1,dwerr	; error: remember it.
+	 move	t1,oldcap
+	 movem	t1,capenb	; restore old caps
+	OKINT			; PSI OK again
+
+	skipn	t1,dwerr
+	 retskp			; no error, skip return
+	ret			; error return
+
+endbs.
+
+;;; Routine to check if we are called from the KOM program (x-only)
+
+kompag==400			; page# of first page in "high segment"
+komfil:	asciz "kom:*.exe.*"	; name of KOM (or similar).
+
+	komexo==1B1		;Execute only bit in SYSFK (= SFEXO in PROLOG)
+
+komchk:	trvar	<mapjfn>
+
+	move	t1,[.fhslf,,kompag]
+	rmap%			; read the map of this page
+	 erjmp	r		; shouldn't fail for KOM
+
+	hlrzm	t1,mapjfn	; save JFN (or fork handle)
+
+	movx	t1,gj%sht!gj%phy!gj%ofg!gj%ifg
+	hrroi	t2,komfil
+	gtjfn%			; get a handle for the file (parse only jfn)
+	 erjmp	r		; failed, sorry
+	move	t3,mapjfn	; get the jfn of the map
+	move	t2,t1		; and the jfn of the file
+	movei	t1,.wljfn	; funcode to compare jfns
+	wild%			; compare
+	 erjmp	r		; so sorry
+	move	t4,t1		; save result.
+
+	move	t1,t2		; get jfn of file again
+	rljfn			; release the jfn
+	 erjmp	.+1		; "shouldn't happen"
+
+	jumpn	t4,r		; if 'twasn't KOM, fail.
+
+	move	t1,forkn	; get our fork#
+	move	t1,sysfk(t1)	; get some status garbage (and other stuff?)
+	txnn	t1,komexo	; xonly?
+	 ret			; nope, do not enable wheel caps
+	retskp			; OK to enable wheel caps!
+
+
+
+;;; JSYS to open the database file of KOM. The JSYS gives itself privileges
+;;; if it is called by an execute only KOM.
+
+.kom::	mcent
+	DoWhel	(.openf##,komchk)
+	 reterr
+	smretn			; good return, alls well
+
+;;; JSYS to do a gtjfn on files by KOM. The JSYS gives itself privileges
+;;; if it is called by an execute only KOM.
+
+.gtkom::mcent
+	DoWhel	(.gtjfn##,komchk)
+	 reterr
+	smretn			; good return, alls well
+
+	TNXEND
+	END

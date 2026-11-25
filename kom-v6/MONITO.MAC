@@ -715,7 +715,8 @@ mordo1:		ESOUT%			;say we don't like it
 ;	- - - - - - - - - - - - -
 
 T20,<
-mordo4:	$Dmovi	1,0,<-1,,4>		;<KPJ.245> this job, one word into AC4
+mordo4:	$Dmovi	1,-1,<-1,,4>		;<KPJ.245> this job, one word into AC4
+				;2026-11-02: was 1,0 = job 0, so batch was never seen
 	MOVEI	3,.JIBAT		;batch controlled? flag
 	GETJI%				;obtain info about us
 	 ERJMP[	HRROI	1,[ASCIZ !GETJI failure - !]
@@ -1040,8 +1041,10 @@ T20,<	MOVEI	1,.PRIOUT		;get old settings
 
 	TDO	2,[1B<.TICCC>!1B<.TICCO>!1B<.TICCT>! 
 		   1B<.TICTI>!1B<.TICCG>!1B<.TICCA>]
-	STIW%				;interrupt on ^C,^O,^T,^G,^A
-	ERCAL	fatal##			;<KPJ.245> what's up, Doc?
+	SKIPN	batchf##		;2026-11-02: STIW% on .FHJOB needs ^C capability,
+	 JRST[	STIW%			;which batch lacks, so skip it in batch.
+		ERCAL	fatal##		;<KPJ.245> what's up, Doc?
+		JRST	.+1]		;interrupt on ^C,^O,^T,^G,^A
 	MOVE	t,[POINT 7,rtybuf##,6]	;set up this pointer correctly
 	MOVEM	t,rtypnt##
 >;T20
@@ -2266,8 +2269,10 @@ T20,<	CALL	toutpu
 	ERCAL	fatal##			;<KPJ.245>
 	MOVEI	1,.FHJOB		;[BDQ] restore terminal interrupt word
 	MOVE	2,oldtiw##
-	STIW%
-	 ERCAL	fatal##			;<KPJ.245!KPJ.131!BDQ> ugh
+	SKIPN	batchf##		;2026-11-02: not set in batch (no ^C capability)
+	 JRST[	STIW%
+		ERCAL	fatal##		;<KPJ.245!KPJ.131!BDQ> ugh
+		JRST	.+1]
 >;T20
 	return
 
