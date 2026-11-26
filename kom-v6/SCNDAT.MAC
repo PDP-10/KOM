@@ -1,0 +1,1079 @@
+;Oden::DSKG:SCNDAT.MAC<62,7777,MAC> 1986-12-11 18:52:30, Edit by KPJ @ L89
+;12	Eliminated ERRDTM routine, using PRSTR.
+;Oden::DSKG:SCNDAT.MAC<62,7777,MAC> 1986-07-22 16:55:08, Edit by KPJ @ QZKTH
+;11	Moved texts to TEXTER.
+;Oden::DSKG:SCNDAT.MAC<62,7777,MAC> 1986-06-25 02:31:19, Edit by KPJ @ 1SKEDE
+;10	Get rid of redefinitions of standard KOM macros.
+;Oden::DSKD:SCNDAT.MAC<62,7777,MAC> 1985-10-08 00:39:21, Edit by KPJ
+;7	Introduced PROLOG macro. Changed PARDTM routine to be called SCNDAT.
+;	Use .SWE etc for language numbering.
+;Oden::DSKG:SCNDAT.MAC[62,76] 1984-03-23 00:03:42, Edit by B.DANIELSSON
+;6	Allow format YYYY-MM-DD on date input.
+;Oden::DSKG:SCNDAT.MAC[62,657] 1984-02-21 09:18:50, Edit by B.CARLSSON
+;5	Fix bug in Accumulator assignments, P1 and T1 MUST NOT be
+;	the same AC!
+;ODEN::DSKG:SCNDAT.MAC[62,657] 1984-02-21 08:53:26, Edit by B.CARLSSON
+;4	Fix edit 1, "RET" is not good since it tries to restore 
+;	saved registers, and that's no good in this module...
+;Freja::Qs:<Kom.6-Sources>Scndat.Mac.10 16-Feb-84 19:00:10,Editor:Kpj-Jaakkola
+;3	Converted the part under "RADIX 10" to "RADIX 8" to minimize future
+;	trouble.
+;Freja::Qs:<Kom.6-Sources>Scndat.Mac.5 16-Feb-84 13:17:33,Editor:Kpj-Jaakkola
+;2	Fixed minor bugs in the code.
+;Freja::Qs:<Kom.6-Sources>Scndat.Mac.2 13-Feb-84 23:41:31,Editor:Kpj-Jaakkola
+;1	Converting to KOM standard format (CALL/RET) to see what is going on.
+
+	SEARCH	kommac
+	PROLOG	(scndat)
+
+;Copyright (c) QZ Computer Centre, 1984-09-04 12:07:11
+
+;	L O C A L  S Y M B O L S
+
+; ***** NOTE: These symbols are taken just because they are needed
+;	      together with the DATE/TIME parsing routine stolen
+;	      from SCAN.
+
+; ACs used by SCAN
+	C==CH
+	N==NR
+;**** NOTE: The ACs defined below must stay in sequence!
+	T1==1
+	T2==T1+1
+	T3==T2+1
+	T4==T3+1
+	P1==T4+1		;steel reserved tops20 ACs for P1/P2
+	
+	P2==P1+1
+	P3==P2+1
+	P4==P3+1
+
+
+;	D A T A   A R E A
+
+val1:	BLOCK	1		;temporary working storage
+val2:	BLOCK	1
+val3:	BLOCK	1
+val4:	BLOCK	1
+val5:	BLOCK	1
+val6:	BLOCK	1
+val7:	BLOCK	1
+val8:	BLOCK	1
+val9:	BLOCK	1
+flfutr:	BLOCK	1		;relative direction
+flfutd:	BLOCK	1		;forced relative direction
+now:	BLOCK	1		;current time
+logtim:	BLOCK	1		;logined time
+savedp:	BLOCK	1		;saved push down list
+.nmul:	BLOCK	1
+flneg:	BLOCK	1		;negative number flag
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+
+;+
+;SCNDAT		(not documented)
+;-
+scndat::save	<t1,t2,t4,t4,c>
+	SETZM	errfl##			;assume OK
+	MOVEM	P,savedp		;save push down list
+	CALL	getlet##		;strip blanks
+	 JRST	pardt9			;huh?
+	CALL	.datim			;and parse the date and time
+	CALL	qexpan##		;expand?
+	 JRST	pardt9			;nope, so just return
+	MOVE	gp1,nr			;get the date/time to print
+	CALL	pdate##			;yes, print date and time
+pardt9:	MOVE	P,savedp		;get the saved push down list
+	SKIPN	errfl##			;error?
+	 skpret				;no, +2 return
+	return
+
+	SUBTTL	SCAN/COM interface routines
+
+
+;+
+;.TIAUC		get one character from string argument
+;		convert lower case to UPPER CASE
+;-
+
+.tiauc:	ILDB	c,chpt##		;get a character from string
+	CAIL	c,"a"			;lower case?
+	 CAILE	c,"z"			;...
+	  TRNA				;no
+	   SUBI	c,"a"-"A"		;yes, convert
+	RET
+
+;+
+;.SIXSC	(not documented)
+;-
+
+.sixsc:	MOVEI	n,0			;clear name
+	MOVE	t1,[POINT 6,n]		;initialize byte pointer for word
+.sixs1:	CALL	.tican			;see if character is alpha-numeric
+	 JRST	.sixs9			;no, return
+	SUBI	c,"A"-'A'		;make SIXBIT
+	TLNE	t1,(<^O77>B5)		;don't overflow
+	 IDPB	c,t1			;store character
+	CALL	.tiauc			;go get another character
+	JRST	.sixs1			;loop back and process it
+.sixs9:	RET
+
+	SUBTTL	.DATIM & friends, stolen from SCAN
+
+;+
+;.DATIM	(not documented)
+;-
+
+.datim:	SETOM	flfutd			;set default to past
+	SETZM	flfutr			;clear past rel flag
+	CALL	.tiauc			;prime the pump
+	CAIE	c,"-"			;see if past relative
+	 JRST	datim			;no, just get date-time
+	SOS	flfutr			;yes, set past rel flag
+	CALL	.tiauc			;get another character
+	JRST	datim			;and get date/time
+
+;+
+;.DATIC	(not documented)
+;-
+
+.datic: SETZM	flfutd			;clear default flag
+	SETZM	flfutr			;clear relative flag
+	CAIN	c,"+"			;see if future relative
+	 JRST[	AOS	flfutr		;yes, set flag
+		JRST	datic2]		;and proceed
+	CAIE	c,"-"			;see if past relative
+	 JRST	datim			;no, just get abs date
+	SOS	flfutr			;yes, set flag
+datic2:	CALL	.tiauc			;get next char
+	Fall	datim			;and fall into date/time getter
+;+
+;DATIM		input date/time
+;call:	set FLFUTR to
+;		-1 if past relative,
+;		 0 if absolute,
+;		+1 if future relative
+;	similarly for FLFUTD to indicate default direction if FLFUTR=0
+;	Get next character in C
+;	CALL	DATIM
+;Return with true date/time in N in internal special format
+;	sets NOW to current date/time
+;Uses T1-4, updates C
+;
+;Type-in formats:
+;	(The leading +- is handled by caller)
+;
+;	[ [  day in week	    ]		     ]
+;	[ [     nnnD		    ]		     ]
+;	[ [	yyyy-mm-dd	    ] [hh[:mm[:ss]]] ]
+;	[ [ [  mmm-dd  [-yy  ] ]    ]		     ]
+;	[ [ [  dd-mmm  [-yyyy] ]    ]		     ]
+;	[	       mnemonic			     ]
+;where:
+;	D	letter D
+;	dd	day in month (1-31)
+;	hh	hours (00-23)
+;	mm	month in year (1-12)
+;	    or	minutes (00-59)
+;	mmm	mnemonic month or abbrev.
+;	ss	seconds (0-59)
+;	y	last digit of this decade
+;	yy	last two digits of this century
+;	yyyy	year
+;	day in week is mnemonic or abbreviation
+;	mnemonic is a set of predefined times
+;-
+				;fall here from .DATIC
+
+datim:	SKIPE	t1,flfutr		;see if forced direction
+	 MOVEM	t1,flfutd		;yes, that implies default
+	SETOM	val1			;clear result words
+	MOVE	t1,[val1,,val2]		;...
+	BLT	t1,val9			;...
+	CALL	.gtnow			;get current date/time
+	MOVEM	t1,now			;save for later to be consistent
+	CAIL	c,"0"			;see if digit
+	 CAILE	c,"9"			;...
+	  TRNA				;no, mnemonic for something
+	   JRST	datimd			;yes, go get decimal
+
+;Here if starting with alpha, might be day, month, or mnemonic
+
+	CALL	.sixsc			;get SIXBIT word
+	JUMPE	n,e$$dtm		;illegal separator if absent
+	MOVE	t1,mndptr		;point to full table
+	CALL	.name			;lookup in table
+	 JRST	e$$udn			;... error if not known
+	MOVEI	n,0(t1)			;get
+	SUBI	n,days##		;  day index
+	CAIL	n,7			;see if day of week
+	 JRST	datimm			;no, look on
+
+;Here when day of week recognized
+
+	SKIPN	t1,flfutd		;get default direction
+	 JRST	e$$npf			;error if none
+	MOVEM	t1,flfutr		;set as forced direction
+	HLRZ	t2,now			;get days
+	IDIVI	t2,7			;get day of week
+	SUB	n,t3			;get future days from now
+	SKIPGE	n			;if negative,...
+	 ADDI	n,7			;  make later this week
+	HLLZ	t1,now			;clear current
+	SKIPL	flfutd			;see if future
+	 TROA	t1,-1			;yes, set midnight minus epsilon
+	  SUBI	n,7			;no, make past
+	HRLZ	n,n			;position to left half
+	ADD	n,t1			;modify current date/time
+datimw:	PUSH	P,n			;save date
+	CALL	datic			;go check time
+	 HRRZ	n,0(P)			;no, use value in date
+	POP	P,t1			;restore date
+	HLL	n,t1			;  to answer
+	SKIPG	flfutr			;skip if future
+	 JRST	datimk			;adjust past result
+	CAMGE	n,now			;if not future, must have wanted a
+					;   week from today, but earlier in
+					;      the day.
+	 ADD	n,[7,,0]		;make time next week
+	JRST	datimx			;check and return
+
+datimk:	MOVE	t2,n			;similar test for past
+	ADD	t2,[7,,0]		;add a week to past time
+	CAMG	t2,now			;was time over a week ago?
+	 MOVE	n,t2			;yes, use new one
+	JRST	datimx			;check answer and return
+
+;Here if month or mnemonic
+
+datimm:	MOVEI	n,0(t1)			;get month
+	SUBI	n,months##-1		;  as 1-12
+	CAILE	n,^D12			;see if month
+	 JRST	datimn			;no, must be mnemonic
+	MOVEM	n,val6			;yes, store month
+	CAIE	c,"-"			;must be day next
+	 JRST	e$$mdd			;no, error
+	CALL	.decnw			;yes, get it
+	JUMPLE	n,e$$nnd		;error if negative
+	CAILE	n,^D31			;verify somewhat in range
+	 JRST	e$$dfl			;error if too large
+	MOVEM	n,val5			;save away day
+	JRST	datiy0			;and get year if present
+
+;Here if mnemonic
+
+datimn:	HRRZ	t2,t1			;get copy
+	CAIN	t2,splgtm		;see if "LOGIN"
+	 SKIPG	n,logtim		;  and we know it
+	  TRNA				;   no, proceed
+	   JRST	datimx			;yes, go give answer
+	CAIN	t2,spnoon##		;see if "NOON"
+	 JRST[	HLLZ	n,now		;yes, get today
+		HRRI	n,1B18		;set to noon
+		JRST	datimw]		;go finish up
+	CAIN	t2,spmidn##		;see if "MIDNIGHT"
+	 JRST[	HLLZ	n,now		;get today
+		JRST	datimo]		;go set to midnight
+	SUBI	t2,spcday##		;subtract offset to special days
+	CAILE	t2,2			;see if one of three
+	 JRST	e.mds			;no, unsupported
+	HLRZ	n,now			;yes, get today
+	ADDI	n,-1(t2)		;offset it
+	HRLZS	n			;position for answer
+datimo:	SKIPL	flfutd			;see if future
+	 TRO	n,-1			;yes, set to midnight minus epsilon
+	JRST	datimw			;and go finish up
+
+;Here if unsupported mnemonic
+
+e.mds:	MOVE	n,0(t1)		;Get name of switch
+e$$mds:	print	z$$mds##	;"Mnemonic names not supported"
+	JRST	pardt9
+
+
+;+
+;DATIMD		here if starting with decimal number
+;-
+
+datimd:	CALL	.decnc			;Yes, go get full number
+	JUMPL	n,e$$nnd		;invalid if negative
+	CAIE	c,"D"			;see if days
+	 JRST	datin			;no, must be -
+	MOVE	t1,flfutd		;yes, relative so get forcing function
+	MOVEM	t1,flfutr		;   and force it
+	JUMPE	t1,e$$npf		;error if direction unclear
+	CAIL	n,1B18			;verify not huge
+	 JRST	e$$dfl			;error, too large
+	MOVEM	n,val5			;save relative date
+	CALL	.tiauc			;get next character (skip D)
+	CALL	datic			;go check for time
+	SETZ	n,			;0 if none
+	HRL	n,val5			;include days in LH
+	JRST	datitr			;go do relative return
+
+;+
+;DATIN		digits seen without a following D
+;-
+
+datin:	CAIE	c,"-"			;see if year-month-day format
+	 JRST	datit			;no, must be into time
+	JUMPE	n,e$$dfz		;verify not zero
+	MOVEM	n,val5			;save value
+	CALL	.tiauc			;skip over minus
+	 CAIL	c,"0"			;see if digit next
+	  CAILE	c,"9"			;...
+	   JRST	datmmm			;no, must be mnemonic month
+	CALL	.decnc			;yes, must be YYYY-MM-DD format
+	JUMPLE	n,e$$nnd		;bad if .LE. 0
+	CAILE	n,^D12			;verify month OK
+	 JRST	e$$dfl			;bad
+	MOVEM	n,val6			;save month
+	MOVE	n,val5			;get year
+	CAILE	n,^D9999		;verify .LE. 9999
+	 JRST	e$$dfl			;bad
+	MOVE	t2,n			;...
+	IDIVI	t2,^D100		;century
+	IDIVI	t3,^D10			;decade
+	SKIPN	t2			;century zero => not known (**crock**)
+	 SETO	t2,			;...
+	MOVEM	t2,val9			;save century
+	MOVEM	t3,val8			;save decade
+	MOVEM	t4,val7			;save year
+	CAIE	c,"-"			;check the month/day separator
+	 JRST	e$$dtm			;bad
+	CALL	.tiauc			;skip over "-"
+	 CAIL	c,"0"			;see if digit next
+	  CAILE	c,"9"			;...
+	   JRST	datmmm			;no, error
+	CALL	.decnc			;yes, parse day number
+	JUMPLE	n,e$$nnd		;bad if .LE. 0
+	MOVEM	n,val5			;save day
+	JRST	datira			;go handle time
+
+;+
+;DATIT		time seen by itself
+;-
+
+datit:	CALL	datig			;get rest of time
+	 HALT	.			;cannot get here (***FOO***)
+	SKIPN	flfutr			;see if relative
+	 JRST	datirn			;no, go handle as abs.
+
+;Here with distance in N
+
+datitr:	SKIPGE	flfutr			;if past,
+	 MOVN	n,n			;  complement distance
+	ADD	n,now			;add to current date/time
+	JRST	datimx			;check answer and return
+
+;+
+;DATMMM		DD- seen and mnemonic month coming
+;-
+
+datmmm:	CAILE	n,^D31			;must be less than 32
+	 JRST	e$$dfl			;no, error
+	CALL	.sixsc			;get mnemonic
+	MOVE	t1,monptr		;get pointer to month table
+	CALL	.name			;lookup in table
+	 JRST	e$$udm			;no good
+	MOVEI	n,0(t1)			;get month
+	SUBI	n,months##-1		;  as 1-12
+
+;Here with T1/	month index (1-12)
+
+datmm1:	MOVEM	n,val6			;save for later
+datiy0:	CAIE	c,"-"			;see if year next
+	 JRST	datira			;no, go handle time
+
+;Here when year next as one, two, or four digits
+
+	SETZB	n,t1			;clear digit and result counters
+datiy:	CALL	.tiauc			;get next digit
+	 CAIL	c,"0"			;see if numeric
+	  CAILE	c,"9"			;...
+	   JRST	datiy1			;no, must be done
+	IMULI	n,^D10			;advance result
+	ADDI	n,-"0"(C)		;include this digit
+	AOJA	t1,datiy		;loop for more, counting digit
+
+datiy1:	JUMPE	t1,e$$ilr		;error if no digits
+	CAIE	t1,3			;error if 3 digits
+	 CAILE	t1,4			;OK if 1,2, or 4
+	  JRST	e$$ilr			;error if .GT. 4 digits
+	MOVE	t2,n			;get result
+	IDIVI	t2,^D100		;sep. century
+	IDIVI	t3,^D10			;sep. decade
+	CAIG	t1,2			;if one or two digits,
+	 SETO	t2,			;  flag no century known
+	CAIN	t1,1			;if one digit,
+	 SETO	t3,			;  flag no decade known
+	MOVEM	t4,val7			;save units
+	MOVEM	t3,val8			;save decade
+	MOVEM	t2,val9			;save century
+
+;Here with VAL5-9 containing day, month, year, decade, century
+
+datira:	SOS	val5			;make days 0-30
+	SOS	val6			;make months 0-11
+	CALL	datic			;get time if present
+	SKIPG	flfutd			;ignore absense
+	 JRST	datirn			; unless future
+
+;Here if future without time
+
+	MOVEI	t1,^D59			;Set to
+	MOVEM	t1,val2			;23:59:59
+	MOVEM	t1,val3			;...
+	MOVEI	t1,^D23			;...
+	MOVEM	t1,val4			;...
+
+;Here with VAL2,...,VAL9 containing parse or -1 if to be filled in.
+;	strategy is to fill-in holes less significant than
+;	most significant field with 0; and to fill in more significant
+;	holes with current value.  Then if wrong direction from
+;	now, add/sub one to field just above most significant different
+;	(field carry not needed since it will happen implicitly).
+
+datirn:	CALL	.tican			;Make sure next char is separator
+	 TRNA				;yes, OK
+	  JRST	e$$ilc			;no, flag error before defaulting
+	MOVE	t1,now			;get current date/time
+	CALL	.cntdt			;convert to easy format
+	MOVE	t3,t1			;save MSTIME
+	IDIVI	t3,^D1000		; as seconds
+	ADD	t2,[^D1964*^D12*^D31]	;make floating
+	MOVEI	t4,8			;try 8 fields
+datirb:	MOVE	t1,t2			;position remainder
+	IDIV	t1,[1			;split this field from rest
+		    ^D60
+		    ^D60*^D60
+		    1
+		    ^D31
+		    ^D31*^D12
+		    ^D31*^D12*^D10
+		    ^D31*^D12*^D10*^D10]-1(t4)
+
+	SKIPL	val1(t4)		;see if default
+	 JRST[	TLNN	t3,-1		;no, flag to zero defaults
+		 HRL	t3,t4		; saving index of last default
+		JRST	datric]		;and continue loop
+	SETZM	val1(t4)		;default to zero
+	TLNN	t3,-1			;see if need current
+	 MOVEM	t1,val1(t4)		;yes, set that instead
+datric:	CAME	t1,val1(t4)		;see if same as current
+	 JRST	datird			;no, remember for later
+	CAIN	t4,4			;see if time for time
+	 HRRZ	t2,t3			;yes, get it
+	SOJG	t4,datirb		;loop until all done
+
+;here when filled in current for significant defaults
+
+datird:	SKIPGE	val1(t4)		;see if default
+	 SETZM	val1(t4)		;clear default
+	SOJG	t4,datird		;loop until done
+
+	HLRZ	n,t3			;recover last sign. default-1
+	JUMPE	n,datirr		;done if none
+	CALL	datirm			;make current date, time
+	MOVE	t4,flfutd		;get default direction
+	XCT[	CAMGE	t1,now		;see if OK
+		nop
+		CAMLE	t1,now]+1(t4)
+	 JRST	datirr			;yes, go return
+	SKIPG	flfutd			;no, see which direction
+	 SOSA	val2(n)			;past
+	  AOS	val2(n)			;future
+datirr:	CALL	datirm			;remake answer
+	MOVE	n,t1			;move to answer
+
+;here with final result, check for OK
+
+datimx:	CAML	n,[<^D1964-^D1859>*^D365+<^D1964-^D1859>/4+
+			<^D31-^D18>+^D31,,0]
+	 JRST	strnml			;store in .NMUL and return
+	JRST	e$$dor			;out of range
+
+;+
+;this error should probably typeout the character that was refused, but...
+
+e$$ilc:	print	z$$ilc##	;"Invalid character"
+	JRST	pardt9
+
+e$$dor:	print	z$$dor##	;"Date/time out of range"
+	JRST	pardt9
+
+;+
+;DATIRM	Subroutine to make date/time
+;-
+
+datirm:	MOVE	t1,val4			;get hours
+	IMULI	t1,^D60			;make into mins
+	ADD	t1,val3			;add mins
+	IMULI	t1,^D60			;make into secs
+	ADD	t1,val2			;add secs
+	IMULI	t1,^D1000		;make into millisecs
+	MOVE	t2,val9			;get centuries
+	IMULI	t2,^D10			;make into decades
+	ADD	t2,val8			;add decades
+	IMULI	t2,^D10			;make into years
+	ADD	t2,val7			;add years
+	IMULI	t2,^D12			;make into months
+	ADD	t2,val6			;add months
+	IMULI	t2,^D31			;make into days
+	ADD	t2,val5			;add days
+	SUB	t2,[^D1964*^D12*^D31]	;reduce to system range
+	JRST	.cnvdt			;convert to internal form and return
+
+;+
+;DATIC		get time if specified
+;Returns CPOPJ if no time, skip return if time
+;  with time in RH(N) as fraction of day
+;Uses T1-4, N
+;-
+
+datic:	CAIE	c,":"			;See if time next
+	 JRST[	CAIE	c,.CHSPC	;[BCQ] space?
+		 RET			;[BCQ] wasn't space so return
+		CALL	getlet##	;[BCQ] skip blanks
+		CALL	.tiauc		;[BCQ] get next character comming
+		CAIL	c,"0"		;[BCQ] a digit comming?
+		 CAILE	c,"9"		;[BCQ] ...
+		  RET			;[BCQ] no, return
+		CALL	.decnc		;[BCQ] get the numeric time
+		JRST	datig]		;[BCQ] and parse the stuff
+	 CALL	.decnw			;get decimal number for time
+
+;here with first time field in N
+
+datig:	JUMPL	n,e$$nnd		;error if negative
+	CAIL	n,^D24			; and .GE. 24,
+	 JRST	e$$dfl			;give error, too large
+	MOVEM	n,val4			;save hours
+	CAIE	c,":"			;see if minutes coming
+	 JRST	datid			;no, done
+	CALL	.decnw			;yes, get it
+	CAIL	n,^D60			;see if in range
+	 JRST	e$$dfl			;no, give error
+	JUMPL	n,e$$nnd		;error if negative
+	MOVEM	n,val3			;save minutes
+	CAIE	c,":"			;see if seconds coming
+	 JRST	datid			;no, done
+	CALL	.decnw			;get seconds
+	CAIL	n,^D60			;check range
+	 JRST	e$$dfl			;no, give error
+	JUMPL	n,e$$nnd		;error if negative
+	MOVEM	n,val2			;save seconds
+
+;here with time in VAL2-4
+
+datid:	SKIPGE	t1,val4			;get hours
+	 SETZ	t1,			;  unless absent
+	IMULI	t1,^D60			;convert to minutes
+	SKIPL	val3			;if minutes present,
+	 ADD	t1,val3			;  add minutes
+	IMULI	t1,^D60			;convert to seconds
+	SKIPL	val2			;if seconds present,
+	 ADD	t1,val2			;  add seconds
+	SETZ	t2,			;clear other half
+	ASHC	t1,-^D17		;multiply by 2**18
+	DIVI	t1,^D24*^D60*^D60	;divide by seconds/day
+	MOVE	n,t1			;result is fraction of day in RH
+	JRST	.popj1			;return
+
+;+
+;Date/time errors
+
+e$$nnd:	print	z$$nnd##	;"Negative number in date/time"
+	JRST	pardt9
+
+e$$npf:	print	z$$npf##	;"Not known if past or future"
+	JRST	pardt9
+
+e$$dfl:	print	z$$dfl##	;"Field tool large in date/time"
+	JRST	pardt9
+
+e$$dfz:	print	z$$dfz##	;"Field zero in date/time"
+	JRST	pardt9
+
+e$$udm:	print	z$$udm##	;"Unrecognized month"
+	JRST	pardt9
+
+e$$ilr:	print	z$$ilr##	;"Invalid year in date/time"
+	JRST	pardt9
+
+e$$udn:	print	z$$udn##	;"Unrecognized name in date/time"
+	JRST	pardt9
+
+e$$mdd:	print	z$$mdd##	;"Missing day in date/time"
+	JRST	pardt9
+
+e$$dtm:	print	z$$dtm##	;"Value missing in date/time"
+	JRST	pardt9
+
+
+;Mnemonic words in date/time scan
+
+splgtm:	SIXBIT	!login!		;should be same for all languages
+
+;-
+
+;Pointers
+
+monptr:	IOWD	^D12,months##
+mndptr:	IOWD	lspdtm##,days##
+
+
+;+
+;.CNTDT		convert from internal date/time format
+;call:	MOVE	t1,date/time
+;	CALL	.cntdt
+;	+1 with T1=time in ms
+;		T2=date in system format (.LT. 0 if arg .LT. 0)
+;Based on ideas by John Barnaby, David Rosenberg, Peter Conklin
+;Uses T1-T4
+;-
+
+.cntdt:	PUSH	P,T1			;save time for later
+	JUMPL	T1,cntdt6		;defend against junk input
+	HLRZ	T1,T1			;get date portion (days since 1858)
+	ADDI	T1,<^D1857-^D1500>*^D365+<^D1857-^D1500>/4-<^D1857-^D1500>
+		    /^D100+<^D1857-^D1500>/^D400+^D31+^D28+^D31+^D30+^D31+
+		    ^D30+^D31+^D31+^D30+^D31+^D17
+				;T1=days since Jan 1, 1501
+	IDIVI	T1,^D400*^D365+^D400/4-^D400/^D100+^D400/^D400
+				;split into quadracentury
+	LSH	T2,2		;convert to number of quarter days
+	IDIVI	T2,<^D100*^D365+^D100/4-^D100/^D100>*4+^D400/^D400
+				;split into century
+	IORI	T3,3		;discard fractions of day
+	IDIVI	T3,4*^D365+1	;separate into years
+	LSH	T4,-2		;T4=no days this year
+	LSH	T1,2		;T1=4*no quadracenturies
+	ADD	T1,T2		;T1=no centuries
+	IMULI	T1,^D100	;T1=100*no centuries
+	ADDI	T1,^D1501(T3)	;T1 has year, T4 has day in year
+	MOVE	T2,T1		;copy year to see if leap year
+	TRNE	T2,3		;is the year a multiple of 4?
+	 JRST	cntdt0		;no--just indicate not a leap year
+	IDIVI	T2,^D100	;see if year is multiple of 100
+	SKIPN	T3		;if not, then leap
+	 TRNN	T2,3		;is year multiple of 400?
+	  TDZA	T3,T3		;yes--leap year after all
+cntdt0:	   MOVEI T3,1		;set leap year flag
+				;T3 is 0 if leap year
+cntdt1:	SUBI	T1,^D1964	;set to system origin
+	IMULI	T1,^D31*^D12	;change to system pseudo days
+	JUMPN	T3,cntdt2	;if not leap year, proceed
+	CAIGE	T4,^D31+^D29	;leap year--see if beyond Feb 29
+	 JRST	cntdt5		;no--just include in answer
+	SOS	T4		;yes--back off one day
+cntdt2:	MOVSI	T2,^D-11	;loop for 11 months
+
+cntdt3:	CAMGE	T4,montab+1(T2)	;see if beyond this month
+	 JRST	cntdt4		;yes--go finish up
+	ADDI	T1,^D31		;no--count system month
+	AOBJN	T2,cntdt3	;loop through November
+
+cntdt4:	SUB	T4,montab(T2)	;get days in this month
+cntdt5:	ADD	T1,T4		;include in final result
+
+cntdt6:	EXCH	T1,(P)				;save answer, get time
+	TLZ	T1,-1				;clear date
+	MUL	T1,[^D24*^D60*^D60*^D1000]	;convert to ms
+	ASHC	T1,^D17				;position result
+	POP	P,T2				;recover date
+	RET
+
+;+
+;.GTNOW -- Compute current time in special format
+;call:	CALL	.GTNOW
+;returns with result in T1
+;uses T2, T3, T4
+;-
+
+.gtnow:
+T10,<	MOVE	T1,[%CNDTM]		;ask monitor
+	GETTAB	T1,			; for answer
+	 SETZ	T1,			;(old monitor)
+	JUMPN	T1,getnwx		;if known, go give result
+	MSTIME	T1,			;get system time in milliseconds
+	DATE	T2,			;get system date in common format
+>;T10
+T20,<
+IFN T1-1,<PUSH	P,1>			;there must be a reason...
+	GTAD%				;get the current date and time
+IFN T1-1,<MOVE	T1,1
+	POP	P,1>
+	JRST	getnwx			;go give result
+>;T20
+;fall into .CNVDT
+
+;+
+;.CNVDT -- convert arbitrary date to special format
+;call:	MOVE	T1,time in milliseconds
+;	MOVE	T2,date in system format (Y*12+M)*31+day since Jan 1 1964
+;	CALL	.CNVDT
+;returns with result in T1 (.GT.0; or -1 if beyond Sept. 27,2217)
+;	note that in special format, the left half divided
+;	by 7 gives the day of the week (0=Wednesday)
+;uses T2, T3, T4
+;-
+				;fall here from .GTNOW
+.cnvdt:	CALL	.save1			;preserve P1
+	PUSH	P,T1			;save time for later
+	IDIVI	T2,^D12*^D31		;T2=years-1964
+	CAILE	T2,^D2217-^D1964	;see if beyond 2217
+	 JRST	getnw2			;yes--return -1
+	IDIVI	T3,^D31			;T3=months-Jan, T4=days-1
+	ADD	T4,montab(T3)		;T4=days-Jan 1
+	SETZ	P1,0			;leap year additive if Jan, Feb
+	CAIL	T3,2			;check month
+	 MOVEI	P1,1			;additive if Mar-Dec
+	MOVE	T1,T2			;save years for reuse
+	ADDI	T2,3			;offset since leap year does not
+					; get counted
+	IDIVI	T2,4			;handle regular leap years
+	CAIE	T3,3			;see if this is leap year
+	 SETZ	P1,0			;no--wipe out additive
+	ADDI	T4,<^D1964-^D1859>*^D365+<^D1964-^D1859>/4+<^D31-^D18>+^D31(T2)
+					;T4=days before Jan 1,1964 +
+					;   + since Jan 1
+					;   + allowance for all leap years
+					;     since 1964
+	MOVE	T2,T1			;restore years since 1964
+	IMULI	T2,^D365		;days since 1964
+	ADD	T4,T2			;T4=days except for 100 yr. fudge
+	HRREI	T2,^D64-^D100-1(T1)	;T2=years since 2001
+	JUMPLE	T2,getnw1		;all done if not yet 2001
+	 IDIVI	T2,^D100		;get centuries since 2001
+	 SUB	T4,T2			;allow for lost leap years
+	 CAIE	T3,^D99			;see if this is a lost leap year
+getnw1:	  ADD	T4,P1			;allow for leap year this year
+	CAILE	T4,377777		;see if too big
+getnw2:	 SETOM	T4			;yes--set -1
+
+	POP	P,T1			;get millisecond time
+	SETZ	T2,			;clear other half
+	ASHC	T1,^D-17		;position
+	DIV	T1,[^D24*^D60*^D60*^D1000]	;convert to 1/2**18 days
+	CAMLE	T2,[^D24*^D60*^D60*^D1000/2]	;[574] over 1/2 to next?
+	 ADDI	T1,1			;[574] yes, should actually round up
+	HRL	T1,T4			;include date
+getnwx:	RET
+
+;+
+;MONTAB	Number of days for 1st of a month since beginning of year:
+;-
+
+montab:	EXP	0		; No days before January
+	EXP	^D31		; January has 31 days
+	EXP	^D59		; February has 28 days	=> 31+28=59
+	EXP	^D90		; March has 31 days	=> 59+31=90
+	EXP	^D120		; April has 30 days	=> 90+30=120
+	EXP	^D151		; May has 31 days	=> 120+31=151
+	EXP	^D181		; June has 30 days	=> 151+30=181
+	EXP	^D212		; July has 31 days	=> 181+31=212
+	EXP	^D243		; August has 31 days	=> 212+31=243
+	EXP	^D273		; September has 30 days	=> 243+30=273
+	EXP	^D304		; October has 31 days	=> 273+31=304
+	EXP	^D334		; November has 30 days	=> 304+30=334
+	EXP	^D365		; December has 31 days	=> 334+31=365
+				; and thats the whole year:	 =365 days
+;+
+;.NAME	(not documented)
+;-
+.name:	MOVE	T2,N		;set name for routine
+	JRST	.lknam		;go handle it
+
+
+;+
+;.LKNAM -- Lookup name in table allowing for unique abbreviations
+;always check for exact match first.
+;call:	MOVE	T1,[IOWD length,start of table]
+;	MOVE	T2,name
+;	CALL	.LKNAM
+;	+1 (error) return if unknown or duplicate
+;		T1/ -1	if not match
+;		    m	if several matches
+;	+2 (skip) return if found
+;		T1/ 0,,RH: pointing to entry, if abbreviation
+;		    -n if exact match
+;uses T3, T4
+;preserves T2
+;-
+
+.lknam:	JUMPGE	T1,[SETOM T1	;flag unknown (-1)
+		    RET]	;error return
+	CALL	.save2		;save P1, P2
+	PUSH	P,T1		;save argument
+	MOVE	T3,T2		;set arg to mask maker
+	CALL	.mkmsk		;make mask
+	MOVE	T2,T3		;restore name
+	MOVE	P1,T1		;save for matching
+	POP	P,T1		;recover argument
+	SETOM	P2		;set abbreviation match counter
+	AOS	T1		;position pointer
+name1:	MOVE	T3,(T1)		;fetch table entry
+	TLNE	T3,(3B1)	;note that * is 12 in SIXBIT
+	 JRST	NAME2		;not forced match
+	LSH	T3,6		;see if it matches
+	XOR	T3,T2		;even in an abbreviation
+	TRZ	T3,77		;clear last char since we don't know it
+	AND	T3,P1		; ..
+	JUMPE	T3,.popj1	;yes--give match return
+	JRST	NAME3		;no--loop
+name2:	XOR	T3,T2		;see if exact match
+	JUMPE	T3,.popj1	;yes--a winner
+	AND	T3,P1		;see if a suitable abbreviation
+	JUMPN	T3,name3	;no--loop back for more
+	 MOVE	T4,T1		;salt away the location just in case
+	 AOS	P2		;yes--count 
+name3:	AOBJN	T1,name1	;advance--loop if not done yet
+	HRRZ	T1,T4		;restore location of a winner
+	JUMPE	P2,.popj1	;done--jump if one abbreviation
+	MOVE	T1,P2		;give flag to caller
+	RET			;none or two, so fail
+
+;+
+;.MKMSK	(not documented)
+;-
+.mkmsk:	SETZ	T1,0		;clear mask
+	MOVSI	T2,(77B5)	;start at left end
+makms1:	TDNE	T3,T2		;see if space here
+	IOR	T1,T2		;no--improve mask
+	LSH	T2,-6		;move right one char
+	JUMPN	T2,MAKMS1	;loop until done
+	RET
+
+;+
+;STRNML	(not docuemnted)
+;-
+strnml:	MOVEM	N,.NMUL		;store value for error printer	[314]
+	RET
+
+;+
+;.TICAN	(not documented)
+;-
+.tican:	CAIL	C,"A"+40	;see if
+	 CAILE	C,"]"+40	;  lower case alpha
+	  SKIPA			;no--continue checks
+	   JRST	.popj1		;yes--give alpha return
+	CAIL	C,"0"		;see if below numerics
+	 CAILE	C,"]"		;  or if above alphabetics
+	  RET			;yes
+	CAILE	C,"9"		;see if numeric
+	 CAIL	C,"A"		; or if alphabetic
+	  AOS	(P)		;yes--skip return
+	RET
+
+.decnw:	CALL	.tiauc		;prime the dump
+.decnc:	CAIN	C,"#"		;see if octal flagged
+	 JRST	.octnw		;yes--go read octal field
+	CALL	.CKNEG		;check if negative
+	CAIN	C,"#"		;now check for octal
+	 JRST	octin2		;yes--go read char and get octal
+decin1:	CAIL	C,"0"		;see if decimal
+	 CAILE	C,"9"		; ..
+	  JRST	decmul		;no--at end, so handle suffix
+	IMULI	N,^D10		;yes--multiply number
+	ADDI	N,-"0"(C)	;incorporate digit
+	CALL	.tiauc		;get next character
+	JRST	decin1		;loop back for more
+
+;+
+;DECMUL -- handle decimal suffix multiplier
+;	K,M,G FOR 10**3,6,9
+;call:	MOVE	N,number
+;	CALL	DECMUL
+;	+1 with number multiplied by suffix
+;uses T1  (multiplier--returned)	updates C (separator)
+;-
+
+decmul:	CAIN	C,"."		;see if forcing decimal		[273]
+	 CALL	.tiauc		;yes--get next character	[273]
+	MOVEI	T1,1		;initialize suffix multiplier
+	CAIN	C,"K"		;K = 1 000
+	 MOVEI	T1,^D1000
+	CAIN	C,"M"		;M = 1 000 000
+	 MOVE	T1,[^D1000000]
+	CAIN	C,"G"		;G = 1 000 000 000
+	 MOVE	T1,[^D1000000000]
+	IMUL	N,T1		;apply to number
+	CAILE	T1,1		;see if suffix
+	 CALL	.tiauc		;yes--get one more character
+	JRST	.seneg		;see if negative and return
+
+;+
+;.OCTNW -- input an octal word from command string
+;.OCTNC  -- ditto (character already in C)
+;Terminates at first non-digit
+;Throws away any characters before the last twelve
+;call:	CALL	.octnc/.octnw
+;	+1 return with word in N
+;uses T1
+;updates C (separator)
+;-
+
+.octnw: CALL	.tiauc		;prime the pump
+
+.octnc:	CALL	.ckneg		;check if negative
+	PUSH	P,P1		;save accumulator		[273]
+	SETZ	P1,0		;clear accumulator for decimal	[273]
+octin1:	CAIL	C,"0"		;see if octal
+	 CAILE	C,"9"		;  ..				[273]
+	  JRST	octin3		;no--at end, so handle suffix	[273]
+	LSH	N,3		;yes--multiply number
+	ADDI	N,-"0"(C)	;incorporate digit
+	IMULI	P1,^D10		;accumulate in decimal		[273]
+	ADDI	P1,-"0"(C)	; ..				[273]
+octin2:	CALL	.tiauc		;get next character
+	JRST	octin1		;loop back for more
+octin3:	CAIN	C,"."		;see if forcing decimal		[273]
+	 MOVE	N,P1		;yes--save decimal value	[273]
+	POP	P,P1		;restore accumulator		[273]
+	CAIN	C,"."		;see if decimal			[273]
+	 JRST	DECMUL		;yes--go handle decimal wrap-up	[273]
+				; (fall through to OCTMUL)
+
+;+
+;OCTMUL -- handle octal suffix multiplier
+;	K,M,G for 2**9,18,27
+;call:	MOVE	N,number
+;	CALL	OCTMUL
+;	+1 return with number multiplied by suffix
+;uses T1 (left shift--returned)
+;updates C (separator)
+;-
+
+octmul:	SETZ	T1,		;initialize suffix multiplier
+	CAIN	C,"K"		;K = 1 000
+	 MOVEI	T1,^D9
+	CAIN	C,"M"		;M = 1 000 000
+	 MOVEI	T1,^D18
+	CAIN	C,"G"		;G = 1 000 000 000
+	 MOVEI	T1,^D27
+	LSH	N,(T1)		;apply to number
+	SKIPE	T1		;see if suffix
+	 CALL	.tiauc		;yes--get separator
+				;fall here from above
+;+
+;.SENEG -- see if negative found by .CKNEG and apply it
+;call:	MOVE	N,value so far
+;	CALL	.SENEG
+;returns with N complemented if number preceeded by -
+;-
+
+.seneg:	SKIPE	flneg		;see if negative
+	 MOVNS	N		;yes--complement result
+	RET
+
+;+
+;Here to exit from most one word input routines to
+;store a copy of the result in .NMUL for long term storage
+;purposes such as some error messages
+
+;.CKNEG -- check if negative number coming
+;also clears N
+;call:	MOVEI	C,next char
+;	CALL	.CKNEG
+;uses no ACs
+;-
+
+.ckneg:	SETZB	N,flneg		;clear N and negative flag
+	CAIE	C,"-"		;check if negative number
+	 RET			;no--return
+	SETOM	flneg		;yes--set flag
+	JRST	.tiauc		;get next char and return
+
+;+
+;.SAVE1 -- subroutine to save P1 for a subroutine
+;call:	CALL	.SAVE1
+;returns +1 or +2, restores P1 and exits as skip or non-skip
+;-
+
+.save1:	EXCH	P1,(P)		;save P1, get caller PC
+	HRLI	P1,(P)		;get address where P1 is saved	[307,521]
+	CALL	savjmp		;stack new return PC and jump	[521]
+	 SOS	-1(P)		;non-skip return, compensate .POPJ1  [521]
+	JRST	ret1		;restore P1 and exit
+
+;+
+;.SAVE2 -- subroutine to save P1 and P2 for a subroutine
+;call:	CALL	.SAVE2
+;returns +1 or +2, restores P1 and P2 and exits as skip or non-skip
+;-
+
+.save2:	EXCH	P1,(P)		;save P1, get caller PC
+	HRLI	P1,(P)		;get address where P1 is saved	[307,521]
+	PUSH	P,P2		;save P2
+	CALL	SAVJMP		;stack new return PC and jump	[521]
+	 SOS	-2(P)		;non-skip return, compensate .POPJ1  [521]
+	JRST	ret2		;restore P1 and P2 and exit
+
+;+
+;.SAVE3 -- subroutine to save P1 and P2 and P3 for a subroutine
+;call:	CALL	.SAVE3
+;returns +1 or +2, restores P1-3 and skips or not
+;-
+
+.save3:	EXCH	P1,(P)		;save P1, get caller PC
+	HRLI	P1,(P)		;get address where P1 is saved	[307,521]
+	PUSH	P,P2		;save P2
+	PUSH	P,P3		;save P3
+	CALL	savjmp		;stack new return PC and jump	[521]
+	 SOS	-3(P)		;non-skip return, compensate .POPJ1  [521]
+	JRST	ret3		;restore P1-P3 and exit
+
+;+
+;.SAVE4 -- subroutine to save P1-P4 for a subroutine
+;call:	CALL	.SAVE4
+;return +1 or +2, restores P1-P4 and skips or not
+;-
+
+.save4:	EXCH	P1,(P)		;save P1, get caller PC
+	HRLI	P1,(P)		;get address where P1 is saved	[307,521]
+	PUSH	P,P2		;save P2
+	PUSH	P,P3		;save P3
+	PUSH	P,P4		;save P4
+	CALL	savjmp		;stack new return PC and jump	[521]
+.savx4:  SOS	-4(P)		;non-skip return, compensate .POPJ1  [521]
+
+ret4:	POP	P,P4		;restore P4
+ret3:	POP	P,P3		;restore P3
+ret2:	POP	P,P2		;restore P2
+ret1:	POP	P,P1		;restore P1
+.popj1:	AOS	0(P)		;increment PC			[521]
+	RET
+;+
+;SAVJMP	restores P1 and dispatches to the caller.
+;-
+
+savjmp:	JRA	P1,(P1)		;return to caller		[521]
+
+;+
+;.PSH4T -- push T1-T4 onto stack
+;.POP4T -- pop T1-T4 from stack
+;call:	CALL	.PSH4T/.POP4T
+;uses no ACs
+;-
+
+.psh4t:	PUSH	P,T2		;save T2
+	PUSH	P,T3		;save T3
+	PUSH	P,T4		;save T4
+	EXCH	T1,-3(P)	;save T1/get return
+	PUSH	P,T1		;put into safe place
+	MOVE	T1,-4(P)	;restore t1
+	RET
+
+.pop4t:	POP	P,T1		;get return
+	POP	P,T4		;restore T4
+	POP	P,T3		;restore T3
+	POP	P,T2		;restore T2
+	EXCH	T1,0(P)		;restore T1/save return
+	RET
+
+	END
+..and no more

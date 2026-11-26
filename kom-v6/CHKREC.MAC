@@ -1,0 +1,292 @@
+;Oden::DSKG:CHKREC.MAC<62,7777,MAC> 1986-12-11 17:50:47, Edit by KPJ @ L89
+;14	PUTCH is macro.
+;Oden::DSKG:CHKREC.MAC<62,7777,MAC> 1986-11-10 15:40:53, Edit by KPJ @ L89
+;13	handle +2 return from ISLURP.
+;Oden::DSKG:CHKREC.MAC[62,7777,MAC] 1986-10-22 18:50:47, Edit by KPJ @ L89
+;12	Don't say anything about "external" PERSONs (with "@" as the first
+;	character of their name) being un-present, since
+
+;"These messages give people a false impression of how external mail works!"
+
+;	(J.Palme, QZCOM entry 210648 861021-1929)
+;Oden::DSKG:CHKREC.MAC<62,7777,MAC> 1986-10-14 16:09:18, Edit by KPJ @ L89
+;11	QEMPLO employee test under FTEMPL.
+;Oden::DSKD:CHKREC.MAC<62,7777,MAC> 1985-11-28 06:04:58, Edit by KPJ
+;10	Edit #3 undone: PUTBEL call eliminated (this is done in TERCON).
+;Oden::DSKD:CHKREC.MAC<62,7777,MAC> 1985-09-25 07:52:09, Edit by KPJ
+;7	Introduced PROLOG macro. Changed format of PRINT macros.
+;	Sanitized code.
+;Oden::DSKD:CHKREC.MAC<62,7777,MAC> 1985-04-25 02:26:31, Edit by KPJ @ NADJA
+;6	LINK-10 gets confused if a local symbol has same name as a global.
+;	Local symbol CHPRES changed to CHPREZ to avoid brain damage.
+;Oden::DSKD:CHKREC.MAC[62,7777] 1984-12-01 03:37:55, Edit by KPJ @ NADJA
+;5	Deleted all code which was commented away.
+;	Moved language dependent code to module TEXTER.
+;	Got rid of funny macros codes.
+;Oden::Dskd:Chkrec.Mac[62,7777] 1984-05-14 14:35:16, Edit by KPJ Jaakkola
+;4	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dskd:Chkrec.Mac[62,7777] 1984-03-26 12:55:32, Edit by T Tholerus
+;3	[1014] Call PUTBEL instead of bells in REPWPR.
+;Oden::Dskd:Chkrec.Mac[62,7777] 1984-03-21 12:16:04, Edit by T Tholerus
+;2	[1014] No comment author in CHWPRE. CHCOAU rewritten. 
+;	New routine CHKWPR to check for writeprotectiveness.
+;Oden::Dsk:Chkrec.New[1116,134] 1982-03-02 18:25:08, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(chkrec)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 14:27:38
+
+;	D A T A   A R E A
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;CHKREC		check receiver and change if write protected
+;accepts	NR/	wanted receiver
+;returns	NR/	changed receiver
+;-
+
+chkrec::save	<bfp,gp1>
+	CALL	getobj##		;get receiver
+	 TRNA				;non existent?
+	  SKIPG	0(bfp)			;or deleted ?
+	   JRST[SETZ	nr,		;yes, remove receiver
+		JRST	chkre9]
+	CALL	chkmes			;check if message
+IFN	ftempl,<			;<KPJ.11>
+	CALL	qemplo			;check if employee
+>;ftempl
+	CALL	chwpre			;check write protected receiver
+chkre9:	return
+
+
+
+
+
+;+
+;CHKMES		check if message to letter writer
+;accepts	NR/	person
+;-
+
+chkmes::save	<nr,bfp,lastnr##>
+	CALL	chkper			;person ?
+	 JRST	chkme9			;no
+	CALL	prmess			;print message
+	 CALL	chprez			;check presence
+chkme9:	return
+
+
+
+
+
+;+
+;CHKPER		check if person
+;accepts	NR/	object number
+;returns	+1 if not person
+;		+2 if person
+;-
+
+chkper::save	<nr,gp1>
+	CALL	splpoi##		;split pointer
+	CAIN	gp1,per			;person ?
+	 skpret				;yes
+	return
+
+
+
+
+
+;+
+;PRMESS		output message
+;accepts	NR/	person
+;returns	+1 if no message got
+;		+2 if message printed
+;-
+
+prmess::save	<nr,bfp,gp1,recflg##>
+	CALL	getobj##		;get person record
+	 JRST	prmes9			;not a person
+	MOVE	nr,permes(bfp)		;get message
+	CALL	getobj##		;get message
+	 JRST	prmes9			;no message
+	SKIPG	0(bfp)			;deleted ?
+	 JRST	prmes9			;message deleted
+	SETOM	recflg##		;no receivers
+	CALL	displa##		;display it
+	CALL	preol##			;blank line
+	skpret				;message printed
+prmes9:	return
+
+
+
+
+
+;+
+;CHPREZ		check presence
+;accepts	NR/	person
+;-
+
+chprez:	save	<gp1,bfp,nr,str>
+	CALL	getobj##		;get person
+	 JRST	chpre9			;error
+	CALL	gudate##		;get current date
+	CALL	nrdapr			;number of days since last present
+	CAIGE	nr,4			;more than three days ?
+	 JRST	chpre9			;no, dont say anything
+	LDB	t,[POINT 7,recstr(bfp)]	;<KPJ.12> get first character of name
+	CAIN	t,"@"			;<KPJ.12> nasty little AT sign?
+	 JRST	chpre9			;<KPJ.12> yes, don't say a thing
+	CALL	preol##			;blank line
+	CALL	prnam##			;print person name
+					;[KPJ.5] deleted code vanished forever
+	SKIPE	perpre(bfp)		;present ?
+	 JRST	chpre1			;yes
+	print	znevus##		;"has never used COM"
+	JRST	chpre8
+
+chpre1:	print	zntpre##		;" has not been present in "
+	CALL	prnum##			;print number of days
+	print	zdays##			;"days"
+chpre8:	CALL	preol##			;new line
+chpre9:	return
+
+
+
+;+
+;NRDAPR		get number of days since last presence
+;accepts	BFP/	person record
+;		CURDAT/	current date
+;returns	NR/	number of days
+;-
+
+nrdapr:	SKIPN	nr,perpre(bfp)		;get last presence
+	 MOVE	nr,objtim(bfp)		;never present
+	SUB	nr,curdat##		;subtract current date
+	MOVM	nr,nr			;make it positive
+	HLRZ	nr,nr			;get days
+	return
+
+
+
+
+
+;+
+IFN	ftempl,<			;<KPJ.11>
+;QEMPLO		check if employee
+;accepts	NR/	object
+;-
+
+qemplo:	save	<bfp,gp1,nr,str>
+	CALL	getobj##		;get object
+	 JRST	qempl9			;error
+	CAIE	gp1,emp			;employee ?
+	 JRST	qempl9			;no
+	CALL	preol##			;new line
+	print	zletto##		;"The letter to "
+	CALL	prshna##		;print name of person
+	print	zwbpri##		;"will be printed on "
+	MOVE	nr,emppri(bfp)		;get printer
+	CALL	prname##		;print name of printer
+	CALL	preol##			;blank line
+qempl9:	return
+>;ftempl
+
+
+;+
+;CHWPRE		check receiver and change if write protected
+;accepts	NR/	wanted receiver
+;returns	NR/	changed receiver
+;-
+
+chwpre:	JUMPLE	nr,chwpr9		;existing receiver ?
+	CALL	chkwpr			;write protected ?
+	 JRST	chwpr9			;no, dont change
+	CALL	chkorg##		;organizer ?
+	 TRNA				;no
+	  JRST	chwpr9			;yes, dont change
+	SETZM	authnr##		;[TTQ.1014] no comment author
+	CALL	repwpr			;report write protect
+	CALL	chkmes			;check if message
+chwpr9:	return
+
+
+
+
+
+;+
+;REPWPR		report that conference is write protected
+;accepts	NR/	receiver
+;		AUTHNR/	comment author [1014]
+;returns	NR/	new receiver
+;-
+
+repwpr::save	<str,bfp,gp1,consum##>
+	CALL	tcbeg##			;start terminal consumer
+	CALL	preol##			;blank line
+	MOVEI	ch,.CHBEL		;<KPJ.10!TTQ.3> output bell
+	CALL	putch			;<KPJ.14!KPJ.10>
+	CALL	prname##		;print name
+	print	zwrpro##		;"is write-protected. Instead sent to "
+	CALL	getobj##		;get receiver
+	 error	<repwpr chkrec>
+	CAIE	gp1,mee			;conference ?
+	 CAIN	gp1,per			;or person ?
+	  JRST	repwp2			;yes
+	SETZ	nr,			;no, remove receiver
+	JRST	repwp3
+
+repwp2:	MOVE	nr,recsup(bfp)		;get super conference
+	CALL	getobj##		;get super conference
+	 SETZ	nr,			;super conference removed
+	CALL	prname##		;print name of new receiver
+	CALL	chcoau			;check comment author
+repwp3:	CALL	preol2##		;blank line
+	branch	tcend##			;end of output
+
+
+;+
+;CHCOAU		check comment author
+;accepts	AUTHNR/	comment author
+;		NR/	super conference
+;-
+
+chcoau:	save	<nr,gp1,gp2,free>
+	MOVE	gp1,nr			;get conference
+	SKIPG	nr,authnr##		;[1014] get comment author
+	 JRST	chcoa9			;[1014] no comment author
+	CALL	islurp##		;get member list
+	 JRST	chcoa9			;<KPJ.13> failed, don't add author
+	CALL	seacon##		;search for conference
+	 JRST	chcoa8			;not member
+	SKIPLE	0(gp2)			;passive member ?
+	 JRST	chcoa9			;no, dont add author
+chcoa8:	CALL	chkrec			;check receiver
+	CALL	adnali##		;add to name list
+chcoa9:	return
+
+
+
+
+
+;+
+;CHKWPR		check if write protected
+;accepts	NR/	object
+;returns	+1 if not write protect
+;		+2 if write protected
+;-
+
+chkwpr:	save	<gp1,bfp>
+	CALL	getobj##		;get conference
+	 error	<chkwpr chkrec>
+	MOVE	t,objtyp(bfp)		;get conference type
+	TRNE	t,wprofl		;write protected ?
+	 skpret				;yes
+	return
+
+	END
+..and no more

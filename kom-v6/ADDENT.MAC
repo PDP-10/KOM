@@ -1,0 +1,307 @@
+;Freja::Qs:<Kom.6.Macro>Addent.Mac.10 861223-0016,KPJ-Jaakkola
+;12     Censored four letter word.  Also, stop code "circular-entry addent"
+;       changed to "adentr addent".
+;Oden::DSKG:ADDENT.MAC<62,7777,MAC> 1986-12-11 17:46:37, Edit by KPJ @ L89
+;11     PUTCH is a macro.
+;Freja::Qs:<Kom.6.Macro>Addent.Mac.12 860821-2017,KPJ-Jaakkola
+;10     Don't call ERRMSG when no error message.
+;Freja::Qs:<Kom.6.Macro>Addent.Mac.3 860804-1619,KPJ-Jaakkola
+;7      Handle TOO-LONG-ENTRY and CIRCULAR-ENTRY better.
+;Oden::DSKD:ADDENT.MAC<62,7777,MAC> 1985-10-01 01:14:42, Edit by KPJ
+;6      Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:ADDENT.MAC<62,7777,MAC> 1985-07-15 19:31:34, Edit by KPJ @ DECGR
+;5      Make warnings not appear into the entries (PUTBEL call deleted).
+;Oden::DSKD:ADDENT.MAC[62,7777] 1985-01-09 23:04:09, Edit by KPJ @ GRAV
+;4      Added code to generate "number of lines" information for new texts.
+;Oden::DSKD:ADDENT.MAC[62,7777] 1984-11-19 13:10:34, Edit by K.JAAKKOLA
+;3      Moved all language dependent texts to TEXTER.MAC; deleted ^G from
+;       the texts and generated calls to PUTBEL instead.
+;Oden::Dskd:Addent.Mac[62,7777] 1984-10-02 13:40:56, Edit by K.Jaakkola
+;2      Deleted PNAMLI@ADDENT since it was identical to the PRNALI@LOGIN.
+;Oden::Dskd:Addent.Mac[62,7777] 1984-05-11 16:11:25, Edit by KPJ Jaakkola
+;1      Updated copyright notice.
+
+        SEARCH  kommac
+        PROLOG  (addent)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;       QZ Computing Centre, 1984-05-11 16:12:11
+
+;       D A T A   A R E A
+
+entnr:: 0                               ;entry number
+nlines::BLOCK   1                       ;[KPJ.4]
+
+;       P R O G R A M   C O D E
+
+        CODE
+
+;+
+addent::comhed  0,noarg##,adentr,ccaden##,zaenhl##      ;add entry
+;-
+
+;+
+;ADENTR         add entry
+;accepts        ENTRY/  entry
+;               ENTTYP/ entry type
+;returns        +1 always
+;-
+
+adentr::save    <gp1,nr,str>
+        SKIPL   wriflg##                ;are we writing a notice ?
+         JRST[  CALL    preol##         ;no
+                print   znonot##        ;"notice missing"
+                JRST    adent9]
+        CALL    chklen##                ;<KPJ.12!BDQ> is entry <CENSORED> up?
+         JRST[  PUSH    P,consum##      ;<KPJ.7> yes, it's too long
+                MOVEI   t,tercon##      ;<KPJ.7> output message to terminal
+                MOVEM   t,consum##      ;<KPJ.7> . . .
+                print   z2lon1##        ;<KPJ.7> "The entry is "
+                CALL    getlen##        ;<KPJ.7> get entry length, in lines
+                MOVEI   1,.PRIOUT       ;<KPJ.7> well, sort of..
+                MOVE    2,nr            ;<KPJ.7> #lines
+                MOVEI   3,<FLD(^D10,NO%RDX)>    ;<KPJ.7> decimal
+                CALL    .nout                   ;<KPJ.7> output it
+                 CALL[  print[  ASCIZ !????!]   ;<KPJ.12> huh? shdn't happen
+                        RET]                    ;<KPJ.12!KPJ.7>
+                print   z2lon2##                ;<KPJ.7> " long, max "
+                MOVEI   1,.PRIOUT               ;<KPJ.7> well, sort of
+                MOVEI   2,maxlen                ;<KPJ.7> get #lines
+                MOVEI   3,<FLD(^D10,NO%RDX)>    ;<KPJ.7> decimal
+                CALL    .nout##                 ;<KPJ.7> display max
+                 CALL[  print[  ASCIZ !????!]   ;<KPJ.12> huh? shdn't happen
+                        RET]                    ;<KPJ.12!KPJ.7>
+                print   z2lon3##                ;<KPJ.7> "and bla, bla, bla.."
+                POP     P,consum##              ;<KPJ.7> restore consumer
+                JRST    adent0]                 ;<KPJ.7> yes, too long
+         error  <adentr addent>         ;<KPJ.12!KPJ.7> yes, circular entry
+
+        SETZM   entnr                   ;<KPJ.7> clear entry number
+        CALL    qmerec                  ;yes, self is one of the receivers ?
+         JRST   adent1                  ;yes
+        MOVE    nr,crenr##              ;no, get self
+        CALL    adnali##                ;add self as receiver
+        SKIPG   sum##                   ;any receiver ?
+         SKIPE  preobj##                ;or presentation ?
+          JRST  adent1                  ;yes
+
+        PUSH    P,consum##              ;<KPJ.10>
+        MOVEI   t,tercon##              ;<KPJ.10> terminal message
+        MOVEM   t,consum##              ;<KPJ.10>
+        MOVEI   ch,.CHBEL               ;<KPJ.10!KPJ.5!KPJ.3> ding...
+        print   znorec##                ;<KPJ.10!KPJ.5> missing receivers...
+        POP     P,consum##              ;<KPJ.10>
+
+adent1: CALL    getlen##                ;[KPJ.4] get length of entry
+        MOVEM   nr,nlines               ;[KPJ.4] save number of lines
+        CALL    updbeg##                ;start update
+        PUSH    P,obtype##              ;<KPJ.7> never trust a smiling cat...
+        MOVE    t,enttyp##              ;<KPJ.7> get entry
+        MOVEM   t,obtype##              ;<KPJ.7> use that type
+        CALL    outent##                ;save entry text on disk
+        POP     P,obtype##              ;<KPJ.7> restore reality
+        MOVE    nr,entnr                ;get entry number
+        MOVEM   nr,lastnr##             ;new last entry
+        CALL    adagli##                ;add it to again list
+        CALL    entsee##                ;mark entry seen
+        CALL    putent                  ;put entry on disk
+        CALL    updend##                ;end of updating
+        CALL    msgent                  ;say that entry is added
+        MOVE    t,comlis##              ;save comment list
+        MOVEM   t,arglis##
+adent9: CALL    leawri##                ;not writing any more
+        SETOM   intflg##                ;delete entry
+adent0: return                          ;<KPJ.7>
+
+
+;+
+;QMEREC         Test if
+;               -       self is one of any of the receivers, or
+;               -       member of one of the receivers
+
+;purpose:       To see if need add self as receiver (LETTER) or not (NOTICE)
+
+;accepts        NAMLIS/ RECEIVER list
+;               KNOLST/ INFORMATION COPY list
+;               EXCLIS/ SINGLE COPY list
+;returns        +1 if self is one of the receivers
+;               +2 if not, with SUM/ number of receivers
+;-
+
+qmerec: save    <tp>
+        SETZM   sum##                   ;clear sum
+        MOVE    tp,namlis##             ;get receivers
+        CALL    qmelis                  ;member of list ?
+         JRST   qmere9                  ;yes, return +1
+        MOVE    tp,exclis##             ;get receivers
+        CALL    qmelis                  ;member of list ?
+         JRST   qmere9                  ;yes, return +1
+        MOVE    tp,knolst##             ;get receivers
+        CALL    qmelis                  ;member of list ?
+         TRNA                           ;yes, return +1
+          skpret                        ;no, return +2
+qmere9: return
+
+
+
+
+
+;+
+;QMELIS         test if self is one of members of list
+;accepts        TP/     pointer to a linked list of receivers. Each node is
+;                       of this format (last pointer is zero):
+;                       +----------+-----------+
+;                       ! receiver !ptr to next!
+;                       +----------+-----------+
+;returns        +1 if self is one of member of list
+;               +2 if not, with SUM updated with number of receivers
+;-
+
+qmelis: save    <nr,gp2,tp>
+qmeli1: JUMPN   tp,[                    ;end of list ?
+                AOS     sum##           ;no, one more receiver
+                MOVE    nr,0(tp)        ;get receiver
+                CAMN    nr,selfnr##     ;is it self ?
+                 JRST   qmeli9          ;yes, return +1 immediately
+                CALL    qismbr##        ;is self member of object ?
+                 JRST   qmeli9          ;yes, return +1 immediately
+                MOVE    tp,1(tp)        ;get pointer to next node
+                JRST    qmeli1]         ;yes
+        skpret                          ;end of list, return +2
+qmeli9: return
+
+
+
+
+
+;+
+;PUTENT         put entry on disk
+;accepts        NAMLIS  \
+;               KNOLST  - receivers
+;               EXCLIS  /
+;               COMLIS/ comment number
+;-
+
+putent::save    <gp1>
+        MOVE    t,dirnr##               ;get text object
+        MOVEM   t,froobj##
+        MOVEI   t,typrec                ;receivers
+        MOVEM   t,lntype##
+        MOVE    gp1,namlis##            ;get receivers
+        CALL    adlili                  ;add list of links
+        MOVEI   t,typkno                ;info copies
+        MOVEM   t,lntype##
+        MOVE    gp1,knolst##            ;get info copy receivers
+        CALL    adlili                  ;add list of links
+        MOVEI   t,typexc                ;extra copies
+        MOVEM   t,lntype##
+        MOVE    gp1,exclis##            ;get extra copy receivers
+        CALL    adlili                  ;add list of links
+        MOVEI   t,typcom                ;comment links
+        MOVEM   t,lntype##
+        MOVE    gp1,comlis##            ;get comment number
+        CALL    adlili                  ;add list of links
+puten9: return
+
+
+
+
+
+;+
+;ADLILI         add list of links
+;accepts        GP1/    list of receivers
+;               FROOBJ/ object
+;               LNTYPE/ link type
+;returns        +1 always
+;-
+
+adlili: save    <gp1,nr>
+adlil1: JUMPN   gp1,[                   ;more receivers ?
+                MOVE    t,0(gp1)        ;yes, get it
+                MOVEM   t,toobj##
+                CALL    crelnk##        ;create link
+                MOVE    gp1,1(gp1)      ;get rest of receivers
+                JRST    adlil1]
+        return
+
+
+
+
+
+;+
+;MSGENT         say that entry is added
+;               outputs "<daytime> (Text nnnn) entered" or
+;                       "<daytime> Letter (Text nnnn) sent to <list>"
+;               ENTRNR/ number of letter
+;               NAMLIS/ RECEIVER list
+;               KNOLST/ INFORMATION COPY receiver list
+;               EXCLIS/ EXTRA COPY list
+;returns        +1 always
+;-
+
+msgent: save    <str,nr,gp1,consum##>
+        CALL    tcbeg##                 ;output to terminal
+        MOVE    gp1,curdat##            ;get creation time
+        CALL    ptime##                 ;print time
+        SKIPE   nr,namlis##             ;get name list
+         JRST[  MOVE    nr,0(nr)        ;get first receiver
+                CAMN    nr,conf##       ;this conference ?
+                 JRST   .+1             ;yes
+                CALL    msglet          ;no, letter is added
+                JRST    msgen9]         ;end of output
+        MOVEI   ch,.CHSPC               ;a space
+        CALL    putch                   ;<KPJ.11>
+        CALL    pentnr                  ;output entry number
+        print   zentrd##                ;"entered"
+msgen9: branch  tcend##                 ;end of output
+
+
+
+;+
+;PENTNR         output number of entry
+;               outputs "(Text nnnn)"
+;accepts        ENTNR/  entry number
+;returns        +1 always
+;-
+
+pentnr: save    <nr>
+        MOVEI   ch,.CHLPR               ;left parenthesis
+        CALL    putch                   ;<KPJ.11> output it
+        MOVE    nr,entnr                ;get entry number
+        CALL    probnr##                ;output number
+        MOVEI   ch,.CHRPR               ;right parenthesis
+        CALL    putch                   ;<KPJ.11> output it
+        return
+
+
+
+
+
+;+
+;MSGLET         say that letter has been sent
+;accepts        ENTRNR/ number of letter
+;               NAMLIS/ RECEIVER list
+;               KNOLST/ INFORMATION COPY receiver list
+;               EXCLIS/ EXTRA COPY list
+;-
+
+msglet: save    <str,tp>
+        print   zlets1##                ;"letter "
+        CALL    pentnr                  ;output letter number
+        print   zlets2##                ;" sent to"
+        SKIPE   tp,namlis##             ; get receivers
+         JRST[  SETZM   probjp##        ;[KPJ.2] don't output object#
+                CALL    prnali##        ;[KPJ.2] print name list
+                JRST    .+1]            ;[KPJ.2] back to main line
+        SKIPE   tp,knolst##             ; get knowledge receivers
+         JRST[  SETZM   probjp##        ;[KPJ.2] don't output object#
+                CALL    prnali##        ;[KPJ.2] print names
+                JRST    .+1]            ;[KPJ.2] back to main line
+        SKIPE   tp,exclis##             ; get extra copies
+         JRST[  SETZM   probjp##        ;[KPJ.2] don't output object#
+                CALL    prnali##        ;[KPJ.2] print names
+                JRST    .+1]
+        return
+
+        END
+..and no more

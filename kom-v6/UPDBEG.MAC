@@ -1,0 +1,402 @@
+;Freja::Qs:<Kom.6.Macro>Updbeg.Mac.16 880204-1714,KPJ-Jaakkola
+;23	CCUPMU under FTCOUR.
+;Oden::DSKZ:UPDBEG.MAC<62,7777,MAC> 1988-01-27 00:48:19, KPJ @ H.HOLE <10,50>
+;22	TOUCH,TJTID,REPRINT,GERCOM and NORCOM not supported any more.
+;Oden::DSKG:UPDBEG.MAC<62,7777,MAC> 1986-10-29 15:24:50, Edit by KPJ @ L89
+;21	Use QZIF/FOAIF/RUNIF.
+;Oden::DSKG:UPDBEG.MAC<62,7777,MAC> 1986-10-14 17:22:20, Edit by KPJ @ L89
+;20	Employee support under FTEMPL.
+;Oden::DSKG:UPDBEG.MAC<62,7777,MAC> 1986-07-16 20:47:32, Edit by KPJ @ L89
+;17	CCREPR under FTFOA.
+;Oden::DSKG:UPDBEG.MAC<62,7777,MAC> 1986-06-08 05:13:57, Edit by KPJ @ 1SKEDE
+;16	CCANSW deleted.
+;Oden::DSKG:UPDBEG.MAC<62,7777,MAC> 1986-06-05 16:00:54, Edit by KPJ @ L89
+;15	Anonymity under FTANON.
+;Oden::DSKG:UPDBEG.MAC<62,7777,MAC> 1986-02-13 19:36:10, Edit by KPJ
+;14	PTY mode inside FTPTYM conditional.
+;Oden::DSKD:UPDBEG.MAC<62,7777,MAC> 1986-01-08 05:49:14, Edit by KPJ
+;13	Added QOM into list of "statistics" (same as German QOM) under
+;	T10, FTQZ and FTRUN.
+;Oden::DSKD:UPDBEG.MAC<62,7777,MAC> 1985-10-08 02:15:04, Edit by KPJ
+;12	Introduced PROLOG macro.
+;Oden::DSKD:UPDBEG.MAC<62,7777,MAC> 1985-08-19 03:50:23, Edit: KPJ @ Loud Room
+;11	Corrected and wrote the documentation of this file. The documentation
+;	of this file was incorrect on several points, in addition to the
+;	standard losing "documentation" techniques used.
+;Oden::DSKD:UPDBEG.MAC<62,7777,MAC> 1985-08-05 19:01:11, Edit by KPJ @ DECGR
+;10	FTCOMP feature switch.
+;Oden::DSKD:UPDBEG.MAC<62,7777,MAC> 1985-04-24 19:10:20, Edit by KPJ @ HOME
+;7	Delete CCTRIP variable, since CALL 3RIP is now eliminated.
+;Freja::<KOM.6-SOURCES>UPDBEG.MAC.3 15-Mar-85 04:23:42,Editor:KPJ-JAAKKOLA
+;6	(c) should be a comment.
+;Oden::DSKD:UPDBEG.MAC[62,7777,TTQ] 1984-11-22 12:37:27, Edit by THOLERUS T
+;5	Added CCLILE (List letters).
+;Oden::DSKD:UPDBEG.MAC[62,7777] 1984-10-12 12:39:57, Edit by K.JAAKKOLA
+;4	Globals never referenced: CCLILE, CCUNDO, MINTIM. Deleted.
+;	Global use only in this module: OUTWRI. Local.
+;	Inserted COPYRIGHT macro.
+;Oden::Dskd:Updbeg.Mac[62,7777] 1984-09-12 10:02:36, Edit by K.Jaakkola
+;3	Included message writer warnings conference in INFO 1.
+;Oden::Dskd:Updbeg.Mac[62,7777] 1984-09-05 12:08:16, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;Oden::DSKD:UPDBEG.MAC[62,7777] 1984-08-06 13:54:12, Edit by THOLERUS T
+;1	added entry for VERIFY NAME command, removed CCMICO (Mini COM)[TTQ.1]
+
+	SEARCH	kommac
+	PROLOG	(updbeg)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	copyright <QZ Computing Centre, 1984>		<KPJ.6!KPJ.4>
+
+;	D A T A   A R E A
+
+
+updflg::0				;=0:no update of data base in progress
+					;#0:update in progress
+;-----------------------------------
+;	Format of "META" block
+
+metsta::BLOCK	2*blksiz		;MET buffer area
+;-----------------------------------
+;	Format of "INFO 1" record	<KPJ.11>
+
+infsta::BLOCK	firwrd			;start of INF buffer area
+
+	BYTE	(9)inf(27)1		;record#		(INFO 1)
+laslnk::BYTE	(9)lnk(27)0		;highest used LINK#	(LINK nnn)
+lastex::BYTE	(9)tex(27)0		;highest used LINE#	(LINE nnn)
+lasmar::BYTE	(9)mar(27)0		;highest used MARK#	(MARK nnn)
+IFE	ftempl,<0>			;<KPJ.20>
+IFN	ftempl,<			;<KPJ.20>
+lasemp::BYTE	(9)emp(27)0		;highest used EMPLOYEE#	(EMPLOYEE nnn)
+>;ftempl
+lasdir::BYTE	(9)dir(27)0		;highest used TEXT#	(TEXT nnn)
+	BLOCK	3			;(reserved)
+;-----------------------------------
+;NOTE: 	If you add any special conferences, also add them to the
+;	SYSTEM INFORMATION display (routine PRINFO@SYSINF)
+;-----------------------------------
+anounc::0				;receiver of conference announcements
+perpre::0				;receiver of user announcements
+comadm::0				;KOM administrator (or 0)
+lappar::0				;receiver of notes to letter writers
+	BLOCK	2			;(reserved)
+updcnt::0				;update version count
+timsum::0				;total sum of present time
+redsum::0				;total #read entries
+	2				;(mintim) minimal time (days)
+sysmes::0				;current system message	(TEXT nnn)
+nrmeet::0				;#OPEN
+	0				;#CLOSED
+	0				;#WRITE PROTECTED OPEN
+	0				;#WRITE PROTECTED CLOSED
+	0				;#PROTECTED
+	0				;#SUBJECT
+nrorgs::0				;#ORGANISATION
+	0				;#PRINTER
+	0				;#ORIGINAL OPEN
+	0				;#ORIGINAL CLOSED
+	BLOCK	6			;(reserved)
+	BLOCK	blksiz-.+infsta
+
+;-----------------------------------
+;	Format of "INFO 2" block	<KPJ.11>
+
+	BLOCK	firwrd
+
+	BYTE	(9)inf(27)2		;record number (INFO 2)
+ccarea::BLOCK	blksiz-1		;command count area
+;-----------------------------------
+cccbeg::				;start of command count field
+cccowr::0				; continue write
+ccfien::0				; finish entry
+ccreli::0				; remove line
+ccrewo::0				; remove word
+ccsufi::0				; submit file
+ccaden::0				; add entry
+cctywh::0				; type whole
+ccdeen::0				; delete entry
+ccdesp::0				; define special meetings
+ccadre::0				; add receivers
+ccknre::0				; info copy receivers
+ccmoen::0				; move entry
+ccmafi::0				; make file
+ccrevi::0				; review entry
+cctyfi::0				; type file
+ccwrit::0				; write entry
+ccmkle::0				; make letter
+ccmkco::0				; make comment
+ccmkan::0				; make answer
+ccmksy::0				; system message
+ccquit::0				; quit
+ccolco::0				; old com
+ccneco::0				; new com
+ccenco::0				; english com
+ccvena::0				;<TTQ.1> Verify name
+	0				;<KPJ.7> 3rip	(obsolete)
+REPEAT	0,<			;<KPJ.22> obsolete
+cctjti::				; tj{nstetid		matching }
+>;END REPEAT 0
+	0
+REPEAT	0,<			;<KPJ.22> obsolete
+cctouc::				; touch
+>;END REPEAT 0
+	0
+ccrest::0				; restart
+ccobst::0				; status
+cclipe::0				; list persons
+cclico::0				; list commands
+ccsyin::0				; system info
+cceras::0				; erase object
+ccrecr::0				; recreate
+ccgeda::0				; generate data base
+cctepa::0				; terminal paper
+cctedi::0				; terminal display
+ccteno::0				; terminal no scroll
+cctesc::0				; terminal scroll
+ccseon::0				; set flag on
+ccseof::0				; set flag off
+cclicm::0				; list all comments
+ccteid::0				; terminal id-100
+ccchpa::0				; change page size
+cctime::0				; report time
+cchelp::0				; give help
+ccnomo::0				; normal mode
+ccprmo::0				;<BCQ> (set) permanent
+ccadmo::0				; administrator mode
+IFN	ftcomp,<cccomp::>		;<KPJ.10> compute
+	0
+ccrofi::0				; reassign output
+ccprne::0				; print all news
+ccnele::0				; read next letter
+cczapo::0				; zap object
+cclpre::0				; list present
+cccrme::0				; create meeting
+cclime::0				; list meetings
+ccjoin::0				; join meeting
+ccneen::0				; read next entry
+ccalne::0				; read all news
+ccneme::0				; join next meeting
+ccchid::0				; change identity
+IFN	ftanon,<ccanon::>		;<KPJ.15> become anonymous
+	0
+REPEAT	0,<				;<KPJ.22> obsolete
+ccnoco::				; norwegian com
+>;END REPEAT 0
+	0
+ccscan::0				; scan entries
+ccwidr::0				; withdraw
+cccrpe::0				; create person
+cconly::0				; only read last
+ccwait::0				; wait for news
+ccchor::0				; change organizer
+ccadd::	0				; add command
+ccsubt::0				; subtract command
+ccadco::0				; add comment
+ccmemb::0				; member
+ccchty::0				; change type
+ccroen::0				; reassign output to entry
+cccavi::0				; call vided
+cccaso::0				; call sos
+ccothe::0				; other commands
+IFN	ftcour,<			;<KPJ.23>
+ccupmu::				; give encouragement
+>;ftcour
+	0
+ccjuup::0				; edit jump up
+ccsear::0				; edit search
+ccrepl::0				; edit replace
+cccaed::0				; editor edit
+cclist::0				; list statistics
+	0				;<KPJ.4> (reserved)
+ccchpr::0				; change presentation
+T10,<					;<KPJ.13>
+QZIF,<					;<KPJ.21!KPJ.13>
+RUNIF,<					;<KPJ.21!KPJ.13>
+IFN	ftqom,<				;<KPJ.13> FTQOM
+ccqoco::				;<KPJ.13> Call QOM = Call German QOM
+>>>>
+REPEAT	0,<				;<KPJ.22> obsolete
+ccgeco::				; call german com
+>;END REPEAT 0
+	0
+ccchna::0				; change name
+ccrene::0				; review next
+ccrere::0				; read the rest
+ccmark::0				; mark the entry
+ccunma::0				; unmark the entry
+ccnema::0				; read next marked
+ccecre::0				; extra copy
+ccchte::0				; change telephone
+IFN	ftempl,<			;<KPJ.20>
+ccloem::				; load employees
+>;ftempl
+	0
+ccchpw::0				; change password
+ccexcl::0				; exclude member
+ccprio::0				; give priority
+ccorma::0				; organizer mark
+	0				;<KPJ.16>
+ccdefi::0				; delete file
+ccropr::0				; output to printer
+ccchad::0				; change address
+ccliad::0				; list addresses
+ccmkme::0				; warning to letter writers
+ccdely::0				; delayed command
+ccjudo::0				; jump down
+cclihe::0				; list help texts
+cckomc::0				; call "normal com" (***FOO***)
+REPEAT	0,<			;<KPJ.22> obsolete
+FOAIF,<ccrepr::>			;<KPJ.17> call reprint
+>;END REPEAT 0
+	0				;<KPJ.17>
+ccdump::0				; dump
+IFE	ftptym,<			;<KPJ.14>
+	0				;<KPJ.14> (obsolete)
+> IFN	ftptym,<			;<KPJ.14>
+ccptmo::0				; pty mode
+>;ftptym
+ccaren::0				; archive entries
+cccamo::0				; call monitor
+ccnexc::0				; next comment
+ccskco::0				; skip all commments
+cclwhe::0				; where am I
+cclile::0				;<KPJ.4!TTQ.5> list letters
+cccate::0				;Edit (with) TECO
+ccgipp::0				;Give PPN
+cccend:
+
+
+;	P R O G R A M   C O D E
+
+	CODE
+					;<KPJ.11>
+;+
+;UPDBEG		start update operation on data base, doing enqueue, and
+;		setting flag that update of data base is in progress.
+;		(call UPDEND to end update)
+;returns	+1 always
+;-
+
+updbeg::SETOM	updflg			;flag that update is now in progress
+	CALL	mkenq##			;enqueue the data base
+	CALL	inpmet			;read in META file disk block
+	CALL	adcoco			;update command statistics in "INFO 1"
+	return
+
+
+					;<KPJ.11>
+;+
+;INPMET		read disk block of META file.
+;		Note:	META file is only one disk block (200 words octal).
+;			This is "known" by the software.
+;-
+
+inpmet:	save	<nr,gp1>
+	MOVEI	gp1,met			;META file#
+	MOVEI	nr,firblk		;physical block# (first block in file)
+	CALL	inblk##			;read disk block
+	return
+
+
+					;<KPJ.11>
+;+
+;ADCOCO		update the command count statistics in the INFO 1 buffer,
+;		zeroing the internal command counts in memory.
+;accepts	internal command counts (written by command parser).
+;returns	+1 always
+;-
+
+adcoco:	save	<nr>
+
+	MOVEI	nr,cccend-cccbeg-1	;#commands
+adcoc1:	MOVE	t,cccbeg(nr)		;get number of commands
+	ADDM	t,ccarea(nr)		;add to total
+	SETZM	cccbeg(nr)		;clear command number
+	SOJGE	nr,adcoc1		;loop over the commands
+	return
+
+
+					;<KPJ.11>
+;+
+;UPDEND		End of data base update:
+;
+;		Output all disk blocks which are marked as modified,
+;		update statistics in INFO and META files,
+;		dequeue data base, and clear data base update flag.
+;
+;	Note:	Data base update is started by calling UPDBEG routine.
+;-
+
+updend::CALL	updacc			;update read/write access statistics
+	AOS	updcnt			;update #updates (in "INFO 1")
+	CALL	outwri			;output modified files to disk
+	CALL	mkdeq##			;dequeue the data base
+	SETZM	updflg			;flag that no update in progress
+	return
+
+
+
+					;<KPJ.11>
+;+
+;OUTWRI		output all modified files to disk;
+;		the META file always written.
+;
+;accepts	internal KOM control blocks
+;returns	+1 always
+;-
+
+outwri:	save	<gp1,bfp,txt>		;<KPJ.4>
+	MOVEI	gp1,met			;META file#
+	CALL	markwr			;mark META file as modified
+	CALL	gemere##		;get meta record for META file
+
+	MOVE	gp1,metmax(bfp)		;start at highest file#
+outwr1:	CALL	getbuf##		;get control block for file
+	SKIPGE	bufwri(txt)		;file marked as modified?
+	 JRST[	CALL	outblk##	;yes, output it's block
+		JRST	.+1]
+	SOJG	gp1,outwr1		;loop over files
+	return
+
+
+					;<KPJ.11>
+;+
+;UPDACC		update the read and write access statistics in the META file,
+;		and deletes the statistics from control blocks in memory;
+;		marks META file as modified.
+;accepts	data from the internal "buffers" (really KOM control blocks).
+;returns	+1 always
+;-
+
+updacc:	save	<gp1,nr,txt,bfp>
+	MOVEI	gp1,met			;META file#
+	CALL	markwr			;mark META file as modified
+	CALL	gemere##		;get record for META file
+
+	MOVE	gp1,metmax(bfp)		;start with highest file#
+updac1:	CALL	getbuf##		;get buffer for file
+	CALL	gemere##		;get meta record for file
+	MOVE	nr,bufrac(txt)		;get #read accesses from buffer
+	SETZM	bufrac(txt)		;zero #read accesses
+	ADDM	nr,metrac(bfp)		;add #read accesses to META buffer
+	MOVE	nr,bufwac(txt)		;get #write accesses
+	SETZM	bufwac(txt)		;zero #write accesses
+	ADDM	nr,metwac(bfp)		;add #write accesses to META buffer
+	SOJG	gp1,updac1		;loop over all files
+	return
+
+
+					;<KPJ.11>
+;+
+;MARKWR		mark a file as modified in KOM control blocks
+;accepts	GP1/	file#
+;-
+
+markwr::save	<txt>
+	CALL	getbuf##		;get control block for file
+	SETOM	bufwri(txt)		;mark it as modified
+	return
+
+	END
+..and no more   

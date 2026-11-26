@@ -1,0 +1,285 @@
+;Oden::DSKG:CRELNK.MAC<62,7777,MAC> 1986-10-14 16:19:23, Edit by KPJ @ L89
+;10	Employee support under FTEMPL.
+;Oden::DSKG:CRELNK.MAC<62,7777,MAC> 1986-03-19 02:01:36, Edit by KPJ @ T-ROOM
+;7	Handle error return from FCBEG.
+;Oden::DSKD:CRELNK.MAC<62,7777,MAC> 1985-09-25 14:48:56, Edit by KPJ
+;6	Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:CRELNK.MAC<62,7777,MAC> 1985-09-21 10:22:44, Edit by KPJ
+;5	UNPFIL now unpacks and OPENS the output file. Changed call.
+;Oden::DSKD:CRELNK.MAC<62,7777,MAC> 1985-09-09-14 18:46:03, Edit by KPJ
+;	(date edit added 1985-09-18 07:54:13)
+;4	Corrected FLGLFLG fiddling.
+;Oden::Dskd:Crelnk.Mac[62,7777] 1984-11-23 11:57:50, Edit by K.JAAKKOLA
+;3	Search correct universals on T10 and T20.
+;Oden::DSKD:CRELNK.MAC[62,7777,TTQ] 1984-11-22 14:00:23, Edit by THOLERUS T
+;2	Mark own letters received.
+;Oden::Dskd:Crelnk.Mac[62,7777] 1984-05-14 15:58:24, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(crelnk)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 15:57:58
+
+;	D A T A   A R E A
+
+
+froobj::z			; from object
+lntype::z			; link type
+IFN	ftempl,<		;<KPJ.10>
+nrelnk::0			; number of employee links
+>;ftempl
+nrmlnk::0			; number of meeting links
+nrplnk::0			; number of person links
+nrtlnk::0			; number of text links
+toobj::	z			; to object
+
+	CODE
+
+;+
+;CRELNK		creates a new link between objects
+;accepts	FROOBJ	FROM object
+;		(or DIRNR)
+;		TOOBJ/	TO object
+;		LNTYPE/	link type
+;returns	NR/	new link
+;-
+
+crelnk::CALL	alllnk		;allocate link number
+	branch	maklnk		;create a new link
+
+
+;+
+;ALLLNK		allocate link number
+;returns	NR/	number of new link
+;-
+
+alllnk:	save	<gp1>
+	AOS	nr,laslnk##	;get first free link
+	CALL	dellnk		;delete old link
+	MOVEI	gp1,met		;get meta file
+	CALL	outblk##	;output it
+	return
+
+
+
+
+
+;+
+;DELLNK		delete link
+;accepts	NR/	number of link
+;-
+
+dellnk:	save	<gp1,bfp>
+	CALL	updobj##		;get link area
+	 nop				;just get the place
+	CALL	remtol			;remove TO link
+	CALL	remfrl			;remove FROM link
+	return
+
+
+
+
+
+;+
+;REMTOL		remove TO link
+;accepts	BFP/	link
+;-
+
+remtol:	save	<bfp,gp1,gp2,nr>
+	MOVE	nr,lnkrec(bfp)		;get receiver
+	MOVE	gp2,lnklto+2(bfp)	;get next link
+	CALL	updobj##		;get object
+	 TRNA				;error
+	  MOVEM	gp2,objlto+2(bfp)	;save new first link
+	return
+
+
+
+
+
+;+
+;REMFRL		remove FROM link
+;accepts	BFP/	link
+;-
+
+remfrl:	save	<bfp,gp1,gp2,nr>
+	MOVE	nr,lnkobj(bfp)		;get received object
+	MOVE	gp2,lnklfr+2(bfp)	;get next link
+	CALL	updobj##		;get object
+	 TRNA				;error
+	  MOVEM	gp2,objlfr+2(bfp)	;save new first link
+	return
+
+
+
+
+
+;+
+;MAKLNK		make a new link
+;accepts	FROOBJ/	FROM object
+;		TOOBJ/	TO object
+;		LNTYPE/	link type
+;		NR/	number of link
+;-
+
+maklnk:	save	<bfp>
+	CALL	newrec##		;create new record
+	MOVE	t,lntype		;save link type
+	MOVEM	t,lnktyp(bfp)
+	MOVE	t,selfnr##		;[TTQ.2] get creator
+	MOVEM	t,lnkcre(bfp)		;[TTQ.2] save creator
+	CAME	t,toobj			;[TTQ.2] letter to self ?
+	 JRST	makln1			;[TTQ.2] no
+	MOVE	t,curdat##		;[TTQ.2] yes, mark letter received
+	MOVEM	t,lnkrdt(bfp)
+makln1:	MOVE	t,dirnr##		;[TTQ.2] save entry
+	MOVEM	t,lnkobj(bfp)
+	CALL	adtoln			;add to links
+	CALL	adfrln			;add from links
+	CALL	addmee			;add to number file
+	CALL	arcent			;archive entry
+	return
+
+
+;+
+;ADTOLN		add TO link
+;accepts	TOOBJ/	TO object
+;		NR/	link number
+;-
+
+adtoln:	save	<gp2,gp1>
+	MOVE	gp1,toobj		;get TO object
+	MOVEI	gp2,hdtoob		;get link block
+	CALL	addlnk##		;add link
+	return
+
+
+
+
+
+;+
+;HDTOOB		link block for TO: object list
+;-
+
+hdtoob::EXP	objlto			;TO list head
+	EXP	lnklto			;link TO list
+	EXP	lnkrec			;owner
+
+;+
+;ADFRLN		add FROM link
+;accepts	FROOBJ/	FROM object
+;		NR/	link number
+;-
+
+adfrln:	save	<gp2,gp1>
+	SKIPN	gp1,froobj		;get FROM object
+	 JRST	adfrl9			;FROM object not defined
+	MOVEI	gp2,hdfrob		;get link block
+	CALL	addlnk##		;add link
+adfrl9:	return
+
+
+
+
+
+;+
+;HDFROB		link block for FROM: object list
+;-
+
+hdfrob::EXP	objlfr			;FROM list head
+	EXP	lnklfr			;link FROM list
+	EXP	lnkobj			;owner
+
+
+
+
+
+;+
+;ADDMEE		add to number file
+;accepts	TOOBJ/	TO object
+;-
+
+addmee:	save	<nr,gp1,gp2,bfp>
+	MOVE	nr,toobj		;get TO object
+	CALL	getobj##		;get conference
+	 JRST	addme9			;conference removed
+	CAIN	gp1,dir			;TEXT object ?
+	 JRST[	AOS	nrtlnk		;yes, one more TEXT link
+		JRST	addme9]
+IFN	ftempl,<			;<KPJ.10>
+	CAIN	gp1,emp			;EMPLOYEE object ?
+	 JRST[	AOS	nrelnk		;yes, one more EMPLOYEE link
+		JRST	addme9]
+>;ftempl
+	MOVE	gp2,objlto+1(bfp)	;get number of entries
+	CALL	actact##		;activate it
+	CAIE	gp1,mee			;CONFERENCE ?
+	 JRST[	AOS	nrplnk		;no, one more PERSON link
+		JRST	addme9]
+	AOS	nrmlnk			;one more conference link
+	MOVEM	gp2,numnum(bfp)		;save number of entries
+addme9:	return
+
+
+
+
+
+;+
+;ARCENT		archive entry
+;accepts	TOOBJ/	receiver
+; gets entry in FROOBJ
+;-
+
+arcent:	save	<nr,gp1,bfp>
+	MOVM	nr,toobj		;get TO object
+	CALL	getobj##		;get it
+	 JRST	arcen9			;error
+	MOVE	t,crenr##		;set receiver
+	MOVEM	t,recobj##
+	CAIE	gp1,mee			;conference ?
+	 CAIN	gp1,per			;or person ?
+	  JRST	arcen1			;yes
+IFN	ftempl,<			;<KPJ.10>
+	CAIE	gp1,emp			;employee ?
+>;ftempl
+	 JRST	arcen9			;no
+IFN	ftempl,<			;<KPJ.10>
+	MOVEM	nr,recobj##		;set receiver
+	MOVE	nr,emppri(bfp)		;get printer
+	CALL	getobj##		;get it
+	 JRST	arcen9			;error
+>;ftempl
+arcen1:	MOVE	t,objtyp(bfp)		;get type
+	SETZM	flgflg##		;no header page wanted
+	TRNE	t,priofl		;printer ?
+	 SETOM	flgflg##		;yes, header page wanted
+	SKIPN	nr,recfil(bfp)		;get archive file
+	 JRST	arcen9			;no file
+	CALL	unpfil##		;<KPJ.5> unpack & open output file name
+	SKIPGE	errfl##			;error ?
+	 JRST	arcen9			;yes
+	MOVM	nr,froobj		;no, get entry
+	CALL	ouenfi			;output entry on file
+arcen9:	return
+
+
+
+
+
+;+
+;OUENFI		output entry on file
+;accepts	NR/	entry
+;-
+
+ouenfi:	save	<consum##>
+	CALL	fcbeg##			;start file output
+T10,<	 JRST	ouenf9>			;<KPJ.7> failed, exit
+	CALL	revdef##		;get review defaults
+	CALL	displa##		;display entry
+	CALL	fcend##			;end of file output
+ouenf9:	return				;<KPJ.7>
+
+	END
+..and no more

@@ -1,0 +1,148 @@
+;Oden::DSKG:CHANAM.MAC<62,7777,MAC> 1987-03-24 18:53:01, KPJ @ L89 <1,2>
+;4	Name cache support under FTCACH.
+;Oden::DSKD:CHANAM.MAC<62,7777,MAC> 1985-09-25 07:03:44, Edit by KPJ
+;3	Introduced PROLOG macro, changed PRINT macros to new format.
+;Oden::DSKD:CHANAM.MAC[62,7777] 1984-11-19 16:37:21, Edit by K.JAAKKOLA
+;2	SEARCH correct files on T10 and T20. Moved language dependent texts
+;	to TEXTER.MAC
+;Oden::Dskd:Chanam.Mac[62,7777] 1984-05-11 17:00:17, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(chanam)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-11 17:00:45
+
+;	D A T A   A R E A
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+chanam::comhed	0,achana,cchana,ccchna##,zcnahl##	;change object name
+;-
+
+;+
+;ACHANA		argument to change name command
+;returns	NUMBER/	arguments
+;		NAMPTR/	arguments
+;-
+
+achana:	save	<quest##>
+	MOVEI	t,askcna		;ask for meeting
+	MOVEM	t,quest##
+	CALL	gtobnr##		;get object number
+	CALL	qchana			;check if you have the right
+	SKIPGE	errfl##			;error ?
+	 JRST	achan9			;yes, exit
+	MOVEI	t,asknen		;no, ask for new name
+	MOVEM	t,quest##
+	CALL	renena			;read new name
+achan9:	return
+
+
+
+
+
+;+
+;ASKCNA		ask which name to change
+;-
+
+askcna:	save	<str>
+	CALL	meehlp##		;give conference help
+	print	zascna##		;"what/who do you want change name of"?
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+;+
+;QCHANA		check if you have the right to change the name
+;accepts	NUMBER/	object
+;returns	ERRFL/	<0 if not right
+;-
+
+qchana::save	<nr>
+	SKIPGE	errfl##			;error ?
+	 JRST	qchan9			;yes, exit
+	MOVE	nr,number##		;no, get object
+	CALL	chkorg##		;organizer ?
+	 JRST	qchan8			;no, not allowed
+	CALL	qnamed##		;named object ?
+qchan8:	 CALL	saynot##		;no, error
+qchan9:	return
+
+
+
+
+
+;+
+;ASKNEN		ask for a new name
+;-
+
+asknen:	save	<str>
+	CALL	namhlp##		;give name help
+	print	zasnen##		;"Give new name"
+	CALL	preol##			;new line
+	branch	prher##			;prompt and return
+
+
+
+;+
+;RENENA		read new name
+;returns	NAMPTR/	new name
+;-
+
+renena:	CALL	read##			;read name
+	 JRST	renen8			;no reply
+	MOVE	t,chpt##		;save name pointer
+	MOVEM	t,namptr##
+	CALL	nammat##		;look for a match
+	 JRST	renen1			;+1	new name
+	 JRST	renen2			;+2	old name
+	JRST	renen3			;+3	many names
+
+renen2:	MOVE	nr,@agrval##		;get match
+	CALL	chkadm##		;administrator ?
+	 JRST	renen4			;no
+	CAME	nr,number##		;same as old object ?
+	 CALL	creocc##		;say name occupied
+renen1:	MOVE	t,[POINT 7,[0]]		;consume name
+	MOVEM	t,chpt##
+	JRST	renen9
+
+renen4:	CAMN	nr,number##		;same as old object ?
+	 JRST	renen1			;yes, accept name
+renen3:	CALL	creocc##		;say name occupied
+renen8:	SETOM	errfl##			;no name got
+renen9:	return
+
+
+
+
+
+;+
+;CCHANA		change name of an object
+;accepts	NUMBER/	arguments
+;		NAMPTR/	arguments
+;-
+
+cchana:	save	<nr,str,bfp,gp1>
+	MOVE	nr,number##		;get object
+	CALL	getobj##		;get it
+	 JRST	cchan9			;error
+	CALL	prname##		;print its name
+	CALL	updbeg##		;start update
+	CALL	crenam##		;create new name
+	CALL	updend##		;end of update
+IFN	ftcach,<			;<KPJ.4>
+	CALL	clenam##		;clear name
+>;ftcach
+	print	znowca##		;"is now called"
+	CALL	prname##		;output new name
+cchan9:	return
+
+	END
+..and no more

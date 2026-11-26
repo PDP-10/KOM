@@ -1,0 +1,2390 @@
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1987-04-12 20:09:29, KPJ @ H.HOLE <62,50>
+;127	Changed call of T10 file name parser (REFINA) as follows:
+;	(a)	GP1 = length,,address of FILOP. block
+;	(b)	BFP = length,,address of PATH. block
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1987-04-11 18:20:34, KPJ @ H.HOLE <62,50>
+;126	Give correct error message for missing TMPCOR files.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1987-02-23 16:00:29, Edit by KPJ @ L89
+;125	FOUTPU-10 made global.  Made FCBEG-20 not bomb if file is not on disk.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1987-01-30 08:47:07, Edit by KPJ @ L89
+;124	Teach KOM to use the whole buffer (or we get a random ^@ in output).
+;Oden::DSKG:MONFIL.MAC[62,7777,MAC] 1987-01-07 09:03:17, Edit by KPJ @ H.HOLE
+;123	Update file character count when writing on it.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1987-01-02 05:52:21, Edit by KPJ @ H.HOLE
+;122	TMCEND returns +2 on success.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-12-31 19:49:14, Edit by KPJ @ H.HOLE
+;121	Preserve error code from INBLK and OUTBLK.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-12-29 15:26:47, Edit by KPJ @ DK
+;120	QDELF never returned +1.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-12-29 06:16:56, Edit by KPJ @ H.HOLE
+;117	Refuse to read TTY: (our controlling terminal), since the Tops-10
+;	system will get very confused.  Also, refuse TSK:-type devices.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-12-29 02:15:55, Edit by KPJ @ H.HOLE
+;116	Fence-post error in OPINFI etc.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-12-29 00:09:12, Edit by KPJ @ H.HOLE
+;115	Don't allow terminal wait when having an ENQ lock.  Re-open controlling
+;	TTY in case we are using TTY: as input file, and user types a CTRL/Z.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-12-28 09:30:31, Edit by KPJ @ H.HOLE
+;114	Release channels after closing them.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-12-11 18:35:24, Edit by KPJ @ L89
+;113	PUTCH is macro.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-11-13 10:22:20, Edit by KPJ @ L89
+;112	.FOUSI/.FOUSO may return *either* error code *or* I/O status. Detect
+;	which. (T10 *is* a mess!)
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-11-12 15:09:31, Edit by KPJ @ L89
+;111	.FOUSI and .FOUSO FILOP. functions return I/O status on error return.
+;	Also, -1 error code from FILOP. means "?Invalid argument list was
+;	supplied".  Handle these situations. Also, put in some paranoid code
+;	to check for correct inputs in odd places. Eliminated stop codes
+;	QREADF MONFIL, QWRITF MONFIL, FPEND MONFIL.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-10-30 15:57:47, Edit by KPJ @ L89
+;110	Tell user the saga about "disk full" (no more "cremet-1 monfil").
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-10-30 13:28:21, Edit by KPJ @ L89
+;107	Yell when PRINTER has no file name.  UNPFIL code forgot to open file.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-10-30 12:47:15, Edit by KPJ @ L89
+;106	Handle +2 return from PRIFIL.
+;Qzeta::DSKA:MONFIL.MAC[5,16,MAC] 1986-10-27 23:16:33, Edit by KPJ @ H.HOLE
+;105	Dump TTY buffer before startign lengthy USETO when creating data base.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-10-20 17:20:17, Edit by KPJ @ L89
+;104	Give max# SFDs to REFINA (paranoia).
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-10-20 14:44:32, Edit by KPJ @ L89
+;103	EMP file support under FTEMP2.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-10-14 17:12:13, Edit by KPJ @ L89
+;102	Employee support under FTEMPL.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-10-13 17:06:32, Edit by KPJ @ L89
+;101	Accept pre-argument to READ FILE and friends.
+;Freja::Qs:<Kom.6.Macro>Monfil.Mac.34 861006-1808,KPJ-Jaakkola
+;100	Old edit #72 had disappeared:
+;		;Freja::Qs:<Kom.6.Macro>Monfil.Mac.4 860912-1131,KPJ-Jaakkola
+;		;72	Don't die if file output gets quota exceeded etc.
+;	Internal-errors FPUT MONFIL and FOUTPU MONFIL thus eliminated.
+;Tor::Ps:<KPJ.KOM>MONFIL.MAC.14  1-Oct-86 08:43:08, Edit by KPJ
+;76	CENSIZ is a constant, not an address.
+;Tor::Ps:<KPJ.KOM>MONFIL.MAC.12  1-Oct-86 08:15:44, Edit by KPJ
+;75	Put EOF pointer to reflect maximum file size, so SIN% won't get
+;	disturbed by funny EOF.
+;Tor::Ps:<KPJ.KOM>MONFIL.MAC.7  1-Oct-86 07:43:50, Edit by KPJ
+;74	Be physical only when told so.
+;Tor::Ps:<KPJ.KOM>MONFIL.MAC.3 30-Sep-86 14:08:46, Edit by KPJ
+;73	When KOM-20 data base generation fails, tell user what happened, and
+;	don't just simulate a dead fish.
+;Freja::QS:<KOM.6.MACRO>MONFIL.MAC.22 860925-1942, KPJ-JAAKKOLA
+;72	When a user does a ^C during read-only read of database (CCL entry),
+;	KOM attempts to update the data base, and dies with a outblk2- monfil.
+;	Handle this situation.
+;Freja::Qs:<Kom.6.Macro>Monfil.Mac.2 860909-2006,KPJ-Jaakkola
+;71	.CHRBR misspelled.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-09-08 03:46:51, Edit by KPJ @ H.HOLE
+;70	Undo edit 32.7, else KOM-20 dies a terrible death.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-09-08 03:00:46, Edit by KPJ @ H.HOLE
+;67	Use the file name given by the user.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-09-08 01:01:24, Edit by KPJ @ H.HOLE
+;66	Add code to parse GENERATE NEW DATABASE file name.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-09-07 14:03:22, Edit by KPJ @ L89
+;65	Handle parameter to GENERATE command
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-08-22 18:46:13, Edit by KPJ @ L89
+;64	Block trace should be directly to terminal.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-08-22 02:24:58, Edit by KPJ @ ENSKEDE
+;63	Eliminated typo.
+;Freja::Qs:<Kom.6.Macro>Monfil.Mac.10 860821-1919,KPJ-Jaakkola
+;62	Handle error in PRFINA.
+;Freja::Qs:<Kom.6.Macro>Monfil.Mac.4 860821-1741,KPJ-Jaakkola
+;61	Make block trace more readable.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-07-11 12:56:45, Edit by KPJ @ L89
+;60	Take data base name, extension, protection and physicality from FEATURe
+;	file.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-07-09 02:42:37, Edit by KPJ @ 1SKEDE
+;57	Use standard method of accessing return address.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-06-02 18:22:40, Edit by KPJ @ L89
+;56	Give a more informative error message when "COM is not available".
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-06-02 17:54:00, Edit by KPJ @ L89
+;55	Make CREMET do +1 return on error, and not JRST to INIDS8.
+;	Make INIREA do +1 return on error, and not JRST to INIDS8.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-05-09 09:15:46, Edit by KPJ @ L89
+;54	Don't allow delayed DELETE FILE.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-04-24 13:29:36, Edit by KPJ @ L89
+;53	Don't die if DELETE FILE fails for any reason.
+;Freja::Qs:<Kom.6-Sources>Monfil.Mac.22 10-Apr-86 12:13:28,Editor:KPJ-Jaakkola
+;52	INBLX points at data base SIN%, OUTBLX on SOUT%.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-03-20 17:17:20, Edit by KPJ @ L89
+;51	CALL PROGRAM command default device changed to SYS:.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-03-19 04:32:31, Edit by KPJ @ T-ROOM
+;50	Added support code for CALL PROGRAM command.
+;Oden::DSKG:MONFIL.MAC<62,7777,MAC> 1986-03-19 01:11:26, Edit by KPJ @ T-ROOM
+;47	Support writing of Tops-10 TMPCOR files (cf edit#45). Report length as
+;	for disk files.	Changed FCBEG and FCEND to identify Tops-10 TMPCOR, and
+;	call TMCBEG and TMCEND, resp. FCBEG now has an error return on T10.
+;	Allow user handle empty files.  Don't write "File size..." messages
+;	to log file.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-12-10 14:35:44, Edit by KPJ
+;46	Make T10 message start with CRLF.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-12-07 14:03:51, Edit by KPJ
+;45	Handle TMPCOR files (device "TMP:"), except writing.
+;Freja::QS:<KOM.6-SOURCES>MONFIL.MAC.9 17-Nov-85 00:16:25,Editor:KPJ-JAAKKOLA
+;44	Changed format of home brewed "file descriptor". GTJFN% flags are now
+;	sent to REFINA, so GJ%OLD and friends can be set.
+;Freja::QS:<KOM.6-SOURCES>MONFIL.MAC.8 16-Nov-85 15:45:09,Editor:KPJ-JAAKKOLA
+;43	Fixed typos.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-11-07 03:22:40, Edit by KPJ
+;42	Make us care about file name syntax errors.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-11-06 03:32:24, Edit by KPJ
+;41	Check FILOP. error code when trying to delete file.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-25 16:48:35, Edit by KPJ
+;40	Handle output file specifications, too.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-25 12:00:08, Edit by KPJ
+;37	Include file specification block in FILOP. call.
+;	Don't destroy GP1. Use .HMxxx symbols.
+;	Don't output file name in GOFNAM.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-25 10:23:11, Edit by KPJ
+;36	Delete double file name output.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-17 15:14:38, Edit by KPJ
+;35	Corrected calls to NOUT% handler.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-16 09:24:49, Edit by KPJ
+;34	Report disk accesses if personal Report Disk Accesses is ON.
+;	New routine BLKTRC for this.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-08 08:59:22, Edit by KPJ
+;33	Edit #32.7 fully implemented.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-03 07:58:35, Edit by KPJ
+;32	NEWDSK rewritten, it was a mess. Only used from GENDAT@GENERA.
+;	Features:
+;	1. gives a log of what it is doing (useful during data base generation)
+;	2. use DSK:KOMNEW.NEW as new file (so far only on TOPS-20)
+;	3. if anything fails, says what and why
+;	4. use .HMxxx symbols for homebew "file block" indexing
+;	5. use GJ%ACC on file when using OPENF%, not when using KOM%
+;	6. T10 code used only on T10 (block creation routine)
+;	7. Handle case when T2 and T3 does not follow in that order.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-03 07:18:24, Edit by KPJ
+;31	FILPRO renamed to FILPRX, since FILPRO is a module name.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-10-03 07:11:51, Edit by KPJ
+;30	Return file error codes. Changed ".+4" coding to use literal.
+;	Output file name after GTJFN% (T20) and FILOP. (T10).
+;	New routine BADFIL to display file open (FILOP./GTJFN%/OPENF%) errors.
+;	Disabled DIGGER, since not for does not work yet (NOSHIP)
+;Freja::QS:<KOM.6-SOURCES>MONFIL.MAC.7 25-Aug-85 00:12:17,Editor:KPJ-JAAKKOLA
+;27	Moved magical numbers to KOMMAC.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-08-08 07:59:23, Edit by KPJ @ DECGR
+;26	Expanded XAPPEN and XFILOP macro.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-08-07 17:00:14, Edit by KPJ @ DECGR
+;25	New routine DIGGER for data base name parsing.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-08-01 13:55:53, Edit by KPJ @ BCQ
+;24	Fixed error reported at AIDA with ?Ill mem ref for READ FILE command.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-07-15 19:51:44, Edit by KPJ @ DECGR
+;23	File size are approximates on Tops-10.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-06-27 10:27:06, Edit by KPJ @ L89
+;22	Do not update the data base when not logged in.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-06-20 06:52:42, Edit by KPJ @ GR\N
+;21	All buffers localized (except NEWBUF and DIRBUF). Variable ERRCOD
+;	deleted (incl. it's only reference at INIDS8).
+;Freja::Ps:<KOM.6-SOURCES>MONFIL.MAC.3 16-Apr-85 23:34:38,Editor:KPJ-JAAKKOLA
+;20	Got rid of deleted code. Deleted program name setting. Don't curl up
+;	and die with wrong error when data base inaccessible.
+;Freja::Ps:<Kom.6-Sources>Monfil.Mac.2 11-Apr-85 16:56:46,Editor:KPJ-Jaakkola
+;17	Fixed misspelling.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-04-05 04:12:50, Edit by KPJ @ NADJA
+;16	Don't RESET, since that will crash KOM at times.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-04-03 18:18:07, Edit by KPJ @ L89
+;15	Fixed bug in Tops-10 part of CREMET.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-03-28 10:40:43, Edit by KPJ @ L89
+;14	Make database creation routine say what it is doing, and why.
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-03-28 08:45:03, Edit by KPJ @ L89
+;13	Fixed bug in CREDSK introduced in edit#7
+;Oden::DSKD:MONFIL.MAC<62,7777,MAC> 1985-03-12 11:30:05, Edit by KPJ @ NADJA
+;12	Deleted misspelling introduced in edit #11.
+;Oden::DSKD:MONFIL.MAC[62,7777,MAC] 1985-03-08 04:54:13, Edit by KPJ @ NADJA
+;11	Introduced FTPRIV feature switch, to govern <1,2> access to KOM.
+;	Fixed bug in QWRITF, which skipped a POP P,...
+;	Got rid of compatibility macros (X????? macros) by expanding code.
+;Oden::DSKD:MONFIL.MAC[62,7777,MAC] 1985-03-08 03:47:04, Edit by KPJ @ NADJA
+;10	Fix bug introduced in edit KPJ.7
+;Oden::DSKD:MONFIL.MAC[62,7777,MAC] 1985-02-20 14:32:50, Edit by KPJ @ L89
+;7	Sanitized code to see what it tries to do.
+;Oden::DSKD:MONFIL.MAC[62,7777,MAC] 1985-02-20 13:43:20, Edit by KPJ @ L89
+;6	Moved macros to KOMMAC.
+;Oden::DSKD:MONFIL.MAC[62,7777] 1985-01-08 06:42:31, Edit by KPJ @ L89
+;5	Remember disk write accesses for REPORT DISK ACCESSES, too.
+;Oden::Dskd:Monfil.Mac[62,7777] 1984-08-31 09:04:10, Edit by K.Jaakkola
+;4	Bug found near INIDS8, used TOPS-10 code on TOPS-20. Lose, lose!
+;Oden::Dskd:Monfil.Mac[62,7777] 1984-08-31 08:15:42, Edit by K.Jaakkola
+;3	Updated (c) notice.
+;Oden::DSKD:MONFIL.MAC[62,7777] 1984-03-22 15:06:41, Edit by B.CARLSSON
+;2.	Inserted FO.PRV bit when doing central-file Operations, to 
+;	allow <OPR> do read the central database file.
+;1.	Inserted a more informative error printout when we fail to
+;	open the central database-file.
+
+	
+	SEARCH	kommac
+	PROLOG	(monfil)
+monfil:!
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-31 08:15:39
+
+;	D A T A   A R E A
+
+quotap:	BLOCK	1		;<KPJ.100> quota exceeded (0=no, else=yes)
+
+T10,<
+
+;	T o p s - 10   i n t e r f a c e
+
+komppn:	BLOCK	1		;[SEE] PPN of KOM: directory
+entblk:	SIXBIT	!kom!
+	EXP	0,0,0
+
+;-----------------------------------
+;FILOP. argument block
+
+ifityp::BLOCK	1		;<KPJ.45> file type: =0: disk, #0: TMPCOR
+ifiopn:	BLOCK	1		;.FOFNC	flags,channel,function code
+	0			;.FOIOS	ASCII mode
+	SIXBIT	!all!		;.FODEV	device or udx
+	0,,ifibuf		;.FOBRH	output,,input buffer ring headers
+	0,,2			;.FONBF	output,,input buffers needed
+	0,,ifile		;.FOLEB	rename,,lookup block pointers
+	ifpmax,,ifipat		;.FOPAT	length,,pointer to PATH. block
+	0			;.FOPPN	PPN (or 0)
+	ifslen,,ifsblk		;.FOFSP	<KPJ.37> len,,addr of filespec block
+ifilen==.-ifiopn		;length of FILOP. argblk
+;...................................
+;file specification block (returned)
+
+ifsblk:	BLOCK	1		;.FOFND	(reserved)
+	BLOCK	1		;.FOFDV	device name in SIXBIT
+	BLOCK	1		;.FOFFN	file name in SIXBIT
+	BLOCK	1		;.FOFEX	extension in SIXBIT
+	BLOCK	1		;.FOFPP	PPN
+	BLOCK	5		;.FPFSF	SFD name(s)
+	0			;zero word to end list
+ifslen==.-ifsblk
+;...................................
+;extended argument block
+
+ifile:	0,,ifimax		;.RBCNT	0,,length
+	ifpmax,,ifipat		;.RBPPN	length,,path pointer (returned)
+	BLOCK	1		;.RBNAM	file name (SIXBIT)
+	BLOCK	1		;.RBEXT	extension,,0 (SIXBIT)
+	BLOCK	1		;.RBPRV	protection in bits 0:8
+	BLOCK	1		;.RBSIZ	file size (returned)
+ifimax==.-ifile-1		;length of IFILE block
+;...................................
+;path block
+
+ifipat:	0			;.PTFCN	function code (unused)
+	0			;.PTSWT	flags (unused)
+	BLOCK	1		;.PTPPN	PPN
+ifisfd:	BLOCK	5		;.PTSFD	SFDs
+	ifisfl==.-ifisfd	;	number of SFDs in this block
+	0			;.PTMAX	a zero to end the list
+ifpmax==.-ifipat		;length of path block
+;...................................
+ifibuf:	BLOCK	3		; input buffer header
+fiibuf:	BLOCK	2*^O203		;[BCQ] size of DSK buffers
+
+;-----------------------------------
+;OFIOPN		FILOP. argument block
+
+ofityp::BLOCK	1		;<KPJ.45> file type: =0: disk, #0: TMPCOR
+ofiopn:	BLOCK	1		;0	.FOFNC	function code
+	EXP	.IOASC		;1	.FOIOS	ASCII mode
+	BLOCK	1		;2	.FODEV	device
+	ofibuf,,0		;3	.FOBRH	IO buffers
+	2,,0			;4	.FONBF	#buffers
+	0,,ofile		;5	.FOLEB	RENAME block,,ENTER block
+	ofpmax,,ofipat		;6	.FOPAT	length,,PATH. block type 1
+	EXP	0		;7	.FOPPN	PPN
+	ifslen,,ifsblk		;10	.FOFSP	file spec pointer
+ofilen==.-ofiopn
+;-----------------------------------
+;OFILE		extended ENTERLOOKUP block
+
+ofile:	0,,ofimax		;0	.RBCNT	0,,length
+	0,,ofipat		;1	.RBPPN	path pointer
+	BLOCK	1		;2	.RBNAM	file name
+	BLOCK	1		;3	.RBEXT	extension, etc
+	BLOCK	1		;4	.RBPRV	protection, etc
+	BLOCK	1		;5	.RBSIZ	file size
+ofimax==.-ofile-1		;#parameter words
+;-----------------------------------
+;OFIPAT		PATH. block
+
+ofipat:	0			;0	.PTCHN	device or job#,,function code
+	0			;1	.PTSWT	flags
+	BLOCK	1		;2	.PTPPN	PPN
+ofisfd:	BLOCK	5		;3..n-1	.PTSFD	SFD list
+	ofisfl==.-ofisfd	;		max SFD level we support
+	0			;n	.PTMAX	0 (end of SFD list)
+ofpmax==.-ofipat
+;-----------------------------------
+;OFIBUF		buffer control block
+
+ofibuf:	BLOCK	1		;0	buffer control block
+	BLOCK	1		;1	buffer ring byte pointer
+	BLOCK	1		;2	buffer ring byte count
+
+bufofi:	BLOCK	2*blksiz+20	; output buffer
+
+curcha:	cencha				;current IO channel
+IFN	<t3-t2-1>,<
+inout:	BLOCK	2			;area for IN and OUT
+	inolen==.-inout			;<KPJ.111> length of INOUT area
+uset:	BLOCK	2			;area for USETI and USETO
+	uselen==.-uset			;<KPJ.111> length of USET area
+>;t3#t2+1
+>;T10
+
+;		T O P S - 2 0    i n t e r f a c e
+
+T20,<
+ifiopn:	BLOCK	1			;place holder for JFN
+	BLOCK	1			;GTJFN% flags
+	FLD(7,OF%BSZ)			;OPENF% flags: 7 bits bytes
+	BLOCK	filmax5+1		;input file name
+ifilen==.-ifiopn			;<KPJ.127> block length
+;-----------------------------------
+ofiopn:	BLOCK	1			;place holder for JFN
+	BLOCK	1			;GTJFN% flags
+	FLD(7,OF%BSZ)			;OPENF% flags: 7 bits bytes
+	BLOCK	filmax5+1		;output file name
+ofilen==.-ofiopn			;<KPJ.127> block length
+
+curcha::cenjfn				;current "IO" channel
+cenjfn::BLOCK	1			;JFN for central file
+newjfn::BLOCK	1			;JFN for new file
+>;T20
+
+reaacc::BLOCK	maxmet+1	; file read accesses
+wriacc::BLOCK	maxmet+1	;[KPJ.5] file write accesses
+filcnt::0			;character count for file
+reaflg::0			; read only access flag
+
+newbuf::buffer	new		; NEW buffer
+metbuf:	buffer	met		; MET buffer
+infbuf:	buffer	inf		; INF buffer
+texbuf:	buffer	tex		; TEX buffer
+dirbuf::buffer	dir		; DIR buffer
+pnabuf:	buffer	pna		; PNA buffer
+perbuf:	buffer	per		; PER buffer
+pacbuf:	buffer	pac		; PAC buffer
+mnabuf:	buffer	mna		; MNA buffer
+meebuf:	buffer	mee		; MEE buffer
+numbuf:	buffer	num		; NUM buffer
+lnkbuf:	buffer	lnk		; LNK buffer
+prebuf:	buffer	pre		; PRE buffer
+locbuf:	buffer	loc		; LOC buffer
+lacbuf:	buffer	lac		; LAC buffer
+marbuf:	buffer	mar		; MAR buffer
+IFN	ftemp2,<		;<KPJ.103!KPJ.102>
+enabuf:	buffer	ena		; ENA buffer
+empbuf:	buffer	emp		; EMP buffer
+>;ftemp
+subbuf:	buffer	sub		; SUB buffer
+sacbuf:	buffer	sac		; SAC buffer
+
+	bufare	new		; NEW buffer area
+	bufare	met		; MET buffer area
+	bufare	inf		; INF buffer area
+	bufare	tex		; TEX buffer area
+	bufare	dir		; DIR buffer area
+	bufare	pna		; PNA buffer area
+	bufare	per		; PER buffer area
+	bufare	pac		; PAC buffer area
+	bufare	mna		; MNA buffer area
+	bufare	mee		; MEE buffer area
+	bufare	num		; NUM buffer area
+	bufare	lnk		; LNK buffer area
+	bufare	pre		; PRE buffer area
+	bufare	loc		; LOC buffer area
+	bufare	lac		; LAC buffer area
+	bufare	mar		; MAR buffer area
+IFN	ftemp2,<		;<KPJ.103!KPJ.102>
+	bufare	ena		; ENA buffer area
+	bufare	emp		; EMP buffer area
+>;ftemp2
+	bufare	sub		; SUB buffer area
+	bufare	sac		; SAC buffer area
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;RYNFIL		parse RUN file name		<KPJ.50>
+;returns	GP1/	T10:	FILOP. argument block
+;			T20:	home brew GTJFN%/OPENF% block
+;		BFP/	T10:	extended LOOKUP block
+;-
+
+rynfil::MOVEI	gp1,ifiopn		;T10: FILOP. argument block
+					;T20: home brew GTJFN%/OPENF% block
+T10,<	MOVSI	t,'sys'			;default device is SYS:
+	MOVEM	t,.FODEV(gp1)
+	HRRZ	t2,.FOLEB(gp1)		;<KPJ.127> get extended arg.list
+	HRLZI	t,'exe'			;default extension is .EXE
+	MOVEM	t,.RBEXT(t2)		;<KPJ.127>
+	MOVE	bfp,[ifpmax,,ifipat]	;<KPJ.127> len,,addr of PATH.
+>;T10
+T20,<	MOVSI	t,(GJ%SHT!GJ%OLD)	;need an old file
+	MOVEM	t,.HMGTJ(gp1)		;save GTJFN% flags
+>;T20
+	HRLI	gp1,ifilen		;<KPJ.127> send block length
+	CALL	refina##		;get file name
+	return
+
+;+
+;GENFIL		parse GENERATE file name		<KPJ.66>
+;returns	GP1	file stuff
+;		BFP	more stuff (T10 only)
+;-
+
+genfil::MOVEI	gp1,ofiopn		;T10: FILOP. argument block
+					;T20: Home brewed file descriptor
+T10,<	MOVE	bfp,[ofpmax,,ofipat]	;<KPJ.127> get PATH. block len,,addr
+	MOVSI	t,'dsk'			;<KPJ.127> default device is DSK:
+	MOVEM	t,.FODEV(gp1)		;<KPJ.127> . . .
+	MOVEI	t2,ofile		;<KPJ.127> address of LOOKUP/ENTER
+	MOVSI	t,'new'			;<KPJ.127> default extension is .NEW
+	MOVEM	t,.RBEXT(t2)		;<KPJ.127> . . .
+	MOVE	t,cenfil##+.RBNAM	;default file name is current name
+	MOVEM	t,.RBNAM(t2)		;<KPJ.127> . . .
+	MOVE	t,cenpro##		;default protection is same
+	MOVEM	t,.RBPRV(t2)		;<KPJ.127> . . .
+>;T10
+T20,<					;<KPJ.32!KPJ.7> GTJFN flags, new file
+IFE	ftjsys,<MOVSI	t,(GJ%SHT!GJ%PHY!GJ%ACC!GJ%NEW)> ;OPENF% 
+IFN	ftjsys,<MOVSI	t,(GJ%SHT!GJ%PHY!GJ%NEW)> 	 ;KOM%
+	MOVEM	t,.HMGTJ(gp1)		;save GTJFN% flags
+>;T20
+	HRLI	gp1,ofilen		;<KPJ.127> FILOP. block length
+	CALL	refina##		;get file name
+T10,<	SKIPE	errfl##			;error?
+	 JRST	genfi9			;yes
+	MOVEI	gp1,ofiopn		;FILOP. argument block
+	MOVEI	bfp,ofile		;get extended arg.list ("file block")
+genfi9:
+>;T10
+	return
+
+;+
+;OPINFI		open input file
+;returns	+1 always
+;		ERRFL/	.eq. 0	file opened
+;			.lt. 0	error, file not opened
+;			.gt. 0	TMPCOR file (Tops-10 only)
+;		GP1/	error code (Tops-10 only)
+;-
+
+opinfi::save	<bfp>
+	MOVEI	gp1,ifiopn		;<KPJ.24!KPJ.7> FILOP. argument block
+T10,<	MOVE	bfp,[ifpmax,,ifipat]	;<KPJ.127> PATH. block len,,address
+	MOVSI	t,'all'			;<KPJ.127> default device is ALL:
+	MOVEM	t,.FODEV(gp1)
+	HRRZ	t,.FOLEB(gp1)		;<KPJ.127> extended argument list
+	SETZM	.RBEXT(t)		;<KPJ.127> no default extension here
+>;T10
+T20,<	MOVSI	t,(GJ%SHT!GJ%OLD)	;<KPJ.44> need an old file
+	MOVEM	t,.HMGTJ(gp1)		;<KPJ.44> save GTJFN% flags
+>;T20
+	HRLI	gp1,ifilen		;<KPJ.127> FILOP. block length
+	CALL	refina##		;get file name
+	SKIPE	errfl##			;<KPJ.42> any errors?
+	 JRST	opinf9			;<KPJ.42> yeah, quit
+T10,<	MOVE	t,ifiopn+.FODEV		;<KPJ.117> our device
+	DEVTYP	t,			;<KPJ.117> get device type
+	 SETZ	t,			;<KPJ.117> failed, fake disk
+	ANDI	t,TY.DEV		;<KPJ.117> get device type code
+	CAIE	t,.TYPTY		;<KPJ.117> don't support PTY:
+	 CAIN	t,.TYTSK		;<KPJ.117> don't support TSK:
+	  JRST[	CALL	prfina##	;<KPJ.117>
+		 CALL	errmsg##	;<KPJ.117>
+		MOVEI	str,znodev##	;<KPJ.117> "Unsupported device type"
+		CALL	errmsg##	;<KPJ.117>
+		SETOM	errfl##		;<KPJ.117> error
+		JRST	opinf9]		;<KPJ.117> give up
+	SETZM	filtrm##		;<KPJ.117> default no TTY device
+	CAIN	t,.TYTTY		;<KPJ.117> terminal?
+	 JRST[	SETOM	filtrm##	;<KPJ.117> yes, remember this
+		MOVE	t,ifiopn+.FODEV	;<KPJ.117> yes, get device again
+		DEVNAM	t,		;<KPJ.117> get "physical" device
+		 JRST	.+1		;<KPJ.117> failed ***FOO***
+		GETLIN	t2,		;<KPJ.117> this is our controlling TTY
+		CAME	t,t2		;<KPJ.117> our controlling TTY?
+		 JRST	.+1		;<KPJ.117> no
+		CALL	prfina##	;<KPJ.117> yes, output name
+		 CALL	errmsg##	;<KPJ.117>
+		MOVEI	str,znotty##	;<KPJ.117> "TTY: unsupported"
+		CALL	errmsg##	;<KPJ.117>
+		SETOM	errfl##		;<KPJ.117> error
+		JRST	opinf9]		;<KPJ.117> give up
+>;T10
+	SETOM	errfl##			;set error flag
+
+T10,<	HRRZ	t,ifiopn+.FOBRH		;<BCQ> get input buff header pointer
+	JUMPN	t,[			;<KPJ.30!BCQ> in case no buffer header
+		SETZM	.BFPTR(t)	;<BCQ> wipe out old junk
+		SETZM	.BFADR(t)	;<BCQ> ...
+		SETZM	.BFCTR(t)	;<BCQ> ...
+		JRST	.+1]		;<KPJ.30>
+	MOVEI	t,fiibuf		;where to place buffers
+	MOVEM	t,.JBFF			;tell monitor
+
+Range	(ificha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,OPINFI,<
+IFE	ftpriv,<MOVE	t,[FLD(ificha,FO.CHN)!FLD(.FORED,FO.FNC)]>
+IFN	ftpriv,<MOVE	t,[FO.PRV!FLD(ificha,FO.CHN)!FLD(.FORED,FO.FNC)]>
+	MOVEM	t,ifiopn+.FOFNC		;save flags,channel,operation
+>);End Range
+
+	SETZM	ifsblk			;<KPJ.114> clear file name buffer
+	MOVE	t,[ifsblk,,ifsblk+1]	;<KPJ.114> from,,to
+	BLT	t,ifsblk+ifslen-1	;<KPJ.116!KPJ.114> . . .
+	SETZM	ifityp			;<KPJ.45> disk file by default
+	PUSH	P,.JBFF			;<KPJ.37> save old lowseg end
+	MOVE	t,[ifilen,,ifiopn]	;length,,addr
+	FILOP.	t,			;do file operation
+	 JRST[	POP	P,.JBFF		;<KPJ.37> restore lowseg end
+		MOVE	t2,ifiopn+.FODEV	;<KPJ.45> get device
+		CAIN	t,ERNSD%		;<KPJ.45> "no such device"?
+		 CAME	t2,[SIXBIT !tmp!]	;<KPJ.45> yes, "TMP:" device?
+		  TRNA				;<KPJ.45> no
+		   JRST[SETZM	ifile+.RBEXT	;<KPJ.45> no extension
+			SETZM	ifiopn+.FOPAT	;<KPJ.45> no path block
+			CALL	prfina##	;<KPJ.45> expand the file name
+			 JRST[	MOVE	str,t	;<KPJ.62> save error code
+				CALL	errmsg##;<KPJ.62> display it
+				JRST	opinf9]	;<KPJ.62>
+			MOVE	t,[.TCRRF,,t2]	;<KPJ.45> read,,argblk
+			MOVE	t2,ifile+.RBNAM	;<KPJ.45> file name
+			SETZ	t3,		;<KPJ.45> zero length buffer
+			TMPCOR	t,		;<KPJ.45> well?
+			 JRST[	MOVNI	gp1,3	;<KPJ.45> "No such file"
+				CALL	badfil	;<KPJ.45>
+				JRST	opinf9]	;<KPJ.45> give up
+			MOVEM	t,ifile+.RBSIZ	;<KPJ.47> save file size
+			MOVE	t,ifile+.RBNAM	;<KPJ.45> TMPCOR file
+			MOVEM	t,ifityp	;<KPJ.45> mark as TMPCOR
+			SETZM	errfl##		;<KPJ.45> no error
+			JRST	opinf8]		;<KPJ.47> return
+		PUSH	P,t		;<KPJ.37> save error code
+		CALL	prfina##	;<KPJ.30> output file name
+		 nop			;<KPJ.62> ignore error, output original
+		POP	P,gp1		;<KPJ.37!KPJ.30> return error code
+		CALL	badfil		;<KPJ.30> report Tops-10 error
+		JRST	opinf9]		;say error
+	POP	P,.JBFF			;<KPJ.37> restore lowseg end
+	MOVE	t,ifsblk+.FOFDV		;<KPJ.37> look in filespec block
+	JUMPN	t,[			;<KPJ.37> non-zero if V7.01 or later
+		MOVEM	t,.FODEV(gp1)		;<KPJ.37> save expanded device
+		MOVE	t,ifsblk+.FOFFN		;<KPJ.37> get file name
+		MOVEM	t,.RBNAM(bfp)		;<KPJ.37> save file name
+		MOVE	t,ifsblk+.FOFEX		;<KPJ.37> get extension
+		MOVEM	t,.RBEXT(bfp)		;<KPJ.37> save extension
+		MOVEI	t2,ifipat+.PTPPN	;get FOO block
+		MOVEI	t,ifsblk+.FOFPP		;<KPJ.37> yes, from address
+		MOVNI	t3,ifisfl+2		;<KPJ.104!KPJ.37> #words
+opinfx:		MOVE	t4,0(t)			;<KPJ.37> get word
+		MOVEM	t4,0(t2)		;<KPJ.37> put word
+		ADDI	t,1			;<KPJ.37> increment
+		ADDI	t2,1			;<KPJ.37>	pointers
+		AOJN	t3,opinfx		;<KPJ.37>
+		JRST	.+1]			;<KPJ.37> ho hum
+	CALL	prfina##			;<KPJ.30> output file name
+	 JRST[	MOVE	str,t			;<KPJ.62> save error code
+		CALL	errmsg##		;<KPJ.62> ***ERROR***
+		JRST	opinf9]			;<KPJ.62>
+>;T10
+T20,<	CALL	prfina##			;<KPJ.30> output file name
+	 JRST[	PUSH	P,1			;<KPJ.62> save error code
+		print[	BYTE (7) .CHCRT,.CHLFD,"?",.CHNUL]
+		POP	P,str			;<KPJ.62> restore error code
+		CALL	prstr##			;<KPJ.62>
+		JRST	opinf9]
+	MOVE	1,ifiopn+.HMJFN			;get JFN
+	MOVE	2,ifiopn+.HMBSZ			;<KPJ.32> get byte size
+	IORI	2,OF%RD				;read access
+	OPENF%					;open file
+	 ERJMP[	CALL	badfil			;<KPJ.30> tell user
+		JRST	opinf9]			;failed
+>;T20
+
+T10,<	CALL	qreadf		;[SEE] allowed to read this file?
+	 JRST[	MOVNI	gp1,2	;<KPJ.111!KPJ.30> no, "Protection failure"
+		CALL	badfil	;<KPJ.30> display error
+		JRST	opinf9]	;[SEE]
+>;T10
+	SETZM	errfl##				;no error
+T20,<	MOVE	bfp,ifiopn>
+opinf8:	CALL	repsiz				;<KPJ.47> report file size
+opinf9:	MOVE	gp1,t				;save error code
+	return
+
+
+
+
+;+
+;BADFIL		routine to report file (FILOP./GTJFN%/OPENF%) errors <KPJ.30>
+;accepts(T10)	GP1	error code, negative codes less than -1 are user codes:
+;			-2	cannot access KOM: area due to protection
+;			-3	no such TMPCOR file
+;-
+
+badfil::save	<consum##>
+	MOVEI	t,tercon##		;messages to terminal
+	MOVEM	t,consum##
+	print[	ASCIZ !
+?!]					;<KPJ.100>
+	print	filur0##		;"File cannot be opened"
+	CALL	baderr			;<KPJ.100> display error
+	return
+
+;+
+;BADOUT		failed to output
+;accepts	T10: 
+;-
+
+badout:	save	<consum##>		;<KPJ.100>
+T20,<	MOVEI	1,.FHSLF		;<KPJ.100> what happened?
+	GETER%				;<KPJ.100>
+	PUSH	P,2			;<KPJ.100>
+>;T20
+	MOVEI	t,tercon##		;<KPJ.100>
+	MOVEM	t,consum##		;<KPJ.100>
+	print[	ASCIZ !
+?!]					;<KPJ.100>
+	print	filyr1##		;<KPJ.100> "File output failed"
+T10,<	CALL	badsts>			;<KPJ.111> explain I/O status
+T20,<	print	filur2##		;<KPJ.100> ",cos System says:"
+	CALL	toutpu##		;<KPJ.100> barf
+	POP	P,2			;<KPJ.100> restore error
+	MOVEI	1,.PRIOUT		;<KPJ.100> on TTY
+	MOVEI	3,0			;<KPJ.100>
+	ERSTR%				;<KPJ.100>
+	 nop				;<KPJ.100> **FOO**
+	 nop				;<KPJ.100> **FOO**
+>;T20
+	return
+
+;+
+T10,<
+;BADSTS		explain I/O status	<KPJ.111>
+;accepts	STR/	I/O status
+;-
+
+badsts:	print	filur2##		;<KPJ.100> ",cos System says:"
+	MOVEI	str,zioIMP##		;<KPJ.100> improper?
+	TRNE	gp1,IO.IMP		;<KPJ.100> . . .
+	 CALL	prstr##			;<KPJ.100> . . .
+	MOVEI	str,zioDER##		;<KPJ.100> device error?
+	TRNE	gp1,IO.DER		;<KPJ.100> . . .
+	 CALL	prstr##			;<KPJ.100> . . .
+	MOVEI	str,zioDTE##		;<KPJ.100> data error?
+	TRNE	gp1,IO.DTE		;<KPJ.100> . . .
+	 CALL	prstr##			;<KPJ.100> . . .
+	MOVEI	str,zioBKT##		;<KPJ.100> too much data?
+	TRNE	gp1,IO.BKT		;<KPJ.100> . . .
+	 CALL	prstr##			;<KPJ.100> . . .
+	MOVEI	str,zioEOF##		;<KPJ.100> end of file?
+	TRNE	gp1,IO.EOF		;<KPJ.100> . . .
+	 CALL	prstr##			;<KPJ.100> . . .
+	return
+>;T10
+
+;+
+T10,<
+;BADUSE		USETO failed, give error message to user
+;accepts	STR/	error code or I/O status word (T10 only)
+;-
+
+baduse:	save	<consum##>		;<KPJ.110>
+	MOVEI	t,tercon##		;<KPJ.110> to TTY
+	MOVEM	t,consum##		;<KPJ.110> . . .
+	print[	ASCIZ !
+?!]					;<KPJ.110> error
+	print	filyr9##		;<KPJ.110> "File cannot be positioned"
+	TRNE	gp1,IO.ERR		;<KPJ.112> I/O status?
+	 JRST[	CALL	badsts		;<KPJ.111> yes, explain I/O status
+		JRST	.+2]		;<KPJ.112>
+	 CALL	baderr			;<KPJ.112> no, explain error code
+	return
+>;T10
+
+;+
+;BADCLS		file close failed
+;accepts	GP1/	error code (T10 only)
+;-
+
+badcls:	save	<consum##>		;<KPJ.100>
+	MOVEI	t,tercon##		;<KPJ.100> to TTY
+	MOVEM	t,consum##		;<KPJ.100> . . .
+	print[	ASCIZ !
+?!]					;<KPJ.100> error
+	print	filyr0##		;<KPJ.100> "File cannot be closed"
+	CALL	baderr			;<KPJ.100>
+	return
+
+;+
+;BADERR		general file error message output routine
+;accepts	GP1/	error code (T10 only)
+;-
+
+baderr:					;<KPJ.100>
+T10,<	CAMGE	gp1,[-1]		;<KPJ.111> user code?
+	 JRST[	print	filur1##	;", because "
+		MOVN	gp1,gp1		;change sign of error code
+		SUBI	gp1,2		;<KPJ.126> we start at "-2" really
+		MOVEI	str,badfix##	;"Illegal error code" by default
+		CAIGE	gp1,usrlen##	;illegal error code?
+		 MOVE	str,usropr##(gp1) ;no, select table
+		JRST	badfi3]
+	print	filur2##		;", because System says that "
+	MOVEI	1,.PRIOUT		;<KPJ.35> primary output
+	MOVE	2,gp1			;error code
+	MOVEI	3,8			;octal number
+	CALL	.nout##			;output it
+	 CALL[	PUSH	P,1		;<KPJ.61> save error code
+		MOVEI	ch,.CHLPR	;<KPJ.61> huh?
+		CALL	putch		;<KPJ.61>
+		POP	P,str		;<KPJ.61> restore error code
+		CALL	prstr##		;<KPJ.61>
+		MOVEI	ch,.CHRPR	;<KPJ.61>
+		CALLRET	putch]		;<KPJ.61>
+	CALL	preol##
+	print	filur3##		;"Which means:"
+	MOVEI	str,badfix##		;"Invalid error code" by default
+	CAIG	gp1,fillen##		;illegal error code?
+	 MOVE	str,filopr##+1(gp1)	;<KPJ.111> no, error code
+badfi3:	CALL	prstr##			;output it
+	CALL	toutpu##		;dump buffer
+>;T10
+T20,<	print	filur2##		;", TOPS-20 gives error code: ?"
+	CALL	toutpu##		;output everything
+	MOVEI	1,.PRIOUT		;to terminal
+	HRLOI	2,.FHSLF		;self,,latest error code
+KL10N,<	SETZ	3,>
+KL10,<	MOVEI	3,0>			;any length
+	ERSTR%				;output it
+	 nop				;***FOO***
+	 nop				;***FOO***
+	HRROI	1,[BYTE (7) .CHCRT,.CHLFD,.CHNUL]
+	PSOUT%
+>;T20
+	return
+
+
+
+
+;+
+T10,<
+;QREADF		check if file is on KOM: [SEE]
+;returns	+1, if	(a)	file has KOM: ersatz device PPN
+;		    and	(b)	user is not in administrator mode
+;		    and	(c)	user is not logged in on KOM: PPN
+;		    and	(d)	has no READ access as OWNER (if same project)
+;			     or	has no READ access as WORLD (otherwise)
+;		+2, otherwise
+;-
+
+qreadf:	MOVE	t,ifile+.RBPPN		;get PPN from RIB copy
+	TLNE	t,-1			;PPN xor PATH block pointer?
+	 MOVEM	t,ifipat+.PTPPN		;PPN, use it
+	MOVE	t,ifipat+.PTPPN		;get PPN that file came from
+	CAME	t,komppn		;is it our KOM: PPN?
+	 JRST	qread8			;no, success +2 return
+	CALL	chkadm##		;administrator mode?
+	 TRNA
+	  JRST	qread8			;yes, success +2 return
+	MOVE	t,ifipat+.PTPPN		;no, get file PPN
+	XOR	t,selfpp##		;same as logged-in PPN?
+	JUMPE	t,qread8		;yes, success +2 return
+	MOVE	gp1,[POINT 3,ifile+.RBPRV,5] ;get pointer to OWNER protection
+	TLNE	t,-1			;same project number?
+	 MOVE	gp1,[POINT 3,ifile+.RBPRV,8] ;no, get ptr to WORLD protection
+	LDB	t,gp1			;get protection code
+	CAIG	t,.PTRED		;do we have READ access?
+	 JRST	qread8			;yes, success +2 return
+
+Range	(ificha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,QREADF,<
+				;<KPJ.111!KPJ.11!KPJ.7> close file
+IFE	ftpriv,<MOVE	t,[FLD(ificha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+IFN	ftpriv,<MOVE	t,[FO.PRV!FLD(ificha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+	MOVEM	t,ifiopn+.FOFNC		;save flags, channel, operation
+>);End Range
+	MOVE	t,[ifilen,,ifiopn]	;<KPJ.32> len,,argblk
+	FILOP.	t,			;close file
+	 JRST[	PUSH	P,t		;<KPJ.111>
+		CALL	prfina##	;<KPJ.111>
+		 CALL[	MOVE	str,t	;<KPJ.111> save error code
+			CALLRET	errmsg]	;<KPJ.111> display it
+		POP	P,gp1		;<KPJ.111> get original problem
+		CALL	badcls		;<KPJ.111> tell user
+		JRST	.+1]		;<KPJ.111>
+	MOVEI	t,ERPRT%		;fake "protection failure"
+	JRST	qread9			;+1 error return
+qread8:	skpret				;+2 good return
+qread9:	return
+>;T10
+
+
+;+
+;.GETCH		get a byte from file			[KPJ.7]
+;accepts (T10:)	IFICHA	initialized IO channel
+;		IFIBUF	buffer ring
+;	 (T20:)	INJFN	input JFN to use
+;returns	+1, failure
+;		+2, success, with CH/ byte
+
+;	*NOTE*	The error handling is terrible.	(***FOO***)
+;	*NOTE*	The code cannot handle MIC-10 status correctly.
+
+.getch:
+T10,<
+.getc0:	SOSGE	ifibuf+.BFCTR		;any character in buffer ?
+	 JRST[	SKIPE	havenq##		;<KPJ.115> no, have ENQ lock?
+		 SKIPN	filtrm##		;<KPJ.115> and a TTY?
+		  TRNA				;<KPJ.115> no
+		   BUG(HLT,<.getch monfil>,<ifiopn+.FODEV>)
+						;<KPJ.115> yes, die
+
+		IN	ificha,0		;read a buffer
+		 JRST	.getc0			;<KPJ.10> success, get char
+						;***FOO***  ignores error
+		JRST	.getc9]			;error
+	ILDB	ch,ifibuf+.BFPTR	;yes, get character from buffer
+>;T10
+T20,<	MOVE	t,ifiopn+.HMJFN		;get JFN
+	BIN%				;read a byte
+	 ERJMP	.getc9			;error
+	MOVE	ch,2			;success
+>;T20
+	skpret			;+2 success return
+.getc9:	return			;+1 failure return
+
+
+
+;+
+;FILPRX		copy a file to producer		<KPJ.31>
+;accepts	SAVNUM/	start character (0=from beginning)
+;-
+
+filprx::save	<intflg##>		;<KPJ.31>
+	PUSH	P,savnum##		;<KPJ.101> get pre-argument
+	SETZM	intflg##		;clear interrupt
+filpr1:	CALL	.getch			;<KPJ.7> get byte from file
+	 JRST	filpr9			;<KPJ.7> ***FOO*** ignores error...
+	JUMPE	ch,filpr1		;ignore NUL character
+	MOVE	t,0(P)			;<KPJ.101> get pre-argument
+	SUBI	t,1			;<KPJ.101> one more character
+	MOVEM	t,0(P)			;<KPJ.101> save for next
+	CAIG	t,0			;<KPJ.101> skip this?
+	 CALL	putch			;<KPJ.101> no, output character
+	SKIPL	intflg##		;interrupt ?
+	 JRST	filpr1			;no, read more
+filpr9:	POP	P,0(P)			;<KPJ.101> pop stack
+	return
+
+
+;+
+;FPEND		end of file I/O
+;accepts (T10:)	IFICHA	initialized IO channel
+;		IFIOPN	OPEN block
+;	 (T20:)	IFIOPN+.HMJFN	input JFN
+;-
+
+fpend::
+T10,<
+Range	(ificha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,FPEND,< 
+				;<KPJ.111!KPJ.7> close channel
+IFE	ftpriv,<MOVE	t,[FLD(ificha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+IFN	ftpriv,<MOVE	t,[FO.PRV!FLD(ificha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+	MOVEM	t,ifiopn+.FOFNC		;save flags, channel, operation
+>);End Range
+	MOVE	t,[ifilen,,ifiopn]	;<KPJ.32> len,,argblk
+	FILOP.	t,			;close file
+	 JRST[	MOVE	gp1,t		;<KPJ.111> get error code
+		CALL	badcls		;<KPJ.111> tell luser
+		JRST	.+1]		;<KPJ.111>
+Range	(ificha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,FPEND,< 
+					;<KPJ.114> release input channel
+IFE	ftpriv,<MOVE	t,[FLD(ificha,FO.CHN)!FLD(.FOREL,FO.FNC)]>
+IFN	ftpriv,<MOVE	t,[FO.PRV!FLD(ificha,FO.CHN)!FLD(.FOREL,FO.FNC)]>
+	MOVEM	t,ifiopn+.FOFNC		;save flags, channel, operation
+>);End Range
+	MOVE	t,[ifilen,,ifiopn]	;<KPJ.114> len,,argblk
+	FILOP.	t,			;<KPJ.114> release file
+	 JRST[	MOVE	gp1,t		;<KPJ.114> get error code
+		CALL	badcls		;<KPJ.114> tell luser
+		JRST	.+1]		;<KPJ.114>
+>;T10
+T20,<	MOVE	1,ifiopn+.HMJFN		;<KPJ.32!KPJ.7> close input JFN
+	CLOSF%
+	 ERCAL	badcls			;<KPJ.111> tell luser about this
+>;T20
+	return
+
+
+;+
+;DELEFI		delete a file
+;accepts T20:	IFIOPN+.HMJFN	JFN
+;	 T10:	IFIOPN		file block
+;		IFICHA=		channel
+;		IFITYP	=0:  disk file
+;			#0: TMPCOR file
+;-
+
+delefi::
+T10,<	save	<str>>
+	CALL	delcom##		;<KPJ.54> are we delayed today?
+	 JRST	delef9			;<KPJ.54> (. You sleep! :-)
+T10,<	SKIPE	ifityp			;<KPJ.45> TMPCOR?
+	 JRST[	MOVE	t2,ifityp	;<KPJ.45> yes, get file name
+		SETZ	t3,		;<KPJ.45> zero length buffer
+		MOVE	t,[.TCRDF,,t2]	;<KPJ.45> delete file, argblk addr
+		TMPCOR	t,		;<KPJ.45> do it
+		 BUG(HLT,<nofile delefi>,<ifityp>)
+					;<KPJ.45> no such file???
+		JRST	delef8]		;<KPJ.45> success
+	CALL	qdelf			;<SEE> allowed to delete the file?
+	 JRST[	print	zfritz##	;<SEE> no, return error
+		JRST	delef9]
+Range	(ificha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,DELEFI,< 
+				;<KPJ.111> channel,delete file
+IFE	ftpriv,<MOVE	t,[FO.UOC!FLD(ificha,FO.CHN)!FLD(.FODLT,FO.FNC)]>
+IFN	ftpriv,<MOVE   t,[FO.UOC!FO.PRV!FLD(ificha,FO.CHN)!FLD(.FODLT,FO.FNC)]>
+	MOVEM	t,ifiopn+.FOFNC		;<KPJ.111> save flags,channel,operation
+>);End Range
+	MOVE	t,[ifilen,,ifiopn]	;<KPJ.32> len,,argblk
+	FILOP.	t,			;delete file
+	 JRST[	CAIN	t,ERPRT%	;<KPJ.41> protection failure?
+		 JRST[	print	zfrotz##;<SEE> yes, tell about the failure
+			JRST	delef9]
+		MOVE	gp1,t		;<KPJ.43> failed, save error code
+		CALL	badfil		;<KPJ.43> sorry
+		JRST	delef9]		;<KPJ.43>
+>;T10
+T20,<	MOVE	1,ifiopn+.HMJFN		;<KPJ.32> get JFN
+	DELF%				;delete the file
+	 ERJMP[	CALL	badfil		;<KPJ.43> failed, sorry
+		JRST	delef9]		;<KPJ.43>
+>;T20
+T10,<
+delef8:
+>;T10
+	print	zslakt##		;<KPJ.45> "File deleted"
+delef9:	return				;<KPJ.43>
+
+
+
+;+
+T10,<
+;QDELF		check if we are allowed to delete the file [SEE]
+;returns	+1 if not allowed
+;		+2 if allowed
+;-
+
+qdelf:	MOVE	t,ifipat+.PTPPN		;get PPN, it's already here
+	CAME	t,komppn		;KOM:?
+	 JRST	qdelf8			;no, then it's as allowed as before
+	CALL	chkadm##		; are we in administrator mode?
+	 TRNA				; no, we need more checking
+	  JRST	qdelf8			; we are, then it's allowed
+	MOVE	t,ifipat+.PTPPN		; get PPN
+	XOR	t,selfpp##		; compare with own PPN
+	JUMPN	t,qdelf1		; same PPN?
+	LDB	t,[POINT 3,ifile+.RBPRV,2] ;get protection against self
+	CAIG	t,2
+	 JRST	qdelf8			; allowed
+	CAIN	t,4
+	 JRST	qdelf8			; also allowed
+	JRST	qdelf7			; not allowed then
+qdelf1:	PUSH	p,gp1
+	MOVE	gp1,[POINT 3,ifile+.RBPRV,5] ; access from same project
+	TLNE	t,-1			; is it the same project?
+	 HRLI	gp1,(POINT 3,,8)	; no, point to prot. against world
+	LDB	t,gp1			; get protection
+	POP	P,gp1
+	CAIG	t,1
+	 JRST	qdelf8			; allowed
+qdelf7:
+Range	(ificha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,QDELF,< 
+				;close file, as we're not deleting
+IFE	ftpriv,<MOVE	t,[FLD(ificha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+IFN	ftpriv,<MOVE	t,[FO.PRV!FLD(ificha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+	MOVEM	t,ifiopn+.FOFNC		;save flags, channel, operation
+>);End Range
+	MOVE	t,[ifilen,,ifiopn]	;<KPJ.32> len,,argblk
+	FILOP.	t,			;close file
+	 JRST[	MOVE	gp1,t		;<KPJ.111> get error code
+		CALL	badcls		;<KPJ.111> tell user
+		JRST	qdelf9]		;<KPJ.111>  return error
+	TRNA				;<KPJ.120>
+qdelf8:	 skpret				; good return
+qdelf9:	return
+>;T10
+
+
+
+;+
+;GOFNAM		get output file name
+;returns	OFIOPN	file
+;returns	+1 always, ERRFL 0 = no error
+;				 -1 = error
+;-
+
+gofnam::save	<gp1,bfp>
+	MOVEI	gp1,ofiopn		;get device block
+T10,<	MOVE	bfp,[ofpmax,,ofipat]	;<KPJ.127> PATH. block len,,address
+	MOVSI	t,'dsk'			;<KPJ.127> default device is DSK:
+	MOVEM	t,.FODEV(gp1)		;default device is DSK:
+	HRRZ	t,.FOLEB(gp1)		;<KPJ.127> extended argument list
+	SETZM	.RBEXT(t)		;<KPj.127> no default extension here
+>;T10
+T20,<	MOVSI	t,(GJ%SHT)		;<KPJ.44> new file
+	MOVEM	t,.HMGTJ(gp1)		;<KPJ.44>
+>;T20
+	HRLI	gp1,ofilen		;<KPJ.127> FILOP. block length
+	CALL	refina##		;get the file name
+	SKIPE	errfl##			;<KPJ.44> error?
+	 JRST	gofna9			;failure
+T10,<	HRLZI	t,'dsk'			;get default device
+	CAME	t,.FODEV(gp1)		;device defined ?
+	 JRST	gofna9			;yes
+	SKIPN	.RBNAM(bfp)		;no, file defined ?
+	 SETOM	errfl##			;fail
+>;T10
+gofna9:	return
+
+
+
+
+
+;+
+;UNPFIL		unpack and open file name
+;accepts	NR/	file name entry
+;returns	OFIOPN/	file descriptor
+;-
+
+unpfil::save	<bfp,gp1,str,produc##,curtxt##,dbcnt##,dbbp##>
+	MOVEI	t,dislin##		;<KPJ.12> set producer
+	MOVEM	t,produc##		;<KPJ.12>
+	CALL	getobj##		;get entry
+	 JRST	unpfi8			;error
+	MOVE	t,dirtex(bfp)
+	MOVEM	t,curtxt##		;get text part
+	SETZM	dbcnt##			;clear text pointer
+	CALL	read##			;get file name
+	 JRST	unpfi8			;error
+	MOVEI	gp1,ofiopn		;get device block
+T10,<	MOVE	bfp,[ofpmax,,ofipat]	;<KPJ.127> PATH. block len,,addr
+	MOVSI	t,'dsk'			;<KPJ.127> default device is DSK:
+	MOVEM	t,.FODEV(gp1)
+	HRRZ	t,.FOLEB(gp1)		;<KPJ.127> extended argument list
+	SETZM	.RBEXT(t)		;<KPJ.127> no default extension here
+>;T10
+T20,<	MOVSI	t,(GJ%SHT)		;<KPJ.44> any file will do
+	MOVEM	t,.HMGTJ(gp1)		;<KPJ.44>
+>;T20
+	HRLI	gp1,ofilen		;<KPJ.127> FILOP. block length
+	CALL	refina##		;get file name
+	SKIPE	errfl##			;<KPJ.107> error?
+	 JRST	unpfi9			;<KPJ.107> yes
+	CALL	opoufi			;<KPJ.107> no, open output file
+	JRST	unpfi9
+
+unpfi8:	MOVEI	str,zfilmi##		;"Specification missing"
+	CALL	errmsg##		;
+	SETOM	errfl##			;error
+unpfi9:	return
+
+
+
+
+
+;+
+; PROUFI  --  print output file name
+; gets file in OFIOPN
+;-
+
+proufi::save	<gp1,bfp>
+	MOVEI	gp1,ofiopn		;get device block
+T10,<	MOVEI	bfp,ofile>		;get file block
+	CALL	prifil##		;output the file name
+	 nop				;<KPJ.106> ***FOO***
+	return
+
+
+
+
+
+;+
+;OOFILE		open output file and report size
+;-
+
+oofile::save	<bfp>
+	CALL	opoufi			;open output file
+	SKIPGE	errfl##
+	 JRST	oofil9			;error ?
+T10,<	MOVEI	bfp,ofile>		;get file block
+T20,<	MOVE	bfp,ofiopn+.HMJFN>	;get the JFN
+	CALL	repsiz			;report file size
+oofil9:	return
+
+
+
+
+
+;+
+;OPOUFI		open output file
+;-
+
+opoufi::save	<gp1,bfp>
+	SETOM	errfl##			;set error
+					;<KPJ.26>
+T10,<	PUSH	P,.JBFF			;<KPJ.40> save old lowseg end
+	MOVEI	t,bufofi		;where to place buffers
+	MOVEM	t,.JBFF			;tell monito where to put buffers
+Range	(oficha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,OPOUFI,<
+IFE	ftpriv,<MOVE	t,[FLD(oficha,FO.CHN)!FLD(.FOAPP,FO.FNC)]>
+IFN	ftpriv,<MOVE	t,[FO.PRV!FLD(oficha,FO.CHN)!FLD(.FOAPP,FO.FNC)]>
+	MOVEM	t,ofiopn+.FOFNC		;save channel,,operation
+>);End Range
+	SETZM	ifsblk			;<KPJ.114> clear file name buffer
+	MOVE	t,[ifsblk,,ifsblk+1]	;<KPJ.114> from,,to
+	BLT	t,ifsblk+ifslen-1	;<KPJ.116!KPJ.114> clear it
+	MOVE	t,[ofilen,,ofiopn]	;length,,address
+	MOVEI	gp1,ofiopn		;<KPJ.40> FILOP. block address
+	HRRZ	bfp,.FOLEB(gp1)		;<KPJ.40> get file block address
+	SETZM	ofityp			;<KPJ.47> disk file by default
+	FILOP.	t,			;append the file
+	 JRST[	POP	P,.JBFF		;<KPJ.40> restore old lowseg end
+		MOVE	t2,ofiopn+.FODEV	;<KPJ.45> get device
+		CAIN	t,ERNSD%		;<KPJ.45> "no such device"?
+		 CAME	t2,[SIXBIT !tmp!]	;<KPJ.45> yes, "TMP:" device?
+		  TRNA				;<KPJ.45> no
+		   JRST[SETZM	ofile+.RBEXT	;<KPJ.45> no extension
+			SETZM	ofiopn+.FOPAT	;<KPJ.45> no path block
+			CALL	prfina##	;<KPJ.45> expand the file name
+			 JRST[	MOVE	str,t	;<KPJ.62> save error code
+				CALL	errmsg##;<KPJ.62> display it
+				JRST	opouf9]	;<KPJ.62> exit
+			SETZM	ofile+.RBSIZ	;<KPJ.47> empty file
+			MOVE	t,ofile+.RBNAM	;<KPJ.47> get file name
+			MOVEM	t,ofityp	;<KPJ.47> save file name
+			SETZM	errfl##		;<KPJ.47> no error
+			JRST	opouf9]		;<KPJ.47> return
+		PUSH	P,t		;<KPJ.37> save error code
+		CALL	prfina##	;<KPJ.30> output file name
+		 nop			;<KPJ.62> ignore error, use original
+		POP	P,gp1		;<KPJ.37!KPJ.30> return error code
+		CALL	badfil		;<KPJ.30> report Tops-10 error
+		JRST	opouf9]
+	POP	P,.JBFF			;<KPJ.40> restore old lowseg end
+	MOVE	t,ifsblk+.FOFDV		;<KPJ.37> look in filespec block
+	JUMPN	t,[			;<KPJ.37> non-zero if V7.01 or later
+		MOVEM	t,.FODEV(gp1)		;<KPJ.37> save expanded device
+		MOVE	t,ifsblk+.FOFFN		;<KPJ.37> get file name
+		MOVEM	t,.RBNAM(bfp)		;<KPJ.37> save file name
+		MOVE	t,ifsblk+.FOFEX		;<KPJ.37> get extension
+		MOVEM	t,.RBEXT(bfp)		;<KPJ.37> save extension
+		MOVEI	t2,ofipat+.PTPPN	;from SFD list
+		MOVEI	t,ifsblk+.FOFPP		;<KPJ.37> yes, from address
+		MOVNI	t3,ofisfl+2 		;<KPJ.104!KPJ.37> #words
+opinf0:		MOVE	t4,0(t)			;<KPJ.37> get word
+		MOVEM	t4,0(t2)		;<KPJ.37> put word
+		ADDI	t,1			;<KPJ.37> increment
+		ADDI	t2,1			;<KPJ.37>	pointers
+		AOJN	t3,opinf0		;<KPJ.37>
+		JRST	.+1]			;<KPJ.37> ho hum
+	CALL	prfina##			;<KPJ.30> output file name
+	 JRST[	MOVE	str,t		;<KPJ.62> save error code
+		CALL	errmsg##	;<KPJ.62>
+		JRST	opouf9]		;<KPJ.62>
+>;T10
+T20,<	MOVEI	gp1,ofiopn		;point out reality
+	CALL	prfina##
+	 JRST[	MOVE	str,t		;<KPJ.62> save error code
+		CALL	errmsg##	;<KPJ.62> display it
+		JRST	opouf9]		;<KPJ.62>
+	MOVE	1,ofiopn+.HMJFN		;get JFN
+	MOVE	2,ofiopn+.HMBSZ		;get byte size
+	IORI	2,OF%APP		;append access
+	OPENF%				;open the file
+	 ERJMP	opouf9
+>;T20
+T10,<	CALL	qwritf			;[SEE] allowed to write this file?
+	 JRST	opouf9			;[SEE] no, give error return
+>;T10
+	SETZM	errfl##			;file opened
+opouf9:	return
+
+
+
+
+
+;+
+T10,<
+;QWRITF		check if we are allowed to write this file [SEE]
+;returns	+1	if not allowed
+;		+2	if allowed
+;-
+
+qwritf:	MOVE	t,ofile+.RBPPN		;get PPN where file is to be written
+	TLNE	t,-1			;PATH block pointer?
+	 MOVEM	t,ofipat+.PTPPN		;it's a PPN, make sure we use it
+	MOVE	t,ofipat+.PTPPN		;get PPN
+	CAME	t,komppn		;is it KOM:?
+	 JRST	qwrit8			;no, then it's probably allowed
+	CALL	chkadm##		;are we in administrator mode?
+	 TRNA				;no, more checking needed
+	  JRST	qwrit8			;yes, we're a wizard
+	SKIPN	ofile+.RBSIZ		;is there anything in the file?
+	 JRST	qwrit6			;no, don't allow creating new files (?)
+	MOVE	t,ofipat+.PTPPN		;get file's PPN
+	XOR	t,selfpp##		;compare with our PPN
+	JUMPN	t,qwrit1		;same PPN?
+	LDB	t,[POINT 3,ofile+.RBPRV,2] ;get protection against self
+	CAIG	t,2			;append allowed?
+	 JRST	qwrit8			;yes, tell happy news
+	CAIE	t,4			;these 2 protection codes are the same
+	 CAIN	t,5			;as codes 1 and 2, respectively
+	  JRST	qwrit8			;this is also good...
+	JRST	qwrit6			;go close file, we can't append to it
+qwrit1:	MOVE	gp1,[POINT 3,ofile+.RBPRV,5] ;point to project protection
+	TLNE	t,-1			;is it the same project?
+	MOVE	gp1,[POINT 3,ofile+.RBPRV,8] ;no, point to world protection
+	LDB	t,gp1			;get protection
+	CAIG	t,.PTAPP		;are we allowed to append to file?
+	 JRST	qwrit8			;yes, return happy news
+
+qwrit6:	PUSH	P,ofiopn+.FOIOS		;save IO status word
+	MOVEI	t,CL.RST		;inhibit file updating on CLOSE
+	IORM	t,ofiopn+.FOIOS		;put it in status word
+
+Range	(oficha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,QWRITF,<
+IFE	ftpriv,<MOVE	t,[FLD(oficha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+IFN	ftpriv,<MOVE	t,[FO.PRV!FLD(oficha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+	MOVEM	t,ofiopn+.FOFNC		;save flags, channel, operation
+>);End Range
+	MOVE	t,[ofilen,,ofiopn]	;<KPJ.111> len,,addr
+	FILOP.	t,			;close file
+	 JRST[	MOVE	gp1,t		;<KPJ.111> get error code
+		CALL	badcls		;<KPJ.111>
+		JRST	.+1]		;<KPJ.111>
+	POP	P,ofiopn+.FOIOS		;restore old IO status
+	TRNA
+qwrit8:	 skpret				;give good return
+qwrit9:	return
+>;T10
+
+
+
+;+
+;.SIZEF		return file size, in bytes
+;	Restrictions (***FOO***):
+;		T10:	assumes last word is filled up
+;			assumes file is always on disk
+;		T20:	assumes a byte size of 7 bits
+;			assumes no [Holes in file]
+;
+;accepts	BFP	T10: file block address
+;			T20: file JFN
+;returns:	+1	empty file (or not disk)
+;		+2	not empty file
+;		NR	size in bytes
+
+.sizef:
+T10,<	SKIPG	nr,.RBSIZ(bfp)		;get file size
+	 JRST	.size1			;empty file, don't report it
+	IMULI	nr,5			;***FOO*** multiply by 5 to get #chars
+>;T10
+T20,<	MOVE	1,bfp			;get the JFN
+	SIZEF%				;get file size
+	 ERJMP[	CAIN	1,DESX8		;[BDQ] File is not on disk?
+		 JRST	.size1		;[BDQ] no problem -- treat as empty
+		BUG(HLT,<.sizef monfil>,<1,bfp>)]
+	MOVE	nr,2			;***FOO*** number of bytes
+	JUMPE	nr,.size1		;[BDQ] empty file
+>;T20
+	skpret				;+2 non-empty file return
+.size1:	return				;+1 empty file return
+
+
+;+
+;REPSIZ		report file size
+;		if personal flag EXPANSION OF ABBREVIATIONS is OFF, no report
+;		if empty file, no report
+;		T10: 5*<number of words>	(***FOO***: NULs at end...)
+;		T20: recorded number of bytes	(***FOO***: byte size...)
+;
+;accepts	BFP	T10: file block address
+;			T20: file JFN
+;-
+
+repsiz:	save	<str,nr>
+	CALL	qexpan##		;[KPJ.7] expansion flag ON?
+	 JRST	repsi9			;no, immediate return
+	CALL	.sizef			;[KPJ.7] get file size, in bytes
+	 JRST	repsi9			;[KPJ.7] empty file
+	PUSH	P,consum##		;<KPJ.47> save consumer
+	CALL	tcbeg##			;<KPJ.47> message to terminal
+	CALL	preol##			;new line
+	print	zfisiz##		;"File size is "
+T10,<	print	zcirca##>		;<KPJ.23> "approximately "
+	CALL	prnum##			;output size
+	print	zfilsi##		;" characters."
+	CALL	tcend##			;<KPJ.47> end of terminal message
+	POP	P,consum##		;<KPJ.47> restore consumer
+repsi9:	return
+
+
+
+
+
+
+
+;+
+;FCBEG		start output on file (or might be TMPCOR, if T10)
+;returns	+1	on T20, always. on T10, error return
+;		+2	on T10, success return.
+;-
+
+fcbeg::	MOVE	t,consum##		;save old consumer
+	MOVEM	t,oldcon##
+T10,<	SKIPE	t,ofityp		;<KPJ.47> TMPCOR?
+	 JRST[	MOVEM	t,tmcnam##	;<KPJ.47> yes, save TMPCOR name
+		CALL	tmcbeg##	;<KPJ.47> start consumer
+		 TRNA			;<KPJ.47> failed, +1 return
+		  skpret		;<KPJ.47> success, +2 return
+		JRST	fcbeg9]		;<KPJ.47> return
+>;T10
+	MOVEI	t,filcon##		;no, output on file
+	MOVEM	t,consum##
+T10,<	MOVE	t,ofile+.RBSIZ		;get file size
+	MOVEM	t,filcnt
+	skpret				;<KPJ.47> +2 return always for files
+>;T10
+T20,<	MOVE	1,ofiopn+.HMJFN		;get JFN
+	SIZEF%				;get filesize
+	 ERJMP[	MOVEI	1,.FHSLF	;<KPJ.100> us
+		GETER%			;<KPJ.100> failed, why?
+		HRRZ	2,2		;<KPJ.125> extract error code
+		CAIN	2,DESX8		;<KPJ.125> "File is not on disk"?
+		 JRST[	MOVEI	2,0	;<KPJ.125> yes, fake a zero length file
+			JRST	.+1]	;<KPJ.125>
+		PUSH	P,consum##	;<KPJ.100> save consumer
+		PUSH	P,2		;<KPJ.100> save error code
+		MOVEI	t,tercon##	;<KPJ.100> to TTY
+		MOVEM	t,consum##	;<KPJ.100> . . .
+		CALL	preol##		;<KPJ.100>
+		print	zsizef##	;<KPJ.100> "SIZEF% failed"
+		print	filur2##	;<KPJ.100> "'cos System says:"
+		POP	P,2		;<KPJ.100> restore error code
+		MOVEI	1,.PRIOUT	;<KPJ.100>
+		MOVEI	3,.CHNUL	;<KPJ.100>
+		ERSTR%			;<KPJ.100> well?
+		 nop			;<KPJ.100> **FOO**
+		 nop			;<KPJ.100> **FOO**
+		POP	P,consum##	;<KPJ.100> restore consumer
+		SETZ	2,0		;<KPJ.100> no characters in file, then
+		JRST	fcbeg9]		;<KPJ.125!KPJ.100> die
+	MOVEM	2,filcnt		;number of chars
+>;T20
+	SETZM	intflg##		;clear interrupt
+fcbeg9:	return				;<KPJ.47>
+
+
+
+
+
+;+
+;FPUT		just put a character in file buffer
+;accepts	CH/	character
+;		QUOTAP/	#0 = ignore output
+;returns	QUOTAP/	#0 = error during file output, ignoring output
+;-
+
+fput::	SKIPE	quotap			;<KPJ.100> quota exceeded?
+	 JRST	fput9			;<KPJ.100> yes, exit fast
+T10,<	SOSGE	ofibuf+2		;<KPJ.124!KPJ.100> buffer full ?
+	 JRST[	CALL	foutpu		;<KPJ.100> yes, output buffer
+		 JRST	fput9		;<KPJ.100> quota exceeded
+		JRST	.-1]		;<KPJ.124!KPJ.100> try now
+	IDPB	ch,ofibuf+1		;put character in file buffer
+	AOS	filcnt			;<KPJ.123> one more character
+>;T10
+T20,<	MOVE	1,ofiopn+.HMJFN		;get JFN
+	MOVE	2,ch			;get character
+	BOUT%				;output the character
+	 ERJMP[	SETOM	quotap		;<KPJ.100> no more output
+		CALL	badout		;<KPJ.100> tell luser
+		JRST	fput9]		;<KPJ.100> give up
+>;T20
+	AOS	filcnt			;add file char count
+fput9:	return
+
+
+
+
+
+;+
+T10,<
+;FOUTPU		output the file buffer
+;-
+
+foutpu::SKIPE	quotap				;<KPJ.100> ignore output?
+	 JRST	foutp9				;<KPJ.100> yes
+	OUT	oficha,				;no, output buffer
+	 TRNA					;OK
+	  JRST[	SETOM	quotap			;<KPJ.100> no more output
+		PUSH	P,gp1			;<KPJ.100>
+		GETSTS	oficha,gp1		;<KPJ.100> failed, why?
+		CALL	badout			;<KPJ.100> tell luser
+		POP	P,gp1			;<KPJ.100>
+		JRST	foutp9]			;<KPJ.100> give up
+	skpret				;<KPJ.100> +2 return, success
+foutp9:	return				;<KPJ.100>
+>;T10
+
+
+
+
+
+;+
+;FCEND		close output file
+;-
+
+fcend::	SETZM	flgflg##		;clear flag flag
+T10,<	SKIPE	ofityp			;<KPJ.47> TMPCOR?
+	 JRST[	CALL	tmcend##	;<KPJ.47> yes, actually write TMPCOR
+		 nop			;<KPJ.122> failed, no disaster
+		SETZM	ofityp		;<KPJ.47> get rid of TMPCOR, now
+		JRST	fcend9]		;<KPJ.47> and exit
+	CALL	foutpu			;output last text
+	 nop				;<KPJ.100> we'll die anyway
+	SETZM	quotap			;<KPJ.100> reset error
+Range	(oficha,0,<FO.CHN_<POS(FO.CHN)-^D35>>,FCEND,< 
+				;<KPJ.111> close output file
+IFE	ftpriv,<MOVE	t,[FLD(oficha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+IFN	ftpriv,<MOVE	t,[FO.PRV!FLD(oficha,FO.CHN)!FLD(.FOCLS,FO.FNC)]>
+	MOVEM	t,ofiopn+.FOFNC		;save flags, channel, operation
+>);End Range
+	MOVE	t,[ofilen,,ofiopn]	;<KPJ.111> len,,argblk
+	FILOP.	t,			;close file
+	 JRST	fcend8			;<KPJ.100> failed
+>;T10
+T20,<	MOVE	1,ofiopn+.HMJFN		;close output JFN
+	CLOSF%
+	 ERJMP	fcend8			;<KPJ.100> failed
+>;T20
+	JRST	fcend9			;<KPJ.100> success
+fcend8:
+T10,<	MOVE	gp1,t>			;<KPJ.100> save error code
+	CALL	badcls			;<KPJ.100> tell luser
+	SETOM	errfl##			;<KPJ.100> remember we got an error
+fcend9:	SETZM	quotap			;<KPJ.100> all's well again
+	return
+
+
+
+
+
+
+;+
+;INIREA		initialize the disk for read only access
+;errors		"inirea-0 monfil"	if channel# is invalid
+;returns	+1 on error
+;		+2 on success
+;-
+
+inirea::CALL	sefina			;set file name
+
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 BUG(HLT,<inirea-0 monfil>,<curcha>)
+					;<KPJ.111> no, halt!
+IFE	ftpriv,<MOVEI	t2,.FORED>	;<KPJ.111> read file
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FORED,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> insert channel
+	MOVEM	t2,opncen##+.FOFNC	;<KPJ.111> save channel,function
+	MOVE	t,[opnlen##,,opncen##]	;<KPJ.111> len,,argblk
+	FILOP.	t,			;do file operation
+	 JRST	inire8			;<KPJ.55> not possible
+>;T10
+T20,<	MOVSI	1,(GJ%SHT!GJ%PHY!GJ%ACC!GJ%OLD)	;physical device, old file
+	HRROI	2,opncen##+.HMNAM	;pointer to file name
+	GTJFN%				;get a handle
+	 ERJMP	inire8			;<KPJ.55> ....failed
+	HRRZM	1,opncen##+.HMJFN	;save JFN
+	HRRZM	1,@curcha		;save in "current channel" too
+	MOVE	2,opncen##+.HMBSZ	;get byte size
+	IORI	2,<OF%THW!OF%RD>	;thawed access, read
+					;<KPJ.7> open the file
+IFN	ftjsys,<KOM%>			;if have it, use the special JSYS here
+IFE	ftjsys,<OPENF%>			;else use standard OPENF%
+	 JRST	inire8			;<KPJ.55> ....failed
+>;T20
+	SETOM	reaflg			;read only access
+	CALL	iniinf			;input info file
+	skpret				;<KPJ.55> success, +2 return
+	JRST	inire9			;<KPJ.55>
+inire8:	print	zcombl##		;<KPJ.55> KOM is blocked, solly
+inire9:	return				;<KPJ.55>
+
+
+
+
+
+;+
+;GETBUF		get buffer
+;accepts	GP1/	file number
+;returns	TXT/	buffer pointer
+;		CURCHA/	current IO channel (Tops-10)
+;			current JFN (TOPS-20)
+;-
+
+getbuf::MOVE	txt,buftab(gp1)		; get buffer
+T10,<	MOVEI	t,cencha>		; central channel
+T20,<	MOVEI	t,cenjfn>		;[BDQ] address of central JFN
+	SKIPN	gp1			;new file?
+T10,<	 MOVEI	t,newcha>		;yes
+T20,<	 MOVEI	t,newjfn>		;[BDQ] yes, point to new JFN
+T10,<	MOVEM	t,curcha>		;
+T20,<	HRRM	t,curcha>		;[BDQ] store pointer in curcha
+getbu9:	return
+
+;+
+; BUFTAB  --  buffer table
+; translates a file number to corresponding file buffer
+;-
+
+buftab:	newbuf			; new file
+	metbuf			; meta file
+	infbuf			; inf file
+	texbuf			; text file
+	dirbuf			; directory file
+	pnabuf			; person name file
+	perbuf			; person file
+	pacbuf			; person active file
+	mnabuf			; meeting name file
+	meebuf			; meeting object file
+	numbuf			; number file
+	lnkbuf			; link file
+	prebuf			; present file
+	locbuf			; local data file
+	lacbuf			; local active file
+	marbuf			; mark file
+IFN	ftemp2,<		;<KPJ.103!KPJ.102>
+	enabuf			; employee name file
+	empbuf			; employee file
+>;ftemp2
+	subbuf			; sub meeting file
+	sacbuf			; sub meeting active file
+
+
+
+
+
+;+
+;INIDSK		initialize the disk
+;errors		"inidsk-0 monfil"	if channel# invalid (T10)
+;-
+
+inidsk::
+T10,<	save	<gp1>>			;<KPJ.56>
+	CALL	sefina			;set file name
+					;<BCQ> open for update
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 BUG(HLT,<inidsk-00 monfil>,<curcha>)
+					;<KPJ.111> no, halt!
+IFE	ftpriv,<MOVEI	t2,.FOMAU>	;<KPJ.111> update file
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOMAU,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> insert channel
+	MOVEM	t2,opncen##+.FOFNC	;<KPJ.111> save channel,function
+	MOVE	t,[opnlen##,,opncen##]	;<KPJ.111> len,,addr
+	FILOP.	t,
+	 JRST	inids8			;<KPJ.56> failed, say why
+>;T10
+T20,<
+					;short,physical device,old file
+IFE	ftjsys,<MOVSI	1,(GJ%SHT!GJ%PHY!GJ%ACC!GJ%OLD)> ;OPENF% - be secret
+IFN	ftjsys,<MOVSI	1,(GJ%SHT!GJ%PHY!GJ%OLD)> 	 ;KOM% - less secret
+	HRROI	2,opncen##+.HMNAM	;pointer to file name
+	GTJFN%				;get a handle
+	 ERJMP	inids8			;...failed
+	HRRZM	1,opncen##+.HMJFN	;save JFN
+	HRRZM	1,@curcha		;save in "current channel" too
+	MOVE	2,opncen##+.HMBSZ	;get byte size
+	IORI	2,<OF%THW!OF%WR!OF%RD>	;readwritethawed access
+IFE	ftjsys,<OPENF%>			;if no special JSYS, OPENF% the file
+IFN	ftjsys,<KOM%>			;else use magic to open the file
+	 ERJMP	inids8			;...failed
+>;T20
+	SETZM	reaflg			;write access
+	CALL	iniinf			;input info file
+	CALL	chbusi			;check buffer sizes
+	return
+
+inids8:
+T10,<	MOVE	gp1,t			;<KPJ.56> save error code
+	PUSH	P,gp1			;<KPJ.56>
+>;T10
+	print	zcombl##		;data base inaccessible
+	CALL	preol##			;new line
+T10,<	POP	P,gp1>			;<KPJ.56> restore error code
+	CALL	badfil			;<KPJ.56> say what went wrong
+	CALL	toutpu##		;<KPJ.56> empty buffer
+	JRST	endko8##		;<KPJ.20> die fast
+
+
+
+
+;+
+;SEFINA		set file name
+;-
+
+sefina:
+T10,<	MOVE	t,cendev##		;<KPJ.60> get device
+	MOVEM	t,opncen##+.FODEV	;<KPJ.60> set device
+	MOVE	t,cennam##		;set file name
+	MOVEM	t,cenfil##+.RBNAM
+	MOVE	t,cenext##		;<KPJ.60> get extension
+	MOVEM	t,cenfil##+.RBEXT	;<KPJ.60> set extension
+	MOVE	t,cenpro##		;set protection
+	MOVEM	t,cenfil##+.RBPRV
+IFE	ftphys,<MOVEI	t,.IODMP>	;<KPJ.60> simple DUMP mode
+IFN	ftphys,<MOVE	t,[.IODMP!UU.PHS]> ;<KPJ.60> physical DUMP
+	MOVEM	t,opncen##+.FOIOS	;<KPJ.60> set it
+>;T10
+T20,<	HRROI	1,opncen##+.HMNAM	;pointer to dest.
+	HRROI	2,cennam##		;pointer to file name
+	MOVEI	3,^D39*2		;max length
+	SETZ	4,.CHNUL		;or terminate on null
+	SOUT%				;move the string
+	MOVEI	2,.CHSEM		;beginning of an attribute
+	DPB	2,1			;store that
+	HRROI	2,cenpro##		;pointer to protection string
+	MOVEI	3,8			;max 8 chars
+	SOUT%				;move the string
+>;T20
+	return
+
+;+
+;INIINF		initialize info file
+;-
+
+iniinf:	save	<gp1,nr,txt>
+T10,<	MOVE	t,cenpat##+.PTPPN	;[SEE] get directory of central file
+	MOVEM	t,komppn		;[SEE] save it for QREAD check
+>;T10
+	MOVEI	gp1,inf			;get info file
+	CALL	getbuf			;get buffer
+	MOVE	t,[IOWD infbsi*blksiz,infsta##]
+	MOVEM	t,bufdcb(txt)
+	MOVEI	t,infsta##		; set inf buffer pointer
+	MOVEM	t,bufbeg(txt)
+	MOVEI	gp1,met			; get meta file
+	CALL	getbuf			; get buffer
+	MOVE	t,[IOWD metbsi*blksiz,metsta##]
+	MOVEM	t,bufdcb(txt)
+	MOVEI	t,metsta##		;set buffer pointer
+	MOVEM	t,bufbeg(txt)
+
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 BUG(HLT,<inidsk-01 monfil>,<curcha>)
+					;<KPJ.111> no, halt!
+IFE	ftpriv,<MOVEI	t2,.FOINP>	;<KPJ.111> INPUT
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOINP,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> insert channel
+	MOVEI	t3,bufdcb(txt)		;<KPJ.111> get buffer pointer
+IFE	<t3-t2-1>,<			;<KPJ.111> can use ACs
+	MOVE	t,[2,,t2]		;<KPJ.111>
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.111> cannot use ACs
+	MOVEM	t2,inout+0		;<KPJ.111> save flags,channel,operation
+	MOVEM	t3,inout+1		;<KPJ.111> save buffer adress
+	MOVE	t,[2,,inout]		;len,,addr
+>;t3#t2+1
+	FILOP.	t,			;input
+	 JRST	iniin1
+>;T10
+T20,<	HRRZ	1,@curcha		;JFN 
+	HRRZ	2,bufdcb(txt)		;get IOWD address of buffer
+	HRLI	2,(POINT ^D36,,^D35)	;make a pointer to it
+	HLRE	3,bufdcb(txt)		;get (negative) count of words
+	SIN%				;read the buffer
+	 ERJMP	iniin1			;...failed
+>;T20
+	MOVEI	nr,firblk		;first block
+	MOVEM	nr,metbuf+bufblk	;prevent allocation
+	CALL	inblk			;input block
+	return
+
+iniin1:	CALL	preol##			;new line
+	print	zdbmis##		;"Data base missing"
+	JRST	endko8##		;leave quickly
+
+
+
+
+;+
+;INBLK		T10:	position and read a disk block
+;		T20:	position and read 200 (octal) words from file
+;accepts	NR/	block#
+;		GP1/	file#
+;returns	+1 success
+;failures	"inblk-0 monfil"	if channel# is out of bounds (T10)
+;		"inblk-1 monfil"	if file positioning fails
+;		"end of file"		if file read returns EOF
+;		"inblk-2 monfil"	if file read returns any other error
+;		"inblk-3 monfil"	if block# is out of bounds
+;		"inblk-4 monfil"	if channel# is out of bounds (T10)
+;-
+
+inblk::	save	<txt>
+inblkx:	CALL	blktrc			;<KPJ.34> trace
+	CALL	getbuf			;get KOM control block for file
+	JUMPLE	nr,[error <inblk-3 monfil>]
+					;<KPJ.111> crash if block# is invalid
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+					;<KPJ.111> is it correct?
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 BUG(HLT,<inblk-0 monfil>,<curcha>)
+					;<KPJ.111> no, halt!
+IFE	ftpriv,<MOVEI	t2,.FOUSI>	;<KPJ.111> just plain USETI code
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOUSI,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> store channel#
+IFE	<t3-t2-1>,<			;<KPJ.111> can use ACs to store it
+	MOVE	t3,nr			;<KPJ.111> get block#
+	MOVE	t,[2,,t2]		;<KPJ.111> length,,argument block
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.111> cannot use ACs, use USET
+	MOVEM	t2,uset+0		;<KPJ.111>
+	MOVEM	nr,uset+1		;<KPJ.111>
+	MOVE	t,[2,,uset]		;<KPJ.111>
+>;t3#t2+1
+	FILOP.	t,			;perform USETI
+	 Bug(hlt,<inblk-1 monfil>,<t,curcha,t2,nr>)
+>;T10
+T20,<	MOVE	1,@curcha		;get JFN
+	MOVE	2,nr			;get block#
+	IMULI	2,blksiz		;convert block# to byte#
+	SFPTR%				;set file pointer
+	 Bug(hlt,<inblk-1 monfil>,<1,@curcha,2,nr>)
+					;...failed, die
+>;T20
+
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 Bug(hlt,<inblk-4 monfil>,<curcha>)
+					;<KPJ.111> no, halt!
+IFE	ftpriv,<MOVEI	t2,.FOINP>	;<KPJ.111> just plain function code
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOINP,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> store channel#
+	MOVEI	t3,bufdcb(txt)		;get memory address of file buffer
+IFE	<t3-t2-1>,<			;<KPJ.111> can use ACs to store it
+	MOVE	t,[2,,t2]		;<KPJ.111> length,,argument block
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.111> cannot use ACs, use INOUT
+	MOVEM	t2,inout+0		;<KPJ.111>
+	MOVEM	t3,inout+1		;<KPJ.111>
+	MOVE	t,[2,,inout]		;<KPJ.111>
+>;t3#t2+1
+	FILOP.	t,			;input block
+	 JRST[	TRNN	t,IO.EOF	;end of file?
+		 Bug(hlt,<inblk-2 monfil>,<t,curcha,t2,t3>)
+		Bug(hlt,<eof monfil>,<t,curcha,t2,t3>)]
+>;T10
+T20,<	HRRZ	1,@curcha		;JFN 
+	HRRZ	2,bufdcb(txt)		;get IOWD address of buffer
+	HRLI	2,(POINT ^D36,,^D35)	;make a pointer to it
+	HLRE	3,bufdcb(txt)		;get (negative) count of words
+inblx::	SIN%				;read the buffer
+	ERJMP[	PUSH	P,2		;save byte pointer
+		MOVEI	1,.FHSLF	;this fork
+		GETER%			;get last error for it
+		HRRZ	1,2		;shuffle
+		POP	P,2		;restore byte pointer
+		CAIN	1,IOX4		;was it end of file?
+		 Bug(hlt,<inblk-2 monfil>,<1,@curcha,2,3>)
+		Bug(hlt,<eof monfil>,<1,@curcha,2,3>)]
+>;T20
+	MOVEM	nr,bufblk(txt)		;save current block number
+	MOVE	t,updcnt##
+	MOVEM	t,bufver(txt)		;save update count
+	AOS	bufrac(txt)		;one more read access
+	AOS	reaacc(gp1)		;one more file access
+inblk9:	return
+
+
+;+
+;CHBUSI		check buffer sizes
+;-
+
+chbusi:	save	<gp1,bfp,txt,gp2>
+	MOVEI	gp1,met			;get meta file
+	CALL	gemere##		;get meta record
+	MOVE	gp1,metmax(bfp)		;get last file
+chbus1:	CAIN	gp1,met			;meta file ?
+	 JRST	chbus9			;dont change it
+	CALL	gemere##		;get meta record
+	CALL	getbuf			;get buffer
+	PUSH	P,gp1			;save file
+	MOVE	gp1,metmax(bfp)		;get number of records
+	SUBI	gp1,1
+	IDIV	gp1,metrpb(bfp)		;get number of blocks in file
+	ADDI	gp1,1
+	CAML	gp1,bufbsz(txt)		;file too small ?
+	 JRST	chbus2			;no
+	MOVEM	gp1,bufbsz(txt)		;shrink buffer
+	LSH	gp1,blkssi		;get number of words
+	MOVN	gp1,gp1			;make it negative
+	HRLM	gp1,bufdcb(txt)		;set new IO word
+chbus2:	POP	P,gp1			;get file again
+	SOJG	gp1,chbus1		;get next file
+chbus9:	return
+
+
+
+
+
+;+
+;OUTBLK		output a disk block
+;accepts	GP1/	file number
+;errors		"outblk-0 monfil"	if block# is invalid (T10), .FOUSO
+;		"outblk-1 monfil"	if file positioning fails
+;		"outblk-2 monfil"	if file write fails
+;		"outblk-4 monfil"	if block# is invalid (T10), .FOOUT
+;-
+
+outblk::save	<nr,txt>
+	CALL	getbuf			;get buffer
+	SETZM	bufwri(txt)		;clear written flag
+	AOS	wriacc(gp1)		;[KPJ.5] one more write access
+	AOS	bufwac(txt)		;one more write access
+	CALL	qlogin##		;<KPJ.22> are we logged in?
+	 TRNA				;<KPJ.22> yes, output block
+	  JRST	outbl9			;<KPJ.22> no, forget this
+
+	MOVE	nr,bufblk(txt)		;get block number
+outbkx:	CALL	blktrc			;<KPJ.34> trace
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 Bug(hlt,<outblk-0 monfil>,<curcha>)
+					;<KPJ.111> no, halt!
+IFE	ftpriv,<MOVEI	t2,.FOUSO>	;<KPJ.111> just plain USETO code
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOUSO,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> store channel#
+IFE	<t3-t2-1>,<			;<KPJ.111> can use ACs to store it
+	MOVE	t3,nr			;<KPJ.111> get block#
+	MOVE	t,[2,,t2]		;<KPJ.111> length,,argument block
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.111> cannot use ACs, use USET
+	MOVEM	t2,uset+0		;<KPJ.111>
+	MOVEM	nr,uset+1		;<KPJ.111>
+	MOVE	t,[2,,uset]		;<KPJ.111>
+>;t3#t2+1
+	FILOP.	t,			;perform USETO
+	 Bug(hlt,<outblk-1 monfil>,<t,t2,nr>)
+>;T10
+T20,<	MOVE	2,nr			; get block number
+	IMULI	2,blksiz		; multiply with blocksize for byte pos
+	MOVE	1,@curcha		; JFN
+	SFPTR%				; set byte pos 
+	 Bug(hlt,<outblk-1 monfil>,<1,@curcha,2,nr>)
+>;T20
+
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+					;<KPJ.111> is it correct?
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 Bug(hlt,<outblk-4 monfil>,<curcha>)
+					;<KPJ.111> no, halt!
+IFE	ftpriv,<MOVEI	t2,.FOOUT>	;<KPJ.111> just plain OUPUT code
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOOUT,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> store channel#
+	MOVEI	t3,bufdcb(txt)		;get memory address of file buffer
+IFE	<t3-t2-1>,<			;<KPJ.111> can use ACs to store it
+	MOVE	t,[2,,t2]		;<KPJ.111> length,,argument block
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.111> cannot use ACs, use INOUT
+	MOVEM	t2,inout+0		;<KPJ.111>
+	MOVEM	t3,inout+1		;<KPJ.111>
+	MOVE	t,[2,,inout]		;<KPJ.111>
+>;t3#t2+1
+	FILOP.	t,			;perform OUTPUT
+	 Bug(hlt,<outblk-2 monfil>,<t,t2,t3,nr>)
+>;T10
+T20,<	HRRZ	1,@curcha		;JFN
+	HRRZ	2,bufdcb(txt)		;get IOWD address of buffer
+	HRLI	2,(POINT ^D36,,^D35)	;make a pointer to it
+	HLRE	3,bufdcb(txt)		;get (negative) count of words
+outblx::SOUT%				;<KPJ.52> write the buffer
+	ERCAL[	PUSH	P,2		;save old byte pointer
+		MOVEI	1,.FHSLF	;<KPJ.72> error, what happened?
+		GETER%			;<KPJ.72> get error code
+		HRRZ	1,2		;<KPJ.72> . . .
+		POP	P,2		;restore byte pointer
+		CAIN	1,IOX2		;<KPJ.72> "File not open for writing"?
+		 RET			;yes, no problem, really
+		Bug(hlt,<outblk-2 monfil>,<1,@curcha,2,3,nr>)]
+					;<KPJ.72> no, something awful
+>;T20
+
+outbl9:	return
+
+
+;+
+;NEWDSK		create a new data base (used only from GENDAT@GENERA)
+;accepts	CENSIZ=	file size
+;		OFIOPN	file block 1
+;		OFILE	file block 2
+;returns	+1 on success
+;		jumps to ENDKO8@QUIT on failure (bye, bye...)
+;-
+
+newdsk::save	<nr>
+	print	newdz0##		;say hello to user: "HELLO."
+	CALL	toutpu##		;empty the buffer
+T10,<	MOVE	t,ofiopn+.FODEV		;<KPJ.67> copy the device
+	MOVEM	t,opncen##+.FODEV	;<KPJ.67>
+	MOVE	t,[ofile,,cenfil##]	;<KPJ.67> copy the file name
+	BLT	t,cenfil##+cenlen##	;<KPJ.67>
+	MOVE	t,[ofipat,,cenpat##]	;<KPJ.67> copy path
+	BLT	t,cenpat##+.PTPPN+1	;<KPJ.67>
+	MOVE	t,curcha		;<KPJ.111> get channel#
+					;<KPJ.111> is it OK?
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 JRST[	OUTSTR	newzd0##	;<KPJ.111> "channel# is invalid"
+		JRST	endko8##]	;<KPJ.111> die
+IFE	ftpriv,<MOVEI	t2,.FOMAU>	;<KPJ.111> just open file for UPDATE
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOMAU,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> put in channel
+	MOVEM	t2,opncen##+.FOFNC	;<KPJ.111> save flags,channel,function
+	MOVE	t,[opnlen##,,opncen##]	;len,,argblk
+	FILOP.	t,			;open file for UPDATE
+	 JRST[	MOVE	gp1,t		;<KPJ.32> save error code
+		CALL	badfil		;<KPJ.32> say what went wrong
+		CALL	toutpu##	;<KPJ.32> empty buffer
+		JRST	endko8##]	;<KPJ.32!KPJ.7> failed to open, die
+>;T10
+T20,<	MOVE	1,ofiopn+.HMJFN		;<KPJ.67> get JFN
+	HRRZM	1,opncen##+.HMJFN	;<KPJ.32!KPJ.7> save JFN
+	HRRZM	1,@curcha		;<KPJ.67!KPJ.7> save JFN here too
+	MOVE	2,[FLD(^D36,OF%BSZ)]	;<KPJ.32> use 36 bits bytes
+	IORI	2,<OF%RD!OF%WR>		;[KPJ.7] read and write access
+	MOVEM	2,opncen##+.HMBSZ	;<KPJ.32> save byte size
+IFE	ftjsys,<OPENF%>			;<KPJ.7> open the file
+IFN	ftjsys,<KOM%>			;<KPJ.7> open the file
+	 ERJMP[	CALL	preol##		;<KPJ.32> new line
+		CALL	badfil		;<KPJ.32> say what went wrong
+		JRST	endko8##]	;<KPJ.32> curl up and die
+>;T20
+	CALL	preol##			;<KPJ.67> success, new line
+	print	newdz2##		;<KPJ.32> "creating all blocks in file"
+	CALL	toutpu##		;<KPJ.32> tell luser about this
+
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+					;<KPJ.111> is it OK?
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 JRST[	print	newzd0##	;<KPJ.111> "channel# is invalid"
+		JRST	endko8##]	;<KPJ.111> die
+IFE	ftpriv,<MOVEI	t2,.FOUSO>	;<KPJ.111> just plain code
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOUSO,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> put in channel
+	MOVEI	t3,censiz##		;<KPJ.32> get data base size in blocks
+IFE	<t3-t2-1>,<			;<KPJ.32>
+	MOVE	t,[2,,t2]		;<KPJ.32>
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.32> can't use ACs
+	MOVEM	t2,uset+0		;<KPJ.32> right, use memory
+	MOVEM	t3,uset+1		;<KPJ.32>
+	MOVE	t,[2,,uset]		;<KPJ.32>
+>;t3#t2+1
+	FILOP.	t,			;perform USETO
+	 JRST[	MOVE	gp1,t		;<KPJ.32> save error code
+		print	newdz1##	;<KPJ.32> tell luser we've a problem
+		CALL	toutpu##	;<KPJ.32> empty buffer
+		CALL	badfil		;<KPJ.32> go tell the sad story
+		JRST	endko8##]	;<KPJ.32> curl up and die
+>;T10
+T20,<	MOVE	1,opncen##+.HMJFN	;<KPJ.70> JFN
+	MOVEI	2,censiz##		;<KPJ.76!KPJ.70> database size (blocks)
+	IMULI	2,blksiz		;<KPJ.70> compute #bytes (words)
+	SFPTR%				;<KPJ.70> put us at EOF
+	 ERJMP[	print	newdz1##	;<KPJ.32> tell luser we've a problem
+		CALL	toutpu##	;<KPJ.32> empty buffer
+		CALL	badfil		;<KPJ.32> go tell the sad story
+		JRST	endko8##]	;<KPJ.32> curl up and die
+>;T20
+	CALL	preol##			;<KPJ.32> happy return
+	print	newdz9##		;<KPJ.32> gee! wow! ..etc
+	return
+
+
+
+
+
+;+
+;RELASE		release all channels and terminal
+;-
+
+relase::
+T10,<	RELEAS	cencha,		;release central file
+	RELEAS	ificha,		;release input file channel
+	RELEAS	oficha,		;release output file channel
+>;T10
+T20,<	MOVE	1,[CZ%NIF!.FHSLF] ;don't close inferior's files
+	CLZFF%			;close all files
+>;T20
+	branch	reltty##	;release terminal
+
+
+
+
+
+;+
+;CREDSK		initialize the disk (create a data base)
+;returns	+1 on error
+;		+2 on success
+;-
+
+credsk::save	<gp1,nr,txt,str>
+	CALL	sefina			;set file name
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 JRST[	print	newzd0##	;<KPJ.111> "channel# is invalid"
+		JRST	creat9]		;<KPJ.111> die
+IFE	ftpriv,<MOVEI	t2,.FORED>	;<KPJ.111> just plain code
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FORED,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> put in channel
+	MOVEM	t2,opncen##+.FOFNC	;<KPJ.111> save flags,channel,operation
+	MOVE	t,[opnlen##,,opncen##]	;<KPJ.111> len,,argblk
+	FILOP.	t,			;read file
+	 JRST[	print	zcreds##	;failed to open data base
+		JRST	.+1]		;<KPJ.73> OK, let's *write* it
+>;T10
+T20,<
+IFE	ftjsys,<			;<KPJ.74> OPENF% - be secretive
+IFE	ftphys,<MOVSI	1,(GJ%SHT!GJ%ACC)>		;<KPJ.74> platonic
+IFN	ftphys,<MOVSI	1,(GJ%SHT!GJ%PHY!GJ%ACC)>	;<KPJ.74> physical
+>;OPENF%
+IFN	ftjsys,<			;<KPJ.74> KOM%   - less paranoid
+IFE	ftphys,<MOVSI	1,(GJ%SHT)>			;<KPJ.74> platonic
+IFN	ftphys,<MOVSI	1,(GJ%SHT!GJ%PHY)>		;<KPJ.74> physical
+>;KOM%
+	HRROI	2,opncen##+.HMNAM	;pointer to file name
+	GTJFN%				;get a handle on file
+	 ERJMP[	MOVEI	1,.FHSLF	;<KPJ.73> us
+		GETER%			;<KPJ.73> get last error
+		PUSH	P,2		;<KPJ.73> save error code
+		CALL	toutpu##	;<KPJ.73> empty buffer
+		HRROI	1,zcred1##	;<KPJ.73> ...failed
+		ESOUT%			;<KPJ.73>
+		POP	P,2		;<KPJ.73> restore error code
+		MOVEI	1,.PRIOUT	;<KPJ.73>
+		MOVEI	3,.CHNUL	;<KPJ.73> ASCIZ
+		ERSTR%			;<KPJ.73> display error message
+		 nop			;<KPJ.73> ***FOO***
+		 nop			;<KPJ.73> ***FOO***
+		JRST	creat9]		;<KPJ.73> fail, +1 return
+	HRRZM	1,opncen##+.HMJFN	;save JFN
+	HRRZM	1,@curcha		;save in "current channel" too
+	MOVE	2,opncen##+.HMBSZ	;get byte size
+	IORI	2,<OF%RD!OF%WR>		;read and write access
+IFE	ftjsys,<OPENF%>			;if no special JSYS, OPENF% the file
+IFN	ftjsys,<KOM%>			;use magic to open the file
+	ERJMP[	MOVEI	1,.FHSLF	;<KPJ.73> us
+		GETER%			;<KPj.73> get last error
+		PUSH	P,2		;<KPJ.73> save error code
+		CALL	toutpu##	;<KPJ.73> empty buffer
+		HRROI	1,zcred2##	;<KPJ.73> failed
+		ESOUT%			;<KPJ.73>
+		POP	P,2		;<KPJ.73> restore error code
+		MOVEI	1,.PRIOUT	;<KPJ.73>
+		MOVEI	3,.CHNUL	;<KPJ.73>
+		ERSTR%			;<KPJ.73> display error message
+		 nop			;<KPJ.73> ***FOO***
+		 nop			;<KPJ.73> ***FOO***
+		JRST	creat9]		;<KPJ.73> fail, +1 return
+>;T20
+	MOVEI	gp1,met			; get meta file
+	CALL	getbuf			; get buffer
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 JRST	creat9			;<KPJ.111> give up (***FOO***)
+IFE	ftpriv,<MOVEI	t2,.FOINP>	;<KPJ.111> INPUT
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOINP,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> insert channel#
+	MOVEI	t3,bufdcb(txt)		;<KPJ.111!KPJ.13!KPJ.7> buffer pointer
+IFE	<t3-t2-1>,<			;<KPJ.111> can use ACs
+	MOVE	t,[2,,t2]		;<KPJ.111> len,,argblk
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.111> cannot use ACs
+	MOVEM	t2,inout+0		;<KPJ.111> save flags,channel,operation
+	MOVEM	t3,inout+1		;<KPJ.13!KPJ.7>
+	MOVE	t,[2,,inout]		;len,,argblk
+>;t3#t2+1
+	FILOP.	t,			;perform INPUT
+	 JRST	creat1			;[KPJ.7] failed
+>;T10
+T20,<	HRRZ	1,@curcha		;[KPJ.7] JFN
+	HRRZ	2,bufdcb(txt)		;[KPJ.7] IOWD address of buffer
+	HRLI	2,(POINT ^D36,,^D35)	;[KPJ.7] make a pointer
+	HLRE	3,bufdcb(txt)		;[KPJ.7] get -(length in words)
+	SIN%				;[KPJ.7] read buffer
+	 ERJMP	creat1			;[KPJ.7] does file exist ?
+>;T20
+	print	zcrex##			;<KPJ.14> "file does already exist"
+	JRST	creat9			;yes, dont create a new one
+
+creat1:	CALL	cremet			;create meta file
+	 JRST	creat9			;<KPJ.55> failed, exit quickly
+	print	zdbcre##		;"Data base created"
+	CALL	toutpu##		;output text
+	skpret				;<KPJ.55> success
+creat9:	return
+
+
+
+
+
+
+;+
+;CREMET		create META file
+;accepts	TXT/	buffer pointer
+;returns	+1 on error
+;		+2 on success
+;-
+
+cremet: save	<bfp,gp1,nr>
+T10,<	MOVE	t,cenpro##
+	MOVEM	t,cenfil##+.RBPRV	;set protection
+>;T10
+T20,<	MOVE	1,@curcha		;get JFN
+	TLO	1,(CO%NRJ)		;don't release the JFN
+	CLOSF%				;close the file before reopening
+	 Bug(hlt,<cremet monfil>,<1,@curcha>)
+>;T20
+	print	zcrem0##		;<KPJ.14> "opening data base"
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 JRST[	print	newzd0##	;<KPJ.111> "channel# is invalid"
+		JRST	creme9]		;<KPJ.111>
+IFE	ftpriv,<MOVEI	t2,.FOMAU>	;<KPJ.111> update file
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOMAU,FO.FNC)]>
+	MOVEM	t2,opncen##+.FOFNC	;<KPJ.111> save flags,channel,operation
+	MOVE	t,[opnlen##,,opncen##]	;<KPJ.111> len,,argblk
+	FILOP.	t,			;open file for UPDATE
+	 JRST[	print	zcrem1##	;"failed to open file for update"
+		JRST	creme9]		;<KPJ.55> ...failed
+>;T10
+T20,<
+					;old, physical file
+IFE	ftjsys,<			;<KPJ.74>	OPENF% - be secret
+IFE	ftphys,<MOVSI	1,(GJ%SHT!GJ%ACC!GJ%OLD)>	;<KPJ.74> platonic
+IFN	ftphys,<MOVSI	1,(GJ%SHT!GJ%PHY!GJ%ACC!GJ%OLD)> ;<KPJ.74> physical
+>;OPENF%
+IFN	ftjsys,<			;<KPJ.47>	KOM% - less paranoid
+IFE	ftphys,<MOVSI	1,(GJ%SHT!GJ%OLD)>		;<KPJ.74> platonic
+IFN	ftphys,<MOVSI	1,(GJ%SHT!GJ%PHY!GJ%OLD)>	;<KPJ.74> physical
+>;KOM%
+	HRROI	2,opncen##+.HMNAM	;pointer to file name
+	GTJFN%				;get a handle on file
+	 ERJMP[	MOVEI	1,.FHSLF	;<KPJ.73> us
+		GETER%			;<KPJ.73> get last error code
+		PUSH	P,2		;<KPJ.73> save |ast error code
+		CALL	toutpu##	;<KPJ.73>
+		HRROI	1,zcrem2##	;<KPJ.73> "no handle on data base"
+		ESOUT%			;<KPJ.73>
+		POP	P,2		;<KPJ.73> restore last error code
+		MOVEI	1,.PRIOUT	;<KPJ.73>
+		MOVEI	3,.CHNUL	;<KPJ.73>
+		ERSTR%			;<KPJ.73> give the gory details
+		 nop			;<KPJ.73> ***FOO***
+		 nop			;<KPJ.73> ***FOO***
+		JRST	creme9]		;<KPJ.55> ...failed
+	HRRZM	1,opncen##+.HMJFN	;save JFN
+	HRRZM	1,@curcha		;save in "current channel" too
+	MOVE	2,opncen##+.HMBSZ	;get byte size
+	IORI	2,<OF%THW!OF%WR!OF%RD>	;thawed, write and read access
+IFE	ftjsys,<OPENF%>			;open the file
+IFN	ftjsys,<KOM%>			;open the file
+	 ERJMP[	MOVEI	1,.FHSLF	;<KPJ.73> us
+		GETER%			;<KPJ.73> get last error code
+		PUSH	P,2		;<KPJ.73> save last error code
+		CALL	toutpu##	;<KPJ.73> empty buffer
+		HRROI	1,zcrem3##	;<KPJ.73> "failed to open data base"
+		ESOUT%			;<KPJ.73> sob
+		POP	P,2		;<KPJ.73> restore last error code
+		MOVEI	1,.PRIOUT	;<KPJ.73>
+		MOVEI	3,.CHNUL	;<KPJ.73>
+		ERSTR%			;<KPJ.73> bad news, buddy
+		 nop			;<KPJ.73> ***FOO***
+		 nop			;<KPJ.73> ***FOO***
+		JRST	creme9]		;<KPJ.55> ...failed
+>;T20
+	CALL	preol##			;<KPJ.46!KPJ.14>
+	print	zcrem4##		;<KPJ.75!KPJ.14> "positioning"
+	CALL	toutpu##		;<KPJ.105>
+T10,<	MOVE	t,curcha		;<KPJ.111> get channel#
+	TDNE	t,[^-<FO.CHN_<POS(FO.CHN)-^D35>>]
+	 JRST[	print	newzd0##	;<KPJ.111> "channel# is invalid"
+		JRST	creme9]		;<KPJ.111> give up
+IFE	ftpriv,<MOVEI	t2,.FOUSO>	;<KPJ.111> USETO
+IFN	ftpriv,<MOVE	t2,[FO.PRV!FLD(.FOUSO,FO.FNC)]>
+	DPB	t,[POINTR t2,FO.CHN]	;<KPJ.111> insert channel
+	MOVEI	t3,censiz##		;<KPJ.76> get file size (in blocks)
+IFE	<t3-t2-1>,<			;<KPJ.111> can use ACs
+	MOVE	t,[2,,t2]		;<KPJ.32> len,,argblk
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.111> cannot use ACs
+	MOVEM	t2,uset+0		;<KPJ.32> right, use memory
+	MOVEM	t3,uset+1		;<KPJ.32>
+	MOVE	t,[2,,uset]
+>;t3#t2+1
+	FILOP.	t,			;perform USETO
+	 JRST[	PUSH	P,t		;<KPJ.110> save error code
+		MOVE	gp1,t		;<KPJ.110> . . .
+		CALL	baduse		;<KPJ.110> tell luser about problem
+		POP	P,t		;<KPJ.110> 
+		JRST	creme9]		;<KPJ.110>
+>;T10
+T20,<	HRRZ	1,@curcha		;<KPJ.75> get JFN
+	MOVEI	2,censiz##		;<KPJ.76!KPJ.75> get file size (blocks)
+	IMULI	2,blksiz		;<KPJ.75> make byte (word) counter 
+	SFPTR%				;<KPJ.75> position file
+	 ERJMP[	MOVEI	1,.FHSLF	;<KPJ.110> us
+		GETER%			;<KPJ.110> get last error code
+		PUSH	P,2		;<KPJ.110> save last error code
+		CALL	toutpu##	;<KPJ.110> empty buffer
+		HRROI	1,zcrem9##	;<KPJ.110> "failed to open data base"
+		ESOUT%			;<KPJ.110> sob
+		POP	P,2		;<KPJ.110> restore last error code
+		MOVEI	1,.PRIOUT	;<KPJ.110>
+		MOVEI	3,.CHNUL	;<KPJ.110>
+		ERSTR%			;<KPJ.110> bad news, buddy
+		 nop			;<KPJ.110> ***FOO***
+		 nop			;<KPJ.110> ***FOO***
+		JRST	creme9]		;<KPJ.110> ...failed
+>;T20
+	CALL	preol##			;<KPJ.14>
+	MOVEI	t,firblk		;first block
+	MOVEM	t,bufblk(txt)
+	MOVEI	gp1,met			; get first file
+	CALL	getbuf			; get buffer
+	MOVE	t,[IOWD metbsi*blksiz,metsta##]
+	MOVEM	t,bufdcb(txt)
+	MOVEI	t,metsta##		; set buffer pointer
+	MOVEM	t,bufbeg(txt)
+	MOVEI	txt,metbas##		; get new meta record
+	print	zcreme##			;<KPJ.14> "Creating META file"
+creme1:	CALL	gemere##		; get meta record
+	HRL	bfp,txt			; get new meta record
+	BLT	bfp,infsta##-1		; transfer record
+	ADDI	txt,metsiz		; get next meta record
+	CAIGE	gp1,maxmet		; last file
+	 AOJA	gp1,creme1		; no, get next file
+	MOVEI	gp1,met			; get meta file
+	CALL	outblk			; create it
+	CALL	preol##			;<KPJ.14>
+	skpret				;<KPJ.55>
+creme9:	return
+
+
+
+;+
+;BLKTRC		block trace, output a message to the controlling terminal
+;		if Report Disk Accesses is ON.		<KPJ.34>
+;accepts	SELFFL	own flags
+;		STR	pointer to message
+;		GP1	file#
+;		NR	block#
+;-
+
+blktrc:	MOVE	t,selffl##		;get our flags
+	Txnn	t,rdapfl		;Report Disk Accesses?
+	 JRST	blktr9
+	save	<ch,str>		;<KPJ.64> yes, save old faithfuls
+	MOVE	t,consum##		;<KPJ.64> get consumer
+	CAIN	t,tercon##		;<KPJ.64> terminal?
+	 CALL	toutpu##		;<KPJ.64> yes, output buffer
+	SETZ	str,			;none so far
+	HRRZ	t,-TTQsav(P)		;<KPJ.57> get return address
+	CAIN	t,inblkx+1		;INBLK?
+	 MOVEI	str,[ASCIZ !<INBLK !]	;<KPJ.61> yeah		">"
+	CAIN	t,outbkx+1		;OUTBLK?
+	 MOVEI	str,[ASCIZ !<OUTBLK !]	;<KPJ.61> yes		">"
+	CAIN	str,0			;none?
+	 MOVEI	str,[ASCIZ !<(BLKTRC) !] ;<KPJ.61> none		">"
+T10,<	OUTSTR	@str>			;<KPJ.64> hi there!
+T20,<	HRRO	1,str			;<KPJ.64> hi there!
+	PSOUT%
+>;T20
+	MOVE	t2,gp1			;get file#
+	CAILE	t2,0			;negative?
+	 CAILE	t2,maxmet		;or too large?
+	  JRST[
+T10,<		MOVEI	1,.CTTRM>	;<KPJ.64> on controlling terminal
+T20,<		MOVEI	1,.PRIOUT>	;<KPJ.64!KPJ.35> on primary output
+		MOVE	2,gp1
+		MOVEI	3,<FLD(^D10,NO%RDX)>	;decimal
+T10,<		CALL	.nout##		;<KPJ.64> output file#
+		 OUTSTR	@1		;<KPJ.64!KPJ.61> display error message
+		OUTCHR[	"."]		;<KPJ.64> show it's decimal
+>;T10
+T20,<		NOUT%			;<KPJ.64>
+		 ERCAL[	HRROI	1,[0]
+			ESOUT%
+			MOVEI	1,.PRIOUT
+			HRLOI	2,.FHSLF
+			MOVEI	3,0
+			ERSTR%
+			 nop
+			 nop
+			RET]
+		MOVEI	1,"."		;<KPJ.13> show it's decimal
+		PBOUT%			;<KPJ.13>
+>;T20
+		JRST	blktr1]
+	MOVE	str,gp1			;get file#
+	SUBI	str,1
+	LSH	str,1
+	HRRZ	str,objtab##(str)	;make object type name pointer
+	HLRZ	str,@str		;get object type  name
+T10,<	OUTSTR	@str>			;<KPJ.64> output type name
+T20,<	HRRO	1,str			;<KPJ.64> output type name
+	PSOUT%				;<KPJ.64> . . .
+>;T20
+blktr1:
+T10,<	OUTSTR[	BYTE (7) .CHSPC,"b","l","o","c","k","#",.CHNUL]
+	MOVEI	1,.CTTRM		;<KPJ.64> on controlling terminal
+>;T10
+T20,<	HRROI	1,[	BYTE (7) .CHSPC,"b","l","o","c","k","#",.CHNUL]
+	PSOUT%
+	MOVEI	1,.PRIOUT		;<KPJ.35> on primary output
+>;T20
+	MOVE	2,nr			;get block#
+	MOVEI	3,<FLD(8,NO%RDX)>
+T10,<	CALL	.nout##			;<KPJ.64> output block#
+	 OUTSTR	@1			;<KPJ.64!KPJ.61> display error code
+>;T10
+T20,<	NOUT%				;<KPJ.64>
+	 ERCAL[	HRROI	1,[0]
+		ESOUT%
+		MOVEI	1,.PRIOUT
+		HRLOI	2,.FHSLF
+		MOVEI	3,0
+		ERSTR%
+		 nop
+		 nop
+		RET]
+>;T20
+T10,<	OUTCHR[	.CHRBR]>		;<KPJ.64!KPJ.61> right broket
+T20,<	MOVEI	1,.CHRBR		;<KPJ.64!KPJ.61> right broket
+	PBOUT%
+>;T20
+	rstreg				;back from reality
+blktr9:	RET
+
+	END
+..and no more

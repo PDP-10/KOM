@@ -1,0 +1,196 @@
+;Oden::DSKG:ENTER.MAC<62,7777,MAC> 1986-11-11 03:19:47, Edit by KPJ @ H.HOLE
+;15	Handle +2 return from ALLOCM.
+;Oden::DSKG:ENTER.MAC<62,7777,MAC> 1986-11-10 15:57:46, Edit by KPJ @ L89
+;14	Handle +2 return from ISLURP.
+;Oden::DSKG:ENTER.MAC<62,7777,MAC> 1986-10-15 17:42:00, Edit by KPJ @ L89
+;13	Employee support under FTEMPL.
+;Oden::DSKG:ENTER.MAC<62,7777,MAC> 1986-05-09 09:43:36, Edit by KPJ @ L89
+;12	Handle return correctly from OLDNAM.
+;Oden::DSKD:ENTER.MAC<62,7777,MAC> 1986-01-13 21:48:36, Edit by KPJ
+;11	Define standard settings which make sense when user not logged in.
+;Oden::DSKD:ENTER.MAC<62,7777,MAC> 1985-10-01 01:31:13, Edit by KPJ
+;10	Introduced PROLOG macro.
+;Oden::DSKD:ENTER.MAC[62,7777] 1985-01-30 12:28:58, Edit by KPJ @ L89
+;7	Get rid of CHKCOI routine.
+;Oden::DSKD:ENTER.MAC[62,7777] 1985-01-07 15:28:40, Edit by KPJ @ L89
+;6	Moved language dependent texts to TEXTER. Brushed up code.
+;	Search MACTEN. Got rid of QLFECH call.
+;Oden::DSKD:ENTER.MAC[62,7777] 1984-12-12 20:33:35, Edit by KPJ @ L89
+;5	New routine ALWAYS, called from ENTER@ENTER and WNTLOG@LOGIN
+;	which starts up enough to make news report possible.
+;Oden::DSKD:ENTER.MAC[62,7777] 1984-12-03 09:30:39, Edit by K.Jaakkola
+;4	Somebody obviously believed the personal flags would never use more
+;	than a halfword (Surprise, surprise!). Stop SEARCHing UUOSYM on T20.
+;Oden::DSKD:ENTER.MAC[62,7777] 1984-10-12 13:26:34, Edit by K.JAAKKOLA
+;3	Global never used outside this module: CHKCOI. Local.
+;	Inserted COPYRIGHT macro.
+;Oden::DSKD:ENTER.MAC[62,7777] 1984-09-05 08:46:09, Edit by K.JAAKKOLA
+;2	Stop SWITCH ON and SWITCH OFF fiddling with administrator status
+;	by moving initialization code from SETSTA to ENTER, where it belongs.
+;Oden::Dskd:Enter.Mac[62,7777] 1984-05-14 16:58:13, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(enter)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	copyright <QZ Computer Centre, 1984> ;[KPJ.3]
+
+;	D A T A   A R E A
+
+
+oldtim:	Z			; old time
+mbrbeg::0			;pointer to start of member register
+mbrend::Z			; end of member register
+ncoflg::0			; no command interpretation flag
+
+	CODE
+
+;+
+;ALWAYS		normal startup needed for news report	[KPJ.5]
+;-
+
+always::MOVEI	gp1,sn			;[KPJ.2] set normal status
+	MOVEM	gp1,cursta##		;[KPJ.2] save current status
+	CALL	setsta			;allow commands
+	MOVE	nr,selfnr##		;get self
+	CALL	inmbr			;input member register
+	CALL	updbeg##		;start update
+	CALL	crepre##		;enter COM
+	CALL	actper##		;activate person
+	CALL	updend##		;end of update
+	return
+
+;+
+;ENTER		activate a new or old user into the system
+;accepts	FREE/	start of free area
+;-
+
+enter::	save	<gp1,nr,bfp>
+	CALL	ininew		;initialize some variables
+	CALL	chklog		;is login necessary?
+	 CALL	login##		;yes, login user
+	CALL	always		;<KPJ.5> normal startup
+	CALL	prinew##	;output news report
+	CALL	prnrpr##	;output number of present persons
+	CALL	gettel##	;get telephone number
+	CALL	getadr##	;get address
+	SKIPE	nr,conf##	;test if conference defined
+	 JRST	enter8		;yes, it is
+	CALL	chsyme##	;test system message
+	MOVE	nr,selfnr##	;get self
+	CALL	prmess##	;test for own note to message writers
+	 nop			;no message
+KL10,<	TRNA>			;yes, dont join
+KL10N,<	SKIPA>			;yes, dont join
+enter8:	 CALL	join##		;join conference
+	MOVEM	free,savfre##	;set new start of free area
+	return
+
+
+
+
+
+;+
+;ININEW		initialize new person
+;-
+
+ininew::MOVEI	t,sn		;we are in "normal mode"
+	MOVEM	t,cursta##	;. . . (or matching will run havoc)
+	SETZM	mbrbeg		; clear member register
+	SETZM	nxlenr##	; clear letter news
+	SETZM	nrlett##	; clear number of letters
+	SETZM	nxennr##	; clear entry news
+	SETZM	nxconr##	; clear comment news
+	SETZM	cursub##	; clear sub meeting
+	SETZM	nxoenr##	; clear other news
+	SETZM	nxmanr##	; clear next marked entry
+	SETZM	nrmark##	; clear number of marked
+	MOVE	t,[defpfl]	;[KPJ.4] initialize personal flags
+	MOVEM	t,selffl##	;[KPJ.4]
+	SETZM	nrmemb##	; clear memberships
+IFN	ftempl,<
+	SETZM	nrelnk##	; clear created links
+>;ftempl
+	SETZM	nrmlnk##	;. . .
+	SETZM	nrplnk##	;. . .
+	SETZM	nrtlnk##	;. . .
+	SETZM	selfsy##	; clear seen system message
+	SETZM	cursta##	; clear current status
+	SETZM	lfcnt##		; clear line feed count
+	CALL	timdif		; clear clock
+	MOVEI	t,prmenu##	;top level question
+	MOVEM	t,quest##
+	MOVEI	t,zmenu##	;top menu question
+	MOVEM	t,menuq##
+	SETZM	crenr##		; clear creator number
+	SETZM	lastnr##	; clear last seen entry
+	SETZM	entflg##	; not inside entry
+	MOVEI	t,terpro##	;terminal input
+	MOVEM	t,produc##
+	return
+
+
+
+
+
+;+
+;TIMDIF		get time difference
+;accepts	OLDTIM/	old time
+;returns	+1 always, with GP1/ time difference
+;-
+
+timdif::CALL	gudate##		; get new time
+	SUB	gp1,oldtim		; get difference
+	MOVE	t,curdat##		;set new old time
+	MOVEM	t,oldtim
+	return
+
+;+
+;CHKLOG		test if login necessary
+;returns	+1 if not one user
+;		+2 if one user PPN
+;-
+
+chklog:	save	<nr>
+	SKIPN	nr,selfnr##		;is person defined?
+	 JRST	chklo9			;no, login necessary
+	CALL	oldnam##		;yes, login old user
+	 JRST	chklo9			;<KPJ.12> +1 wrong password
+	 TRNA				;<KPJ.12> +2 wrong object etc
+	  skpret			;	  +3 OK, return + 2
+chklo9:	return
+
+;+
+;SETSTA		set current status
+;-
+
+setsta::save	<gp1>
+	SETZM	ncoflg		; clear command flag
+	MOVE	t,selffl##	;[KPJ.3,7] get personal flags
+	Txnn	t,ncopfl	;[KPJ.7] command interpretation ?
+	 SETOM	ncoflg		; no
+	MOVE	t,selffl##	;[KPJ.6] get own personal flags
+	Txnn	t,lfepfl	;[KPJ.6] LINE FEED ECHO?
+	 CALL	seecof##	;no, clear echo
+	CALL	echon##		; echo on
+	return
+
+
+;+
+;INMBR		input member register
+;accepts	NR/	self
+;-
+
+inmbr::	save	<gp2>
+	CALL	islurp##		;slurp in member register
+	 JRST	inmbr9			;<KPJ.14> failed, give up
+	MOVEM	gp2,mbrbeg		;save start of member register
+	ADDI	free,2*losize		;get extra space
+	CALL	allocm##		;allocate it
+	 TRNA				;<KPJ.15> failed, give up
+	  MOVEM	free,mbrend		;save register end
+inmbr9:	return				;<KPJ.14>
+
+	END
+..and no more

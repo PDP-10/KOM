@@ -1,0 +1,360 @@
+;Oden::DSKG:MARK.MAC<62,7777,MAC> 1986-12-11 14:43:35, Edit by KPJ @ L89
+;10     Changed GELAMA to return +2 on success, and +1 on failure (instead of
+;       BUGHLTing with GELAMA MARK message)
+;Oden::DSKG:MARK.MAC<62,7777,MAC> 1986-06-08 03:38:29, Edit by KPJ @ 1SKEDE
+;7      Moved texts to TEXTER.
+;Oden::DSKG:MARK.MAC<62,7777,MAC> 1986-04-24 15:29:25, Edit by KPJ @ L89
+;6      Sanitized code.
+;Oden::DSKD:MARK.MAC<62,7777,MAC> 1985-10-04 19:15:15, Edit by KPJ
+;5      Introduced PROLOG macro.
+;Oden::DSKD:MARK.MAC<62,7777,MAC> 1985-08-21 14:51:26, Edit by KPJ @ DECgrupf
+;4      Ignore anonymity when UNMARKing an entry.
+;Oden::DSKD:MARK.MAC[62,7777] 1984-11-29 03:36:00, Edit by KPJ @ UPSALA
+;3      Say reason we don't allow MARK command ("no read access")
+;Oden::DSKD:MARK.MAC[62,7777] 1984-11-12 17:55:29, Edit by K.JAAKKOLA
+;2      SEARCH UUOSYM only on Tops-10
+;Oden::Dskd:Mark.Mac[62,7777] 1984-08-31 07:54:43, Edit by K.Jaakkola
+;1      Updated (c) notice.
+
+        SEARCH  kommac
+        PROLOG  (mark)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;       (c) QZ Computing Centre, 1984-08-31 07:54:40
+
+;       D A T A   A R E A
+
+
+nrmark::0                               ;number of marked entries
+nxmanr::0                               ;next marked entry
+nxrema: 0                               ;last mark
+
+;       P R O G R A M   C O D E
+
+        CODE
+
+;+
+mark::  comhed  0,amark,marken,ccmark##,zmarhl## ;Mark (entry)
+;-
+
+
+
+
+;+
+;AMARK          argument to mark command
+;returns        ARGLIS/ list of entry numbers
+;-
+
+amark:  save    <quest##>
+        MOVEI   t,askmar                ;ask for entry to mark
+        MOVEM   t,quest##
+        CALL    gtlast##                ;get last seen entry
+        return
+
+
+;+
+;ASKMAR         ask for entry to mark
+;-
+
+askmar: save    <str>
+        CALL    enthlp##                ;entry help
+        print   zasmar##                ;"Which entry do you want to mark?"
+        branch  prher##                 ;herald
+
+
+
+
+
+;+
+;MARKEN         mark entries
+;accepts        ARGLIS/ list of entries
+;-
+
+marken: save    <nr,tp>
+        MOVE    tp,arglis##             ;get entry list
+marke1: JUMPE   tp,marke9               ;ready ?
+        MOVE    nr,0(tp)                ;get entry
+        CALL    cmark                   ;mark entry
+        MOVE    tp,1(tp)                ;get next entry
+        JRST    marke1
+
+marke9: MOVE    t,oldnex##              ;keep next entry flag
+        MOVEM   t,nexflg##
+        return
+
+
+
+
+
+;+
+;CMARK          mark entry
+;accepts:       NR/     entry to mark
+;-
+
+cmark:  save    <str>
+        CALL    qrirea##                ;right to read ?
+         JRST[  CALL    preol##         ;[KPJ.3] no, tell luser that
+                print   znmark##        ;[KPJ.3] "no read access to "
+                CALL    prname##        ;[KPJ.3] show what entry
+                JRST    cmark9]
+        CALL    updbeg##                ;start update
+        MOVEM   nr,marent##             ;set entry to mark
+        CALL    cremar##                ;create mark
+        CALL    updend##                ;end of update
+        CALL    preol##                 ;new line
+        CALL    prname##                ;output entry number
+        print   zmarke##                ;"-marked."
+cmark9: return
+
+
+
+
+
+
+;+
+unmark::comhed  0,aunmar,cunmar,ccunma##,zumahl## ;Unmark (entry)
+;-
+
+
+
+
+;+
+;AUNMAR         argument to UNMARK command
+;returns        ARGLIS/ list of entry numbers
+;-
+
+aunmar: save    <quest##>
+        MOVEI   t,askuma                ;ask for entry to unmark
+        MOVEM   t,quest##
+        CALL    gtlast##                ;get last seen entry
+        return
+
+
+
+
+
+;+
+;ASKUMA         ask for entry to unmark
+;-
+
+askuma: save    <str>
+        CALL    enthlp##                ;entry help
+        print   zasuma##                ;"What entry do you want to unmark?"
+        branch  prher##                 ;herald
+
+
+
+
+
+;+
+;CUNMAR         unmark entries
+;accepts        ARGLIS/ list of entries
+;-
+
+cunmar::save    <nr,tp,str>
+        MOVE    tp,arglis##             ;get list of entries
+cunma1: JUMPE   tp,cunma9               ;ready ?
+        MOVE    nr,0(tp)                ;get entry
+        CALL    umark                   ;unmark entry
+         JRST   cunma3                  ;not marked
+        CAMN    nr,nxmanr               ;next marked ?
+         CALL   geprma                  ;yes, get previous
+        CALL    repuma                  ;report unmarked
+cunma3: MOVE    tp,1(tp)                ;get next entry
+        JRST    cunma1
+
+cunma9: MOVE    t,oldnex##              ;keep next entry flag
+        MOVEM   t,nexflg##
+        return
+
+
+
+
+
+
+;+
+;UMARK          unmark an entry
+;accepts        NR/     entry
+;returns        +1 if not marked
+;               +2 if entry unmarked
+;-
+
+umark:  save    <bfp,gp1,nr>
+        CALL    chkdir                  ;entry ?
+         JRST   umark9                  ;no, skip it
+        CALL    getobj##                ;get entry
+         Bug(hlt,<umark mark>,<nr>)     ;***FOO*** entry does not exist
+        MOVE    nr,dirmar(bfp)          ;get mark
+umark1: CALL    getobj##                ;get it
+         JRST   umark9                  ;not marked
+        MOVM    t1,marcre(bfp)          ;<KPJ.4> get creator (ignore anonymity)
+        MOVM    t2,crenr##              ;<KPJ.4> get me (ignore anonymity)
+        CAMN    t1,t2                   ;<KPJ.4> right mark?
+         JRST   umark2                  ;yes
+        MOVE    nr,marpte(bfp)          ;get previous mark
+        JRST    umark1
+
+umark2: CALL    updbeg##                ;start update
+        CALL    remmar##                ;remove mark
+        CALL    updend##                ;end of update
+        skpret                          ;entry unmarked
+umark9: return
+
+
+
+
+
+;+
+;CHKDIR         check if entry
+;accepts        NR/     object
+;returns        +1 if not an entry
+;               +2 if entry
+;-
+
+chkdir::save    <nr,gp1>
+        CALL    splpoi##                ;split pointer
+        CAIN    gp1,dir                 ;entry ?
+         skpret                         ;yes
+        return
+
+
+
+
+
+;+
+;GEPRMA         get previous marked entry
+;accepts        NXREMA/ last mark
+;returns        NR/     next marked entry
+;-
+
+geprma::save    <bfp,gp1>
+        MOVE    nr,nxrema               ;get last mark
+        CALL    getobj##                ;get it
+         JRST   geprm7                  ;no last mark
+        MOVE    nr,marpcr(bfp)          ;get previous mark
+        CALL    gemaen                  ;get marked entry
+        JRST    geprm9
+
+geprm7: SETZ    nr,                     ;no next entry
+geprm9: MOVEM   nr,nxmanr               ;set next marked
+        SOS     nrmark                  ;one less marked
+        return
+
+
+
+
+
+;+
+;GEMAEN         get marked entry
+;accepts        NR/     mark
+;returns        NR/     marked entry
+;               NXREMA/ marked entry
+;-
+
+gemaen: save    <bfp,gp1>
+gemae1: MOVEM   nr,nxrema               ;save last mark
+        CALL    getobj##                ;get it
+         JRST   gemae7                  ;no more marks
+        SKIPG   0(bfp)                  ;deleted ?
+         JRST   gemae2                  ;mark deleted
+        MOVE    nr,martex(bfp)          ;get entry
+        JRST    gemae9
+
+gemae2: MOVE    nr,marpcr(bfp)          ;get previous mark
+        JRST    gemae1
+
+gemae7: SETZ    nr,                     ;clear next entry
+gemae9: return
+
+
+
+
+
+;+
+;REPUMA         report entry unmarked
+;accepts        NR/     entry
+;-
+
+repuma: save    <str>
+        CALL    preol##                 ;new line
+        CALL    prname##                ;print entry number
+        print   zunmar##                ;" unmarked."
+        return
+
+
+
+
+
+;+
+nexmar::comhed  qnexma,runarg##,cnexma,ccnema##,znmahl## ;(Read) next marked
+;-
+
+
+
+
+;+
+;QNEXMA         check if to include next marked command
+;-
+
+qnexma: CALL    anynew##                ;any news ?
+         JRST   qnexm9                  ;yes
+        SKIPE   nxmanr                  ;any marked entry ?
+         skpret                         ;yes, add command
+qnexm9: return
+
+
+
+
+
+;+
+;CNEXMA         read next marked notice
+;-
+
+cnexma: save    <nr,str>
+        SKIPN   nr,nxmanr               ;any marked entry ?
+         JRST   cnexm8                  ;no
+        CALL    displa##                ;display it
+        CALL    adagli##                ;add to again list
+        CALL    geprma                  ;get previous marked entry
+        JRST    cnexm9
+
+cnexm8: CALL    preol##                 ;blank line
+        print   znomar##                ;"You have seen all marked entries."
+        CALL    gelama                  ;get last marked again
+         nop                            ;<KPJ.10> no next marked
+cnexm9: return
+
+
+
+
+
+
+;+
+;GELAMA         get last mark
+;accepts        BFP/    person
+;returns        +1 failure
+;               NR/     0 (no next mark)
+;               NRMARK/ 0 (no marks)
+;               NXMARK/ 0 (no next mark)
+;               +2 success
+;               NR/     last marked entry
+;               NRMARK/ #marks
+;               NXMANR/ last marked entry
+;-
+
+gelama::save    <bfp,gp1>
+        MOVE    nr,crenr##              ;get self
+        CALL    getobj##                ;get you
+         JRST[  SETZB   nr,nxmanr       ;<KPJ.10> no next marked
+                SETZM   nrmark          ;<KPJ.10> no marks at all
+                JRST    gelam9]         ;<KPJ.10> failed, give up
+        MOVE    nr,permar(bfp)          ;get last mark
+        MOVE    t,pernma(bfp)           ;save number
+        MOVEM   t,nrmark
+        CALL    gemaen                  ;get marked entry
+        skpret                          ;<KPJ.10> success, +2 return
+        MOVEM   nr,nxmanr               ;<KPJ.10> set next marked
+gelam9: return
+
+        END
+...and no more

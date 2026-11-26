@@ -1,0 +1,9 @@
+=connect^[qs:<kom.6.'A>^M
+=load^[@mik:new20^[^M
+=set^[page-access^[400:677^[no write no copy-on-write^[^M
+=save^[kom.^[^M
+=sys:filddt.exe.^[^M
+=get^[kom.^[/p^[^M
+=cennam!""kom:'A-kom."^M
+=^Z
+

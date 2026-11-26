@@ -1,0 +1,233 @@
+;Oden::DSKG:SYSINF.MAC<62,7777,MAC> 1987-09-09 09:47:28, KPJ @ L89 <10,50>
+;7	Add special conference information to SYSTEM INFORMATION display.
+;Oden::DSKG:SYSINF.MAC<62,7777,MAC> 1987-01-26 13:37:42, Edit by KPJ @ DK
+;6	Get rid of funny losing macros. Fixed typos in variabnle name.
+;	Optimized code.
+;Oden::DSKG:SYSINF.MAC<62,7777,MAC> 1986-06-25 01:27:09, Edit by KPJ @ 1SKEDE
+;5	Moved texts to TEXTER.
+;Oden::DSKG:SYSINF.MAC<62,7777,MAC> 1986-04-25 13:04:03, Edit by KPJ @ L89
+;4	Get rid of OPDEFed funny macros.
+;Oden::DSKD:SYSINF.MAC<62,7777,MAC> 1985-10-08 02:00:52, Edit by KPJ
+;3	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:SYSINF.MAC<62,7777,MAC> 1985-07-26 01:28:05, Edit by KPJ @ ORANGE
+;2	Deleted GECOST references.
+;Oden::Dskd:Sysinf.Mac[62,7777] 1984-05-23 07:16:31, Edit by KPJ Jaakkola
+;1	Display INFO file in SYSTEM INFORMATION
+
+	SEARCH	kommac
+	PROLOG	(sysinf)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-23 07:17:08
+
+;	D A T A   A R E A
+
+
+sumrac:	0			; sum of read accesses
+sumwac:	0			; sum of write accesses
+sysflg::0			; system info flag
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+sysinf::comhed	0,noarg##,syinfo,ccsyin##,zsyshl## ;System information
+;-
+
+
+
+
+;+
+; SYINFO  --  print system information
+;-
+
+syinfo:	save	<sysflg>
+	CALL	prfiin		; print file info
+	CALL	preol##		; blank line
+	CALL	prinfo		; print info info
+	CALL	preol2##	; blank line
+	CALL	pversi##	; print version
+	CALL	preol##		; blank line
+	CALL	prsyme##	; print system message
+	SKIPGE	intflg##		;<KPJ.6> interrupt ?
+	 JRST	syinf9			;<KPJ.6> yes
+	SETOM	sysflg		; set system info flag
+	CALL	listco##	; list command statistics
+syinf9:	return
+
+
+
+;+
+; PRFIIN  --  print file info
+;-
+
+prfiin:	save	<gp1,str,tabste##>	;<KPJ.6>
+	MOVEI	t,9			;<KPJ.6> set tab step
+	MOVEM	t,tabste##		;<KPJ.6>
+	SETZM	sumrac			;clear sum
+	SETZM	sumwac			;clear sum
+	CALL	preol##			;blank line
+	CALL	fiinhd			;print file info head
+	MOVEI	gp1,met			;meta file
+prfii1:	CALL	filinf			;print info
+	ADDI	gp1,1			;get next file
+	CAIG	gp1,maxmet		;last file ?
+	 JRST	prfii1			;no
+	CALL	pracsu			;print access sum
+	return
+
+
+
+
+
+;+
+; FIINHD  --  print file info head
+;-
+
+fiinhd:	save	<bfp,str,nr>
+	CALL	prtab##			;print tab
+	CALL	prtab##			;print tab
+	print	zsnumb##		;"numb"
+	CALL	prtab##			;print tab
+	print	zscrea##		;"creat"
+	CALL	prtab##			;print tab
+	print	zsmax##			;"max"
+	CALL	prtab##			;print tab
+	print	zsread##		;"read"
+	CALL	prtab##			;print tab
+	print	zswrit##		;"write"
+	branch	preol##			;new line
+
+
+
+
+;+
+; FILINF  --  print file info
+; gets file number in GP1
+;-
+
+filinf:	save	<bfp,str,nr>
+	CALL	getyna##		;get type name
+	CALL	prstr##			;print it
+	print[	ASCIZ !      !]		;six spaces
+	CALL	prtab##			;print tab
+	CALL	gemere##		;get meta record
+	MOVE	nr,metnr(bfp)		;get number
+	CALL	prnum##			;print it
+	CALL	prtab##			;print tab
+	MOVE	nr,metcnr(bfp)		;get number
+	CALL	prnum##			;print it
+	CALL	prtab##			;print tab
+	MOVE	nr,metmax(bfp)		;get number
+	CALL	prnum##			;print it
+	CALL	prtab##			;print tab
+	MOVE	nr,metrac(bfp)		;get number
+	ADDM	nr,sumrac		;add read accesses
+	CALL	prnum##			;print it
+	CALL	prtab##			;print tab
+	MOVE	nr,metwac(bfp)		;get number
+	ADDM	nr,sumwac		;add write accesses
+	CALL	prnum##			;print it
+	branch	preol##			;new line
+
+
+
+
+
+;+
+;PRACSU		print access sums
+;-
+
+pracsu:	save	<nr,str>
+	print	zsum##			;"Sum:"
+	CALL	prtab##			;tabs
+	CALL	prtab##
+	CALL	prtab##
+	CALL	prtab##
+	CALL	prtab##
+	MOVE	nr,sumrac	; get read accesses
+	CALL	prnum##		; print it
+	CALL	prtab##		; tab
+	MOVE	nr,sumwac	; get write accesses
+	CALL	prnum##		; print it
+	branch	preol##		; new line
+
+
+
+
+;+
+;PRINFU		output special "conference" information
+;-
+
+prinfu:	print	zzzzan##		;<KPJ.7> "Conference announcements: "
+	MOVE	nr,anounc##		;<KPJ.7> get conf announcement receiver
+	CALL	probnr##		;<KPJ.7> output object#
+	CALL	preol##			;<KPJ.7>
+	print	zzzzpr##		;<KPJ.7> "Person announcements: "
+	MOVE	nr,perpre##		;<KPJ.7> get person announcement rcvr
+	CALL	probnr##		;<KPJ.7>
+	CALL	preol##			;<KPJ.7>
+	print	zzzzad##		;<KPJ.7> "Administrator: "
+	MOVE	nr,comadm##		;<KPJ.7> get administrator
+	CALL	probnr##		;<KPJ.7>
+	CALL	preol##			;<KPJ.7>
+	print	zzzzla##		;<KPJ.7> "Notes to message writers: "
+	MOVE	nr,lappar##		;<KPJ.7>
+	CALL	probnr##		;<KPJ.7>
+	CALL	preol##			;<KPJ.7>
+	CALL	preol##			;<KPJ.7>
+	return				;<KPJ.7>
+
+
+;+
+; PRINFO  --  print info info
+;-
+
+prinfo:	save	<str,nr,tabste##,gp1,ch> ;<KPJ.6>
+	MOVEI	t,^D31			;set tab step
+	MOVEM	t,tabste##
+	CALL	prinfu			;<KPJ.7> output special information
+	print	zsupda##		;"Updates: "
+	MOVE	nr,updcnt##		;get number of updates
+	CALL	prnum##			;print it
+	CALL	prtab##			;print tab
+	print	zstoti##		;"Total time: "
+	MOVE	gp1,timsum##		;get total time
+	CALL	acctim##		;print accumulated time
+	CALL	prtab##			;tab
+	print	znrred##		;say read notices
+	MOVE	nr,redsum##		;get sum of read notices
+	CALL	prnum##			;print it
+	CALL	pmeinf			;print meeting info
+	return
+
+
+
+
+
+;+
+; PMEINF  --  print meeting info
+;-
+
+pmeinf:	save	<str,nr,gp1,tp>
+	CALL	preol2##		;blank line
+	MOVE	tp,otytab##		;get type table
+KL10,<	MOVEI	gp1,0>			;<KPJ.6> clear pointer
+KL10N,<	SETZ	gp1,>			;<KPJ.6> clear pointer
+pmein1:	CALL	fircom##		;get type
+	 JRST	pmein9			;end of table
+	SKIPG	nr,nrmeet##(gp1)	;get number of meetings
+	 JRST	pmein2			;no meetings
+	HLRZ	str,0(tp)		;<KPJ.2> get type name
+	CALL	prstr##			;output it
+	print	zcolon##		;output colon
+	CALL	prnum##			;output number
+	CALL	prtab##			;tab
+pmein2:	CALL	necoel##		;get next type
+	AOJA	gp1,pmein1
+
+pmein9:	return
+
+	END
+..and no more

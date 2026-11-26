@@ -1,0 +1,322 @@
+;Oden::DSKG:PRNEWS.MAC<62,7777,MAC> 1986-06-13 19:25:59, Edit by KPJ @ L89
+;10	Moved texts to TEXTER. Sanitized code somewhat.
+;Oden::DSKG:PRNEWS.MAC<62,7777,MAC> 1986-06-12 11:22:01, Edit by KPJ @ L89
+;7	ZIN moved to TEXTER.
+;Oden::DSKG:PRNEWS.MAC<62,7777,MAC> 1986-04-25 12:11:00, Edit by KPJ @ L89
+;6	Get rid of OPDEFed funny macros.
+;Oden::DSKD:PRNEWS.MAC<62,7777,MAC> 1985-10-04 22:36:45, Edit by KPJ @ ORANGE
+;5	Introduced PROLOG macro.
+;Oden::DSKD:PRNEWS.MAC<62,7777,MAC> 1985-06-20 07:16:40, Edit by KPJ @ GR\N
+;4	QNEWS localized (not called from CALLOG@LOGIN anymore)
+;Oden::DSKD:PRNEWS.MAC[62,7777] 1984-12-12 21:18:18, Edit by KPJ @ L89
+;3	Made QNEWS global (called from CALLOG@LOGIN)
+;Oden::Dskd:Prnews.Mac[62,7777] 1984-09-04 06:19:25, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;Oden::Dskd:Prnews.Mac[62,7777] 1984-04-25 17:08:38, Editor: KPJ Jaakkola
+;1	Don't check news for PRINTER conferences (GETUNS hacked)
+
+	SEARCH	kommac
+	PROLOG	(prnews)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computer Centre, 1984-09-04 06:19:23
+
+;	D A T A   A R E A
+
+
+sum::	0			; sum
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+
+;+
+prnews::comhed	0,noarg##,prnew,ccprne##,zpnehl## ;List news
+;-
+
+
+
+
+;+
+; PRNEW  --  print all news
+;-
+
+prnew::	CALL	qnews		;[KPJ.3] any news ?
+	 CALL	gtnews		; get all news
+	return
+
+
+
+
+
+;+
+; QNEWS  --  check if any news
+; returns at call + 1 if news
+; returns at call + 2 if no news
+;-
+
+qnews:	CALL	chknew##	; check for news
+	CALL	anynew		; any news ?
+	 JRST	qnews9		; yes
+	SKIPE	nxmanr##	; any marked entry ?
+	 JRST	qnews9		; yes
+	CALL	nonews		; say there were no news
+	skpret			; no news
+qnews9:	return
+
+
+
+
+
+;+
+; ANYNEW  --  check if there are any news
+; returns at call + 1 if news
+; returns at call + 2 if no news
+;-
+
+anynew::SKIPE	nxoenr##	; any other news ?
+	 JRST	anyne9
+	SKIPE	nxennr##	; any news in current meeting ?
+	 JRST	anyne9
+	SKIPE	nxlenr##	; any new letters ?
+	 JRST	anyne9		; yes
+	skpret			; no news
+anyne9:	return
+
+
+
+
+
+;+
+;NONEWS		say that there is no news
+;-
+
+nonews::save	<str>
+	CALL	preol##			;new line
+	MOVEI	str,znonew##		;"You have seen all news."
+	SKIPN	nrmemb##		;check number of memberships
+	 MOVEI	str,znymem##		;"You are not member of anything."
+	CALL	prstr##			;say what ever
+	return
+
+
+
+;+
+;GTNEWS		get all news
+;-
+
+gtnews:	save	<nr,sum,foalfu##>
+	SETZM	sum		; clear sum
+	SETZM	summee##	; clear number of meetings
+	CALL	replet		; report unseen letters
+	setmem	foalfu##,repent	; report unseen entries
+	CALL	facomb		; for all in member register
+	CALL	repmar		; report marked entries
+	MOVE	t,summee##	; get sum of meetings
+	CAIG	t,1		; more than one ?
+	 JRST	gtnew9		; no, dont report
+	CALL	preol##		; blank line
+	MOVE	nr,sum		; get number of entries
+	CALL	repcou		; report total number
+gtnew9:	return
+
+
+
+
+
+;+
+; REPLET  --  report new letters
+; get number of unseen letters in NRLETT
+;-
+
+replet:	save	<str,nr>
+	SKIPG	nr,nrlett##		;get number of letters
+	 JRST	reple9			;no letters
+	AOS	summee##		;one more meeting
+	CALL	preol##			;new line
+	CAIE	nr,1			;yes, is it one letter
+	 JRST	reple2			;no
+	print	zusle1##		;"You have one unread letter."
+	JRST	reple9
+
+reple2:	print	zyouha##		;"You have "
+	CALL	prnum##			;output number
+	print	zusle2##		;" unread letters."
+reple9:	return
+
+
+
+
+
+
+;+
+; REPENT  --  report new entries
+; gets member record in GP2
+;-
+
+repent:	save	<nr,str>
+	SKIPG	0(gp2)			;element deleted ?
+	 JRST	repen9			;yes
+	CALL	getuns			;get number of unseen entries
+	JUMPLE	nr,repen9		;anything unseen ?
+	ADDM	nr,sum			;add to sum
+	AOS	summee##		;one more meeting
+	CALL	repcou			;<KPJ.10> report #entries
+	print	zin##
+	MOVE	nr,melmee(gp2)		;get conference object#
+	CALL	prinam##		;output name
+repen9:	return
+
+
+
+
+;+
+; GETUNS  --  get number of unseen entries
+; gets member record in GP2
+; returns number of unseen entries in NR
+;-
+
+getuns::save	<bfp,gp1>
+	MOVE	nr,melmee(gp2)		;get conference
+	CALL	chkmee##		;conference ?
+	 JRST	getun8			;no, error
+	MOVEM	nr,objnr##		;get conference object
+	MOVE	t,melnum(gp2)		;get seen entries
+	MOVEM	t,number##		;. . .
+	CALL	obtoac##		;get number file
+	CALL	getobj##		;get it
+	 nop				;data base damage
+	MOVE	nr,numtyp(bfp)		;<KPJ.1> Get conference type
+	TRNE	nr,priofl		;<KPJ.1> Is it a local printer?
+	 JRST	getun8			;<KPJ.1> Yes, never any news there
+	MOVE	nr,numnum(bfp)		;get total number of entries
+	SUB	nr,number##		;get number of unseen
+	TRNA				;<KPJ.1>
+getun8:	 SETZ	nr,			;no unseen
+getun9:	return
+
+
+
+
+
+;+
+; FACOMB  --  for all member in core register do
+; calls FOALFU  with GP2 pointing to register element
+;-
+
+facomb:	save	<gp2>
+	MOVE	gp2,mbrbeg##	; get start of member register
+facom1:	SKIPN	0(gp2)		; end of register ?
+	 JRST	facom9		; yes
+	CALL	@foalfu##	; do function
+	ADDI	gp2,melsiz	; get next element
+	JRST	facom1
+
+facom9:	return
+
+
+
+
+
+;+
+; REPMAR  --  report marked entries
+;-
+
+repmar:	save	<nr,str>
+	SKIPG	nr,nrmark##		;get number of marked entries
+	 JRST	repma9			;no marked
+	CALL	preol##			;new line
+	CAIE	nr,1			;just one ?
+	 JRST	repma1			;no, more
+	print	zmark1##		;"You have 1 marked entry."
+	JRST	repma9
+
+repma1:	print	zyouha##		;"You have "
+	CALL	prnum##			;output number
+	print	zmark2##		;" marked entries."
+repma9:	return
+
+
+
+
+
+;+
+; PRINEW  --  print news
+;-
+
+prinew::CALL	preol##		; blank line
+	CALL	qshmen##	; short menu ?
+	 JRST	prine4		; yes
+	CALL	prnew		; print all news
+	JRST	prine9
+
+prine4:	CALL	qnews		; any news ?
+	 CALL	conews		; count all news
+prine9:	return
+
+
+
+
+
+;+
+; CONEWS  --  count all news
+;-
+
+conews:	save	<nr,sum,foalfu##>
+	SETZM	sum		; clear sum
+	SETZM	summee##	; clear number of meetings
+	CALL	replet		; report letters
+	setmem	foalfu##,counew	; count unseen entries
+	CALL	facomb		; for all in member register
+	SKIPG	nr,summee##	; get sum of meetings
+	 JRST	conew9		; no news
+	CAIL	nr,3		; less than 3 meetings ?
+	 JRST	conew8		; no, more
+	setmem	foalfu##,repent	; report unseen entries
+	CALL	facomb		; for all in member register
+	JRST	conew9
+
+conew8:	MOVE	nr,sum		; get number of entries
+	CALL	repcou		; repport counted entries
+conew9:	return
+
+
+
+
+
+;+
+; COUNEW  --  count news
+; gets member record in GP2
+;-
+
+counew:	save	<nr>
+	SKIPG	0(gp2)		; element deleted ?
+	 JRST	coune9		; yes, skip it
+	CALL	getuns		; get number of unseen entries
+	JUMPLE	nr,coune9	; any news ?
+	ADDM	nr,sum		; add to sum
+	AOS	summee##	; one more meeting
+coune9:	return
+
+
+
+
+
+;+
+;REPCOU		report counted news
+;accepts	NR/	number of news
+;-
+
+repcou::save	<str>
+	CALL	preol##			;new line
+	CAIN	nr,1			;<KPJ.10> one entry ?
+	 JRST[	print	znewe1##	;<KPJ.10> "You have one unread entry."
+		JRST	repco9]
+	print	zyouha##		;"You have "
+	CALL	prnum##			;output number of unseen entries
+	print	znewe2##		;" unread entries."
+repco9:	return
+
+	END
+...and no more

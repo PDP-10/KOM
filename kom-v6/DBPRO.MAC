@@ -1,0 +1,293 @@
+;Oden::DSKG:DBPRO.MAC<62,7777,MAC> 1986-12-11 18:23:03, Edit by KPJ @ L89
+;24	PUTCH is macro.	
+;Oden::DSKG:DBPRO.MAC[62,7777,MAC] 1986-10-22 19:40:46, Edit by KPJ @ Loud Room
+;23	Save producer so DELAYED commands won't destroy the world.
+;Tor::Ps:<KPJ.KOM>DBPRO.MAC.3  2-Oct-86 15:51:11, Edit by KPJ
+;22	Display ID100 and VIEWDATA codes in image mode on TOPS-20.
+;Oden::DSKG:DBPRO.MAC<62,7777,MAC> 1986-07-09 01:48:41, Edit by KPJ @ 1SKEDE
+;21	Use standard method to access return address.
+;Oden::DSKG:DBPRO.MAC<62,7777,MAC> 1986-02-13 19:21:31, Edit by KPJ
+;20	PTY mode inside FTPTYM conditional.
+;Oden::DSKD:DBPRO.MAC<62,7777,MAC> 1985-11-28 06:10:52, Edit by KPJ
+;17	Edit #5 undone: PUTBEL call eliminated (this is done in TERCON now)
+;Oden::DSKD:DBPRO.MAC<62,7777,MAC> 1985-10-22 00:34:04, Edit by KPJ
+;16	Bug in COLCYA made it set BLUE after line wrap. Optimize colour
+;	coding. Handle position count OK.
+;Oden::DSKD:DBPRO.MAC<62,7777,MAC> 1985-10-21 22:21:40, Edit by KPJ
+;15	COLCYA should show as CYAN, not as BLUE.
+;Oden::DSKD:DBPRO.MAC<62,7777,MAC> 1985-10-09 16:15:07, Edit by KPJ
+;14	Bug made only first line of entry be displayed.
+;Oden::DSKD:DBPRO.MAC<62,7777,MAC> 1985-09-30 22:17:28, Edit by KPJ
+;13	Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:DBPRO.MAC[62,7777,MAC] 1985-05-28 22:58:52, Edit by THOLERUS T
+;12	Added a hack in GFRESH to find wrong placed LINE records.
+;	Added XGETOB routine, that works almost as GETOBJ routine.
+;Oden::DSKD:DBPRO.MAC<62,7777,MAC> 1985-04-22 23:20:31, Edit by KPJ @ NADJA
+;11	VIEWDATA colour hacks included. Rewrote ANSI colour setting. General
+;	terminal colour setting routine implemented.
+;Oden::DSKD:DBPRO.MAC[62,7777] 1985-01-07 20:59:49, Edit by KPJ @ L89
+;10	Get rid of QDEFER routine. Use TXnn macros. Get rid of entangled code.
+;Oden::DSKD:DBPRO.MAC[62,7777] 1984-12-17 09:25:14, Edit by KPJ @ L89
+;7	Brush up code.
+;Oden::DSKD:DBPRO.MAC[62,7777] 1984-11-29 07:23:42, Edit by KPJ @ UPSALA
+;6	SEARCH correct files on T10 and T20. If delayed commands disallowed
+;	by user, act as if PTY mode when delayed command.
+;Oden::DSKD:DBPRO.MAC[62,7777] 1984-11-23 15:03:32, Edit by K.JAAKKOLA
+;5	Make DISLIN call PUTBEL on bells
+;Oden::Dskd:Dbpro.Mac[62,7777] 1984-05-14 16:21:02, Edit by KPJ Jaakkola
+;4	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dskd:Dbpro.Mac[62,7777] 1984-04-11 16:45:13, Edit by T Tholerus
+;3	[1016] corrected error in delayed command
+;Oden::Dskd:Dbpro.Mac[62,7777] 1984-03-31 23:10:46, Edit by T Tholerus
+;2	(unknown)
+;Oden::Dskd:Dbpro.Mac[62,7777] 1984-03-28 12:14:42, Edit by T Tholerus
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(dbpro)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 16:21:01
+
+;	D A T A   A R E A
+
+
+curtxt::0			;current text part
+delflg::0			;delayed command flag
+savdbp:	Z			;save area for DBBP
+savdcn::0			;save area for DBCNT
+savdtx::0			;save area for CURTXT
+
+	CODE
+
+;+
+;DBPRO		data base producer
+;accepts	NR/	current entry
+;		SAVDTX	\
+;		SAVDCN	- text position
+;		SAVDBP	/
+;		GP2/	number of lines to show
+;		FIRFLG/	line flag
+;-
+
+dbpro::	save	<gp2,ch,produc##,curtxt,dbcnt##,dbbp##>
+	MOVEI	t,dislin		;set producer
+	MOVEM	t,produc##
+	MOVE	t,savdtx		;get current position
+	MOVEM	t,curtxt
+	MOVE	t,savdcn
+	MOVEM	t,dbcnt##
+	MOVE	t,savdbp
+	MOVEM	t,dbbp##
+dbpro1:	SKIPN	curtxt			;end of text ?
+	 JRST	dbpro9			;yes
+	CALL	@produc##		;display subject line
+	SOJE	gp2,dbpro9		;more lines ?
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	dbpro9			;yes
+	SKIPL	firflg##		;no, line after subject ?
+	 JRST	dbpro1
+	SKIPN	curtxt			;end of text ?
+	 JRST	dbpro9			;yes
+	CALL	colcya			;blue colour
+	CALL	prhali##		;print whole line
+	CALL	prhali##
+	CALL	preol##			;new line
+	SETZM	firflg##		;just one line
+	SKIPL	intflg##		;<KPJ.14> interrupt ?
+	 JRST	dbpro1			;no
+dbpro9:	CALL	colcya			;blue colour
+	MOVE	t,curtxt		;save current position
+	MOVEM	t,savdtx
+	MOVE	t,dbcnt##
+	MOVEM	t,savdcn
+	MOVE	t,dbbp##
+	MOVEM	t,savdbp
+	return
+
+
+
+;+
+;DISLIN		display line of text
+;accepts	CURTXT	\
+;		DBCNT	- text position
+;		DBBP	/
+;-
+
+dislin::save	<nr,ch,bfp,gp1>
+	CALL	colyel			;yellow colour
+	SKIPA	nr,curtxt		;get current text part
+disli4:	 MOVEM	nr,curtxt		;save new current text
+	CALL	gfresh			;get it
+	 JRST	disli8			;text not found
+disli2:	SOSGE	dbcnt##			;end of text part ?
+	 JRST	disli3			;yes
+	ILDB	ch,dbbp##		;get character
+	Encrypt				;encrypt character
+	JUMPE	ch,disli8		;ready ?
+IFN	ftptym,<			;<KPJ.20>
+	SKIPGE	ptyflg##		;PTY mode ?
+	 JRST	disli0
+>;ftptym
+		MOVE	t,selffl##	;[KPJ.10] no, get our personal flags
+		Txnn	t,dfrpfl	;[KPJ.6,10] allow deferred commands?
+		 CAIE	ch,.CHESC	;yes, command ?
+		  JRST	disli0		;no
+		JRST	disli5		;yes, go execute command
+disli0:	CALL	putch			;<KPJ.24!KPJ.17!KPJ.5> output character
+	CAIE	ch,.CHLFD		;end of line ?
+	 JRST	disli2			;no
+	SKIPLE	dbcnt##			;end of record ?
+	 JRST	disli9			;no
+	SKIPN	nr,texnex(bfp)		;yes, get next record
+	 JRST	disli8			;no more text
+	MOVEM	nr,curtxt		;save new current text
+	JRST	disli9
+
+disli5:	SKIPE	dbcnt##			;[TTQ.3] end of text part ?
+	 JRST	disli6			;no
+	MOVE	nr,texnex(bfp)		;get next text part
+	MOVEM	nr,curtxt		;save new current text
+disli6:	CALL	colcya			;blue colour
+	PUSH	P,produc##		;<KPJ.23> salvation
+	CALL	makcmd			;make command
+	POP	P,produc##		;<KPJ.23> and the holy smoke
+	CALL	colyel			;yellow colour
+	JRST	disli7
+
+disli3:	SKIPE	nr,texnex(bfp)		;get next text part
+	 JRST	disli4			;text got
+disli8:	SETZM	curtxt			;no more text
+	SETZM	dbcnt##			;clear count
+disli7:	CALL	preol##			;new line
+disli9:	return
+
+
+
+
+;+
+;GFRESH		get a fresh copy of the text file
+;accepts	NR/	wanted record
+;returns	+1 if text not found
+;		+2 if text got
+;		BFP/	record
+;		GP1/	record
+;-
+
+gfresh:	SKIPLE	dbcnt##			;new text part ?
+	 JRST	gfres1			;no
+	MOVEI	t,texssi*5		;set character count
+	MOVEM	t,dbcnt##
+	MOVE	t,[POINT 7,texstr(bfp)]	;get byte pointer
+	MOVEM	t,dbbp##
+gfres1:	CALL	getobj##		;get text part
+	 CALL	xgetob			;<TTQ.12> look at wrong place
+	  JRST	gfres8			;<TTQ.12> text found
+	CALL	texdel##		;<TTQ.12> say text deleted
+	TRNA				;text not found
+gfres8:	 skpret				;text found
+gfres9:	return
+
+
+
+;+
+;XGETOB		get a line object at the wrong place	;<TTQ.12>
+;accepts	NR/	object number
+;returns	+2 if object not found
+;		+1 if object got, with
+;		   GP1/	object
+;		   BFP/	object
+;-
+
+xgetob:	save	<gp2,nr>
+	MOVEM	nr,gp2		;<TTQ.12> save object number
+	TLZN	nr,777		;<TTQ.12> clear left half word
+	 JRST	xgeto8		;<TTQ.12> error if zero
+	CALL	geplac##	;<TTQ.12> get place
+	 JRST	xgeto8		;<TTQ.12> error
+	CALL	getrec##	;<TTQ.12> get object
+	CAME	gp2,0(bfp)	;<TTQ.12> our wanted correct object ?
+xgeto8:	 skpret			;<TTQ.12> no, object not found
+	return
+
+
+;+
+;COLCYA		start cyan colour
+;-
+
+colcya::SKIPL	colflg##		;any colours?
+	 JRST	colcy9			;no, return
+IFN	ftview,<			;<KPJ.11> if VIEWDATA supported,
+	SKIPGE	viewfl##		;<KPJ.11> a VIEWDATA?
+	 JRST[	MOVEI	t,"F"		;<KPJ.16> "cyan"
+		MOVEM	t,pndcol##	;<KPJ.16> make it pending colour
+		JRST	colcy9]		;<KPJ.11> return
+>;ftview
+	CALL	tcolor			;output colour string (to terminal)
+	TRN[	BYTE	(7).CHESC,.CHOBR,.CHSEM,"3","1","m",.CHNUL]
+colcy9:	return
+
+
+
+;+
+;TCOLOR		set colour (or whatever)
+;accepts	(P)/	pointer to ASCIZ text string
+;-
+
+tcolor::save	<ch,t>
+T20,<	CALL	toutpu##		;<KPJ.22> force out terminal buffer
+	MOVEI	1,.PRIOUT		;<KPJ.22> set terminal in binary mode..
+	RFMOD%				;<KPJ.22>
+	PUSH	P,2			;<KPJ.22> but first save old mode
+	TRZ	2,TT%DAM		;<KPJ.22> clearing TT%DAM gives .TTBIN
+	SFMOD%				;<KPJ.22>
+>;T20
+T10,<	MOVE	t,@-TTQsav(P)>	;<KPJ.10> get word with an ASCIZ string pointer
+T20,<	MOVE	t,@-TTQsav-1(P)>;<KPJ.22> get word with an ASCIZ string pointer
+	HRLI	t,(POINT 7,)		;make it a byte pointer
+	PUSH	P,t			;<KPJ.22> push it
+tcolo1:	ILDB	ch,0(P)			;get character from the ASCIZ string
+	JUMPN	ch,[			;if anything left of it,
+		CALL	tput##		;output the character
+		JRST	tcolo1]		;go for more
+	POP	P,t			;<KPJ.22> pop it
+T20,<	CALL	toutpu##		;<KPJ.22> force out terminal buffer
+	MOVEI	1,.PRIOUT		;<KPJ.22>
+	POP	P,2			;<KPJ.22> restore old TTY data mode
+	SFMOD%				;<KPJ.22>
+>;T20
+	return				;that's all folx!
+
+
+
+;+
+;MAKCMD		make command
+;-
+
+makcmd:	save	<crenr##,nexfun##,entlis##,nxrenr##,lastnr##,disnr##,bacfl##,delflg,seqflg##>
+	MOVE	t,authnr##		;get author
+	CAME	t,selfnr##		;own entry ?
+	 SETOM	delflg			;no, delayed command
+	MOVEM	t,crenr##		;set authorization
+	CALL	topcomm##		;yes, do it
+	return
+
+
+;+
+;COLYEL		start yellow colour
+;-
+
+colyel::SKIPL	colflg##		;any colours?
+	 JRST	colye9			;no, return
+IFN	ftview,<			;<KPJ.11> if VIEWDATA supported
+	SKIPGE	viewfl##		;<KPJ.11> if VIEWDATA
+	 JRST[	MOVEI	t,"C"		;<KPJ.16> "yellow"
+		MOVEM	t,pndcol##	;<KPJ.16> make it pending colour
+		JRST	colye9]		;<KPJ.11> return
+>;ftview
+	CALL	tcolor			;output ANSI sequence
+	TRN[	BYTE (7).CHESC,.CHOBR,.CHSEM,"3","3","m",.CHNUL]
+colye9:	return
+
+	END
+..and no more

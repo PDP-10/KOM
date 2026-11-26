@@ -1,0 +1,180 @@
+;Oden::DSKG:CREATM.MAC<62,7777,MAC> 1986-10-14 16:12:31, Edit by KPJ @ L89
+;12	Conversion of EMPLOYEE to PERSON under FTEMPL.
+;Oden::DSKG:CREATM.MAC<62,7777,MAC> 1986-02-14 18:56:45, Edit by KPJ
+;11	Sanitized code.
+;Oden::DSKD:CREATM.MAC<62,7777,MAC> 1985-10-01 01:13:22, Edit by KPJ
+;10	Introduced PROLOG macro.
+;Oden::DSKD:CREATM.MAC<62,7777,MAC> 1985-09-06 09:20:05, Edit by KPJ
+;7	Expunged KPJHAT variable from source.
+;Oden::DSKD:CREATM.MAC<62,7777,MAC> 1985-06-20 00:49:24, Edit by KPJ @ GR\N
+;6	CRNEME localized.
+;Oden::DSKD:CREATM.MAC[62,7777] 1984-12-01 06:52:00, Edit by KPJ @ NADJA
+;5	Moved language dependent texts to TEXTER. Get rid of funny macros.
+;Oden::DSKD:CREATM.MAC[62,7777] 1984-11-29 05:35:22, Edit by KPJ @ UPSALA
+;4	Give user some advice with PROTECTED conferences.
+;Oden::DSKD:CREATM.MAC[62,7777] 1984-10-08 18:39:37, Edit by K.JAAKKOLA
+;3	New names must always be at least two words. SEARCH correct files.
+;Oden::Dskd:Creatm.Mac[62,7777] 1984-05-14 15:54:43, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dskd:Create.New[1116,134] 1982-03-02 18:04:41, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(creatm)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 15:54:21
+
+;	D A T A   A R E A
+
+	CODE
+
+;	S Y N T A X   T A B L E S
+;+
+creatm::comhed	0,crmear,crneme,cccrme##,zcrmhl## ;create a new conference
+;-
+
+;+
+;CRMEAR		argument to CREATE CONFERENCE command
+;-
+
+crmear:	save	<quest##>
+	MOVEI	t,askcre		;ask for name
+	MOVEM	t,quest##
+	CALL	genena			;get a new name
+	SKIPGE	errfl##			;error ?
+	 JRST	crmea9
+	CALL	reobty##		;read object type
+	SKIPGE	errfl##			;[KPJ.4] error?
+	 JRST	crmea9
+	MOVE	t,obtype##		;[KPJ.4] get type
+	TRNE	t,proofl		;[KPJ.4] got awfully secretive mode?
+	 JRST[	print	znonse##	;[KPJ.4] yes, give luser some advice
+		JRST	.+1]
+
+crmea9:	return
+
+;+
+;ASKCRE		ask for the name of a new conference
+;-
+
+askcre:	save	<str>
+	SKIPL	hlpflg##		; help wanted ?
+	 JRST	askcr1
+	print	zhlcrm##		;Yes "give name conference"
+askcr1:	CALL	preol2##		; blank line
+	print	zascrm##		;"what is name of conference?"
+	CALL	preol##			; new line
+	branch	prher##			; print herald
+
+;+
+;GENENA		get a new name
+;returns	ERRFL/	#0 if no new name was got
+;		NAMPTR/	name pointer
+;-
+
+genena::save	<bfp,txt,gp1,nr>
+	CALL	read##			;read name
+	 JRST	genen8			;no reply
+	MOVE	t,chpt##		;save name pointer
+	MOVEM	t,namptr##
+	CALL	nammat##		;look for a match
+	 JRST	genen4			;+1 new name
+	 JRST	genen5			;+2 old name
+genen3:	CALL	creocc			;+3 say that name is occupied
+	JRST	genen8
+
+genen5:	MOVE	nr,@agrval##		;get match
+	CALL	getobj##		;get person
+	 JRST	genen8			;error
+IFN	ftempl,<			;<KPJ.12>
+	CAIE	gp1,emp			;employee ?
+>;ftempl
+	 JRST	genen3			;no, new name
+IFN	ftempl,<
+	CALL	maempl			;create person
+	JRST	genen8			;person created
+>;ftempl
+
+genen4:	MOVE	t,namptr##		;[KPJ.3] get name pointer
+	MOVEM	t,chpt##		;[KPJ.3] give to subroutine
+	CALL	chknam##		;[KPJ.3] has at least two words?
+	 JRST	genen6			;[KPJ.3] no, contained funny characters
+	 JRST	genen7			;[KPJ.3] no, too short
+	SETZM	errfl##			;new name got
+	MOVE	t,[POINT 7,[BYTE (7) .CHNUL]] ;consume name
+	MOVEM	t,chpt##
+	JRST	genen9
+
+genen6:	print	znewn1##		;[KPJ.3] "The name "
+	CALL	prcoli##		;[KPJ.3] type the name
+	print	znewn3##		;[KPJ.3] naughty, naughty, bad chars
+	JRST	genen8			;[KPJ.3] too bad for you
+
+genen7:	print	znewn1##		;[KPJ.3] "The name "
+	CALL	prcoli##		;[KPJ.3] type the name
+	print	znewn4##		;[KPJ.3] name to short, lose lose!
+genen8:	SETOM	errfl##			;set error flag on
+genen9:	return
+
+
+
+
+
+;+
+; CREOCC  --  say that name is occupied
+; gets AGRVAL pointing to number of activity
+;-
+
+creocc::save	<str,nr>
+	CALL	preol##			;new line
+	print	znause##		;"name in use by "
+	MOVE	nr,@agrval##		;get first match
+	CALL	prname##		;print name
+	CALL	clear##			;error, clear input
+	return
+
+;+
+IFN	ftempl,<
+;MAEMPL		make employee
+;accepts	BFP/	employee
+;		NR/	employee
+;-
+
+maempl:	save	<str,bp,namptr##,bfp,gp1>
+	MOVE	t,emporg(bfp)		;get organisation
+	MOVEM	t,orgnr##
+	MOVEM	nr,empnr##		;set employee number
+	MOVEI	str,recstr(bfp)		;get name string
+	CALL	mkbp##			;make byte pointer
+	MOVEM	bp,namptr##		;save name pointer
+	MOVE	t,emppas(bfp)		;get password
+	MOVEM	t,paswor##
+	CALL	updbeg##		;start update
+	CALL	creper##		;create a person record
+	CALL	updobj##		;get employee
+	 JRST	maemp9			;error
+	MOVE	t,pernr##		;set person pointer
+	MOVEM	t,empper(bfp)
+maemp9:	branch	updend##		;end of update
+>;ftempl
+
+
+
+
+;+
+; CRNEME  --  create new meeting
+; gets type of meeting in OBTYPE
+;-
+
+crneme:	CALL	updbeg##		;<KPJ.6> start update
+	CALL	cremee##		;create meeting
+	CALL	updend##		;end of update
+	MOVE	nr,objnr##		;get meeting
+	MOVE	t,obtype##		;get type
+	TRNE	t,meeofl		;subject or organisation ?
+	 CALL	join##			;no, join meeting
+	return
+
+	END
+..and no more

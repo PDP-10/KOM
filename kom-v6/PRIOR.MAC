@@ -1,0 +1,112 @@
+;Oden::DSKG:PRIOR.MAC<62,7777,MAC> 1986-06-13 18:34:31, Edit by KPJ @ L89
+;5	Moved texts to TEXTER.
+;Oden::DSKG:PRIOR.MAC<62,7777,MAC> 1986-06-08 04:42:14, Edit by KPJ @ 1SKEDE
+;4	Fixed problem with double message about non-membership.
+;Oden::DSKG:PRIOR.MAC<62,7777,MAC> 1986-04-25 12:01:50, Edit by KPJ @ L89
+;3	Introduced PROLOG and CODE macros. Get rid of OPDEFed funny macros.
+;Oden::Dskd:Prior.Mac[62,7777] 1984-09-04 05:23:10, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;Oden::DSK:PRIOR.NEW[1116,134] 1982-03-02 19:49:57, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(prior)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 05:23:08
+
+;	D A T A   A R E A
+
+
+meltmp:	BLOCK	melsiz		; save area for element
+
+	CODE
+
+
+;+
+prior::	comhed	0,aprior,cprior,ccprio##,zprihl## ;(Give) priority (to)
+;-
+
+
+
+
+;+
+; APRIOR  --  argument to priority command
+; returns conferences in ARGLIS
+;-
+
+aprior:	save	<quest##,namfun##,tp>
+	setmem	quest##,askpio	; ask for conferences
+	setmem	namfun##,joinam##	; get conferences
+	CALL	gtname##	; get conferences
+	return
+
+
+
+
+
+;+
+; ASKPIO  --  ask for conferences
+;-
+
+askpio:	save	<str>
+	CALL	meehlp##	; get conference help
+	print	zprior##	;"What conference to give priority?"
+	CALL	preol##		; new line
+	branch	prher##		; herald
+
+
+
+
+
+;+
+; CPRIOR  --  give priority to your conferences
+; gets conferences in ARGLIS
+;-
+
+cprior:	save	<nr,gp2,tp,str>
+	SKIPN	tp,arglis##	; get list
+	 JRST	cprio9		; no names
+	MOVE	nr,0(tp)		; get conference
+	CALL	qismbr##	; get member element
+	 JRST	cprio1		; member
+	print	zyou##		;"You are not member of "
+	CALL	prname##	; print name of conference
+	JRST	cprio9
+
+cprio1:	MOVEI	tp,meltmp	; get save area
+	CALL	melmov		; move element
+cprio2:	MOVE	tp,gp2		; get current element
+	CAMG	gp2,mbrbeg##	; top of member list ?
+	 JRST	cprio3		; yes
+	SUBI	gp2,melsiz	; get previous element
+	CALL	melmov		; move element
+	JRST	cprio2
+
+cprio3:	MOVEI	gp2,meltmp	; get save area
+	CALL	melmov		; restore element
+	SKIPN	nr,conf##	; get current conference
+	 JRST	cprio9		; not present
+	CALL	qismbr##	; get member element
+	 nop			; member
+	MOVEM	gp2,curmbr##	; save current member
+cprio9:	return
+
+
+
+
+
+;+
+; MELMOV  --  move member element
+; gets from where to move in GP2
+; gets to where to move in TP
+;-
+
+melmov:	save	<gp2>
+	HRL	gp2,gp2		; get from
+	HRR	gp2,tp		; get to
+	BLT	gp2,melsiz-1(tp)	; move element
+	return
+
+	END
+..and no more

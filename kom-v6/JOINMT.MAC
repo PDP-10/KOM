@@ -1,0 +1,493 @@
+;Oden::DSKG:JOINMT.MAC<62,7777,MAC> 1987-05-13 16:45:01, KPJ @ L89 <10,50>
+;23	Add command (JOIN) MAILBOX.
+;Freja::Qs:<Kom.6.Macro>Joinmt.Mac.14 870421-2217,KPJ-Jaakkola
+;22	Made JOINMT global (used by LIST ORGANIZERS).
+;DEC20::KM:<6C-KOM.SOURCES>JOINMT.MAC.2, 26-Nov-86 17:59:17, Edit: KPJ.JAAKKOLA
+;21	Routine NEWSP to test if user wants news control or not. Minor
+;	optimizations.
+;Oden::DSKG:JOINMT.MAC<62,7777,MAC> 1986-12-11 18:29:42, Edit by KPJ @ L89
+;20	PUTCH is a macro.
+;Oden::DSKG:JOINMT.MAC<62,7777,MAC> 1986-09-06 02:46:16, Edit by KPJ @ H.HOLE
+;17	Less talk when joining a conference.
+;Oden::DSKG:JOINMT.MAC<62,7777,MAC> 1986-06-05 14:09:41, Edit by KPJ @ L89
+;16	Delete report changes from JOIN code. This is done like in KOM V5 now.
+;Oden::DSKG:JOINMT.MAC<62,7777,MAC> 1986-06-03 14:36:49, Edit by KPJ @ L89
+;15	Moved texts to TEXTER:	ZJOIHL,ZASJOI,ZHLJOI,ZZHOME,ZNOSUC,ZBECME,
+;				ZNEYET,ZTITLE,ZSEEN1,ZSEEN2,ZGNXHL
+;Oden::DSKG:JOINMT.MAC<62,7777,MAC> 1986-05-09 14:21:13, Edit by KPJ @ L89
+;14	Added FTENQ code:
+;	;DSKG:JOINMT.MAC[62,7777,TTQ] 1986-03-17 15:58:45, Edit by THOLERUS T
+;	;15	Made UPDCOU and UPMELI global
+;	;DSKG:JOINMT.MAC[62,7777,TTQ] 1986-02-25 15:03:35, Edit by THOLERUS T
+;	;14	Remove END/DEQ from member list updates when changing
+;	;	conference.
+;Oden::DSKG:JOINMT.MAC<62,7777,MAC> 1986-02-13 19:25:09, Edit by KPJ
+;13	PTY mode inside FTPTYM conditional.
+;Oden::DSKD:JOINMT.MAC<62,7777,MAC> 1986-02-12 14:47:45, Edit by KPJ
+;12	JOIN <self> now means I want to go to my mailbox.
+;Oden::DSKD:JOINMT.MAC<62,7777,MAC> 1986-02-12 13:35:44, Edit by KPJ
+;11	JOIN-class commands gave up without any error messages if object not
+;	found in data base. Give appropriate error message.
+;Oden::DSKD:JOINMT.MAC<62,7777,MAC> 1985-11-22 10:47:08, Edit by KPJ
+;10	Obey ISO-setting when displaying daytime.
+;Oden::DSKD:JOINMT.MAC<62,7777,MAC> 1985-10-04 18:42:05, Edit by KPJ
+;7	Introduced PROLOG macro.
+;Oden::DSKD:JOINMT.MAC<62,7777,MAC> 1985-06-20 04:30:24, Edit by KPJ @ GR\N
+;6	Sanitized code. FFFL, GETPRE, and JOIMET localized.
+;Oden::DSKD:JOINMT.MAC[62,7777] 1985-01-25 13:54:42, Edit by KPJ @ L89
+;5	Don't ask for presentation if we already are writing an entry.
+;Oden::DSKD:JOINMT.MAC[62,7777] 1985-01-08 06:00:37, Edit by KPJ @ L89
+;4	Got rid of QLISUB calls. Search MACTEN. Deleted PDLINE routine.
+;Oden::DSKD:JOINMT.MAC[62,7777] 1984-12-11 04:27:16, Edit by KPJ @ NADJA
+;3	Make up peoples minds.
+;Oden::Dsk:Joinmt.Mac[62,7777] 1984-xx-xx xx:xx:xx, Edit by T Tholerus
+;2	Protected conferences are no more announced.
+;Oden::Dsk:Joinmt.New[1116,134] 1982-03-02 21:35:17, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(joinmt)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-05-23 02:35:33
+
+;	D A T A   A R E A
+
+conf::	0			;current conference
+fffl:	0			;<KPJ.6> form feed flag
+firflg::0			;first flag
+orgflg::-1			;organizer flag
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+
+;+
+joinmt::comhed	qjoinm,joiarg,joinm,ccjoin##,zjoihl##	;Join (conference)
+gonext::comhed	qgonex,runarg##,gonex,ccneme##,zgnxhl##	;(Join) next (conf.)
+joislf::comhed	0,runarg##,joyce,ccjoin##,zjoyce##	;(Join) mailbox
+;-
+
+
+
+
+;+
+;QJOINM		check if to include JOIN command
+;-
+
+qjoinm:	SKIPE	nxoenr##		;any news in other conferences ?
+	 JRST	qjoin9			;yes, skip command
+	SKIPN	nxennr##		;any news ?
+	 skpret				;no, add command
+qjoin9:	return
+
+
+
+
+
+;+
+;JOIARG		argument to JOIN command
+;returns	ARGLIS/	argument got
+;-
+
+joiarg::save	<quest##,tp,namfun##>
+	MOVEI	t,askmet		;ask for conferences
+	MOVEM	t,quest##
+	MOVEI	t,joinam		;get conference names
+	MOVEM	t,namfun##
+	CALL	gtname##		;get the names
+	return
+
+
+
+
+
+;+
+;ASKMET		ask which conference to join
+;-
+
+askmet:	save	<str>
+	CALL	meehlp			;give conference help
+	print	zasjoi##		;"Join what conference?"
+	CALL	preol##			;new line
+	CALL	prher##
+	return
+
+
+
+
+
+;+
+;MEEHLP		give conference help
+;-
+
+meehlp::save	<str>
+	MOVEI	str,zhljoi##		;"Give conference name"
+	SKIPGE	hlpflg##		;help wanted ?
+	 CALL	prstr##			;yes, give it
+	CALL	preol2##		;blank line
+	return
+
+
+;+
+;JOINAM		get conference names
+;-
+
+joinam::save	<gp1>
+	MOVEI	gp1,mna			;get conference names
+	CALL	nacofi##		;compare names
+	SKIPN	agrval##		;match got ?
+	 JRST[	MOVEI	gp1,pna		;no, try person names
+		CALL	nacofi##	;compare names
+		JRST	.+1]
+	return
+
+
+
+
+
+;+
+;JOINM		join conference
+;-
+
+joinm:	save	<foalfu##>
+	MOVEI	t,joimet		;join conference
+	MOVEM	t,foalfu##
+	CALL	faname##		;join all conferences
+	return
+
+
+
+
+
+;+
+;JOIMET		join a conference, outputs form feed
+;JOIN		join a conference
+;accepts	NR/	conference
+;-
+
+joimet:	SETOM	fffl			;do form feed
+join::	save	<gp2,nr,errfl##>
+	CALL	getobj##		;get conference
+	 JRST[	CALL	preol##		;<KPJ.11> newline
+		CALL	prname##	;<KPJ.11> object name
+		print	znosuc##	;<KPJ.11> " does not exist"
+		JRST	join9]		;<KPJ.11> not defined
+	CAMN	nr,selfnr##		;<KPJ.12> JOINing self?
+	 JRST[	CALL	joyce		;<KPJ.23> join mailbox
+		JRST	join9]		;<KPJ.12> done
+	CALL	qismbr##		;are you member ?
+	 JRST	join1			;yes
+	CALL	qrigmb##		;have you right to become member ?
+	JUMPE	nr,join9		;no
+	CALL	qbecme			;do you want to become member ?
+	SKIPGE	errfl##
+	 JRST	join9			;no
+	CALL	becmem##		;yes, become member
+join1:	CALL	updbeg##		;start update
+	MOVEM	nr,objnr##		;save conference object
+	CAME	nr,conf			;already present ?
+IFE	ftenq,<				;<KPJ.14>
+	 CALL	updlse##		;leave previous conference
+	MOVEM	gp2,curmbr##		;<KPJ.12> save current member element
+>;End IFE ftenq
+IFN	ftenq,<				;<KPJ.14>
+	CALL	updcou			;<KPJ.14>
+>;End IFN ftenq
+join2:	MOVEM	nr,conf			;<KPJ.12> set actual conference
+	CALL	crepre##		;update present list
+	CALL	updend##		;end of update
+IFN	ftenq,<				;<KPJ.14>
+	CALL	upmeli			;<KPJ.14> update member lists
+	MOVEM	gp2,curmbr##		;<KPJ.14> save current member element
+	CAIN	nr,0			;<KPJ.14> entering a conference?
+	 SETZM	curmbr##		;<KPJ.14> no
+>;End IFN ftenq
+	CALL	qjonex			;check if joining next conference
+	CALL	qnewpg			;check if new page wanted
+	CALL	newsp			;<KPJ.21> news control on?
+	 CALL	chknew##		;yes, check for news
+	CALL	revdef##		;restore review defaults
+	JUMPE	nr,[			;<KPJ.21!KPJ.12> entering a conference?
+	 	CALL	preol##		;<KPJ.12> newline
+		print	zzhome##	;<KPJ.12> no, back to own mailbox
+		JRST	join3]		;<KPJ.12>
+	CALL	info			;yes, print title and info
+	CALL	getpre			;get presentation
+join3:	SETZM	lastnr##		;<KPJ.12> set read flag off
+	SETOM	firflg			;first time
+join9:	return
+
+
+
+;+
+;JOYCE		Command (JOIN) MAILBOX
+;-
+
+joyce:	CALL	updbeg##		;<KPJ.12> yes, start update
+IFE	ftenq,<				;<KPJ.12>
+	CALL	updlse##		;<KPJ.12> leave current conference
+	SETZM	curmbr##		;<KPJ.12>
+>;ftenq=0
+IFN	ftenq,<
+	CALL	updcou			;<KPJ.14> leave current conference
+>;ftenq
+	$Setz	nr,			;<KPJ.21!KPJ.12> not present anywhere
+	SETZM	nxennr##		;<KPJ.12> clear next entry
+	SETZM	nxoenr##		;<KPJ.12> clear next other entry
+	MOVEM	nr,conf			;<KPJ.12> set actual conference
+	CALL	crepre##		;update present list
+	CALL	updend##		;end of update
+IFN	ftenq,<				;<KPJ.14>
+	CALL	upmeli			;<KPJ.14> update member lists
+	MOVEM	gp2,curmbr##		;<KPJ.14> save current member element
+	CAIN	nr,0			;<KPJ.14> entering a conference?
+	 SETZM	curmbr##		;<KPJ.14> no
+>;End IFN ftenq
+	CALL	qjonex			;check if joining next conference
+	CALL	qnewpg			;check if new page wanted
+	CALL	newsp			;<KPJ.21> news control on?
+	 CALL	chknew##		;yes, check for news
+;<KPJ.16>CALL	repcha##		;report changes
+	CALL	revdef##		;restore review defaults
+ 	CALL	preol##			;<KPJ.12> newline
+	print	zzhome##		;<KPJ.12> no, back to own mailbox
+	SETZM	lastnr##		;<KPJ.12> set read flag off
+	SETOM	firflg			;first time
+	return
+
+;+
+;NEWSP		test if user wants news control		<KPJ.21>
+;accepts	SELFFL/	our personal flags
+;returns	+1	yes
+;		+2	no
+;-
+newsp::	MOVE	t,selffl##		;our flags
+	Txne	t,newpfl		;news control?
+	 skpret				;no, +2 return
+	return
+
+
+;+
+IFN	ftenq,<
+; UPDCOU  --  update last seen entry count
+; gets last seen entry in CURMBR
+; gets counts in NRRED, SESRED, NRELNK, NRMLNK, NRPLNK, NRTLNK,
+; NRMEMB, SELFPG, SELFFL and SELFSY
+; gets old time in OLDTIM
+;-
+
+updcou::save	<nr,gp1,bfp>
+	MOVE	nr,selfnr##		;get yourself
+	CALL	updobj##		;input yourself
+	 TRNA				;not defined
+	  CALL	upcopp##		;update counts
+	return
+>;End IFN ftenq
+
+;+
+;QBECME		ask if you want to become member
+;accepts	NR/	conference
+;returns	ERRFL/	-1 if not wanted
+;-
+
+qbecme:	save	<str,tp,nr,menuq##>
+	CALL	preol##			;new line
+	print	zyanme##		;"You are not a member of "
+	CALL	prname##		;output name of conference
+	MOVEI	t,zbecme##		;"Do you want to become member?"
+	MOVEM	t,menuq##
+	MOVE	tp,notab##		;get no-yes table
+	CALL	gttyta##		;get answer
+	SKIPGE	errfl##			;[KPJ.3] problem?
+	 JRST	qbecm9			;[KPJ.3] yes, leave
+	JUMPG	nr,qbecm9		;"yes" answer ?
+	JUMPL	nr,qbecm8		;[KPJ.3] "no" answer
+	CALL	dice##			;[KPJ.3] "maybe"... roll dice
+	 JRST[	print	zyes##		;[KPJ.3] yes
+		JRST	qbecm9]
+	print	zno##			;[KPJ.3] no
+qbecm8:	SETOM	errfl##			;no, no
+qbecm9:	return
+
+
+
+;+
+IFN	ftenq,<
+;UPMELI		update member lists
+;accepts	CURMBR/	last seen entry
+;-
+upmeli::save	<nr,gp1,bfp,txt>
+	MOVE	nr,selfnr##		;get yourself
+	CALL	getobj##		;input yourself
+	 JRST	upmel9			;not defined
+	CALL	upmere##		;update member register
+	CALL	upmeme##		;update meeting register
+	MOVEI	gp1,loc			;get local file
+	CALL	getbuf##		;get buffer
+	SKIPGE	bufwri(txt)		;file written ?
+	 CALL	outblk##		;yes, output it
+upmel9:	return
+>;End IFN ftenq
+
+
+;+
+;QJONEX		check if joining next conference
+;accepts	NR/	current conference
+;		NXMENR/	next conference
+;-
+
+qjonex:	CAME	nr,nxmenr##		;next conference ?
+	 JRST	qjone8			;no
+	MOVE	t,nxoenr##		;get next entry
+	MOVEM	t,nxennr##
+	MOVE	t,nxoeln##		;get next entry link
+	MOVEM	t,nxenln##
+	SETZM	nxmenr##		;clear next conference
+	JRST	qjone9
+
+qjone8:	SETZM	nxennr##		;clear next entry
+qjone9:	SETZM	nxoenr##		;clear other entry
+	SETZM	nxconr##		;clear next comment
+	SETZM	cursub##		;clear current sub conference
+	return
+
+
+
+
+
+;+
+;QNEWPG		check if new paper page
+;		if yes, output a form feed (CTRL/L)
+;-
+
+qnewpg:	save	<ch>
+	SKIPL	papflg##		;prints on paper ?
+	 JRST	qnewp9			;no, skip this
+	SKIPN	maxlin##		;yes, any page break ?
+	 JRST	qnewp9			;no
+	SKIPL	fffl			;form feed wanted ?
+	 JRST	qnewp9			;no
+	SETZM	fffl			;yes, clear FF flag
+	MOVEI	ch,.CHFFD		;<KPJ.6> yes, output form feed
+	CALL	putch			;<KPJ.6>
+qnewp9:	return
+
+
+
+
+
+;+
+;GETPRE		get presentation
+;accepts	NR/	number of activity
+;		ORGFLG/	organizer flag
+;-
+
+getpre:	save	<bfp,gp1>		;<KPJ.6>
+	SKIPL	orgflg			;organizer ?
+	 JRST	getpr9			;no
+IFN	ftptym,<			;<KPJ.13>
+	SKIPGE	ptyflg##		;yes, PTY mode ?
+	 JRST	getpr9			;yes, skip this in PTY mode
+>;ftptym
+	CALL	chprot##		;protected ?
+	 JRST	getpr9			;yes, dont announce it
+	CALL	getobj##		;get activity
+	 Bug(hlt,<getpre joinmt>,<nr>)	;<KPJ.21>
+	SKIPLE	rectex(bfp)		;presentation defined ?
+	 JRST	getpr9			;yes
+	MOVE	t,objtyp(bfp)		;get conference type
+	TRNN	t,meeofl		;conference ?
+	 JRST	getpr9			;no, dont get presentation
+	MOVEM	nr,number##		;save conference
+	SKIPN	wriflg##		;<KPJ.5> writing an entry?
+	 CALL	chpres##		;no, get presentation
+getpr9:	return
+
+
+
+
+
+;+
+;INFO		output title and number of seen entries
+;returns	ORGFLG/	organizer flag
+;-
+
+info:	save	<nr,bfp,gp1,str>
+	MOVE	t,selffl##		;<KPJ.17!KPJ.4> our flags
+	Txne	t,nlipfl		;<KPJ.17!KPJ.4> LINES OF DASHES ?
+	 JRST[	CALL	preol##		;<KPJ.17> yes, new line
+		print[	ASCIZ !==============================!]
+		print[	ASCIZ !==============================!]
+		JRST	.+1];; 0        1         2         3 
+			 ;;    123456789012345678901234567890
+	SETOM	orgflg			;set organizer flag
+	CALL	chkorg##		;organizer ?
+	 SETZM	orgflg			;no, clear flag
+	MOVE	nr,conf			;<KPJ.17> get current conference
+	CALL	getobj##		;get it
+	 Bug(hlt,<info joinmt>,<conf>)	;<KPJ.21>
+	SKIPN	nr,objlto+1(bfp)	;get total number of entries
+	 JRST[	CALL	preol##		;new line
+		print	zneyet##	;"There are no entries yet"
+		JRST	infnr9]
+	SETZM	nrdele##		;clear skipped entries counters
+	SETZM	nrseen##
+	SETZM	nrsubt##
+	MOVE	bfp,curmbr##		;get member register element
+	CAMG	nr,melnum(bfp)		;all seen ?
+	 JRST	infnr8			;yes
+	SUB	nr,melnum(bfp)		;get number of unseen entries
+	CALL	repcou##		;report unseen entries
+	JRST	infnr9
+
+infnr8:	CALL	preol##			;new line
+	print	zseen1##		;"You have seen all "
+	CALL	prnum##			;output number of seen entries
+	print	zseen2##		;" entries"
+infnr9:	print	zin##			;<KPJ.17> " in "
+	MOVE	nr,conf			;<KPJ.17> current conference
+	CALL	prname##		;<KPJ.17>
+REPEAT	0,<				;<KPJ.17> just in case...
+	print[	BYTE (7) .CHTAB,.CHNUL]	;<KPJ.17>
+	CALL	gudate##		;get daytime
+	CALL	ptoday##		;<KPJ.10> output todays date
+	CALL	ptime##			;output time
+>;End REPEAT 0
+	return
+
+
+;+
+;QGONEX		check if there is any next conference
+;-
+
+qgonex:	SKIPE	nxennr##		;any news in current conference ?
+	 JRST	qgone9			;yes, skip command
+	SKIPE	nxoenr##		;any other news ?
+	 skpret				;yes, add command
+qgone9:	return
+
+
+
+
+
+;+
+;GONEX		go to the next conference
+;accepts	NXMENR/	next conference
+;-
+
+gonex::	SKIPN	nxoenr##		;any other news ?
+	 JRST	gonex8			;no
+	MOVE	nr,nxmenr##		;get next conference
+	CALL	joimet			;join conference
+	SETZM	intflg##		;clear interrupt
+	CALL	preol##			;blank line
+	CALL	readnx##		;read next entry
+	JRST	gonex9
+
+gonex8:	CALL	nonews##		;say there was no news
+gonex9:	return
+
+	END
+..and no more   

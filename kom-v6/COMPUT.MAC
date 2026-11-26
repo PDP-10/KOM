@@ -1,0 +1,1753 @@
+;Oden::DSKG:COMPUT.MAC<62,7777,MAC> 1987-01-03 22:43:14, Edit by KPJ @ H.HOLE
+;20	Moved data areas to IMPURE, and magical numbers to KOMMAC. Optimized
+;	code, and eliminated PRSYMB.
+;Oden::DSKG:COMPUT.MAC<62,7777,MAC> 1986-12-11 18:00:36, Edit by KPJ @ L89
+;17	Eliminated PSMALL, and rewrote PSEMAN to be less brain-damaged.
+;	Less useless labels.
+;Oden::DSKG:COMPUT.MAC<62,7777,MAC> 1986-12-11 17:54:21, Edit by KPJ @ L89
+;16	PUTCH is macro.
+;Oden::DSKG:COMPUT.MAC<62,7777,MAC> 1986-11-11 03:12:21, Edit by KPJ @ H.HOLE
+;15	Handle +2 return from ALLOCM and STBEG.
+;Oden::DSKD:COMPUT.MAC<62,7777,MAC> 1985-09-25 09:47:32, Edit by KPJ
+;14	Introduced PROLOG macro.
+;Oden::DSKD:COMPUT.MAC<62,7777,MAC> 1985-09-23 15:54:47, Edit by KPJ
+;13	Don't search CMPMAC anymore, since it's merged with KOMMAC.
+;Oden::DSKD:COMPUT.MAC<62,7777,MAC> 1985-09-08 18:54:12, Edit by KPJ
+;12	PRINT/STRING/KPJHAT major munging.
+;Oden::DSKD:COMPUT.MAC<62,7777,MAC> 1985-08-05 21:18:32, Edit by KPJ @ DECGR
+;11	Moved PRFLOA and friends here from STRPRO, since only used here.
+;Oden::DSKD:COMPUT.MAC<62,7777,MAC> 1985-08-05 19:16:40, Edit by KPJ @ DECGR
+;10	Merged all COMPUTE command files (COMPUT/PARSE/EVAL/BINFUN).
+;-----------------------------------
+;	EVAL edit history:
+;	;Oden::DSKD:EVAL.MAC<62,7777,MAC> 1985-07-26 xx:xx:xx, KPJ @ ORANGE
+;	;4	Prepared COMFUN for "string" zero word deletion.
+;	;Oden::DSKD:EVAL.MAC<62,7777,MAC> 1985-07-26 03:22:52, KPJ @ ORANGE
+;	;3	Moved PRISTR to PARSE.
+;	;Oden::Dskd:Eval.Mac[62,7777] 1984-05-14 17:14:00, Edit by KPJ Jaakkola
+;	;2	Merged T20 and T10 versions. Updated copyright notice.
+;	;Oden::Dsk:Eval.Mac[62,657] 1984, Edit by T Tholerus
+;	;1	hacked the COMPUTE command.
+;-----------------------------------
+;	PARSE edit history:
+;	;Oden::DSKD:PARSE.MAC<62,7777,MAC> 1985-07-26 xx:xx:xx, KPJ @ ORANGE
+;	;3	Prepared PRISTR for "string" sero word deletion.
+;	;Oden::DSKD:PARSE.MAC<62,7777,MAC> 1985-07-26 03:25:31, KPJ @ ORANGE
+;	;2	PRISTR@EVAL and PRSTRI@COMPUT are only used from here.
+;	;	Moved here. PRISTR and PRSTRI localized.
+;	;Oden::Dskd:Parse.Mac[62,7777] 1984-05-23 06:50:41, Edit:KPJ Jaakkola
+;	;1	Rewritten and rehacked. Almost never used for anything.
+;-----------------------------------
+;	BINFUN edit history:
+;	;Oden::DSKD:BINFUN.MAC<62,7777,MAC> 1985-07-26 xx:xx:xx, KPJ @ ORANGE
+;	;3	Prepared CMPFUN for "string" zero words deletion.
+;	;Oden::DSKD:BINFUN.MAC[62,7777] 1984-11-19 16:00:54, Edit by K.JAAKKOLA
+;	;2	SEARCH correct files on T10 and T20.
+;	;Oden::Dskd:Binfun.Mac[62,7777] 1984-05-11 16:55:44, Edit:KPJ Jaakkola
+;	;1	Updated copyright notice. Merged T20 and T10 versions.
+;-----------------------------------
+;	COMPUT edit history:
+;Oden::DSKD:COMPUT.MAC<62,7777,MAC> 1985-08-05 18:59:26, Edit by KPJ @ DECGR
+;7	Test for FTCOMP feature switch.
+;Oden::DSKD:COMPUT.MAC<62,7777,MAC> 1985-07-26 03:20:17, Edit by KPJ @ ORANGE
+;6	Moved PRSTRI from here to PARSE, where it is used.
+;Oden::DSKD:COMPUT.MAC<62,7777,MAC> 1985-06-11 18:24:16, Edit by KPJ @ L89
+;5	Make PAGIN return message about core problems.
+;Oden::DSKD:COMPUT.MAC[62,7777] 1984-12-05 06:19:35, Edit by KPJ @ NADJA
+;4	Delete call to SETLMA in PRVAL.
+;Oden::DSKD:COMPUT.MAC[62,7777] 1984-12-01 04:34:10, Edit by KPJ @ NADJA
+;3	Moved language dependent textes to module TEXTER.
+;Oden::Dskd:Comput.Mac[62,7777] 1984-09-14 10:03:25, Edit by K.Jaakkola
+;2	Moved PAGIN and PAGOUT under T10 conditional, since memory handling
+;	is only	necessary under Tops-10.
+;Oden::Dskd:Comput.Mac[62,7777] 1984-05-14 15:52:08, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+IFE	ftcomp,<		;<KPJ.7>
+	PRINTX	% COMPUTE disabled - no COMPUT generated
+	PASS2
+	END>
+
+	PROLOG	(comput)
+	CODE
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 15:51:32
+
+	.nrdig==7		; number of significant digits
+tencor:	9.9999			;10. with correction
+onecor:	0.9999			;1. with correction
+errcor:	0.0001			;error correction
+
+;+
+comput::comhed	0,compar,compco,cccomp##,zcomph## ;Compute
+;-
+
+
+;+
+;COMPAR		argument to COMPUTE command
+;returns	ANS/	answer
+;-
+
+compar:	save	<typ,val,cp,arg,sem,str,quest##,gp1,gp2>
+	SKIPGE	silflg##		;dont accept this command
+	 JRST	compa1
+	SKIPL	hlpflg##		;help wanted ?
+	 JRST	compa2			;no
+	print	zcomph##		;yes, give help text
+compa1:	SETOM	errfl##			;set error
+	JRST	compa9
+
+compa2:	MOVEI	t,prexpr		;set expansion function
+	MOVEM	t,expfun##
+	MOVEI	t,compro		;compute prompter
+	MOVEM	t,quest##
+T10,<	MOVEI	gp1,<zelsiz+^O777>/1K	;<KPJ.20!SEE> get #pages
+	MOVEI	gp2,celbeg##/1K		;[SEE] get first page number
+	CALL	pagin##			;[SEE][KPJ.2] get cell area
+	 JRST[	print	zcompa##	;<KPJ.5> no more core
+		JRST	compa1]		;<KPJ.5> return error
+>;T10
+	CALL	reafun			;parse structure
+	MOVE	t,produc##		;get producer
+	CAIE	t,filpro##		;file input ?
+	 CALL	expand##		;no, expand program
+	CALL	eval			;evaluate
+	MOVEI	cp,ans##		;<KPJ.20> get answer cell
+	CALL	savval			;save value
+	SETZM	stapoi(cp)		;clear pointer
+	MOVEM	arg,stanex(cp)		;save argument list
+compa9:	return
+;-
+
+
+
+
+;+
+;PREXPR		output expression
+;accepts	TYP	\
+;		VAL	- expression
+;		ARG	/
+;-
+
+prexpr:	save	<typ,val,cp,arg,str>
+prexp1:	CALL	prval			;print value
+	CAIN	arg,empsta##		;more arguments ?
+	 JRST	prexp9			;no
+	print[	ASCIZ !, !]		;yes, output comma
+	MOVEI	cp,stacel(arg)		;get stack cell
+	CALL	getval			;get value
+	MOVE	arg,stanex(arg)		;get rest
+	JRST	prexp1
+
+prexp9:	branch	preol##			;blank line
+
+
+
+
+
+;+
+;PRVAL		print value
+;accepts	TYP/	type
+;		VAL/	value
+;-
+
+prval:	save	<typ,val,lmarg##>
+	CAILE	typ,slab		;binary operator ?
+	 CALL	prpoi			;yes, print left part
+	CALL	prvalx			;print structure
+	return
+
+
+
+
+
+;+
+;PRPOI		print pointer
+;accepts	VAL/	pointer
+;returns	TYP/	next structure
+;		VAL/	next structure
+;-
+
+prpoi:	save	<cp>
+	SKIPN	cp,val			;get pointer
+	 JRST	prpoi9			;pointer not defined
+	CALL	getval			;get value
+	CALL	prval			;print it
+	MOVEI	cp,strnex(cp)		;get next pointer
+	CALL	getval			;get type and value
+prpoi9:	return
+
+
+
+
+
+;+
+;GETVAL		get value
+;accepts	CP/	cell
+;returns	TYP/
+;		VAL/	value
+;-
+
+getval:	JUMPE	cp,getva8		;error ?
+	MOVE	typ,celtyp(cp)		;get type
+	MOVE	val,celval(cp)		;get value
+	JRST	getva9
+
+getva8:	MOVEI	typ,nothin		;return nothing
+	SETZ	val,			;clear value
+getva9:	return
+
+
+
+
+
+;+
+;PRVALX		print value
+;-
+
+prvalx:	JRST	@sempri(typ)		;print value
+
+
+
+
+
+;+
+;COMPRO		compute prompter
+;-
+
+compro:	save	<str,ch,typ>
+	SKIPL	hlpflg##		;help wanted ?
+	 JRST	compr1			;no
+	print	zcomph##		;yes, give help
+	CALL	preol2##		;blank line
+compr1:	MOVEI	typ,sbegin		;get begin symbol
+	CALL	pseman			;print it
+	MOVEI	ch,.CHRBR		;right angle
+	CALL	putch			;<KPJ.16>
+	CALL	putbla##		;<KPJ.16> space
+compr9:	return
+
+
+
+;+
+;PSEMAN		print semantic symbol
+;accepts	TYP/	symbol
+;-
+
+pseman:	save	<ch,bp,nr>		;<KPJ.17>
+	MOVE	bp,[POINT 6,semnam(typ)] ;<KPJ.17> get string
+	MOVEI	nr,6+6			;<KPJ.17> two words max.
+psmal1:	ILDB	ch,bp			;get character
+	JUMPE	ch,psmal9		;end of SIXBIT ?
+	ADDI	ch,"A"-'A'		;no, make it ASCII
+	CAIN	ch,"^"			;circumflex?
+	 JRST	psmal2			;yes, output as-is
+	CAIL	ch,^O100		;no, letter ?
+	 ADDI	ch,^O40			;yes, lowercase it
+psmal2:	CALL	putch			;<KPJ.16> output it
+	SOJG	nr,psmal1		;more chars ?
+psmal9:	return
+	return
+
+
+
+
+
+
+
+
+
+;+
+;SAVVAL		save value in cell
+;accepts	TYP/	value
+;		VAL/	value
+;		CP/	cell
+;-
+
+savval:	MOVEM	typ,celtyp(cp)		;save type
+	MOVEM	val,celval(cp)		;save value
+	return
+
+
+;+
+;COMPCO		print result of computation
+;accepts	ANS/	answer
+;-
+
+compco:
+T10,<	save	<str,val,typ,cp,arg,gp1,gp2,lmarg##>>	;[KPJ.2]
+T20,<	save	<str,val,typ,cp,arg,lmarg##>>		;[KPJ.2]
+	MOVE	t,ans##+celtyp		;<KPJ.20> get answer type
+	CAIN	t,nothin		;check answer
+	 JRST	compc8			;skip if no answer
+	print	zanswe##		;"answer:"
+	MOVEI	cp,ans##		;<KPJ.20> get answer
+	CALL	getval			;get value
+	MOVE	arg,stanex(cp)		;get rest
+	CALL	prexpr			;output result
+compc8:
+T10,<	MOVEI	gp1,<zelsiz+^O777>/1K	;<KPJ.20!KPJ.2>
+	MOVEI	gp2,celbeg##/1K
+	CALL	pagout##		;[SEE] remove cell area from WS
+>;T10
+	return
+
+
+;+
+; LINOPR  --  print function for new line before operator
+;-
+
+linopr:	CALL	getlma##		;get new line
+	branch	nonopr			;print operator
+
+
+;+
+; NONOPR  --  print function with nothing before and after operator
+; gets type in TYP and structure in VAL
+;-
+
+nonopr:	CALL	pseman			;print operator
+	JUMPE	val,nonop9		;empty structure ?
+	CALL	prpoi			;print pointer
+	CALL	prvalx			;print the rest
+nonop9:	return
+
+
+;+
+; BLBLPR  --  print function for infix structure
+; gets type in TYP and structure in VAL
+;-
+
+blblpr:	CALL	putbla##		;one blank
+	branch	noblpr			;print operator and structure
+
+
+;+
+; NOBLPR  --  print function with nothing before and blank after operator
+; gets type in TYP and structure in VAL
+;-
+
+noblpr:	CALL	pseman			;print symbol
+	JUMPE	val,noblp9		;empty structure ?
+	CALL	putbla##		;one blank
+	CALL	prpoi			;print pointer
+	CALL	prvalx			;print the rest
+noblp9:	return
+
+
+;+
+; BLLIPR  --  print funtion with blank before and new line after operator
+; gets type and value in TYP and VAL
+;-
+
+bllipr:	CALL	putbla##		;one blank
+	branch	nolipr			;print with new line
+
+
+;+
+; NOLIPR  --  print funtion with nothing before and new line after operator
+; gets type and value in TYP and VAL
+;-
+
+nolipr:	CALL	pseman			;print symbol
+	JUMPE	val,nolip9		;any right structure ?
+	CALL	getlma##		;new line
+	CALL	prpoi			;print pointer
+	CALL	prvalx			;print the rest
+nolip9:	return
+
+
+;+
+; INTPRI  --  print function for an integer
+; gets type and value in TYP and VAL
+;-
+
+intpri:	save	<nr>
+	MOVE	nr,val			;get value
+	CALL	prfloa			;print it
+	return
+
+
+;+
+;SYMPRI		output function for a symbol
+;accepts	VAL/	value pointer
+;-
+
+sympri:	save	<txt,ch,bp,nr>
+	MOVE	txt,symnam(val)		;get string
+	MOVE	bp,[POINT 6,txt]	;get byte pointer
+	MOVEI	nr,6+6			;at most twelve characters
+prsym1:	ILDB	ch,bp			;get char
+	JUMPE	ch,prsym9		;end of SIXBIT ?
+	ADDI	ch,"A"-'A'		;make it ASCII
+	CALL	putch			;<KPJ.16> output it
+	SOJG	nr,prsym1		;more chars ?
+prsym9:	return
+
+
+
+
+
+;+
+;LABPRI		output function for label expression
+;-
+
+labpri:	save	<cp>
+	CALL	preol##			;put label at left end
+	CALL	prpoix			;print pointer
+	CALL	pseman			;print colon
+	CALL	getlma##		;return to old left margin
+	SKIPN	cp,val			;get pointer, if defined
+	 JRST	labpr9			;wasn't
+	CALL	getval			;get definition
+	CALL	prpoi			;print it
+labpr9:	return
+
+
+;+
+; PRPOIX  --  print pointer and save value
+;-
+
+prpoix:	save	<typ,val>
+	CALL	prpoi			;print pointer
+	return
+
+
+;+
+;PARSE		parse structure
+;accepts	SEM/	current object
+;returns	CP/	pointer
+;		SEM/	new current object
+;-
+
+parse:	save	<rp,typ,val>
+KL10,<	MOVEI	cp,0>			;clear value
+KL10N,<	SETZ	cp,>			;clear value
+	MOVE	rp,semord(sem)		;get right priority
+	CALL	rdobj##			;get next object
+	SKIPGE	errfl##			;error ?
+	 JRST	parse8			;yes
+parse1:	CAMG	rp,sem			;check left priority
+	 JRST	parse9			;too small, ready
+	MOVE	typ,sem			;get type
+	CALL	@sempar(sem)		;evaluate semantic function
+	JRST	parse1			;check if ready
+
+parse8:	CALL	clear##			;error, clear input
+	MOVEI	sem,sbegin		;stop
+parse9:	return
+
+
+;+
+; MONTAB  --  table for monary operators
+
+montab::
+sbegin:	SIXBIT	!begin!
+	EXP	0,send,begpar,evafir,noblpr	; BEGIN parens
+lpar:	SIXBIT	!(!
+	EXP	0,rpar,lpapar,evafir,nonopr	; left parens
+	SIXBIT	!-!
+	EXP	0,spot,parfir,negfun,nonopr	; monary minus
+	SIXBIT	!+!
+	EXP	0,spot,parfir,posfun,nonopr	; monary plus
+	SIXBIT	!entier!
+	EXP	0,spot,parfir,entfun,noblpr	; entier part
+	SIXBIT	!\!
+	EXP	0,rpar,abspar,absfun,noblpr	; left abs
+sif:	SIXBIT	!if!
+	EXP	0,rpar,conpar,confun,noblpr	; conditional
+	SIXBIT	!for!
+	EXP	0,rpar,forpar,forfun,noblpr	; for loop
+	SIXBIT	!not!
+	EXP	0,sand,parfir,notfun,noblpr	; negation
+squo:	SIXBIT	!'!
+	EXP	0,sapp,parfir,symval,nonopr	; quote operator
+	SIXBIT	!constr!
+	EXP	0,rpar,parfir,cnsfun,noblpr	; construction operator
+set:	SIXBIT	!&!
+	EXP	0,slab,parfir,calfun,nonopr	; EVAL operator
+	SIXBIT	!call!
+	EXP	0,sassai,parfir,calfun,noblpr	; CALL	operator
+	SIXBIT	!arg!
+	EXP	0,sassai,parfir,argfun,noblpr	; ARG operator
+	SIXBIT	!part!
+	EXP	0,sassai,parfir,parfun,noblpr	; PART operator
+	SIXBIT	!entry!
+	EXP	0,sassai,parfir,roefun,noblpr	; ENTRY function
+	SIXBIT	!print!
+	EXP	0,sassai,parfir,prifun,noblpr	; PRINT function
+	SIXBIT	!read!
+	EXP	0,montab,parfir,reafun,nonopr	; READ operator
+	SIXBIT	!rdobj!
+	EXP	0,montab,parfir,rdofun,nonopr	; RDOBJ operator
+	SIXBIT	!rdline!
+	EXP	0,montab,parfir,rlifun,nonopr	; RDLINE operator
+	SIXBIT	!clear!
+	EXP	0,montabparcle,,dummy,dummy	;<KPJ.4> clear memory
+	SIXBIT	!x!
+	EXP	0,montab,parfir,xfun,nonopr	; first argument
+	SIXBIT	!y!
+	EXP	0,montab,parfir,yfun,nonopr	; second argument
+	SIXBIT	!nil!
+	EXP	0,montab,parfir,nilfun,nonopr	; clear argument
+	SIXBIT	!terpri!
+	EXP	0,montab,parfir,preol##,nonopr	; print new line
+	SIXBIT	!command!
+	EXP	sassai,parfir,comfun,noblpr	;<KPJ.4>COMMAND command
+sstr:	SIXBIT	!"!
+	EXP	0,montab,parstr,pristr,prstri	; print ASCIZ
+strue:	SIXBIT	!true!
+	EXP	0,montab,parfir,settru,nonopr	; TRUE
+sfalse:	SIXBIT	!false!
+	EXP	0,montab,parfir,setfal,nonopr	; FALSE
+;-
+
+
+;+
+nothin::EXP	0,0,montab,parfir,dummy,dummy	;semantics for nothing
+intege::EXP	0,0,montab,intpar,dummy,intpri	;semantics for an integer
+symbol::EXP	0,0,montab,intpar,symval,sympri	;semantics for a symbol
+;-
+
+
+;+
+; BINTAB  --  table for binary operators
+
+bintab::
+slab:	SIXBIT	!:!
+	EXP	0,rpar,labpar,calfun,labpri	;label
+sapp:	SIXBIT	!(!
+	EXP	0,rpar,apppar,appfun,nonopr	;application
+bsymb::	0
+	EXP	0,sassai,infix,appfun,noblpr	;binary symbol
+sassai:	SIXBIT	!:=!
+	EXP	0,sprog,infix,assfun,blblpr	;assignment
+scomp:	SIXBIT	!compare!
+	EXP	scomp,infix,cmpfun,blblpr	;string compare
+sfak:	SIXBIT	/!/
+	EXP	0,montab,roppar,fakfun,nonopr	;"fakulty"
+spot:	SIXBIT	!**!
+	EXP	0,stimes,infix,potfun,blblpr	;exponent
+	SIXBIT	!^!
+	EXP	0,stimes,infix,potfun,blblpr	;exponent
+stimes:	SIXBIT	!*!
+	EXP	0,stimes,infix,timfun,blblpr	;times
+	SIXBIT	!/!
+	EXP	0,stimes,infix,divfun,blblpr	;divide
+splus:	SIXBIT	!+!
+	EXP	0,splus,infix,plufun,blblpr	;binary plus
+	SIXBIT	!-!
+	EXP	0,splus,infix,minfun,blblpr	;binary minus
+	SIXBIT	!mod!
+	EXP	0,seq,infix,modfun,blblpr	;mod operator
+seq:	SIXBIT	!=!
+	EXP	0,seq,infix,eqfun,blblpr	;arithmetical equal
+	SIXBIT	!<!
+	EXP	0,seq,infix,lesfun,blblpr	;less than
+	SIXBIT	!>!
+	EXP	0,seq,infix,grefun,blblpr	;greater than
+sand:	SIXBIT	!and!
+	EXP	0,sand,infix,andfun,blblpr	;logical and
+sor:	SIXBIT	!or!
+	EXP	0,sor,infix,orfun,blblpr	;logical or
+sprog:	SIXBIT	!;!
+	EXP	0,sprog,infix,profun,nolipr	;statement separator
+	SIXBIT	!,!
+	EXP	0,sprog,infix,lisfun,noblpr	;argument list
+rpar:	SIXBIT	!)!
+	EXP	0,montab,infix,rpafun,nonopr	;right parens
+sabs:	SIXBIT	!\!
+	EXP	0,montab,infix,rpafun,blblpr	;right abs
+sthen:	SIXBIT	!then!
+	EXP	0,rpar,infix,confun,blblpr	;then branch
+selse:	SIXBIT	!else!
+	EXP	0,rpar,infix,confun,bllipr	;else branch
+sto:	SIXBIT	!to!
+	EXP	0,rpar,infix,forfun,blblpr	;to part
+sdo:	SIXBIT	!do!
+	EXP	0,rpar,infix,forfun,bllipr	;do part
+send::	SIXBIT	!end!
+	EXP	0,montab,infix,endfun,linopr	;end parens
+;-
+
+
+;+
+; LPAPAR  --  semantic function for left parenthesis
+; gets semantics in SEM
+; returns structure in CP
+;-
+
+lpapar:	CALL	parfir			;parse first part
+	CAIN	sem,rpar		;right parens ?
+	 CALL	gristr			;parse from right parens
+	return
+
+
+;+
+; PARFIR  --  parse first part
+; gets semantics in SEM and TYP
+; returns pointer in CP
+; returns pointer to previous cell in VAL
+;-
+
+parfir:	CALL	parse
+	branch	savpar			;save parsed structure
+
+
+;+
+; SAVPAR  --  save parsed stucture
+; gets left structure in CP
+; gets semantics in TYP
+; returns structures in VAL and CP
+;-
+
+savpar:	JUMPN	cp,savpa1		;pointer defined ?
+	CALL	allnil			;no, get empty structure
+savpa1:	MOVE	val,cp			;get pointer
+	branch	allcel			;allocate cell
+
+
+;+
+; ALLNIL  --  get empty structure
+; returns pointer in CP
+;-
+
+allnil:	save	<typ,val>
+	MOVEI	typ,nothin		;type nothing
+	SETZ	val,			;clear value
+	CALL	allcel			;make cell
+	return
+
+
+;+
+; ALLCEL  --  allocate a new cell
+; gets contents in TYP and VAL
+; returns pointer to structure in CP
+;-
+
+allcel:	save	<str>
+	MOVE	cp,fifree##		;<KPJ.20> get first free
+	CALL	savval			;save values
+	MOVEI	t,nothin		;clear type
+	MOVEM	t,strnex+celtyp(cp)
+	SETZM	strnex+celval(cp)	;clear next pointer
+	MOVE	t,fifree##		;<KPJ.20> get first free
+	ADDI	t,strsiz		;get next
+	CAIGE	t,celend##-strsiz*^O40	;<KPJ.20> end of space ?
+	 JRST[	MOVEM	t,fifree##	;<KPJ.20> no, save new first free
+		JRST	allce9]		;<KPJ.20>
+	MOVEI	t,celbeg##		;start from beginning again
+	MOVEM	t,fifree##		;. . .
+	print	zgris##			;"No more free storage left"
+	CALL	preol##			;new line
+allce9:	return
+
+
+;+
+; GRISTR  --  get right structure
+; gets pointer to previous structure in VAL
+; returns pointer to new structure in VAL
+;-
+
+gristr:	save	<typ,cp>
+	MOVE	typ,sem			;get type
+	CALL	parse			;parse
+	JUMPN	cp,grist1		;pointer defined ?
+	CALL	allnil			;no, get empty structure
+grist1:	EXCH	val,cp			;get new structure
+	JUMPE	cp,grist9		;pointer defined ?
+	MOVEI	cp,strnex(cp)		;get pointer to cell
+	CALL	savval		;save pointer
+grist9:	return
+
+
+;+
+; BEGPAR  --  semantic function for begin operator
+; gets semantics in TYP
+; returns structure in CP
+;-
+
+begpar:	CALL	parfir			;parse first part
+	CAIN	sem,send		;end ?
+	 CALL	gristr			;parse from end
+	return
+
+
+;+
+; ABSPAR  --  semantic funtion for absolute value
+;-
+
+abspar:	CALL	parfir			;parse argument
+	CAIN	sem,sabs		;right abs ?
+	 CALL	gristr			;parse from right abs
+	return
+
+
+;+
+; CONPAR  --  semantic function for if - then - else
+; gets semantics in TYP
+; returns structure in CP
+;-
+
+conpar:	CALL	parfir			;parse first part
+	CAIN	sem,sthen		;then got ?
+	 CALL	gristr			;get then part
+	CAIN	sem,selse		;else got ?
+	 CALL	gristr			;get else part
+	return
+
+
+;+
+; FORPAR  --  semantic function for FOR
+;-
+
+forpar:	CALL	parfir			;parse first part
+	CAIN	sem,sto			;to got ?
+	 CALL	gristr			;get to part
+	CAIN	sem,sdo			;do got ?
+	 CALL	gristr			;get do part
+	return
+
+
+;+
+;PARSTR		semantic function for read string
+;-
+
+parstr:	save	<ch,bp>
+	MOVE	val,fifree##		;<KPJ.20> get start of string
+	MOVE	bp,val			;<KPJ.20> get first free
+	HRLI	bp,(POINT 7,)		;<KPJ.20> make byte pointer
+parst1:	CALL	gshort##		;get character
+	JUMPE	ch,parst8		;end of line ?
+	CALL	nexsho##		;get next char
+	CAIN	ch,.CHQUO		;quote?
+	 JRST	parst7			;yes, end of string ?
+	IDPB	ch,bp			;save char
+	JRST	parst1
+
+parst7:
+KL10,<	MOVEI	ch,.CHNUL>		;<KPJ.20> end mark
+KL10N,<	SETZ	ch,.CHNUL>		;<KPJ.20> . . .
+parst8:	IDPB	ch,bp			;save character
+	MOVEI	bp,1(bp)		;get end of string
+	MOVEM	bp,fifree##		;<KPJ.20> allocate string
+	branch	intpar			;parse the rest
+
+
+;+
+;PARCLE		semantic function for clear memory
+;-
+
+parcle:	SETZM	celbeg##		;<KPJ.20> clear start of area
+	MOVE	t,[celbeg##,,celbeg##+1];<KPJ.20> clear area
+	BLT	t,celend##		;<KPJ.20> . . .
+	MOVEI	t,celbeg##		;<KPJ.20> set first free
+	MOVEM	t,fifree##		;<KPJ.20> . . .
+	MOVEI	t,symtab##		;<KPJ.20> get start of symbol table
+parcl1:	SETZM	symnam(t)		;clear name
+	ADDI	t,symsiz		;get next symbol
+	CAIGE	t,symend##		;<KPJ.20> end of table ?
+	 JRST	parcl1			;no, get next
+	branch	intpar			;parse the rest
+
+
+;+
+; INTPAR  --  semantic function for an integer
+; gets number in VALUE
+; returns pointer in CP
+;-
+
+intpar:	CALL	parse			;parse from number
+	branch	allcel			;allocate cell
+
+
+;+
+; LABPAR  --  semantic function for label
+; gets pointer to symbol in CP
+; returns pointer in CP
+;-
+
+labpar:	CALL	savpar			;save parsed structure
+	MOVE	val,celval(val)		;get value cell
+	branch	gefude			;get function definition
+
+
+;+
+; GEFUDE  --  get function defintion
+; gets value cell in VAL
+;-
+
+gefude:	save	<cp>
+	CALL	parse			;get function definition
+	JUMPE	val,gefud9		;value cell defined ?
+	JUMPE	cp,gefud9		;definition defined ?
+	MOVE	t,celtyp(cp)		;set type
+	MOVEM	t,celtyp(val)
+	MOVE	t,celval(cp)		;set definition
+	MOVEM	t,celval(val)
+gefud9:	return
+
+
+;+
+; APPPAR  --  semantic function for application
+;-
+
+apppar:	CALL	roppar			;save parsed structure
+	CAIN	sem,rpar		;right parens got ?
+	 CALL	gristr			;parse from right parens
+	return
+
+
+;+
+; ROPPAR  --  semantic function for right operator
+;-
+
+roppar:	CALL	savpar			;save parsed structure
+	branch	gristr			;parse from operator
+
+
+;+
+; INFIX  --  make an infix structure
+; gets left structure in CP
+; gets semantics in TYP
+; returns structure in CP
+;-
+
+infix:	CALL	savpar			;save parsed structure
+infix1:	CALL	gristr			;get right structure
+	CAMN	typ,sem			;more ?
+	 JRST	infix1			;yes, get it
+	return
+
+
+;+
+;PRSTRI		output function for string
+;accepts	TYP/	type
+;		VAL/	value
+;-
+
+prstri:	save	<ch>
+	MOVEI	ch,.CHQUO		;<KPJ.12> output quote
+	CALL	putch			;<KPJ.16>
+	CALL	pristr			;<KPJ.6> output string
+	MOVEI	ch,.CHQUO		;<KPJ.12> output quote
+	CALL	putch			;<KPj.16>
+	return
+
+;+
+;PRISTR		eval function for print string		<KPJ.6>
+;accepts	TYP/	type
+;		VAL/	value
+;-
+
+pristr:	save	<str>
+	MOVE	str,val			;get pointer to ASCIZ
+	CALL	prstr##			;output it
+	return
+
+;========================================================================
+;		Previously this was file EVAL:
+;========================================================================
+;+
+;EVAL		evaluate
+;accepts	TYP/
+;		VAL/	argument
+;		ARG/
+; returns result in TYP, VAL, CP and ARG
+;-
+
+eval:	rstreg				;*** BEWARE ***
+	SKIPGE	intflg##		;interrupt ?
+	 RET
+	JRST	@semval(typ)		;evaluate
+
+
+
+;+
+; EVAFIR  --  eval funtion for left parens
+;-
+
+evafir:	CALL	symval			;get value
+	branch	eval			;evalute
+
+
+;+
+; SYMVAL  --  eval function for a symbol
+; gets value in VAL
+; returns value in ARG
+;-
+
+symval:	MOVE	cp,val			;get pointer
+	branch	getval			;get value
+
+
+;+
+; NEGFUN  --  eval funtion for monary minus
+;-
+
+negfun:	CALL	evafir			;evaluate argument
+	MOVN	val,val			;make nuber negative
+	branch	retsin			;return single value
+
+
+;+
+; POSFUN  --  eval function for unary plus
+;-
+
+posfun:	CALL	evafir			;evaluate argument
+	branch	retsin			;return single value
+
+
+;+
+; ENTFUN  --  eval function for entier part
+;-
+
+entfun:	CALL	evafir			;evaluate argument
+	CALL	makint			;make it integer
+	FLTR	val,val			;make it floating again
+	branch	retsin			;return single value
+
+
+;+
+; SETTRU  --  return true
+;-
+
+settru:	MOVEI	typ,strue		;set true
+	SETZ	val,			;clear value
+	branch	retsin			;return single value
+
+
+;+
+; SETFAL  --  return false
+;-
+
+setfal:	MOVEI	typ,sfalse		;set false
+	SETZ	val,			;clear value
+	branch	retsin			;return single value
+
+
+;+
+; ABSFUN  --  eval function for absolute value
+;-
+
+absfun:	CALL	evafir			;evaluate argument
+	MOVM	val,val			;get absolute value
+	branch	retsin			;return single value
+
+
+;+
+;CONFUN		EVAL function for IF - THEN - ELSE
+;-
+
+confun:	save	<str,savarg##>		;<KPJ.20>
+	CALL	evalef			;evaluate first part
+	CAIN	typ,sfalse		;false ?
+	 MOVE	str,strnex+celval(str)	;yes, get else branch
+	MOVE	val,str			;get next part
+	MOVE	arg,savarg##		;<KPJ.20> get argument
+	branch	evafir			;evaluate next part
+
+
+;+
+;FORFUN		EVAL function for FOR
+;-
+
+forfun:	save	<gp1,str,savarg##>	;<KPJ.20>
+	CALL	evalef			;evaluate variable
+	MOVEM	cp,gp1			;save pointer to variable
+	CALL	evanex			;evaluate stop value
+forfu1:	SKIPL	errfl##			;any error ?
+	 SKIPGE	intflg##		;or interrupt ?
+	  JRST	forfu9
+	CAMGE	val,celval(gp1)		;end reached ?
+	 JRST	forfu9			;yes, ready
+	CALL	evalas			;evaluate do part
+	MOVE	t,[1.]			;get 1.
+	FADRM	t,celval(gp1)		;increase variable
+	JRST	forfu1
+
+forfu9:	return
+
+
+;+
+;EVALAS		evaluate last part
+;accepts	STR/	last structure
+;		SAVARG/	argument
+;-
+
+evalas:	save	<str,typ,val,cp,arg>
+	CALL	evanex			;evaluate
+	return
+
+
+;+
+; NOTFUN  --  eval function for logical not
+;-
+
+notfun:	CALL	evafir			;evaluate argument
+	CAIN	typ,sfalse		;false ?
+	 JRST[	CALL	settru		;yes, return true
+		JRST	notfu9]
+	CALL	setfal			;no, get false
+notfu9:	return
+
+
+;+
+; CNSFUN  --  eval function for construction operator
+; gets pointer to structure in VAL
+; returns new structure in TYP, VAL and ARG
+;-
+
+cnsfun:	CALL	symval			;get structure
+	CALL	copy			;copy it
+	MOVEI	arg,empsta##		;clear stack
+	return
+
+
+;+
+; COPY  --  copy structure
+; gets structure in TYP and VAL
+; returns a copy of that structure in TYP and VAL
+;-
+
+copy:	save	<gp1,arg>
+	JUMPE	val,copy9		;no pointer ?
+	CAIE	typ,intege		;integer ?
+	 CAIN	typ,symbol		;or symbol ?
+	  JRST	copy9			;yes, ready
+	CAIE	typ,set			;evaluate ?
+	 JRST	copy1			;no
+	CALL	evafir			;evaluate
+	JRST	copy9			;ready
+
+copy1:	MOVEI	gp1,strnex(val)		;save second part
+	PUSH	P,typ
+	MOVE	cp,val			;get pointer
+	CALL	getval			;get value
+	CALL	copy			;copy first part
+	CALL	allcel			;allocate cell
+	EXCH	cp,gp1			;get second part
+	CALL	getval			;get it
+	CALL	copy			;copy second part
+	MOVEM	typ,strnex+celtyp(gp1)	;save type
+	MOVEM	val,strnex+celval(gp1)	;save value
+	MOVE	val,gp1			;get structure
+	POP	P,typ
+copy9:	return
+
+
+;+
+; CALFUN  --  eval function for call operator
+;-
+
+calfun:	CALL	evafir			;evaluate argument
+	branch	eval			;evaluate again
+
+
+;+
+; ARGFUN  --  eval function for argument operator
+;-
+
+argfun:	CALL	evafir			;get argument
+	CALL	makint			;make it integer
+argfu1:	SOJLE	val,argfu9		;ready ?
+	MOVE	arg,stanex(arg)		;reduce argument
+	CAIE	arg,empsta##		;end of arguments ?
+	 JRST	argfu1			;no
+argfu9:	branch	rest			;expand it
+
+
+;+
+; REST  --  expand an argument
+; gets argument in ARG
+; returns value in TYP, VAL, CP and ARG
+;-
+
+rest:	MOVE	typ,stacel+celtyp(arg)	;get type
+	MOVE	val,stacel+celval(arg)	;get value
+	MOVE	cp,stapoi(arg)		;get pointer
+	MOVE	arg,stanex(arg)		;reduce stack
+	return
+
+
+;+
+; PARFUN  --  eval function for part operator
+;-
+
+parfun:	CALL	evafir			;get argument
+	CALL	makint			;make it integer
+	SKIPN	cp,stacel+celval(arg)	;get structure
+	 JRST	parfu9			;no structure given
+	MOVE	arg,stanex(arg)		;reduce stack
+parfu1:	SOJLE	val,parfu9		;ready ?
+	SKIPE	cp,strnex+celval(cp)	;no, get next part
+	 JRST	parfu1
+parfu9:	branch	getval			;get value
+
+
+
+
+
+;+
+; ROEFUN  --  reassign output to entry function
+;-
+
+roefun:	save	<consum##,quest##>
+	CALL	ecbeg##			;start entry
+	CALL	evafir			;get argument
+	CALL	ecend##			;end of entry
+	return
+
+
+;+
+; PRIFUN  --  eval function for print operator
+;-
+
+prifun:	CALL	evafir			;get argument
+	branch	prexpr			;print result
+
+
+;+
+; RDOFUN  --  eval function for rdobj operator
+;-
+
+rdofun:	save	<rp,sem>
+	MOVEI	rp,bintab		;get all operators
+	CALL	rdobj##			;read object
+KL10,<	MOVEI	cp,0>			;<KPJ.20> clear pointer
+KL10N,<	SETZ	cp,>			;<KPJ.20> . . .
+	MOVEI	arg,empsta##		;clear stack
+	return
+
+
+;+
+;REAFUN		evaluation function for read operator
+;returns	ARG/	value
+;-
+
+reafun:	save	<sem>
+	SETZM	errfl##			;clear error
+	MOVEI	sem,sbegin		;start from end of line
+	CALL	parse			;parse structure
+	MOVEI	arg,empsta##		;get the empty stack
+	CALL	getval			;get value
+	return
+
+
+;+
+;RLIFUN		eval function for READLINE
+;-
+
+rlifun:	save	<consum##,str,strbeg##,strbp##,quest##>
+	MOVEI	t,[RET]			;no promter
+	MOVEM	t,quest##
+	CALL	stbeg##			;start string
+	 error	<rlifun comput>		;<KPJ.12> failed, lose mind
+	CALL	terpro##		;get it from terminal
+	CALL	stend##			;ready
+	MOVEI	typ,sstr		;type string
+	MOVEI	val,1(str)		;get start of string
+	branch	retsin			;return single value
+
+
+;+
+; XFUN  --  eval function for first argument
+; gets argument list in ARG
+;-
+
+xfun:	JRST	rest		; return same stack
+
+
+
+
+
+;+
+; YFUN  --  eval function for second argument
+;-
+
+yfun:	MOVE	arg,stanex(arg)		;reduce stack
+	branch	rest			;expand it
+
+
+;+
+; NILFUN  --  eval function for clear argument list
+;-
+
+nilfun:	MOVEI	arg,empsta##		;clear stack
+	branch	rest			;expand it
+
+
+
+;+
+; COMFUN  --  eval function for COM command
+;-
+
+comfun:	save	<str,bp,chpt##>
+	CALL	evafir			;evaluate argument
+	CAIE	typ,sstr		;string ?
+	 JRST	comfu8			;no
+	MOVE	str,val			;get string
+	CALL	mkbp##			;make pointer
+	MOVEM	bp,chpt##		;get input from string
+comfu8:	CALL	topcom##		;do command
+	return
+
+
+;+
+;DUMMY			dummy function
+;-
+
+dummy:	RET
+
+
+;+
+;PLUFUN		EVAL function for binary +
+;accepts	VAL/	structure
+;returns	ARG/	value
+;-
+
+plufun:	save	<gp1,str,savarg##>	;<KPJ.20>
+	CALL	evalef			;evaluate left part
+	MOVEM	val,gp1			;save value
+plufu1:	CALL	evanex			;evaluate next part
+	FADR	gp1,val			;add it
+	JUMPN	str,plufu1		;more ?
+	MOVE	val,gp1			;get value
+	branch	retsin			;[KPJ.1] return single value
+
+
+;+
+;EVALEF		evaluate left part
+;accepts	ARG/	argument
+;		VAL/	structure
+;returns	SAVARG/	old argument
+;		STR/	right structure
+;		TYP/	value
+;		VAL/	  :
+;		CP/	  :
+;		ARG/	  :
+;-
+
+evalef:	MOVEM	arg,savarg##		;<KPJ.20> save argument
+	MOVE	str,strnex+celval(val)	;get next part
+	branch	evafir			;evaluate first part
+
+
+;+
+;EVANEX		evaluate next part
+;accepts	STR/	next structure
+;		SAVARG/	argument
+;		STR/	next structure
+;		TYP/	value
+;		VAL/	  :
+;		CP/	  :
+;		ARG/	  :
+;-
+
+evanex:	MOVE	val,str			;get next part
+	MOVE	str,strnex+celval(val)	;get next part
+	MOVE	arg,savarg##		;<KPJ.20> get argument
+	branch	evafir			;evaluate next part
+
+
+;+
+; RETSIN  --  return single value
+; gets number in VAL
+; returns result in VAL, CP and ARG
+;-
+
+retsin:
+KL10,<	MOVEI	cp,0>			;<KPJ.20!KPJ.1> clear pointer
+KL10N,<	SETZ	cp,>			;<KPJ.20!KPJ.1> . . .
+	MOVEI	arg,empsta##		;[KPJ.1] clear stack
+	return
+
+
+
+
+;+
+;MINFUN		EVAL funtion for binary -
+;-
+
+minfun:	save	<gp1,str,savarg##>	;<KPJ.1>
+	CALL	evalef			;evaluate first part
+	MOVEM	val,gp1			;save value
+minfu1:	CALL	evanex			;evaluate next part
+	FSBR	gp1,val			;subtract it
+	JUMPN	str,minfu1
+	MOVE	val,gp1			;get value
+	branch	retsin			;[KPJ.1] return single value
+
+
+;+
+;TIMFUN		EVAL function for *
+;-
+
+timfun:	save	<gp1,str,savarg##>	;<KPJ.20!KPJ.1>
+	CALL	evalef			;evaluate first part
+	MOVEM	val,gp1			;save value
+timfu1:	CALL	evanex			;evaluate next part
+	FMPR	gp1,val			;multiply it
+	JUMPN	str,timfu1
+	MOVE	val,gp1			;get value
+	branch	retsin			;[KPJ.1] return single value
+
+
+;+
+;DIVFUN		EVAL function for /
+;-
+
+divfun:	save	<gp1,str,savarg##>	;<KPJ.20>
+	CALL	evalef			;evaluate first part
+	MOVEM	val,gp1			;save value
+divfu1:	CALL	evanex			;evaluate next part
+	FDVR	gp1,val			;divide it
+	JUMPN	str,divfu1
+	MOVE	val,gp1			;get value
+	branch	retsin			;[KPJ.1] return single value
+
+
+
+
+
+;+
+;MODFUN		EVAL function for MOD operator
+;-
+
+modfun:	save	<gp1,gp2,str,savarg##>	;<KPJ.20>
+	CALL	evalef			;evaluate first part
+	MOVEM	val,gp1			;save value
+	CALL	evanex			;evaluate second part
+	FDVR	gp1,val			;get quotient
+	MOVEM	gp1,gp2			;save quotient
+	EXCH	val,gp1			;get quotient
+	CALL	makint			;make it integer
+	FLTR	val,val			;make it floating
+	FSBR	gp2,val			;get fractional part
+	FMPR	gp2,gp1			;get rest
+	JUMPGE	gp2,modfu9		;positive value ?
+	MOVM	gp1,gp1			;no, get positive value
+	FADR	gp2,gp1			;make it positive
+modfu9:	MOVE	val,gp2			;get value
+	branch	retsin			;[KPJ.1] return single value
+
+
+
+
+
+;+
+; POTFUN  --  eval function for exponentiation
+;-
+
+potfun:	save	<gp1,str,savarg##>
+	CALL	evalef			;evaluate first part
+	MOVEM	val,gp1			;save value
+	CALL	evanex			;evaluate second argument	
+	CALL	makint			;make it an integer
+	MOVE	t,val			;get exponent
+	MOVE	val,[1.]		;start value
+	JUMPL	t,potfu2		;negative ?
+potfu1:	SOJL	t,potfu9		;ready ?
+	FMPR	val,gp1			;no, multiply
+	JRST	potfu1
+
+potfu2:	MOVN	t,t			;make it positive
+potfu3:	SOJL	t,potfu9		;ready ?
+	FDVR	val,gp1			;no, divide
+	JRST	potfu3
+
+potfu9:	branch	retsin			;[KPJ.1] return single value
+
+
+;+
+; MAKINT  --  make integer
+; gets floating number in VAL
+; returns integer in VAL
+;-
+
+makint:	JUMPL	val,makin1		;negative ?
+	FADR	val,errcor		;no, add correction
+	TRNA
+makin1:	 FSBR	val,errcor		;subtract correction
+	FIX	val,val			;make integer
+	return
+
+
+;+
+; APPFUN  --  eval function for application
+; returns value in TYP, VAL, CP and ARG
+;-
+
+appfun:	save	<gp1,str,savarg##>
+	CALL	evalef			;evaluate first part
+	CALL	evaarg			;evaluate argument
+	branch	eval			;apply
+
+
+;+
+;EVAARG		eval argument
+;accepts	STR/	pointer
+;		SAVARG/	argument
+;returns	ARG/	argument
+;-
+
+evaarg:	save	<typ,val,cp>
+	CALL	evanex			;evaluate argument
+	CALL	allsta			;allocate stack
+	 nop				;<KPJ.15> failed, whistle in the wind
+	return
+
+
+;+
+;ALLSTA		allocate stack cell
+;accepts	TYP, VAL, CP and ARG/	value
+;returns	+1	failure to allocate memory
+;		+2	with ARG/	result
+;-
+
+allsta:	save	<gp1>
+	CAIE	typ,nothin		;value nothing ?
+	 JRST	allst0			;no
+	CAIN	arg,empsta##		;<KPJ.20> nil ?
+	 JUMPE	cp,allst8		;<KPJ.15> empty ?
+allst0:	MOVE	gp1,free		;get free area
+	ADDI	free,stasiz		;get one stack cell
+	CALL	allocm##		;allocate it
+	 JRST	allst9			;<KPJ.15> failed, return failure
+	MOVEM	typ,stacel+celtyp(gp1)	;save type
+	MOVEM	val,stacel+celval(gp1)	;save value
+	MOVEM	cp,stapoi(gp1)		;save pointer
+	MOVEM	arg,stanex(gp1)		;save rest
+	MOVE	arg,gp1			;get new arg
+allst8:	skpret				;<KPJ.15> +2 return means success
+allst9:	return				;<KPJ.15>
+
+
+;+
+; ASSFUN  --  eval function for assignment
+; returns value in TYP, VAL, CP and ARG
+;-
+
+assfun:	save	<str,savarg##>
+	CALL	evalef			;evaluate left part
+	MOVE	val,str			;get second part
+	MOVEM	cp,str			;save pointer
+	MOVE	arg,savarg##		;<KPJ.20> get argument
+	CALL	evafir			;evaluate second part
+	SKIPE	cp,str			;get pointer
+	 CALL	savval			;save value
+	return
+
+
+;+
+; PROFUN  --  eval function for prog expression
+;-
+
+profun:	save	<str,savarg##>
+	MOVEM	val,str			;save pointer
+	MOVEM	arg,savarg##		;<KPJ.20> save argument
+profu1:	SKIPN	strnex+celval(str)	;last part ?
+	 JRST	profu9			;yes
+	CALL	evanex			;evaluate structure
+	JRST	profu1			;more
+
+profu9:	MOVE	val,str			;get next part
+	MOVE	arg,savarg##		;<KPJ.20> get argument
+	branch	evafir			;evaluate last part
+
+
+
+
+
+;+
+;LISFUN		EVAL function for comma expression
+;-
+
+lisfun:	save	<gp1,str,savarg##,savsta##>
+	CALL	evalef			;evaluate first part
+	MOVEI	gp1,savsta##		;save result
+lisfu1:	CALL	evaarg			;evaluate next part
+	MOVEM	arg,0(gp1)		;link stack together
+	MOVEI	gp1,stanex(arg)		;get new evaluated list
+	JUMPN	str,lisfu1		;evaluate the rest
+	MOVE	arg,savsta##		;get value
+	return
+
+
+
+
+
+;+
+; EQFUN  --  eval function for aritmetical equal
+;-
+
+eqfun:	save	<gp1,str,savarg##,savtyp##>
+	CALL	evalef			;evaluate first argument
+	MOVEM	val,gp1			;save value
+	MOVEM	typ,savtyp##		;save type
+eqfun1:	CALL	evanex			;evaluate next argument
+	CAMN	gp1,val			;[KPJ.1] equal ?
+	 JRST	eqfun2			;[KPJ.1] yes
+	CAIE	typ,sstr		;[KPJ.1] string ?
+	 JRST	eqfun8			;[KPJ.1] no, not equal
+	MOVE	val,0(val)		;[KPJ.1] get first part of string
+	CAME	val,0(gp1)		;[KPJ.1] same first part ?
+	 JRST	eqfun8			;[KPJ.1] no, not equal
+eqfun2:	CAME	typ,savtyp##		;<KPJ.20!KPJ.1> same type ?
+	 JRST	eqfun8			;[KPJ.1] no
+	JUMPN	str,eqfun1		;more arguments ?
+	CALL	settru			;no, set true
+	JRST	eqfun9
+
+eqfun8:	CALL	setfal			;set false
+eqfun9:	return
+
+
+
+
+
+;+
+; LESFUN  --  eval function for less than
+;-
+
+lesfun:	save	<gp1,str,savarg##>
+	CALL	evalef			;evaluate first argument
+lesfu1:	MOVEM	val,gp1			;save value
+	CALL	evanex			;evaluate next argument
+	CAML	gp1,val			;less ?
+	 JRST	lesfu8			;no
+	JUMPN	str,lesfu1		;more arguments ?
+	CALL	settru			;no, set true
+	JRST	lesfu9
+
+lesfu8:	CALL	setfal			;set false
+lesfu9:	return
+
+
+
+
+
+;+
+; GREFUN  --  eval function for greater than
+;-
+
+grefun:	save	<gp1,str,savarg##>
+	CALL	evalef			;evaluate first argument
+grefu1:	MOVEM	val,gp1			;save value
+	CALL	evanex			;evaluate next argument
+	CAMG	gp1,val			;greater ?
+	 JRST	grefu8			;no
+	JUMPN	str,grefu1		;more arguments ?
+	CALL	settru			;no, set true
+	JRST	grefu9
+
+grefu8:	CALL	setfal			;set false
+grefu9:	return
+
+
+
+
+
+;+
+; ANDFUN  --  eval function for logical and
+;-
+
+andfun:	save	<str,savarg##>
+	MOVEM	val,str			;save pointer
+	MOVEM	arg,savarg##		;save argument
+andfu1:	CALL	evanex			;evaluate first argument
+	CAIE	typ,sfalse		;false ?
+	 JUMPN	str,andfu1		;no, more arguments ?
+	return
+
+
+
+
+
+;+
+; ORFUN  --  eval funtion for logical or
+;-
+
+orfun:	save	<str,savarg##>
+	MOVEM	val,str			;save pointer
+	MOVEM	arg,savarg##		;save argument
+orfun1:	CALL	evanex			;evaluate first argument
+	CAIN	typ,sfalse		;false ?
+	 JUMPN	str,orfun1		;yes, more arguments ?
+	return
+
+
+
+
+
+;+
+; CMPFUN  --  eval function for string compare
+;-
+
+cmpfun:	save	<gp1,str,savarg##,bp,chpt##,cspt##>
+	CALL	evalef			;get short string
+	PUSH	P,str			;save next part
+	MOVE	str,val			;get string
+	CALL	mkbp##			;make pointer
+	MOVEM	bp,chpt##		;save pointer
+	POP	P,str			;restore next part
+	CALL	evanex			;get long string
+	MOVE	str,val			;get string
+	CALL	mkbp##			;make pointer
+	MOVEM	bp,cspt##		;save pointer
+	CALL	comlin##		;compare lines
+	MOVE	val,nr			;get match count
+	FLTR	val,val			;make it floating
+	MOVEI	typ,intege		;return integer
+	branch	retsin			;return single value
+
+
+
+
+
+;+
+; FAKFUN  --  eval function for factorial
+;-
+
+fakfun:	CALL	evafir		;evaluate argument
+	MOVE	cp,val		;get value
+	MOVE	val,[1.]	;get start value
+fakfu1:	JUMPLE	cp,fakfu9	;ready ?
+	FMPR	val,cp		;multiply
+	FSBR	cp,[1.]		;subtract 1.
+	JRST	fakfu1
+
+fakfu9:	branch	retsin		; return single value
+
+
+
+
+
+;+
+; RPAFUN  --  eval function for right parens
+;-
+
+rpafun:	SETOM	errfl##			;error
+	branch	evafir			;evaluate argument
+
+
+;+
+; ENDFUN  --  eval function for end
+;-
+
+endfun:	SETOM	errfl##			;[KPJ.1] set error flag on
+	branch	evafir			;[KPJ.1] evaluate argument
+
+
+
+;+
+; PRFLOA  --  print floating point number
+; gets number in NR
+;-
+
+prfloa:	save	<nr,ch,gp1>
+	ifon	intflg##,prflo9		;interrupt ?
+	MOVEI	gp1,.nrdig		;digit count
+	JUMPGE	nr,prflo1		;negative?
+		MOVEI	ch,"-"		;yes, print minus sign
+		CALL	putch		;<KPJ.16>
+		MOVN	nr,nr		;make it positive
+prflo1:	CAMGE	nr,onecor		;more than 1. ?
+	 JRST	prflo2			;no
+	CALL	priint			;print integer part
+	JUMPLE	gp1,prflo9		;enough digits ?
+	CAMG	nr,errcor		;any fractional part ?
+	 JRST	prflo9			;no
+	JRST	prflo3
+
+prflo2:	MOVEI	ch,"0"			;output zero
+	CALL	putch
+	JUMPLE	nr,prflo9		;zero ?
+prflo3:	MOVEI	ch,"."			;yes, print point
+	CALL	putch
+	CALL	prifra			;print fractional part
+prflo9:	return
+
+
+
+
+;+
+; PRIINT  --  print integer part
+; gets number greater than 1. in NR
+; gets digit count in GP1
+; returns fractional part of number in NR
+; returns digit count in GP1
+;-
+
+priint:	save	<ch>
+	CAMGE	nr,tencor		;less than 10. ?
+	 JRST	priin1			;yes
+	FDVR	nr,[10.]		;divide by 10
+	CALL	priint			;print integer part
+	FMPR	nr,[10.]		;multiply by 10
+priin1:	JUMPLE	gp1,priin2		;enough digits ?
+	CAMGE	nr,onecor		;less than 1. ?
+	 JRST	priin2			;yes
+	CALL	prflnu			;print floating number
+	FSBR	nr,ch			;get fractional part
+	JRST	priin9
+
+priin2:	MOVEI	ch,"0"			;print zero
+	CALL	putch
+	SUBI	gp1,1			;one more digit
+priin9:	return
+
+
+
+
+;+
+; PRFLNU  --  print floating number
+; gets number between 1. and 10. in NR
+; gets digit count in GP1
+; returns integer part in CH
+; returns digit count in GP1
+;-
+
+prflnu:	save	<nr>
+	FADR	nr,errcor		;add error correction
+	FIX	ch,nr			;get integer part
+	ADDI	ch,"0"			;make it ascii
+	CALL	putch			;output it
+	SUBI	gp1,1			;one more digit
+	SUBI	ch,"0"			;make it integer again
+	FLTR	ch,ch			;make it floating
+	return
+
+
+
+
+
+;+
+; PRIFRA  --  print fractional part
+; gets fractional number in NR
+; gets digit count in GP1
+;-
+
+prifra:	save	<ch,nr,gp1>
+prifr0:	FMPR	nr,[10.]		;multiply by 10.
+	CAMGE	nr,onecor		;more than 1. ?
+	 JRST	prifr1			;no
+	CALL	prflnu			;print floating number
+	FSBR	nr,ch			;get fractional part
+	JUMPLE	gp1,prifr9		;enough digits ?
+	CAMLE	nr,errcor		;more ?
+	 JRST	prifr0			;yes
+	JRST	prifr9
+
+prifr1:	MOVEI	ch,"0"			;print zero
+	CALL	putch
+	CAIGE	gp1,.nrdig		;any significant digit yet ?
+	 SUBI	gp1,1			;yes, one more
+	JUMPLE	gp1,prifr9		;enough digits ?
+	JUMPG	nr,prifr0		;more ?
+prifr9:	return
+
+	END
+..and no more

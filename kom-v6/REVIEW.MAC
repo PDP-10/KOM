@@ -1,0 +1,363 @@
+;Oden::DSKG:REVIEW.MAC<62,7777,MAC> 1986-09-16 16:34:06, Edit by KPJ @ H.HOLE
+;11	"There is no such readable entry" is an error.
+;Oden::DSKD:REVIEW.MAC<62,7777,MAC> 1985-10-16 16:35:39, Edit by KPJ
+;10	Bug made "?" not work for REVIEW command.
+;Oden::DSKD:REVIEW.MAC<62,7777,MAC> 1985-10-08 00:34:58, Edit by KPJ
+;7	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:REVIEW.MAC<62,7777,MAC> 1985-07-24 21:45:38, Edit by KPJ @ ORANGE
+;6	Moved texts to TEXTER.
+;Oden::DSKD:REVIEW.MAC[62,7777] 1985-01-08 05:02:14, Edit by KPJ @ L89
+;5	Get rid of QSHREC call. Search MACTEN.
+;Oden::DSKD:REVIEW.MAC[62,7777,TTQ] 1984-11-22 12:31:20, Edit by THOLERUS T
+;4	Added LIST LETTERS command.
+;Oden::DSKD:REVIEW.MAC[62,7777,TTQ] 1984-11-20 15:26:09, Edit by THOLERUS T
+;3	Just mark seen whole entries
+;;;	(requisite for LIST LETTERS /KPJ)
+;Oden::DSKD:REVIEW.MAC[62,7777] 1984-11-12 15:49:41, Edit by K.JAAKKOLA
+;2	Allow REVIEW SEQUENTIALLY BY xxxx (was prohibited by local Swedish
+;	governmental agency ("Datainspektion"))
+;Oden::Dsk:Review.New[1116,134] 1982-03-02 21:07:59, Edit by Lars Enderin
+;1	Added and ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(review)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computer Centre, 1984-08-15 10:18:20
+
+;	D A T A   A R E A
+
+
+curmax:	0			; current entmax
+curnoh:	0			; current nohflg
+currec:	0			; current recflg
+entlis::0			; list of entries
+nexflg::0			; next entry flag
+nexfun::0			; next entry function
+nxrenr::0			; next entry to review
+savmax:	0			; old entmax
+savnoh:	0			; old nohflg
+savrec:	0			; old recflg
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+review::comhed	0,revarg,nexrev,ccrevi##,zrevhl##	;review old entries
+revnex::comhed	qrevne,nexarg,nexrev,ccrene##,znrehl##	;review next entry
+scanen::comhed	0,scaarg,<[RET]>,ccscan##,zscahl##	;scan entries
+lislet::comhed	0,noarg##,lilett,cclile##,zllehl##	;list letters
+;-
+
+
+;+
+;REVARG		argument to REVIEW command
+;returns	argument in REVFUN, ARGLIS, BYNR, TONR, BACFLG, CURLIS,
+;  DISNR, SEQFLG, ENTMAX, NOHFLG and RECFLG
+;-
+
+revarg::save	<tp,quest##>
+	CALL	inirev			;initialize
+	MOVEI	t,askrev		;ask for entries
+	MOVEM	t,quest##
+	CALL	read##			;get arguments
+	 JRST	revar8			;no reply
+revar1:	MOVE	tp,revtab##		;get review commands
+	CALL	allarg			;get all arguments
+	 JRST	revar2			;argument got
+	SKIPE	revfun##		;function defined ?
+	 JRST	revar7			;yes, ready
+	SETZM	entlis			;clear entry list
+	MOVEI	tp,entlis		;get argument list
+	CALL	mannum##		;get entry numbers
+	 JRST	revar8			;error
+	MOVEI	t,enlifu##		;entry list function
+	MOVEM	t,revfun##
+	SETOM	disnr##			;no limit
+revar2:	CALL	getlet##		;more arguments ?
+	 TRNA				;no
+	  JRST	revar1			;yes
+
+revar7:	CALL	endrev			;get entry to review
+	JRST	revar9
+
+revar8:	SETOM	errfl##			;error
+	CALL	resrev			; restore REVIEW parameters
+revar9:	return
+
+
+;+
+;INIREV		initialize REVIEW action
+;-
+
+inirev:	SETOM	afttim##		;[BCQ] default AFTER time very small..
+	HRLOI	t,^O377777		;[BCQ] default BEFORE time is
+	MOVEM	t,bfrtim##		;[BCQ] very big...
+	SETZM	revfun##		;clear review function
+	SETZM	arglis##		;clear argument list
+	SETZM	bynr##			;clear author restriction
+	SETZM	tonr##			;clear receiver restriction
+	SETOM	bacfl##			;set backward flag
+	MOVEI	t,hdtoob##		;get to list
+	MOVEM	t,curlis##
+	MOVEI	t,1			;display one entry
+	MOVEM	t,disnr##
+	SETZM	seqflg##		;clear sequence flag
+	CALL	savrev			;save old review parameters
+	CALL	revdef			;set review default
+	return
+
+
+;+
+;SAVREV		save old REVIEW parameters
+;-
+
+savrev:	MOVE	t,entmax##		;save entmax
+	MOVEM	t,savmax
+	MOVE	t,nohflg##		;save nohflg
+	MOVEM	t,savnoh
+	MOVE	t,recflg##		;save recflg
+	MOVEM	t,savrec
+	return
+
+
+;+
+;REVDEF		set REVIEW default
+;-
+
+revdef::SETOM	entmax##		;clear number of lines to show
+	SETZM	nohflg##		;clear no heading flag
+	MOVEI	t,1			;set receiver flag
+	MOVEM	t,recflg##
+	MOVE	t,selffl##		;[KPJ.6] get personal flags
+	Txnn	t,sarpfl		;[KPJ.6] SHOW ALL RECEIVERS?
+	 SETZM	recflg##		;no, clear receiver flag
+	return
+
+
+;+
+;ASKREV		ask for entries to review
+;-
+
+askrev:	save	<str>
+	SKIPGE	hlpflg##		;<KPJ.10> help wanted ?
+	 JRST[	CALL	preol##		;yes,blank line
+		print	zhlrev##	;"one or more of the following..."
+		JRST	.+1]
+	CALL	preol2##		;blank line
+	print	zasrev##		;"Review which entries?"
+	CALL	preol##			;new line
+	branch	prher##
+
+;+
+;ALLARG		get all REVIEW arguments
+;accepts	TP/	command table
+;returns	+1 if arguments got
+;		+2 if no match
+;-
+
+allarg::save	<gp1>
+	CALL	commat##		;look for a match
+	 JRST	allar8			;no match, go buy matches
+	 JRST	allar2			;match, go light fire
+	MOVE	t,agrend##		;many matches, accept first
+	MOVEM	t,chpt##
+	CALL	expand##		;expand first match
+allar2:	MOVE	gp1,agrval##		;get command
+	HRRZ	gp1,0(gp1)		;get command head
+	MOVE	gp1,1(gp1)		;get command code
+	CALL	0(gp1)			;execute command
+	JRST	allar9
+
+allar8:	skpret				;no match
+allar9:	return
+
+
+;+
+;ENDREV		get entry to review
+;accepts	REVFUN/	review function
+;returns	NXRENR/	first entry to review
+;-
+
+endrev:	SKIPN	revfun##		;function defined ?
+	 JRST[	MOVEI	t,gelaen##	;no, get all entries
+		MOVEM	t,revfun##
+		JRST	.+1]
+	CALL	@revfun##		;get entry
+	MOVE	t,entmax##		;save entmax
+	MOVEM	t,curmax
+	MOVE	t,nohflg##		;save nohflg
+	MOVEM	t,curnoh
+	MOVE	t,recflg##		;save recflg
+	MOVEM	t,currec
+	SKIPGE	errfl##			;error?
+	 SETZM	nexflg			;yes, no next entry
+	return
+
+
+;+
+;QREVNE		check REVIEW NEXT
+;-
+
+qrevne:	SKIPL	nexflg			;any next entry ?
+	 JRST	qrevn9
+	SKIPE	nxrenr			;if any next entry
+	 skpret				; then add this command
+qrevn9:	return
+
+
+;+
+;NEXARG		argument to REVIEW NEXT
+;-
+
+nexarg:	save	<tp>
+	CALL	delcom##		;delayed command ?
+	 JRST	nexar9			;yes, dont do it
+	MOVE	t,curmax		;restore entmax
+	MOVEM	t,entmax##
+	MOVE	t,curnoh		;restore nohflg
+	MOVEM	t,nohflg##
+	MOVE	t,currec		;restore recflg
+	MOVEM	t,recflg##
+	MOVE	tp,revtab##		;get review commands
+	CALL	gedinr##		;get number of entries
+nexar2:	CALL	getlet##		;more arguments ?
+	 JRST	nexar9			;no
+	CALL	allarg			;get all arguments
+	 JRST	nexar2			;argument got
+nexar9:	return
+
+
+;+
+;NEXREV		show next entry
+;-
+
+nexrev::save	<str,nr>
+	SKIPN	nr,nxrenr		;any next entry ?
+	 JRST	nexre8			;no next entry
+	SETOM	seeflg##		;[TTQ.3] mark as seen
+	SKIPL	entmax##		;[TTQ.3] whole entry seen?
+	 SETZM	seeflg##		;[TTQ.3] no, not seen then
+	SKIPL	nohflg##		;any heading ?
+	 JRST	nexre1
+	SKIPE	entmax##		;no, any text ?
+	 JRST	nexre1			;yes
+	SKIPG	recflg##		;any receivers ?
+	 JRST	nexre9			;no, error
+nexre1:	CALL	displa##		;display it
+	CALL	gnexre			;get next to review
+	SKIPL	seqflg##		;sequence ?
+	 JRST	nexre9			;no
+	SKIPL	nexflg			;yes, more ?
+	 JRST	nexre9			;no
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	nexre9			;yes, exit
+	SKIPN	nr,nxrenr		;no, any next entry ?
+	 JRST	nexre9			;no, stop
+	SKIPN	entmax##		;any text ?
+	 JRST	nexre1			;no
+	SKIPGE	nohflg##		;no heading ?
+	 JRST	nexre1
+	CALL	preol##			;blank line
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	nexre9			;yes, exit
+	JRST	nexre1			;no, continue
+
+nexre8:	MOVEI	str,znonex##		;<KPJ.11> "no such entry"
+	CALL	errmsg##		;<KPJ.11> . . .
+nexre9:	branch	resrev			; restore review parameters
+
+
+;+
+;GNEXRE		get next entry to review
+;-
+
+gnexre:	SKIPN	nexfun			;any next function ?
+	 JRST	gnexr8			;no
+	CALL	@nexfun			;get next entry
+	SKIPN	disnr##			;last entry ?
+	 TRNA				;yes
+	  SOSN	disnr##			;enough entries ?
+	   SETZM nexflg			;no next entry
+	TRNA
+gnexr8:	 SETZM	nxrenr			;no next entry
+gnexr9:	return
+
+
+;+
+;RESREV		restore REVIEW parameters
+;-
+
+resrev:	MOVE	t,savmax		;restore entmax
+	MOVEM	t,entmax##
+	MOVE	t,savnoh		;restore nohflg
+	MOVEM	t,nohflg##
+	MOVE	t,savrec		;restore recflg
+	MOVEM	t,recflg##
+	return
+
+
+;+
+;SCAARG		argument to SCAN (ENTRIES)
+;-
+
+scaarg:	save	<tp,quest##>
+	CALL	revdef			;set review default
+	MOVEI	t,asksca		;ask for restrictions
+	MOVEM	t,quest##
+	CALL	read##			;get argument
+	 JRST	scaar8			;no reply
+	MOVE	tp,scatab##		;get scan commands
+scaar1:	CALL	allarg			;get all arguments
+	 JRST	scaar2			;argument got
+	JRST	scaar8			;error
+
+scaar2:	CALL	getlet##		;more arguments ?
+	 JRST	scaar9			;no
+	JRST	scaar1
+
+scaar8:	SETOM	errfl##			;error
+scaar9:	return
+
+
+;+
+;ASKSCA		ask for restrictions
+;-
+
+asksca:	save	<str>
+	SKIPGE	hlpflg##		;help wanted ?
+	 JRST[	print	zhlsca##	;"One or more of the following..."
+		JRST	.+1]
+	CALL	preol2##		;blank line
+	print	zassca##		;"how much do you want to see?"
+	CALL	preol##			;new line
+	CALL	prher##
+	return
+
+
+;+
+;LILETT		list all unread letters		;[TTQ.4]
+;-
+
+lilett:	save	<nr,gp1,bfp>
+	MOVE	nr,crenr##		;get self
+	CALL	getobj##		;get self
+	 JRST	lilet9			;error
+	MOVE	nr,perlsl(bfp)		;get last seen letter link
+	CALL	getobj##		;get it
+	 JRST	lilet9			;no letters seen
+lilet1:	MOVE	nr,lnklto+2(bfp)	;get next letter link
+	CALL	getobj##		;get it
+	 JRST	lilet9			;end of letters
+	SKIPG	0(bfp)			;link deleted ?
+	 JRST	lilet1			;yes, skip it
+	MOVE	nr,lnkobj(bfp)		;get letter
+	SKIPN	lnkrdt(bfp)		;received ?
+	 CALL	shdisp##		;no, display letter short
+	SKIPL	intflg##		;interrupt ?
+	 JRST	lilet1			;no, continue
+lilet9:	return
+
+	END
+..and no more

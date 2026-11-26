@@ -1,0 +1,236 @@
+;Oden::DSKG:SUBTRA.MAC<62,7777,MAC> 1986-04-25 12:59:42, Edit by KPJ @ L89
+;4	Get rid of OPDEFed funny macros.
+;Oden::DSKD:SUBTRA.MAC<62,7777,MAC> 1985-10-08 01:35:16, Edit by KPJ
+;3	New format of STRING and PRINT macros. Introduced PROLOG macro.
+;Oden::DSKD:SUBTRA.MAC<62,7777,MAC> 1985-08-23 12:53:51, Edit by KPJ @ DECgrupf
+;2	Changed call to DRECOR to handle +2 success return.
+;Oden::Dskd:Subtra.Mac[62,7777] 1984-09-04 13:10:44, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(subtra)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 13:10:40
+
+;	D A T A   A R E A
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+subtra::comhed	0,subarg,csubtr,ccsubt##,zsubhl## ;Subtract
+;-
+
+
+
+
+;+
+; SUBARG  --  argument to subtract command
+; returns arguments in ARGLIS
+;-
+
+subarg:	save	<quest##,menuq##>
+	ifoff	wriflg##,subar1	; writing ?
+	CALL	asubre		; yes, get entry argument
+	JRST	subar9
+
+subar1:	SKIPN	nr,lastnr##	; get last seen entry
+	 JRST	subar8		; error
+	setmem	quest##,asknsu	; ask what to subtract
+	CALL	gtname##	; get list of names
+	JRST	subar9
+
+subar8:	SETOM	errfl##		; error
+subar9:	return
+
+
+
+
+
+;+
+; ASUBRE  --  subtract receiver argument
+; returns name list in ARGLIS
+;-
+
+asubre:	save	<quest##>
+	setmem	quest##,asksur	; ask for receivers
+	CALL	gtname##	; get the names
+	return
+
+
+
+
+
+;+
+; ASKSUR  --  ask for receivers to exclude
+;-
+
+asksur:	save	<str>
+	CALL	lethlp##		;letter help
+	print	zasrxl##		;"What receivers to exclude?"
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+
+;+
+; ASKNSU  --  ask for what to subtract
+;-
+
+asknsu:	save	<str>
+	SKIPGE	hlpflg##		;help wanted?
+	 JRST[	print	zhlsub##	;"Give list of entry numbers"
+		JRST	.+1]
+	CALL	preol2##		;blank line
+	print	zassub##		;"Who or what to subtract?"
+	CALL	preol##			;new line
+	branch	prher##			;print herald
+
+
+
+
+
+;+
+; CSUBTR  --  subtract objects from object
+; gets arguments in ARGLIS
+;-
+
+csubtr:	save	<nr>
+	ifoff	wriflg##,csubt2	; writing ?
+	CALL	csubre		; yes, subtract entry receivers
+	JRST	csubt9
+
+csubt2:	MOVE	nr,lastnr##	; get from object
+	CALL	suobob		; subtract objects from object
+csubt9:	return
+
+
+
+
+
+;+
+; CSUBRE  --  subtract receivers
+; gets receivers to subtract in ARGLIS
+;-
+
+csubre:	save	<foalfu##>
+	setmem	foalfu##,sunali	; subtract name from name list
+	CALL	faname##	; do it for every name
+	return
+
+
+
+
+
+;+
+; SUNALI  --  subtract name from name list
+; gets name to subtract in NR
+;-
+
+sunali:	save	<str,tp>
+	MOVEI	tp,namlis##		;get list of name
+	CALL	sublis##		;subtract from list
+	MOVEI	tp,knolst##		;get knowledge list
+	CALL	sublis##		;subtract from list
+	MOVEI	tp,exclis##		;get extra copy list
+	CALL	sublis##		;subtract from list
+	MOVEI	tp,comlis##		;get comment list
+	CALL	sublis##		;subtract from list
+	CALL	prname##		;print name
+	print	zsubtd##		;" subtracted"
+	CALL	preol##			;new line
+	return
+
+
+
+
+
+;+
+; SUOBOB  --  subtract objects from object
+; gets arguments in NR and ARGLIS
+;-
+
+suobob:	save	<nr,gp2,gp1,bfp,tp>
+	MOVEI	gp2,hdfrob##	; get link block
+	CALL	gethdf##	; get from object
+suobo3:	MOVE	nr,2(bfp)	; get link
+	CALL	getobj##	; get it
+	 JRST	suobo8		; no more links
+	MOVE	tp,arglis##	; get argument list
+suobo2:	fromto	0(tp),toobj##	; get to object
+	CALL	subobj		; subtract object
+	SKIPE	tp,1(tp)	; get next object
+	 JRST	suobo2
+	CALL	getlnf##	; get next link
+	 JRST	suobo8		; no more links
+	JRST	suobo3
+
+suobo8:	return
+
+
+
+
+
+;+
+; SUBOBJ  --  subtract object
+; gets link in BFP and NR
+; gets to object in TOOBJ
+;-
+
+subobj:	save	<nr,str>
+	SKIPG	0(bfp)			;link deleted ?
+	 JRST	subob9			;yes, skip it
+	MOVE	t,lnkrec(bfp)		;get receiver
+	CAME	t,toobj##		;correct link ?
+	 JRST	subob9			;no
+	CALL	qdelln			;right to delete link ?
+	 JRST	subob9			;no
+	CALL	updbeg##		;yes, start update
+	CALL	drecor##		;delete record
+	 error	<subobj subtra>		;<KPJ.2> failed, die
+	CALL	updend##		;end of update
+	CALL	preol##			;new line
+	MOVE	nr,toobj##		;get to object
+	CALL	prname##		;print its name
+	print	zsubtd##		;" subtraccted.""
+subob9:	return
+
+
+
+
+
+;+
+; QDELLN  --  check if you have the right to delete the link
+; gets link in NR
+; gets entry in LASTNR
+; gets receiver in TOOBJ
+; returns at call + 1 if you have the right
+; returns at call + 2 if not right
+;-
+
+qdelln:	save	<nr>
+	CALL	chkorg##	; own link ?
+	 JRST	qdell1		; no
+	JRST	qdell8		; yes
+
+qdell1:	MOVE	nr,lastnr##	; get entry
+	CALL	chkorg##	; own entry ?
+	 JRST	qdell2		; no
+	JRST	qdell8		; yes
+
+qdell2:	MOVE	nr,toobj##	; get receiver
+	CALL	chkorg##	; organizer ?
+	 JRST	qdell7		; no
+	JRST	qdell8		; yes
+
+qdell7:	CALL	saynot##	; say not right
+	JRST	qdell9
+
+qdell8:	skpret			; you have the right
+qdell9:	return
+
+	END
+..and no more

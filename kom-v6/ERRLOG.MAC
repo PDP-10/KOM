@@ -1,0 +1,576 @@
+;Aida::Ss:<Kom.6C3.Src>Errlog.Mac.2,  7-Aug-87 17:08:43, Ed: Zot
+;16?	Use GTKOM% rather than GTJFN% if FTJSY2 set
+;Freja::Xs:<Slask.Src>Errlog.Mac.2 870525-2141,KPJ-Jaakkola
+;15	Add FATAL subroutine.
+;Freja::Qs:<Kom.6.Macro>Errlog.Mac.22 870414-1450,KPJ-Jaakkola
+;14	Open ERRLOG file also using KOM%, or we never get any password log..
+;Freja::Qs:<Kom.6.Macro>Errlog.Mac.16 870406-1903,KPJ-Jaakkola
+;13	Output T20 program name to ERRLOG file.
+;Freja::Qs:<Kom.6.Macro>Errlog.Mac.11 870405-0813,KPJ-Jaakkola
+;12	Twenex numbers days, months and weekdays (not years, though) from
+;	zero, so add one where appropriate to get a correct "ERRLOG.ymm".
+;Oden::DSKG:ERRLOG.MAC<62,7777,MAC> 1987-04-05 03:35:53, KPJ @ H.HOLE <1,2>
+;11	LOGTRY logged the contents of "SELFNR" as the object tried to login
+;	as.  SELFNR mostly contains zero, before a successful login. Change
+;	call to include object number of object tried.  Also, LOGTRY failed
+;	to supply a correct address list to dump routine.
+;Oden::DSKG:ERRLOG.MAC<62,7777,MAC> 1987-04-05 02:54:36, KPJ @ H.HOLE <1,2>
+;10	KOM-10 forgot to output login daytime to ERRLOG file, crashed ILLACC.
+;Freja::Qs:<Kom.6.Macro>Errlog.Mac.8 870403-1632,KPJ-Jaakkola
+;7	Wrong AC used to record job# for ILLACC.
+;Freja::Qs:<Kom.6.Macro>Errlog.Mac.6 870403-0033,KPJ-Jaakkola
+;6	Implement "last login" for ILLACC.
+;Freja::Qs:<Kom.6.Macro>Errlog.Mac.2 870116-0418,KPJ-Jaakkola
+;5	Moved BUGCOD and BUGACS here from QUIT. ILOBUF etc are T10 only.
+;Oden::DSKG:ERRLOG.MAC<62,7777,MAC> 1987-01-09 21:00:21, Edit by KPJ @ H.HOLE
+;4	Original error: log file buffers are allocated by T10 monitor, and
+;	write over random low segment locations.  Allocate buffers in an
+;	orderly manner.
+;Oden::DSKG:ERRLOG.MAC<62,7777,MAC> 1987-01-09 20:12:53, Edit by KPJ @ H.HOLE
+;3	LOGDMP returns +2 on success.
+;Oden::DSKG:ERRLOG.MAC<62,7777,MAC> 1987-01-09 16:43:46, Edit by KPJ @ H.HOLE
+;2	Changed BUG macro entry format.
+;Oden::DSKG:ERRLOG.MAC<62,7777,MAC> 1987-01-09 12:42:41, Edit by KPJ @ H.HOLE
+;1	Fixed a few ERRLOG bugs.
+;Oden::DSKG:ERRLOG.MAC<62,7777,MAC> 1987-01-04 01:02:42, Edit by KPJ @ H.HOLE
+;0	Moved BUGHLT handler from QUIT and invalid-password handler from LOGIN.
+
+	SEARCH	kommac
+	Prolog	(errlog)
+
+;+
+;	CALL	BUG'typ			<KPJ.2>
+;	m,,n			+0 length information
+;				   n = length of this BUG entry (words)
+;				   m = length of ASCIZ (words);
+;				       =0: no ASCIZ follows
+;	[ASCIZ !foo!]		+1 ASCIZ message (optional: only if m#0)
+;	address			+2 address of first add'l data
+;	   :			 :
+;	address			+n address of last add'l data
+;foo:				return point (except for BUGHLTs)
+;-
+
+T10,<
+ilobuf:	BLOCK	3			;<KPJ.4> log file buffer header
+logbuf:	BLOCK	2*^O203			;<KPJ.4> size of DSK: buffer
+>;T10
+bugacs:	BLOCK	^O20			;ACs at error
+ident:	BLOCK	1			;<KPJ.11> object# tried to login as
+T20,<
+bugcod:	BLOCK	1			;latest error code
+>;T20
+savlog:	BLOCK	3
+
+T10,<	fillen==9>			;T10: 9 words of SIXBIT
+T20,<	fillen==^O20			;T20: ASCIZ string
+
+fnord:	BLOCK	fillen			;<KPJ.13> store file name here
+>;T20
+
+T10,<
+logblk:	EXP	FO.ASC+.FOAPP	;[BCQ] function and flags
+IFE	ftphys,<.IOBIN>
+IFN	ftphys,<.IOBIN!UU.PHS>	;Insert a UU.PHS
+	SIXBIT	!kom!		;device
+	XWD	ilobuf,0	;<KPJ.4> output,,input buffers
+	XWD	2,0		;number of buffers
+	XWD	0,lkpblk	;pointer to LOOKUP block
+	EXP	0
+loglen==.-logblk		;length of LOGBLK
+
+clsblk:	XWD	0,.FOCLS	;CLOSE block
+flsblk:	XWD	0,.FOOUT	;OUT block
+
+lkpblk:	0,,.RBSIZ		;length of LOOKUP block
+	0			;PPN
+	SIXBIT	!errlog!	;file name
+	BLOCK	1		;extension stored here
+	EXP	^O<407>B8	;protection code <407>
+	0
+>;T10
+T20,<
+logjfn:	BLOCK	1		;log file JFN
+lognam:	BLOCK	filmax/5+1	;log file name
+>;T20
+
+	CODE
+errlog::!
+
+;+
+;FATAL		random JSYS error occurred, die
+;-
+
+fatal::	CALL	bughlt			;die hard
+	1,,4				;one word, 4 words ASCIZ
+	[ASCII	!FATAL!			;word 1 of ASCIZ
+	 ASCII	! JSYS!			;word 2 of ASCIZ
+	 ASCII	! ERRO!			;word 3 of ASCIZ
+	 ASCIZ	!R!]			;word 4 of ASCIZ
+	JRST	4,.			;never expected to return, but..
+
+;+
+;BUGCHK		BUGCHK handler (currently unused)
+;BUGINF		BUGINF handler (currently unused)
+;-
+buginf::
+bugchk::HRRZ	t,0(P)			;get return address
+	HRRZ	t,0(t)			;get length of additional data
+	AOS	0(P)			;skip the length word
+	ADDM	t,0(P)			;skip that many words of data
+	return
+
+;+
+;BUGHLT		BUGHLT routine
+;		(On TOPS-20, appends also latest error for fork.)
+
+;Called from BUG macro:
+;		CALL	bughlt		call to this routine
+;		m,,n			+0 length information:
+;					   n = length of this BUG entry (words)
+;					   m = length of ASCIZ (words);
+;					       =0: no ASCIZ follows
+;		[ASCIZ !error!]		+1 pointer to ASCIZ message
+;		add'l data		+2 more additional data (optional)
+;		 :			 :
+;		add'l data		+n more additional data (optional)
+;
+;stack:		+0	pointer to entry block
+;		+1	PC+2 of error
+;
+;-
+
+bughlt::MOVEM	0,bugacs+0		;save AC 0
+	MOVE	0,[1,,bugacs+1]		;save rest of ACs
+	BLT	0,bugacs+^O17		;. . .
+T20,<	MOVEI	1,.FHSLF		;this fork
+	GETER%				;get last error code
+	MOVEM	2,bugcod		;save error code for eternity
+>;T20
+	CALL	saveus##		;save memory image
+	CALL	deque##			;dequeue all
+	HRRZ	t4,-TTQsav(P)		;get return address
+	MOVE	t,0(t4)			;get length word (m,,n)
+	MOVEI	t2,2			;BUGHLT entry
+	MOVEI	t3,1(t4)		;pointer to additional data
+	CALL	makent			;log error in ERRLOG file
+	CALL	tcbeg##			;output to terminal
+	CALL	preol##			;new line
+	print	skrynk##		;"Internal error - "
+	HRRZ	str,0(P)		;<KPJ.1> get return address
+	ADDI	str,1			;<KPJ.1> point at length,,address
+	MOVE	str,@str		;<KPJ.2> get ASCIZ address
+T20,<	MOVEI	1,.FHSLF		;this fork
+	HRRZ	2,bugcod		;get saved error code
+	SETER%				;put it back
+	CALL	.jserr##		;append latest error message
+>;T20
+	CALL	prstr##			;output it
+	CALL	preol##			;newline
+	print	zprtpc##		;"Error occurred at address "
+	MOVEI	1,.PRIOUT		;on primary output
+	HRRZ	2,-TTQsav-1(P)		;return address
+	SUBI	2,2			;where the error occurred
+	MOVEI	3,8			;octal
+	CALL	.nout##			;output number
+	 JRST[	print	zpcfoo##	;couldn't...
+		JRST	.+1]		;...too bad
+	CALL	preol##			;newline
+	branch	endkom##		;leave program
+
+;+
+;MAKLOG		make a log file name
+;returns	+1 failure
+;		+2 success, with
+;		   T10: LKPBLK/	FILOP. block
+;		   T20: LOGNAM/	ASCIZ name
+;-
+maklog:
+T10,<	MOVE	t2,[%CNYER]		;make file name "KOM:ERRLOG.ymm"
+	GETTAB	t2,			;get local year
+	 JRST	maklo9			;***FOO***
+	IDIVI	t2,^D10			;get last digit
+	ADDI	t2+1,'0'		;make SIXBIT
+	MOVE	t,[POINT 6,lkpblk+.RBEXT]
+	IDPB	t2+1,t			;store in LOOKUP block
+	MOVE	t2,[%CNMON]		;get local month
+	GETTAB	t2,			;get it
+	 JRST	maklo9			;***FOO***
+	MOVEI	t2+1,'0'		;not October, November or December?
+	CAIL	t2,^D10
+	 MOVEI	t2+1,'1'		;it was..
+	IDPB	t2+1,t			;store in extension
+	IDIVI	t2,^D10			;get last digit
+	ADDI	t2+1,'0'		;make SIXBIT
+	IDPB	t2+1,t			;store in extension
+>;T10
+T20,<	SETZM	logjfn			;no log JFN yet
+	HRROI	1,lognam		;point at log file name buffer
+	HRROI	2,[ASCIZ !kom:errlog.!]	;start file name
+KL10,<	MOVEI	3,0>
+KL10N,<	SETZ	3,>
+	SOUT%				;output start of file name
+	 ERJMP	maklo9			;***FOO***
+	SETO	2,
+KL10,<	MOVEI	4,0>			;<KPJ.12> get year and month
+KL10N,<	SETZ	4,>			;<KPJ.12> get year and month
+	ODCNV%
+	 ERJMP	maklo9			;***FOO***
+	HRRZ	4,2			;month#-1
+	ADDI	4,1			;<KPJ.12> make a month#
+	HLRZ	2,2			;year# (not -1 here, hm?)
+	IDIVI	2,^D10			;get last digit of year#
+	ADDI	3,"0"			;make ASCII
+	IDPB	3,1
+	MOVE	2,4			;shuffle
+	IDIVI	2,^D10			;expand month#
+	ADDI	2,"0"			;make ASCII
+	IDPB	2,1
+	ADDI	3,"0"			;. . .
+	IDPB	3,1
+	HRROI	2,[ASCIZ !;p770202!]	;append protection string
+KL10,<	MOVEI	3,.CHNUL>
+KL10N,<	SETZ	3,.CHNUL>
+	SOUT%
+	 ERJMP	maklo9
+KL10,<	MOVEI	3,0>
+KL10N,<	SETZ	3,>
+	IDPB	3,1			;make ASCIZ
+>;T20	
+	skpret
+maklo9:	return
+
+
+
+;+
+;OPNLOG		open log file
+;returns	+1 failure
+;		+2 success
+;-
+opnlog:
+T10,<	MOVE	t2,[FO.ASC+.FOAPP]	;function and flags
+	MOVEM	t2,logblk+.FOFNC	;save in argument block
+	MOVEI	t,logbuf		;<KPJ.4> our output buffer
+	PUSH	P,.JBFF			;<KPJ.4> old pointer
+	MOVEM	t,.JBFF			;<KPJ.4> tell monitor about buffers
+	MOVE	t2,[loglen,,logblk]	;setup to open the log file
+	FILOP.	t2,			;open the logfile in append mode
+	 JRST[	POP	P,.JBFF		;<KPJ.4> restore low segment end
+		JRST	opnlo9]		;<KPJ.4> failed, give up
+	POP	P,.JBFF			;<KPJ.4> restore low segment end
+	HLRZ	t2,logblk+.FOFNC	;get function flags,,channel#
+	HRLM	t2,clsblk		;save in the other argument blocks
+	HRLM	t2,flsblk		;. . .
+>;T10
+T20,<	MOVSI	1,(GJ%ACC!GJ%PHY!GJ%SHT)
+	HRROI	2,lognam		;file name
+IFE	ftjsy2,<GTJFN%>			;try to get a handle on the file
+IFN	ftjsy2,<GTKOM%>			;try to get a handle on the file
+	 ERJMP	opnlo9			;failed, exit
+	HRRZM	1,logjfn		;save log file JFN
+	MOVE	2,[FLD(^D36,OF%BSZ)!OF%APP] ;36 bits, append access
+IFE	ftjsys,<OPENF%>			;<KPJ.14> try open the file
+IFN	ftjsys,<KOM%>			;<KPJ.14> try open the file
+	 ERJMP[	MOVE	1,logjfn	;failed, get log file JFN
+		RLJFN%			;get rid of it
+		 ERJMP	opnlo9		;ignore problem
+		JRST	opnlo9]		;we're giving up anyway..
+>;T20
+	skpret
+opnlo9:	return
+
+;+
+IFN	ftlog,<				;if error logging is enabled
+;LOGTRY		log an illegal attempt to get into KOM
+;accepts	T/	object number tried or flag:
+;			.GT. 0:	object#
+;			.EQ. 0: (unused)
+;			.LT. 0: flag:
+;				-1	unknown name and not logged in
+;				-2	ambiguous name and not logged in
+;-
+
+logtry::MOVEM	t,ident			;<KPJ.11> save attempted object#
+	MOVEI	t,<0,,1>		;one word, no ASCIZ in entry
+	MOVEI	t2,1			;type: PASSWORD entry
+	MOVEI	t3,[ident]		;<KPJ.11> 1st and only address in entry
+	CALL	makent			;make entry
+	 nop				;<KPJ.3> failed, so what?
+	return
+>;ftlog
+
+
+;+
+;MAKENT		make a log entry
+;accepts	T/	length information: M,,N
+;			N = length of BUG entry (words)
+;			M = length of ASCIZ (0=no ASCIZ present)
+;		T2/	entry type
+;		T3/	pointer to additional data addresses
+;-
+makent:	MOVEM	t,savlog+0		;save length of additional data
+	MOVEM	t2,savlog+1		;save entry type
+	MOVEM	t3,savlog+2		;save pointer to add'l data addresses
+	CALL	maklog			;make a log file name
+	 JRST	maken9			;failed, give up
+	CALL	opnlog			;open log file
+	 JRST	maken9			;failed, give up
+	CALL	logini			;initialize logging
+	 JRST	maken1			;<KPJ.3> failed, give up
+	CALL	logdmp			;output add'l data
+	 nop				;<KPJ.3> failed, so what?
+maken1:					;<KPJ.3>
+	CALL	clslog			;close log
+	 nop
+maken9:	return
+
+
+;+
+;LOGDMP		dump additional data to log file
+;accepts	SAVLOG/	pointer to entry
+;			+0	length information: M,,N
+;				N = BUG entry length (words)
+;				M = ASCIZ length (words): 0=no ASCIZ present
+;			+1	entry type
+;			+2	first pointer to word of additional data
+;			 :			:
+;			 :			:
+;			+n+1	last pointer to word of additional data
+;returns	+1 failure
+;		+2 success
+;-
+logdmp:	SKIPN	t,savlog+0		;get length of additional data
+	 JRST	logdm8			;no additional data
+	MOVE	t3,savlog+2		;initialize pointer
+	HLRZ	t2,t			;<KPJ.2> ASCIZ present?
+	JUMPN	t2,[			;<KPJ.2> yes
+	 	MOVE	t3,0(t3)	;<KPJ.2> yes
+		MOVE	t,t2		;<KPJ.2> get ASCIZ length
+logdm0:		MOVE	t2,0(t3)	;<KPJ.2> get word
+		PUSH	P,t		;<KPJ.2> save ASCIZ counter
+		PUSH	P,t3		;<KPJ.2> save ASCIZ pointer
+		CALL	logput		;<KPJ.2> output word to log file
+		 JRST	logdm7		;<KPJ.2> failed, give up
+		POP	P,t3		;<KPJ.2> restore ASCIZ pointer
+		POP	P,t		;<KPJ.2> restore ASCIZ counter
+		ADDI	t3,1		;<KPJ.2> step up ASCIZ pointer
+		SOJN	t,logdm0	;<KPJ.2> continue with next word
+		HRRZ	t,savlog+0	;<KPJ.2> get len of add'l data
+		SUBI	t,1		;<KPJ.2> don't count ASCIZ address
+		JUMPE	t,logdm8	;<KPJ.2> if done, exit fast
+		MOVE	t3,savlog+2	;<KPJ.2> pointer to ASCIZ
+		AOJA	t3,.+1]		;<KPJ.2> continue with add'l data
+logdm1:	MOVE	t2,0(t3)		;get address
+	CAIG	t2,^O17			;less than 17?
+	 CAIGE	t2,0			;<KPJ.1> and not negative?
+	  TRNA				;<KPJ.1> no, output as is
+	   ADDI	t2,bugacs		;yes, refer to the BUGACS ACs instead
+	MOVE	t2,@t2			;<KPJ.1> get the value of the word
+	PUSH	P,t			;save counter
+	PUSH	P,t3			;save entry pointer
+	CALL	logput			;output to log file
+	 JRST	logdm7			;<KPJ.2> failed, give up
+	POP	P,t3			;restore entry pointer
+	POP	P,t			;restore counter
+	SOJN	t,logdm1		;get next word, if any
+	JRST	logdm8			;<KPJ.2> done
+
+logdm7:	POP	P,0(P)			;get rid of stack frames
+	POP	P,0(P)			;. . .
+	JRST	logdm9			;and give up
+
+logdm8:	skpret
+logdm9:	return
+
+
+;+
+;LOGINI		initialize log record
+;accepts	SAVLOG/	pointer to entry
+;			+0	length information: M,,N
+;				N = length of BUG entry (words)
+;				M = length of ASCIZ (words)
+;			+1	entry type
+;returns	+1 failed
+;		+2 success
+;-
+
+logini:	HRRZ	t2,savlog+0		;<KPJ.2> BUG entry length
+	HLRZ	t,savlog+0		;<KPJ.2> ASCIZ length
+	ADD	t2,t			;<KPJ.2> count length of ASCIZ, too
+	CAIE	t,0			;<KPJ.2> ASCIZ present?
+	 SUBI	t2,1			;<KPJ.2> yes, don't count its address
+	ADDI	t2,fillen+4		;<KPJ.2> add preamble length
+	HRLZ	t2,t2			;length,,0
+	HRR	t2,savlog+1		;length,,error type
+	CALL	logput
+	 JRST	logix9			;failed, give up
+T10,<	MOVE	t2,[%CNDTM]
+	GETTAB	t2,			;get date and time in UDT format
+	 JRST	logix9			;failed, give up
+>;T10
+T20,<	GTAD%				;get daytime in internal format
+	MOVE	t2,1			;shuffle
+>;T20
+	CALL	logput			;and output it to logfile
+	 JRST	logix9			;failed, give up
+T10,<	GETLIN	t2,			;get physical terminal name
+	GTNTN.	t2,			;get node and line number
+KL10,<	 MOVEI	t2,0>			;detached?
+KL10N,<	 SETZ	t2,>			;detached?
+>;T10
+T20,<	GJINF%				;get job information
+IFN	t2-4,<	MOVE	t2,4>		;shuffle
+>;T20
+	CALL	logput			;output it to the logfile
+	 JRST	logix9			;failed, give up
+T10,<	PJOB	t2,>			;get job#
+T20,<	GJINF%				;get job#
+IFN	t2-3,<	MOVE	t2,3>		;<KPJ.7> shuffle
+>;T20
+	CALL	logput			;output to logfile
+	 JRST	logix9			;failed, give up
+T10,<	HRLZS	t2			;index by jobnumber
+	HRRI	t2,.GTJLT
+	GETTAB	t2,			;get job login in time
+	 JRST	logix9			;failed, give up
+>;T10
+T20,<	MOVNI	1,1			;<KPJ.6> this job
+	HRROI	2,4			;<KPJ.6> one word into AC4
+	MOVEI	3,.JILLN		;<KPJ.6> last-login time
+	GETJI%				;<KPJ.6> get the data
+	 ERJMP	logix9			;<KPJ.6> failed, give up
+	MOVE	t2,4			;<KPJ.6> shuffle
+>;T20
+	CALL	logput			;<KPJ.12> and output it to the logfile
+	 JRST	logix9			;<KPJ.12> failed, give up
+T10,<	GETPPN	t2,			;get our PPN
+	 nop				;ignore other users
+>;T10
+T20,<	GJINF%				;get job data
+IFN	t2-1,<	MOVE	t2,1>		;shuffle
+>;T20
+	CALL	logput			;and output it to the logfile
+	 JRST	logix9			;failed, give up
+T10,<	HRROI	t2,.GTRDV		;(1)	get run device
+	GETTAB	t2,
+	 JRST	logix9			;failed, give up
+	CALL	logput
+	 JRST	logix9			;failed, give up
+	HRROI	t2,.GTRFN		;(2)	get file name
+	GETTAB	t2,
+	 JRST	logix9			;failed, give up
+	CALL	logput
+	 JRST	logix9			;failed, give up
+	MOVE	t2,[SIXBIT !EXE   !]	;(3)	extension
+	CALL	logput
+	 JRST	logix9			;failed, give up
+	HRROI	t2,.GTRDI		;(4)	PPN
+	GETTAB	t2,
+	 JRST	logix9			;failed, give up
+	CALL	logput
+	 JRST	logix9			;failed, give up
+	MOVSI	t,5		;**FOO** not the right way to do this
+	MOVN	t,t
+loglup:	HRROI	t2,.GTRS0(t)
+	GETTAB	t2,
+	 JRST	logix9			;failed, give up
+	PUSH	P,t
+	CALL	logput
+	 JRST[	POP	P,0(P)		;get rid of stack frame
+		JRST	logix9]		;and give up
+	POP	P,t
+	AOBJN	t,loglup
+>;T10
+T20,<	SETZM	fnord			;<KPJ.13> clear first word
+	MOVE	t,[fnord,,fnord+1]	;<KPJ.13> from,,to
+	BLT	t,fnord+fillen-1	;<KPJ.13> wham!
+	MOVE	1,[.FHSLF,,<._<-9>>]	;<KPJ.14> page of this instruction
+	RMAP%				;<KPJ.13> read map of its page
+	 ERJMP	logix9			;<KPJ.13> can't, give up
+	HLRZ	2,1			;<KPJ.13> what kind of page is it?
+	TRNE	2,.FHSLF		;<KPJ.13> fork or undefined?
+	 JRST	logix9			;<KPJ.13> yeah, give up
+	HRROI	1,fnord			;<KPJ.13> put name here
+	MOVE	3,[JS%SPC]		;<KPJ.13> file name bits
+	JFNS%				;<KPJ.13> get file name
+	ERJMP	logix9			;<KPJ.13> failed, give up
+	MOVEI	t,0			;<KPJ.13> index to name
+	MOVEI	t3,fillen		;<KPJ.13> length of buffer
+logix6:	MOVE	t2,fnord(t)		;<KPJ.13>
+	PUSH	P,t			;<KPJ.13> save buffer pointer
+	PUSH	P,t3			;<KPJ.13> save character counter
+	CALL	logput			;<KPJ.13> output character to log
+	 JRST[	POP	P,0(P)		;<KPJ.13> restore garbage
+		POP	P,0(P)		;<KPJ.13>  . . .
+		JRST	logix9]		;<KPJ.13> and give up
+	POP	P,t3			;<KPJ.13> restore character counter
+	POP	P,t			;<KPJ.13> restore buffer pointer
+	ADDI	t,1			;<KPJ.13> step to next word
+	SOJG	t3,logix6		;<KPJ.13> next character
+	Fall	logix8			;<KPJ.13> file name done, +2 return
+>;T20
+logix8:	skpret
+logix9:	return
+
+
+;+
+;CLSLOG		close log file
+;returns	+1 failed
+;		+2 success
+;-
+clslog:
+T10,<	CALL	logfls			;flush the output buffer
+	 nop				;failed, ignore
+	MOVE	t,[1,,clsblk]
+	FILOP.	t,			;close the logfile
+	 JRST	clslo9			;can't win'em all
+>;T10
+T20,<	MOVE	1,logjfn		;get log JFN
+	CLOSF%				;close it
+	 ERJMP	clslo9			;failed, give up
+>;T20
+	skpret
+clslo9:	return
+;+
+;LOGPUT		output byte to log file
+;accepts	T2/	byte to output
+;returns	+1 failure
+;		+2 success
+;-
+logput:
+T10,<	SOSGE	ilobuf+.BFCTR		;<KPJ.4> any room in this buffer?
+	 JRST[	PUSH	P,t2		;save temporary AC
+		CALL	logfls		;no, flush it, and get a new
+		 JRST[	POP	P,0(P)	;get rid of stack frame
+			JRST	logpu9]	;and give up
+		POP	P,t2		;restore temporary AC
+		JRST	logput]		;and retry
+	IDPB	t2,ilobuf+.BFPTR	;<KPJ.4> store in buffer
+>;T10
+T20,<
+IFN	<t2-2>,<MOVE	2,t2>		;shuffle if necessary
+	MOVE	1,logjfn		;to log file
+	BOUT%				;output byte
+	 ERJMP	logpu9			;failed, give up
+>;T20
+	skpret
+logpu9:	return
+
+
+
+;+
+T10,<
+;LOGFLS		output buffer to log file
+;returns	+1 failure
+;		+2 success
+;-
+
+logfls:	MOVE	t,[1,,flsblk]
+	FILOP.	t,			;output the buffer
+	 TRNA				;failed, +1 return
+	  skpret			;+2 return
+	return
+>;T10	
+
+	END
+..and no more

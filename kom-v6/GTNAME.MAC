@@ -1,0 +1,328 @@
+;Oden::DSKG:GTNAME.MAC<62,7777,MAC> 1987-06-04 17:39:57, KPJ @ L89 <62,50>
+;13	Give lusers better explanation of Life, Universe and Everything.
+;Oden::DSKG:GTNAME.MAC<62,7777,MAC> 1986-11-18 16:46:30, Edit by KPJ @ L89
+;12	"Unknown name" is really an error.
+;Oden::DSKG:GTNAME.MAC<62,7777,MAC> 1986-10-14 16:35:21, Edit by KPJ @ L89
+;11	Employee support under FTEMPL.
+;Oden::DSKD:GTNAME.MAC[62,7777,MAC] 1985-10-09 04:16:41, Edit by KPJ
+;10	Globalized OBJTAB, used from GENERA.
+;Oden::DSKD:GTNAME.MAC<62,7777,MAC> 1985-10-03 11:56:15, Edit by KPJ
+;7	Introduced PROLOG macro.
+;Oden::DSKD:GTNAME.MAC<62,7777,MAC> 1985-03-12 15:01:24, Edit by KPJ @ L89
+;6	Sanitized code. Moved language dependent texts to TEXTER.
+;Oden::DSKD:GTNAME.MAC[62,7777,MAC] 1985-03-08 20:44:14, Edit by KPJ @ NADJA
+;5	Expand things to terminal. Error messages to terminal too.
+;Oden::DSKD:GTNAME.MAC[62,7777] 1984-12-14 12:16:37, Edit by KPJ @ TDB
+;4	Make KOM expand "PERSON nnn" etc to name.
+;Oden::DSKD:GTNAME.MAC[62,7777] 1984-12-03 14:57:59, Edit by KPJ @ L89
+;3	Give some hints when user gets a list of ambiguous names.
+;Oden::DSKD:GTNAME.MAC[62,7777] 1984-11-29 04:35:33, Edit by KPJ @ UPSALA
+;2	Make MANNUM yell when user enters a non-existent entry number.
+;Oden::Dskd:Gtname.Mac[62,7777] 1984-03-29 10:17:50, Edit by T Tholerus
+;1	Hacked error message.
+;Oden::Dsk:Gtname.Mac[62,657] 198x-xx-xx xx:xx:xx, Edit by T Tholerus
+;0	[1014]
+
+	SEARCH	kommac
+	PROLOG	(gtname)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-05-23 02:31:37
+
+;	D A T A   A R E A
+
+xmannu:	BLOCK	1			;save area for entry number in MANNUM
+savchp:	Z				;save area for text pointer
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+
+;+
+;GTNAME		read a list of names
+;accepts	QUEST/	a question
+;returns	ARGLIS/	pointing to a name list
+;-
+
+gtname::CALL	read##			;read names
+	 JRST[	SETOM	errfl##		;no reply, set error
+		JRST	gtnam9]		;and exit
+	CALL	gtoldn			;get the names
+gtnam9:	return
+
+
+
+
+
+;+
+;GTOLDN		get one or more old names
+;accepts	CHPT/	points to beginning of buffer
+;returns	ARGLIS/	a list of persons
+;		ERRFL/	<0 if some error
+;-
+
+gtoldn::save	<tp>
+	SETZM	errfl##			;clear error flag
+	SETZM	arglis##		;clear name list
+	MOVEI	tp,arglis##		;get argument list
+	CALL	mannam			;get many names
+	 SETOM	errfl##			;set error flag on
+	return
+
+
+
+
+
+;+
+;MANNAM		get many names
+;accepts	TP/	list to put names in
+;returns	+1 if some error
+;		+2 if names got
+;-
+
+mannam:	save	<nr>
+manna1:	CALL	gtmana			;get matching name
+	 JRST	manna9			;get help
+	CALL	addlis##		;add name to arg list
+	CALL	qmorna			;more names ?
+	 TRNA				;no
+	  JRST	manna1
+	skpret				;names got
+manna9:	return
+
+
+
+
+
+;+
+;MANNUM		get a list of entry numbers
+;accepts:	TP/	list to put numbers in
+;returns:	+1 if some error
+;		+2 if numbers got
+;-
+
+mannum::save	<nr,gp1,bfp>
+mannu1:	CALL	geennu			;get entry number
+	 JRST	mannu9			;no number
+	MOVEM	nr,xmannu		;say it, so we can yell about it
+	CALL	getobj##		;existing entry ?
+	 JRST[	CALL	preol##		;[KPJ.2] new line
+		print	zmanny##	;[KPJ.2] "The object does not exist:"
+		MOVE	nr,xmannu	;[KPJ.2] display offending object id
+		CALL	prname##	;[KPJ.2] output it
+		JRST	mannu2]		;and, skip it
+	CAIN	gp1,dir			;is it an entry ?
+	 CALL	addlis##		;yes, add number to arg list
+mannu2:	CALL	qmorna			;more numbers ?
+	 TRNA				;no
+	  JRST	mannu1
+	skpret				;numbers got
+mannu9:	return
+
+
+
+;+
+;GTMANA		get matching name
+;returns	+1 if no match found
+;		+2 if name found
+;with		NR/	object number
+;		ERRFL/	on if some error
+;-
+
+gtmana::save	<tp,oldflg##>
+	SETOM	oldflg##		;get an old name
+	CALL	getlet##		;get first letter
+	 JRST	gtman9			;no name
+	CALL	geennu			;get entry number
+	 TRNA				;no number
+	  JRST	gtman8			;number got
+	CALL	nammat##		;get name
+	 JRST	gtman3			;+1 no match
+	 JRST[	MOVE	nr,@agrval##	;+2 one match, get number of object
+		JRST	gtman8]
+	CALL	prmtch##		;+3 print out all names that matches
+	CALL	qshmen##		;[KPJ.3] short menus?
+	 TRNA				;[KPJ.3] yes, assume smart fellow
+	  JRST[	SKIPN	slurj##		;<KPJ.13> we are in a command?
+		 JRST[	print	zambiz##;<KPJ.3> "do zem numberz, luser"
+			JRST	.+1]	;<KPJ.13>
+		print	zambi1##	;<KPJ.13> "do ze Kommandoh "
+		MOVE	str,slurj##	;<KPJ.13> this is it
+		CALL	prstr##		;<KPJ.13> . . .
+		print	zambi2##	;<KPJ.13> " wiz ze numberz, luser"
+		JRST	.+1]		;<KPJ.3> no more jive
+	SETOM	errfl##			;[TTQ.2] set error
+	JRST	gtman9			;get help
+
+gtman3:	SKIPN	linpos##		;start of line ?
+	 CALL	parscm##		;yes, command ?
+	  TRNA
+	   JRST[CALL	execcm##	;yes, execute command
+		JRST	gtman9]		;ready
+	CALL	ukname			;say that name was unknown
+	SETOM	errfl##			;<TTQ.0> set error
+	TRNA
+gtman8:	 skpret				;name found
+gtman9:	return
+
+
+;+
+;GEENNU		get entry number
+;returns	+1 if no number got
+;		+2 if entry number got
+;with		NR/	number got
+;-
+
+geennu::save	<bfp,gp1,tp,errfl##>
+	save	silflg##		;***FOO***
+	SETOM	silflg##		;dont expand wrong match
+	MOVE	t,chpt##		;save text pointer
+	MOVEM	t,savchp
+	CALL	gettyp			;get type
+	 MOVEI	gp1,dir			;get DIR file (TEXT nnnn is default)
+	CALL	getnum##		;get object number
+	 JRST	geenn7			;no number
+	JUMPLE	nr,geenn7		;existing record ?
+	CALL	makpoi##		;make pointer
+	skpret				;number got
+	JRST	geenn8
+
+geenn7:	MOVE	t,savchp		;restore old text pointer
+	MOVEM	t,chpt##
+	SETOM	errfl##			;set error
+geenn8:	restore	silflg##		;restore silent flag
+	SKIPGE	errfl##			;error?
+	 JRST	geenn9			;yes
+	CALL	qexpan##		;expand ?
+	 JRST	geenn9			;no
+	PUSH	P,consum##		;<KPJ.5> save consumer
+	MOVEI	t,tercon##		;<KPJ.5> use terminal consumer
+	MOVEM	t,consum##		;<KPJ.5>
+	CALL	prname##		;[KPJ.4] expand
+	CALL	putbla##		;output space
+	POP	P,consum##		;restore consumer
+geenn9:	return
+
+
+
+
+
+;+
+;GETTYP		get object type
+;returns	+1 if no type got
+;		+2 if type got
+;with		GP1/	type
+;-
+
+gettyp::save	<tp,errfl##>
+	SETZM	errfl##			;clear error flag
+	MOVE	tp,objtab		;get object table
+	CALL	commat##		;match ?
+	 JRST	getty9			;no, not a object
+	 JRST	getty1			;yes
+	JRST	getty9			;many matches
+
+getty1:	MOVE	gp1,@agrval##		;get object type
+	MOVE	gp1,1(gp1)		;get object type
+	skpret				;type got
+getty9:	return
+
+
+
+
+
+;+
+;OBJTAB  --  object table
+;						 ENG		SWE
+objtab::table	sa,[EXP	0,met],zzzmet##		;Meta		Meta
+	table	sa,[EXP 0,inf],zzzinf##		;Info		Info
+	table	sa,[EXP 0,tex],zzztex##		;Line		Rad
+	table	0,[EXP 0,dir],zzzdir##		;Text		Text
+	table	sa,[EXP 0,pna],zzzpna##		;P-name		P-namn
+	table	0,[EXP 0,per],zzzper##		;Person		Person
+	table	sa,[EXP 0,pac],zzzpac##		;Act person	Aktperson
+	table	sa,[EXP 0,mna],zzzmna##		;C-name		M-namn
+	table	0,[EXP 0,mee],zzzmee##		;Conference	M|te
+	table	sa,[EXP 0,num],zzznum##		;Number		Antal
+	table	sa,[EXP 0,lnk],zzzlnk##		;Link		L{nk         }
+	table	sa,[EXP 0,pre],zzzpre##		;Present	N{rvaro      }
+	table	sa,[EXP 0,loc],zzzloc##		;Local		Lokal
+	table	sa,[EXP	0,lac],zzzlac##		;Act local	Aktlokal
+	table	sa,[EXP 0,mar],zzzmar##		;Mark		Mark|r
+IFN	ftempl,<				;<KPJ.11>
+	table	sa,[EXP 0,ena],zzzena##		;E-name		A-namn
+	table	sn,[EXP 0,emp],zzzemp##		;Employee	Anst{lld     }
+>;ftempl
+	table	sa,[EXP 0,sub],zzzsub##		;Sub conf	Subm|te
+	table	sa,[EXP 0,sac],zzzsac##		;Act sub	Aktsubm
+	endtab
+
+
+;+
+;UKNAME		say name was unknown
+;-
+
+ukname:	save	<str>
+	SKIPGE	silflg##		;silent ?
+	 JRST	uknam9			;yes
+	PUSH	P,consum##		;<KPJ.5>
+	MOVEI	t,tercon##		;<KPJ.5> the terminal consumer
+	MOVEM	t,consum##		;<KPJ.5> make it the consumer
+	MOVEI	str,zuknam##		;<KPJ.12> "Unknown name: "
+	CALL	errmsg##		;<KPJ.12>
+	CALL	prcoli##		;output unknown name
+	CALL	clear##			;error, clear input
+	POP	P,consum##		;<KPJ.5>
+uknam9:	return
+
+
+;+
+;QMORNA		check if more names
+;returns	+1 if end of name list
+;		+2 if more names
+;-
+
+qmorna:	save	<ch,str,consum##>
+	CALL	getlet##		;skip spaces
+	 JRST	qmorn9			;line empty
+	CALL	getsho##		;get character
+	CAIE	ch,","			;comma?
+	 JRST	qmorn9			;no 
+	CALL	nexsho##		;yes, skip comma
+	CALL	getlet			;get first letter
+	 JRST	qmorn9
+	CALL	qexpan##		;expand ?
+	 JRST	qmorn8			;yes, dont print
+	CALL	tcbeg##			;output to terminal
+	print[	ASCIZ !, !]		;print comma
+	CALL	tcend##
+qmorn8:	skpret				;more names
+qmorn9:	return				;end of names
+
+
+
+
+
+;+
+;GTOBNR		get object number
+;accepts	QUEST/	prompt question
+;returns	NUMBER/	object number
+;		ERRFL/	on if no number got
+;-
+
+gtobnr::save	<nr>
+	CALL	read##			;read name
+	 JRST	gtobn8			;no name got
+	CALL	gtmana			;get matching name
+	 JRST	gtobn8			;no name got
+	MOVEM	nr,number##		;save argument
+	SETZM	errfl##			;clear error
+	JRST	gtobn9
+
+gtobn8:	SETOM	errfl##			;set error
+	SETZM	number##		;clear argument
+gtobn9:	return
+
+	END
+..and no more  

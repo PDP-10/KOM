@@ -1,0 +1,443 @@
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Komdbh.Mac.20 870414-1207,KPJ-Jaakkola
+;5	$FATAL generates a "PUSHJ P,", so better use ERJMP[ $FATAL...]
+;	after JSYSes that don't skip on success.  Cannot RLJFN% a JFN which
+;	is OPENF%ed
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Komdbh.Mac.15 870413-1443,KPJ-Jaakkola
+;4	Fixed bug in data base code.  Make $DEBUG code more useful.
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Komdbh.Mac.2 870402-2358,KPJ-Jaakkola
+;3	Make this stuff less assuming about its environment.  Better error
+;	messages than "JSYS error occured..".
+;Freja::<BJORN-CARLSSON.DCHECK>DBH20.MAC.26,  3-Nov-86 04:25:20, BJORN-CARLSSON
+;2	Create this file. Use PMAP to map pages from the database.
+;Oden::DSK:DBH10.MAC 1984-09-30 Ed: B.Carlsson
+;1	Test for NUL: as a disk device.
+;Oden::DSK:KOMDBH.MAC 1984?  Ed: S.E.Enblom
+;0	Original
+
+	SEARCH	illsys			;<KPJ.3>
+DEFINE	T10<IFE	<ftos-0>>		;<KPJ.3>
+DEFINE	T20<IFE	<ftos-1>>		;<KPJ.3>
+
+T10,<	TITLE	KOMDBH - KOM-10 data base handler>
+T20,<	TITLE	KOMDBH - KOM-20 data base handler>
+	SEARCH	GLXMAC,DBSMAC
+	PROLOG	KOMDBH
+	GLOB	<D$INIT,D$EXIT,D$GTER,D$GETR>
+
+	.TEXT	"/LOCALS/SYMSEG:LOW"
+
+	.DEBUG==0
+DEFINE	$DEBUG<IFN .DEBUG,>
+
+T10,<					;<KPJ.3> FILOP. block Bottoms-10 only
+FOPBLK:	FO.ASC!FO.PRV			; Assign channel, use privileges
+	.IODMP				; Dump mode I/O
+	BLOCK	1
+	REPEAT	2,<Z>
+	RIBBLK
+FOPLEN==.-FOPBLK
+
+RIBBLK:	.RBSIZ				; Extended LOOKUP block
+	BLOCK	.RBSIZ
+
+DCHBLK:	BLOCK	.DCUCH+1		; Block to read disk characteristics
+DCHLEN==.-DCHBLK
+
+REFCNT:	BLOCK	1			; "Reference" counter
+MEMALC:	BLOCK	1			; Number of words allocated for CL$NTB
+CL$SIZ:	BLOCK	1			; Cluster size in blocks
+CL$ICC:	BLOCK	1			; Number of in-core clusters
+CL$NTB:	BLOCK	1			; Address of cluster table
+CL$RTB:	BLOCK	1			; Address of cluster ref. count table
+CL$BUF:	BLOCK	1			; Address of cluster buffer area
+
+NXTBLK:	BLOCK	1			; Number of next block to read
+MAXBLK:	BLOCK	1			; Number of blocks in the file
+>;T10
+T20,<
+DBHJFN:	BLOCK 1				;JFN of data base.
+MAXBLK:	377777,,-1			;Max block number in file. (for now)
+FRKPAG:	BLOCK 1				;Page number of page used for mapping.
+DSKPAG:	BLOCK 1				;Disk page number last mapped.
+>;T20
+
+wanted:	BLOCK	1			;wanted META object#
+
+MR$BEG:	BLOCK	MAXMET			; First block of each file
+MR$SIZ:	BLOCK	MAXMET			; Record size for each file
+MR$RPB:	BLOCK	MAXMET			; Records per block
+MR$MAX:	BLOCK	MAXMET			; Max. number of records in each file
+
+; D$INIT - Initialize data base handler
+;
+;   Accepts in	S1/ Address of file specification
+;		S2/ Number of disk blocks to keep in core (T10 only)
+;
+D$INIT::
+T20,<	$SAVE	<T1,P1>>		;Save some.
+;
+; First, open the data base file for reading.
+;
+T10,<	MOVE	T1,0(S1)		; Get device name
+	MOVEM	T1,FOPBLK+.FODEV
+	MOVE	T1,1(S1)		;<KPJ.3> get name and extension
+	MOVEM	T1,RIBBLK+.RBNAM	;<KPJ.3>
+	MOVE	t1,2(s1)		;<KPJ.3>
+	MOVEM	t1,ribblk+.RBEXT	;<KPJ.3>
+	MOVE	T1,3(S1)		; Get PPN (no SFDs, sorry)
+	MOVEM	T1,RIBBLK+.RBPPN
+	MOVX	T1,FO.ASC!FO.PRV+.FORED	; Get FILOP. function and flags
+	MOVEM	T1,FOPBLK+.FOFNC
+	MOVEI	T1,.IODMP		; Get I/O mode
+	MOVEM	T1,FOPBLK+.FOIOS
+	MOVE	T1,[FOPLEN,,FOPBLK]
+	FILOP.	T1,
+	 $FATAL	<D$INIT: FILOP. (.FORED) failed, error ^O/T1/>
+>;T10
+T20,<	HRRO S2,S1			;Build byte pointer to file name.
+	MOVX S1,GJ%SHT!GJ%OLD		;Old + Short form.
+	GTJFN%				;Try to get a JFN for it.
+	 ERCAL DBHERR			; Catch errors.
+	MOVE	s2,[OF%THW!OF%RD!OF%RDU] ;for simultaneous reading.
+	OPENF%
+	 ERCAL DBHERR			; Nope.
+	MOVEM S1,DBHJFN			;Save the JFN.
+>;T20
+T10,<	MOVE	T1,RIBBLK+.RBSIZ	; Get file size in words
+	ADDI	T1,BLKSIZ-1		; Prepare for rounding
+	LSH	T1,-BLKLSH		; Get number of blocks
+	MOVEM	T1,MAXBLK		; Save it
+	MOVEI	T1,1
+	MOVEM	T1,NXTBLK		; Set next block number
+;
+; Now check cluster size of the opened disk
+;
+	LOAD	T1,FOPBLK+.FOFNC,FO.CHN	; Get assigned channel
+	MOVEM	T1,DCHBLK+.DCNAM	; Give it to DSKCHR
+	MOVE	T1,[DCHLEN,,DCHBLK]
+	DSKCHR	T1,
+	 $FATAL	<D$INIT: DSKCHR failed>
+;
+; Allocate cluster tables and buffers
+;
+	LOAD	T1,DCHBLK+.DCUCH,DC.UCC	; Get cluster size
+	SKIPG	T1			;Is this a real disk?
+	 MOVEI	T1,1			;Could be NUL: or something
+	MOVEM	T1,CL$SIZ		; Save it
+	ADDI	S2,-1(T1)		; Prepare for rounding
+	MOVE	T2,T1
+	IDIV	S2,T1			; Get number of in-core clusters
+	MOVE	T1,T2
+	MOVEM	S2,CL$ICC		; Save it
+	LSH	T1,BLKLSH		; Get words/cluster
+	ADDI	T1,2			; Account for the cluster tables
+	IMUL	S2,T1			; Get number of words to allocate
+	MOVE	S1,S2
+	MOVEM	S1,MEMALC		; Save it for M%RMEM
+	$CALL	M%GMEM			; Allocate the buffer area
+	MOVEM	S2,CL$NTB		; Save address to cluster table
+	ADD	S2,CL$ICC
+	MOVEM	S2,CL$RTB		; Save address to reference table
+	ADD	S2,CL$ICC		; Get first address after table
+	MOVEM	S2,CL$BUF		; Save it as buffer area address
+	SETZM	REFCNT			; Reset reference counter
+>;T10
+T20,<
+;
+; Get a non-existent page for mapping.
+;
+	$CALL M%NXPG
+	MOVEM S1,FRKPAG		;Save the page number.
+$DEBUG<	$TEXT,	<D$INIT: Memory page allocated: ^O/S1/>>
+	SETOM DSKPAG		;Last page = -1 to force mapping.
+>;T20
+
+; Now read(T10)/map(T20) all the Meta records and extract some info from them
+
+	MOVEI	T1,2			; First block in Meta file
+	MOVEM	T1,MR$BEG-1+MET
+	MOVEI	T1,METSIZ		; Size of a Meta record
+	MOVEM	T1,MR$SIZ-1+MET
+	MOVEI	T1,BLSIZE/METSIZ	; Meta records per block
+	MOVEM	T1,MR$RPB-1+MET
+	MOVEI	T1,MAXMET		; Max. number of Meta records
+	MOVEM	T1,MR$MAX-1+MET
+T10,<	PUSH	P,P1>			; Save preserved AC
+	MOVE	P1,[RECPTR MET,MAXMET]	; Get pointer to last Meta record
+INIT1:	MOVE	S1,P1
+	MOVEM	s1,wanted		;save wanted record#
+T10,<	$CALL	D$GTER>			;get the record
+T20,<	PUSHJ	P,D$GTER>		;get the record.
+	MOVE	t1,metrec(s1)		;get record number
+	CAME	t1,wanted		;got correct META object?
+	 $FATAL	<D$INIT: Wanted ^O/wanted/, but got ^O/t1/>
+	MOVE	T1,METBEG(S1)		; Get first block
+	MOVEM	T1,MR$BEG-1(P1)
+	MOVE	T1,METSI(S1)		; Get record size
+	MOVEM	T1,MR$SIZ-1(P1)
+	MOVE	T1,METRPB(S1)		; Get records per block
+	MOVEM	T1,MR$RPB-1(P1)
+	MOVE	T1,METMAX(S1)		; Get max. number of records
+	MOVEM	T1,MR$MAX-1(P1)
+	TRNE	P1,-2			; Reached Meta 1 yet?
+	 SOJA	P1,INIT1		;  No, loop for next Meta record
+T10,<	POP	P,P1>
+	$RET				; Done
+
+; D$EXIT - Exit from the data base handler
+;
+D$EXIT::
+T20,<	$SAVE	<S1,S1+1,S1+2>
+	SETO S1,		;Wanna unmap.
+	MOVSI S1+1,.FHSLF
+	HRR S1+1,FRKPAG
+	MOVX S1+2,PM%ABT
+	PMAP%			;Unmap the window page.
+	ERJMP[	$FATAL	<D$EXIT: PMAP failed: ^E/[-1]/>]
+>;T20
+T10,<	MOVEI	T1,.FOCLS		; Close file
+	STORE	T1,FOPBLK+.FOFNC,FO.FNC
+	SETZM	FOPBLK+.FOIOS
+	MOVE	T1,[FOPLEN,,FOPBLK]
+	FILOP.	T1,
+	 $FATAL	<FILOP. (.FOCLS) failed, error ^O/T1/>
+	MOVEI	T1,.FOREL		; Release channel
+	STORE	T1,FOPBLK+.FOFNC,FO.FNC
+	MOVE	T1,[FOPLEN,,FOPBLK]
+	FILOP.	T1,
+	 $FATAL	<FILOP. (.FOREL) failed, error ^O/T1/>
+>;T10
+T20,<	SKIPN S1,DBHJFN		;Any JFN?
+	 POPJ P,		; No..
+	CLOSF%				;<KPJ.5> Yes, close the file.
+	ERJMP[	$FATAL	<D$EXIT: CLOSF failed: ^E/[-1]/>]
+>;T20
+T10,<	MOVE	S1,MEMALC		; Get size...
+	MOVE	S2,CL$NTB		; ...and address
+	PJRST	M%RMEM			; Release buffers and return
+>;T10
+T20,<	POPJ	P,>		;Back to caller.
+
+; D$GTER - Get pointer to "exact" record
+;
+;   Accepts in	S1/ Record pointer
+;
+;   Returns in	S1/ Address of the record, or 0 if not found
+;
+D$GTER::
+T10,<	PUSH	P,S1>
+T20,<	$SAVE	<P1>		;Save what we'll clobber.
+	MOVE	P1,S1		;Save argument
+>;T20
+$DEBUG<	$TEXT,	<D$GTER: Want record ^O/P1/>>
+	$CALL	D$GETR			; Get some record
+T10,<	POP	P,T1>			; Restore record ID
+$DEBUG<	$TEXT,	<D$GTER: Got ^O/(S1)/, wanted record ^O/T1/>>
+T10,<	CAME	T1,(S1)			; Same as the one we found?
+	 SETZ	S1,			;  No, sorry
+>;T10
+T20,<	CAME	P1,(S1)			;same as the one we found?
+	 MOVEI	s1,0			;no, sorry
+>;T20
+$DEBUG<	$TEXT,	<D$GTER: Return address = ^O/S1/>>
+T10,<	$RET>
+T20,<	POPJ	P,>
+
+; D$GETR - Get pointer to a record
+;
+;   Accepts in	S1/ Record pointer (BYTE (9) file (27) record)
+;
+;   Returns in	S1/ Address of the record (or 0, if not found)
+;
+T10,<D$GETR::>
+T20,<
+D$GETR:	$SAVE <T1,T2,T3>	;Save some workspace.
+>;T20
+	LOAD	T1,S1,RP%FIL		; Get file number
+	LOAD	T2,S1,RP%REC		; Get record number
+$DEBUG<	$TEXT,	<D$GETR: File ^D/T1/., record ^D/T2/.>>
+	CAIL	T1,MET
+	 CAILE	T1,MAXMET
+	  $FATAL <D$GETR: Invalid file number ^O/T1/>
+	SUBI	T2,1
+	IDIV	T2,MR$MAX-1(T1)		; Get offset in logical file in T3
+	MOVE	T2,T3
+	IDIV	T2,MR$RPB-1(T1)		; Get block number in logical file
+	ADD	T2,MR$BEG-1(T1)		; Get block number in file
+T20,<
+;--- TOPS-20 data base is different.
+	ADDI	T2,1		;Starts at +1 blocks higher on 20.
+;--- TOPS-20 data base is different.
+>;T20
+$DEBUG<	$TEXT,	<D$GETR: Block ^O/T2/>>
+	MOVE	S1,T2
+T10,<	PUSH	P,T1			; Save file number
+	PUSH	P,T3			; Save record offset in block
+	$CALL	GETBLK			; Get pointer to the block
+	POP	P,T3
+	POP	P,T1
+>;T10
+T20,<	PUSHJ	P,GETBLK>		;Get pointer to the block.
+	IMUL	T3,MR$SIZ-1(T1)		; Get word offset in block
+	ADDI	T3,1			; Account for unused word 1
+	ADD	S1,T3			; Get real address of record
+$DEBUG<	$TEXT,	<D$GETR: Address of record: ^O/S1/>>
+T10,<	$RET>				; Done
+T20,<	POPJ P,>		;Return to caller.
+
+; GETBLK - Get pointer to a disk block
+;
+;   Accepts in	S1/ Block number (first one is 1)
+;
+;   Returns in	S1/ Address of the disk block
+;
+GETBLK:
+T20,<	$SAVE <S1+1,S1+2,S1+3,P1>>
+	SKIPLE	S1
+	 CAMLE	S1,MAXBLK
+	  $FATAL <GETBLK: Invalid block number ^O/S1/>
+$DEBUG<	$TEXT,	<GETBLK: Block ^D/S1/>>
+	SUBI	S1,1
+T10,<	IDIV	S1,CL$SIZ		; Get cluster number...
+	ADDI	S1,1			; ...offset by 1
+	HRRO	T1,CL$ICC		; Get length of cluster table
+	SUBI	T1,1			; Make it max. index
+	MOVE	T2,CL$NTB		; Get address of "number" table
+	HRLI	T2,T1			; Insert index AC
+	MOVE	T3,CL$RTB		; Get address of "reference" table
+	HRLI	T3,T1			; Insert index AC
+	HRLOI	T4,377777		; Min. ref. count found
+GTBLK1:	CAMN	S1,@T2			; This cluster?
+	 JRST	GTBLK3			;  Yes
+	CAMG	T4,@T3			; Older than ever?
+	 JRST	GTBLK2			;  No, forget it
+	HRL	T1,T1			; Remember index
+	MOVE	T4,@T3			; Remember reference count
+GTBLK2:	TRNE	T1,-1			; Last entry?
+	 SOJA	T1,GTBLK1		;  No, check next
+;
+; Come here when cluster not in table with LH(T1) = pointer to oldest cluster
+;
+	HLRES	T1			; Get index of "oldest"
+	SKIPGE	T1			; Negative means no one found...
+	 $FATAL	<GETBLK: No oldest cluster found>
+$DEBUG<	$TEXT,	<GETBLK: Block not in table, replace cluster ^D/T1/.>>
+	MOVEM	S1,@T2			; Save new cluster number
+	PUSH	P,S1			; Save cluster number
+	PUSH	P,S2			; Save block-offset in cluster
+	PUSH	P,T1			; Save cluster table index
+	PUSH	P,T3			; Save ref. table pointer
+	MOVE	S2,T1
+	IMUL	S2,CL$SIZ		; Get offset in buffer area
+	LSH	S2,BLKLSH
+	ADD	S2,CL$BUF		; Make it buffer address
+	$CALL	RDCLST			; Read the cluster
+	POP	P,T3			; Restore ref. table pointer
+	POP	P,T1			; Restore cluster table index
+	POP	P,S2			; Restore block-offset
+	POP	P,S1			; Restore cluster number
+;
+; Come here with block-offset in S2 and reference table pointer in T3 (T1)
+;
+GTBLK3:	AOS	T2,REFCNT		; Increment reference count
+	MOVEM	T2,@T3			; Set it for this cluster
+; --------------------
+;	LSH	B,BLKLSH		; Make word offset in cluster
+;	MOVE	A,B
+;	TLZ	T1,-1
+;	IMUL	T1,CL$SIZ
+;	LSH	T1,BLKLSH
+;	ADD	T1,CL$BUF
+;	ADD	A,T1
+; --------------------
+;	MOVE	A,B
+;	TLZ	T1,-1
+;	IMUL	T1,CL$SIZ
+;	ADD	A,T1
+;	LSH	A,BLKLSH
+;	ADD	A,CL$BUF
+; --------------------
+	HRRZ	S1,T1
+	IMUL	S1,CL$SIZ
+	ADD	S1,S2
+	LSH	S1,BLKLSH
+	ADD	S1,CL$BUF
+>;T10
+T20,<	IDIVI S1,4		;Find out in what page this block is.
+	MOVE P1,S2		;Save offset in page.
+	CAMN S1,DSKPAG		;Same as last time?
+	 JRST GETB.0		; Yes, skip mapping.
+	MOVEM S1,DSKPAG		;No, save as new last page.
+	HRL S1,DBHJFN		;Get the JFN.
+	HRLI S1+1,.FHSLF	;My fork.
+	HRR S1+1,FRKPAG		;Page number.
+	MOVX S1+2,PM%RD!PM%CPY	;Allow read + copy on write.
+	PMAP%			;Map the page.
+	 ERCAL DBHERR		; Eh.., maybe he should use FILDDT..?
+	MOVSI S1,.FHSLF		;My fork.
+	HRR S1,FRKPAG		;Page number.
+	RPACS%			;Get access.
+	 ERCAL DBHERR
+	TXNE S2,PA%PEX		;Page exists?
+	 JRST GETB.0		; Yes, go on
+	SETO S1,
+	MOVSI S1+1,.FHSLF
+	HRR S1+1,FRKPAG
+	MOVX S1+2,PM%ABT
+	PMAP%			;Unmap the page.
+	 ERCAL DBHERR
+GETB.0:	MOVE S1,FRKPAG		;Get the page number.
+	LSH S1,^D9		;Convert to address.
+	IMULI P1,200		;Get offset in page in words.
+	ADD S1,P1		;Include.
+>;T20
+T10,<	$RET>
+T20,<	POPJ	P,>
+
+T10,<
+; RDCLST - Read a cluster
+;
+;   Accepts in	S1/ Cluster number
+;		S2/ Address to hold cluster
+;
+RDCLST:	SUBI	S1,1
+	IMUL	S1,CL$SIZ		; Get block number...
+	ADDI	S1,1			; ...offset by 1 (TOPS-10...)
+	CAMLE	S1,MAXBLK		; Inside the file?
+	 $FATAL	<RDCLST: Attempt to read past EOF>
+$DEBUG<	$TEXT,	<RDCLST: Reading from block ^D/S1/.>>
+	CAMN	S1,NXTBLK		; Already there?
+	 JRST	RDCLS1			;  Yes, no need to USETI
+	MOVEM	S1,FOPBLK+.FOIOS	; Set block number for FILOP.
+	MOVEM	S1,NXTBLK		; Remember it as next block too
+	MOVEI	T1,.FOUSI		; Get function
+	STORE	T1,FOPBLK+.FOFNC,FO.FNC	; Give it to FILOP.
+	MOVE	T1,[.FOIOS+1,,FOPBLK]
+	FILOP.	T1,
+	 $FATAL	<RDCLST: FILOP. (.FOUSI) failed, error ^O/T1/>
+RDCLS1:	MOVN	T1,S1
+	ADD	T1,MAXBLK		; Get blocks left to EOF
+	ADDI	T1,1			; Adjust for this block
+	CAMLE	T1,CL$SIZ		; Can we read a whole cluster?
+	 MOVE	T1,CL$SIZ		;  Yes, get cluster size
+	ADDM	T1,NXTBLK		; Update "next block"
+	IMUL	T1,[-BLKSIZ,,0]		; Make it negative words in left half
+	HRRI	T1,-1(S2)		; Get address part of IOWD
+	SETZ	T2,			; End of I/O program...
+	MOVEI	T3,T1			; Get address of it
+	MOVEM	T3,FOPBLK+.FOIOS	; Give it to FILOP.
+	MOVEI	T3,.FOINP		; Get function
+	STORE	T3,FOPBLK+.FOFNC,FO.FNC
+	MOVE	T3,[2,,FOPBLK]
+	FILOP.	T3,
+	 $FATAL	<RDCLST: FILOP. (.FOINP) failed, error ^O/T3/>
+	$RET				; Done
+>;T10
+
+	SUBTTL DBHERR - JSYS error handler
+T20,<
+DBHERR:	$TEXT	,<^M^J? ^E/[-1]/>
+	$FATAL	<>
+>;T20
+	END
+..and no more

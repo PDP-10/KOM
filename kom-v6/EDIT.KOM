@@ -1,0 +1,2647 @@
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++	Tops-10/TOPS-20 versions merged ++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	KPJ	1988-01-25 17:09:09	Code inside FTEMPL in OBJSTA or
+					get assembler errors.
+		Changed: PRNCRE@OBJSTA
+
+	KPJ	1987-10-14 15:41:24	Secrecy in STATUS command (links).
+					STATUS of TEXTs not allowed.
+		Changed: (OBSTAT,PRNRLN,PFILNK)@OBJSTA
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++	KOM development ended in favour of SuperKOM ++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	KPJ	1987-09-13 02:30:01	COMPUTE stuff inside FTCOMP.
+		Changed: (CELBEG,CELEND)@IMPURE
+
+	KPJ	1987-09-10 19:38:56	Use 8-bit I/O if negative argument.
+		Changed: FILPRX@MONITO
+
+	KPJ	1987-09-09 10:42:02	Add "special conference" information
+				to SYSTEM INFORMATION display.  Don't allow
+				ADD a named object as member to anything if
+				its name start with "@" (crummy test for
+				"external names").
+		Changed: (ZZZZAN,ZZZZPR,ZZZZLA,ZZZZAD)@TEXTER,ADOBOB@ADD,
+			 (PRINFO,PRINFU)@SYSINF
+
+	KPJ	870715-1710	Don't use IMAGE MODE.  Use CCOC words, what is
+				what we meant anyway.
+		Change: (TERCON,OUTALL,OUTNRM,ERASCR)@TERCON,TCOLOR@DBPRO
+
+	KPJ	1987-06-17 17:28:27	Fixed bug which made editor calls barf
+				if you had changed your high segment to another
+				language. <Tops-10 only>
+		Changed: (PRCINM,PRCINN,PRC001,PRC002)@MONITO,
+			 (KERTMP,VIDTMP,AMITMP,SOSTMP,TECTMP,EDITMP)@CALVID
+
+	KPJ	1987-06-12 03:54:57	Don't display NAME CREATED BY: clause
+				for non-named objects, and not if name created
+				by object itself.
+		Changed: (PRNCRE,PRISTA)@OBJSTA
+
+	KPJ	1987-06-10 16:56:27	Don't list deleted objects when listing
+				objects.
+	
+		Changed: PRMELI@LOAEMP
+
+	KPJ	1987-06-04 17:55:11	When ambiguous user name, re-phrase
+				message as to give lusers no way to phreak.
+		Changed: GTMANA@GTNAME,(GETMEN,SLURJ)@TOPCOM,
+			 (ZAMBI1,ZAMBI2)@TEXTER
+
+	KPJ	1987-06-04 16:21:20	Add NETWORK ADRESS to STATUS output.
+				Assembly switch FTNTWK to govern it. Name of
+				network by NETWRK macro, defined in FEATUR.
+		Changed: KOMMAC,(ZNETWK,ZNETW2)@TEXTER,(PRISTA,PRNTWK)@OBJSTA
+
+	KPJ	870525-2141	Add FATAL subroutine for TOPS-20, to handle
+				random JSYS errors.
+		Changed: FATAL@ERRLOG
+
+	KPJ	1987-05-13 13:55:57	Assembly switch FTHALF for half-duplex
+				support code.  Special handling for half
+				duplex terminal password input. Use TRMBLK
+				TRMOP. argument block if can't use ACs.  Name
+				ENCRYP to ENKRYP to avoid name clash. Fix bug
+				which destroys your own password saved in temp
+				file if you CREATE USER or CHANGE PASSWORD for
+				other user under CHANGE IDENTITY. Sanitize code
+				also. Move password length to KOMMAC. ERRCOM
+				and AMBCOM global, used to display error when
+				subcommand is incorrect or ambiguous. Better
+				error message when input does not match any
+				command. Also, make it more like in PortaCOM.
+				Make "Expected end of command" an error.
+				Correct call to COMMAT in GTYPTA (the incorrect
+				call made us mumble about "endline expected"
+				when a command was ambiguous): return error
+				code to GTTYTA. Add command (JOIN) MAILBOX as
+				in PortaCOM.  Handle GTTYTA error codes.
+
+		Changed: KOMMAC,(ASKPAS,ASKOPW,HALFP,HIDKEY,CHKPAS,DORMAT,
+			ENKRYP,OLDNAM,SETPFL)@LOGIN,(GETPAS,CCHAPA,CRNEPE,
+		       CHKNAM,ASKNPW,ASKNPA,CIDARG,ASKCID,ANONY,NEWNAM)@NEWNAM,
+			KOMWRI@MONTMP,(GETMEN,ERRCOM,ENDARG,AMBCOM)@TOPCOM,
+			(ZNOTRE,ZNOTR1,ZNOTR2,ZFLAAR,ZZJOIS,ZJOYCE)@TEXTER,
+			(ALOEMP,ORGARG,ASKORG,CLOEMP,CHKEMP,AORGMA,CORGMA,
+			ORMARK)@LOAEMP,ALISPE@LISPER,(GELNTY,GTYPTA)@ADD,
+			REOBTY@CHATYP,ALISME@LISMEE,MEMTAB@ALLTAB,
+			FLAARG@CHATAB,(JOISLF,JOYCE,JOINMT)@JOINMT
+
+	KPJ	1987-05-06 19:33:02	Move CHATAB to ALLTAB and rename it to
+				TJATAB.  Make CHATAB a dummy. Globalize NORMOD,
+				PTYMOD, ADMMOD, ZETON, ZETOFF and PRMOBJ.
+				(ALLTAB now contains all the parse tables.)
+		Changed: (TJATAB,ALLTAB)@ALLTAB,
+		       (CHATAB,NORMOD,PTYMOD,ADMMOD,ZETON,ZETOFF,PRMOBJ)@CHATAB
+
+	KPJ	1987-05-06 00:25:40	Add GTKOM% JSYS. Add PJRST for
+				Bottoms-10 types.  Add more paranoia to	the
+				various macros. Add symbolic names for CCOC
+				bits (DIGITAL forgot them).
+		Changed: KOMMAC
+
+	KPJ	1987-05-06 00:03:58	For all unexpected JSYS errors, add
+				an ERCAL to FATAL@ERRLOG.  Use $SKIPA, $SETZ,
+				$MOVX, $DMOVE, $DMOVM, $DMOVI macros to lessen
+				assembly switch jungle.  Use TRMBLK in TRMOP.
+				if needed.
+		Changed: MONITO, KOMMAC
+
+	Zot!	1987-05-04 16:53:29	Change skip sense of batch check for
+					CTRL/C test.
+		Changed: PSIINI@MONITO
+
+	KPJ	1987-04-30 14:42:26	In CHANGE IDENTITY, the new identity
+				was garbled by routine to update last seen
+				entry.
+		Changed: CHIDEN@NEWNAM
+
+	KPJ	1987-04-30 14:14:45	Display invalid object numbers in
+				format M.N, where M=file#, N=record#.
+		Changed: PROBNR@OBJSTA
+
+	KPJ	1987-04-30 13:42:50	Generate stop code GETYNA OBJSTA if
+				GETYNA gets invalid file number.
+		Changed: GETYNA@OBJSTA
+
+	KPJ	1987-04-30 13:30:22	Generate stop code PRSTR STRPRO if
+				PRSTR gets invalid pointer as input.
+		Changed: PRSTR@STRPRO
+
+	KPJ	1987-04-30 13:11:07	Generate stop code CHPRIN TERCON if
+				CHPRIN gets invalid characters as input.
+		Changed: CHPRIN@TERCON
+
+	KPJ	1987-04-16 14:06:48	Personal flag NAME CACHE to switch on
+				or off name cache use.
+		Changed: KOMMAC,ZZXMAT@TEXTER,EXPTAB@CHATAB,
+			 (ALLNAM,GETNAM,PRNAM,CLENAM)@MATCH
+
+	KPJ	1987-04-16 11:15:28	MACRO does not PURGE original opcodes,
+				but doesn't give an error on the PURGE either.
+				Since there is no other way to get rid of the
+				Bottoms-10 UUO names, we have to DEFINE them
+				to give an error message on Twenex. Ditto for
+				KL-10 instructions.
+		Changed: PROLOG@KOMMAC
+
+	KPJ	870414-1959	Change behaviour when unknown user attempts to
+			enter: ask her if she is a NEW user or want to enter
+			the name AGAIN.
+		Changed: (NEWNAM,NEWTAB)@NEWNAM,(ZNEWN2,ZNYIGN,ZNY)@TEXTER
+
+	KPJ	1987-04-12 20:26:26	Changed call of file name parsers
+				(REFINA) as follows to get the errors before
+				*they* get us:
+				(a)	GP1 = length,,address of FILOP. block
+				(b)	BFP = length,,address of PATH. block
+				New routine to check pointer validity.
+				Moved some magical numbers to KOMMAC.
+				Use CODE macro.
+		Changed: (REFINA-20,REFINI-20,REFINA-20,REFINI-10)@REFINA,
+			 (IFIOPN-20,OFIOPN-20,RYNFIL,GENFIL,OPINFI,GOFNAM,
+			  UNPFIL)@MONFIL
+
+	KPJ	870405-0813	Twenex numbers days, months and weekdays (not
+				years, though) from zero, so add one where
+				appropriate to get a correct "ERRLOG.ymm".
+		Changed: MAKLOG@ERRLOG
+
+	KPJ	1987-04-05 04:02:41	WRONAM localized. Give login try
+				routine the object# of the object we failed to
+				login as (-1:new name when not-logged-in,
+				-2:ambiguous name when not-logged-in)
+		Changed: (CCLLOG,LOGIN,MANYNA,WRONAM)@LOGIN
+
+	KPJ	1987-04-05 03:35:53	LOGTRY logged the address of "SELFNR"
+				as the object tried to login as.  Change call
+				to include object number of object tried (which
+				is not in SELFNR anyway).  Also, LOGTRY failed
+				to supply a correct address list to dump
+				routine.
+		Changed: (LOGTRY,IDENT)@ERRLOG
+
+	KPJ	1987-04-05 02:54:36	KOM-10 forgot to output login daytime
+				to ERRLOG file, crashed ILLACC.
+		Changed: LOGINI@ERRLOG
+
+	KPJ	870403-1632		Wrong AC used to record job# for
+					ILLACC-20.
+		Changed: LOGINI@ERRLOG
+
+	KPJ	1987-04-03 15:37:45	T10 SFD names were "sticky" and
+				made subsequent file specifications to fail
+				randomly.  Be more paranoid about the blocks.
+				End of SEE's hopeful code.
+		Changed: REFINI@REFINA
+
+	KPJ	870403-0033		Implement T20 "last login" for ILLACC.
+		Changed: LOGINI@ERRLOG
+
+	KPJ	1987-04-01 13:52:22	Make CHANGE IDENTITY update your
+					present record.
+		Changed: CHIDEN@NEWNAM
+
+6C(241)	KPJ	1987-03-28 19:17:28	Make WAIT (FOR NEWS) work on the text
+					telephones.
+		Changed: CWAIT@WAITX
+
+	KPJ	1987-03-27 14:25:27	Added LIST ORGANIZERS.
+		Changed: LISTAB@ALLTAB,(LISORG,LISTOR,PRORIN)@LISMEE.
+			 (ZLORHL,ZZORGA)@TEXTER
+
+6C(240)	KPJ	1987-03-26 01:40:11	Make code test for T10 version and
+					execute different code for 7.03
+					and later in the TRMOP. code.
+		Changed: MICTTY@MONITO
+
+6C(237)	KPJ	1987-03-25 10:29:55	TRMOP. behaviour still does not match
+				documentation fully. Grrr....
+		Changed: MICTTY@MONITO
+
+6C(236)	KPJ	1987-03-25 16:16:36	Implemented "input name cache". Larger
+				"output name cache".  Both under conditional
+				FTCACH.  DIGITAL changed the finctionality and
+				documentation of TRMOP. function .TOGMS which
+				made KOM MIC support stop working.  Test on
+				T10 version and act accordingly.
+		Changed: KOMMAC,MICTTY@MONFIL,CCHANA@CHANAM,
+			 (ALLNAM,INPNUM,INPNAM,GETNAM,PRNAM,CLENAM)@MATCH
+
+	KPJ	1987-03-12 16:58:43	Say goodbye to leaving luser.
+		Changed: (LEAVE,MORS,RSTART)@QUIT
+
+	KPJ	1987-03-10 14:13:35	Added free format daytime output for
+					(SHOW) DAYTIME & Co.
+		Changed: MANAD@TEXTER,(PRDATT,PTODAY,PVECKA)@REPTIM
+
+	KPJ	1987-03-09 13:44:33	Make !(RE-)TYPE command display all
+				the receivers.
+		Changed: TYPWHO@WRIENT
+
+	KPJ	1987-03-09 13:15:43	PRECLI@WRIENT rename PRSCLI@WRIENT
+				due to name collision with PRECLI@PRIREC.
+		Changed: PRSCLI@WRIENT
+
+	KPJ	870308-0838		Teach JSYS error routine to understand
+				word pointers correctly.  Make temporary file
+				writer display any error message properly.
+				New routine to output warnings. ^L output
+				routine did not output "^" and "L" directly
+				to the terminal.
+		Changed: .JSERR@QUIT,KOMWRI@MONTMP,ZKOMTM@TEXTER,WARMSG@DISPLA,
+			 TPUTFF@TERCON
+
+	KPJ	1987-03-05 15:43:56	Moved size of output name cache (used
+					to octal 20) to KOMMAC as NAMLEN, and
+					changed it to decimal 100.
+		Changed: KOMMAC,NAMTAB@MATCH
+
+	KPJ	870226-1317		Use primary structure and not PS: to
+				store TMPCOR file.  SAVE PASSWORD personal flag
+				is for T20, too.
+		Changed: (KOMWRI,MYNAME)@MONTMP
+
+6C(235)	KPJ	1987-02-23 16:01:12	Make (REASSIGN) OUTPUT FILE TTY: work.
+		Changed: (FOUTPU,FCBEG)@MONFIL,TOUTPU@MONITO
+
+	KPJ	1987-02-23 14:02:58	Make EMPLOYEE LOGIN work.
+		Changed: OLDNAM@LOGIN
+
+	KPJ	1987-02-16 04:44:55	"Invalid command" is an error.
+		Changed: ERRCOM@TOPCOM
+
+6C(234)	KPJ	1987-02-03 14:25:09	Display all receiver headings in !TYPE
+					command.  Fixed bug which made personal
+					flag output incorrect.
+		Changed: TYPWHO@WRIENT,ENTTAB@CHATAB
+
+6C(233)	KPJ	870203-1348		KOMWR2 is for T20, too.
+		Changed: KOMWRI@MONFIL
+
+6C(232)	KPJ	870202-1654		Save password in temporary file only
+					only when requested on T20, too.
+		Changed: KOMWRI@MONFIL
+
+6C(231)	KPJ	1987-01-31 10:16:38	Module MATCH had pointers from the low
+					segment to the high segment (will this
+					never end?). Initialize the pointers
+					when we change segments.
+		Changed: SEGRET@MONITO,MATBAK@MATCH
+
+6C(230)	KPJ	1987-01-31 08:31:52	GETYNA did expect the "buffer" (in low
+		segment) to contain a "string pointer" (to high segment).
+		This does not work very well if we change high segments, since
+		the strings move around, but the pointers still point at the
+		old place.  Get rid of "string pointer" in the buffers in the
+		low segment and use a table in the high segment to translate
+		from file number to "string pointer" (pointer to ASCIZ).
+		Change definitions of BUFFER macro to get rod of the pointers.
+					<T10 only>
+		Changed: (GETYNA,NAMTYP)@OBJSTA,KOMMAC
+
+6C(227)	KPJ	1987-01-30 08:47:07	Teach KOM to use the whole buffer (or
+					we get a random ^@ in output)
+					<T10 only>
+		Changed: FPUT@MONFIL
+
+6C(226)	KPJ	1987-01-29 10:10:16	Ignore temporary file in BEGIN command.
+		Changed: RSTART@QUIT
+
+	KPJ	1987-01-26 13:37:42	Get rid of funny losing macros. Fixed
+					typos in variable name. Optimized code.
+		Changed: (SYINFO,PRFIIN,PRINFO,PMEINF)@SYSINF
+
+	KPJ	870125-2330		Minor optimizations (done previously,
+					documented now).  QISMBR documentation
+					corrected.
+		Changed: NOFILE@CHKNEW,QISMBR@MATCH
+
+	KPJ	870124-0333		RSCEND did not do success return +2.
+		Changed: RSCEND@CALVID
+
+6C(225)	KPJ	870123-1754		Allow T20 batch jobs (which have no ^C
+					capability) to run us. Get rid of
+					CTCCHK routine (we test for ^C
+					capability in MORDOR already).
+		Changed: (CTCCHK,MORDOR,INITTY)@MONITO
+
+	KPJ	870121-0210		Display the exact type specified.
+					Display directory specification in a
+					readable manner.
+		Changed: (LISTPE,PRPEIN)@LISPER
+
+	KPJ	870121-0044		Added NEWS CONTROL flag (ZZXNEW).
+					Lessified messages: ZASTEL, ZASADR.
+		Changed: (ZZXNEW,ZASTEL,ZASADR)@TEXTER
+
+	KPJ	870121-0028		EDITP is T10 only.
+		Changed: KOMWRI@MONTMP
+
+	KPJ	870116-0421		Moved BUGCOD and BUGACS from QUIT to
+					ERRLOG module.
+		Changed: (BUGCOD,BUGACS)@(QUIT,ERRLOG)
+
+6C(224)	KPJ	870116-0327		GRRBLC is T10 only.
+		Changed: GRRBLC@MONITO
+
+	KPJ	870116-0315		Personal flag "NEWS CONTROL" (switch
+					NEWPFL) implemented.
+		Changed: KOMMAC
+
+	KPJ	870116-0306		CALLD9 label forgotten. TMPEDI, BAKTMP
+					and BAKFLG are T10 only.  EDTTMP,
+					TVTMP, and EMATMP not to defined in
+					terms of EDITMP.
+		Changed: (CALLDT,EDTTMP,TVTMP,EMATMP,TMPEDI,BAKTMP,
+			  BAKFLG)@CALVID
+
+	KPJ	1987-01-13 17:35:35	Optimized code, and fixed bug in
+					object limit setting.
+		Changed: (OBSTAT,PRISTA,PRMEST)@OBJSTA
+
+	KPJ	1987-01-13 15:28:28	Disallow USE ADMINISTRATOR (MODE) from
+					remote lines if FTREMO is non-zero.
+		Changed: QADMOD@CHATAB
+
+	KPJ	861223-0016		Censored four letter word.  Stop code
+					"circular-entry addent" changed to
+					"adentr addent". Incorrect code
+					(JRST .+1) corrected.
+		Changed: ADENTR@ADDENT
+------------------------------------------------------------------------
+	******	LATEST VERSION OF SOURCE MOVED TO FREJA.    ******
+------------------------------------------------------------------------
+6C(221)	KPJ	1987-01-06 06:24:27	Don't put "(Read) next comment" in
+					the menu if have "too many" unread
+					entries in current conference.
+		Changed: TOOMAN@ONLYRE,QNEXCO@NEXCOM
+
+6C(220)	KPJ	1987-01-02 12:37:16	Output CTRL/L as ^L to terminal if
+					terminal page size is 0.
+		Changed: TPUFF@TERCON
+
+6C(217)	KPJ	1987-01-02 08:07:38	Removed BYEBYE routine.  Make LOGOUT
+			command return error message if cannot save
+			STD:LOGOUT.EXE in low segment.  New routine KJOB.
+		Changed: (BYEBYE,XIT,KJOB)@MONITO
+
+6C(216)	KPJ	1987-01-02 04:09:54	Remove stop code RSCEND CALVID.
+			Remove TMPEND code, equated to system dependent
+			routines.  TMCEND returns +2 on success. Added message
+			ZRESCA for RSCAN% failure. Make TMCEND display error
+			when TMPCOR write fails. Say what TMPCOR failed.
+			LOGTMP returns +2 on success.  Optimized code.
+		Changed: (RSCEND,TMPEND,???TMP)@CALVID,ZRESCA@TEXTER,
+			 CALLOG@LOGIN,TMCEND@MONTMP,FCEND@MONFIL,LOGTMP@MONITO,
+			 KOMWRI@MONTMP
+
+	KPJ	1986-12-31 19:49:14	Preserve error code from INBLK and
+					OUTBLK.
+		Changed: (INBLK,OUTBLK)@MONFIL
+
+	KPJ	1986-12-29 15:28:07	QDELF never returned +1 (failure)
+		Changed: QDELF@MONFIL
+
+	KPJ	1986-12-29 02:15:55	Fence post error made T10 file handling
+					code fail with random error codes.
+		Changed: (OPINFI,OPOUFI)@MONFIL
+
+6C(215)	KPJ	1986-12-28 20:23:17	Output TTY: buffer before reading a
+					line from TTY:.
+	
+	KPJ	1986-12-28 09:33:57	Make KOM-10 forget all parts of file
+					specification between two different
+					specifications.
+
+		Changed: (FPEND,OPINFI,OPOUFI)@MONFIL,REFINI@REFINA
+
+	KPJ	1986-12-28 09:20:47	Forget current conference if we are
+					REENTERed, STARTed och CONTINUEd, and
+					the password answer fails.
+		Changed: (GETRID,OLDNAM)@LOGIN
+
+	KPJ	1986-12-28 07:19:12	Handle all line break characters alike.
+					Echo CTRL/K on T10 to be T20compatible.
+		Changed: (TERPRO,TERSPC)@TERPRO
+
+	KPJ	1986-12-28 05:55:12	When COMMENTing several TEXTs, display
+					author of all the TEXTs, not only the
+					first TEXT.
+		Changed: (PREELI,PRCOMM)@WRIENT
+
+6C(214)	KPJ	1986-12-28 04:54:33	GRRBLK copied the path incorrectly.
+					BADPRG displayed a <0,0> PPN if an
+					empty PATH block.
+		Changed: GRRBLK@MONITO
+
+	KPJ	1986-12-28 04:07:44	Moved KOMWRI call from LEAVE2 to LEAVE
+					where it belongs.  TMPFLG is multiply
+					defined, changed TMPFLG@CALVID to be
+					TMPEDI, and make it global.
+
+		Changed: (LEAVE,LEAVE2)@QUIT,(TMPEDI,CALKER,CALVID,CALAMI,
+			  CALSED,CALSOS,CALTEC,CALEDI)@CALVID,KOMWRI@MONTMP
+
+	KPJ	1986-12-23 19:05:23	KOMWRI returns +1 on failure.  General
+					handling of JSYS errors (and fixed a
+					few errors). Merged COMTMP with KOMWRI.
+					BAKFLG,BAKTMP,PREDFI,EDITP globalized.
+
+		Changed: KOMWRI@MONTMP,(.JSERR,LEAVE2)@QUIT,
+			 (EDITP,BAKFLG,BAKTMP,PREDFI,CALKER,CALVID,CALAMI,
+			  CALSED,CALSOS,CALTEC,CALEDI)@CALVID
+
+6C(213)	KPJ	1986-12-19 18:15:51	Make T10 interrupt routines callable
+					from low segment even if high segment
+					is concealed.
+		Changed: (TRPCJI,TRPTTY,TRPPTY)@PTYKOM,
+			 (TRPTLE,TRPDAT,TRPSTP,TRPQUE,TRPOUT)@MONITO
+
+6C(212)	KPJ	1986-12-19 16:44:17	CRUN cannot call GRRBLK (which req's
+					a RUN/GETSEG arg.blk).  New routine
+					GRRBLC (which accepts a FILOP. argblk)
+		Changed: CRUN@RUNTAB,GRRBLC@MONITO
+
+6C(211)	KPJ	1986-12-19 14:51:32	Remember if program name and high
+					segment names are equal. Since the
+					GETSEG'ed segment maybe defined with a
+					logical device name, ask for the real
+					device and file name.
+		Changed: (COPSLF,PRCINM)@MONITO
+
+	KPJ	1986-12-17 15:32:11	KOMWRI-10 output TMP:LME, too, if
+					pertinent.  Split LEAVE in two routines
+					(with and without mail yelling).
+					Use GRRBLK before calling RUNX-10.
+					Use LEAVE2 to do updating.  Always
+					output a TMP:LME if program-to-run.
+					Leave KOM when starting a program.
+					Optimized CRUN code.
+		Changed: KOMWRI@MONTMP,(LEAVE,LEAVE2,LEAWRI)@QUIT,
+			 (CALKER,CALVID,CALAMI,CALSED,CALSOS,CALTEC
+			  CALEDI)@CALVID,(CKOMCO,CNEWCO,COLDCO,CENGCO,CNORCO,
+			  CQOMCO,CGERCO,CTJTID,CREPRI,CTOUCH)@RUNTAB
+
+6C(210)	KPJ	1986-12-17 12:56:38	Moved JOBDAT locations to IMPURE. Make
+			MORDOR routine initialize the XMYSLF to contain the
+			original high segment name when virgin high segment.
+			Make PRCINM use contents of XMYSLF as the high segment
+			name. GETSLF and XRUNBL eliminated.  Move program to
+			run test for LOGMTP to LOGTMP itself.  RUNX-20
+			eliminated because unused.  PSITTY renamed PSIOUT.
+
+
+6C(207)	KPJ	1986-12-15 15:39:13	Moved rest of low segment to IMPURE.
+			Fixed The Last Bug (hopefully) of the GETSEG logic.
+
+6C(206)	KPJ	1986-12-11 16:55:11	Use processor optimized code.  Defines
+					PUTCH as @CONSUM, and delete PUTCH
+					routine, which only does a JRST anyway.
+		Changed: KOMMAC,PUTCH@TERCON
+
+	KPJ	1986-12-11 16:39:18	Make GELAMA return +1 on failure and
+					remove stopcode GELAMA MARK.
+		Changed: (CNEXMA,GELAMA)@MARK,GETOLD@LOGIN,CHIDEN@NEWNAM,
+			 DIMAFU@REVFUN
+
+	KPJ	1986-12-11 13:28:51	Optimized code, improved documentation.
+		Changed: CHKORG@TOPCOM
+
+	KPJ	1986-12-09 12:48:45	.JBVER, .JBREN, .JBHSA, .JBHDA T10-only
+		Changed: KOMMAC
+
+	KPJ	1986-12-08 16:36:34	Added .JBINT
+		Changed: KOMMAC,
+
+	KPJ	26-Nov-86 17:59:17	Routine NEWSP to test if user wants
+					news control or not.
+		Changed: NEWSP@JOINMT
+
+6C(201)	KPJ	1986-11-20 08:37:45	New routine GETX to swap high segment
+					for SPEAK <language> commands.  Move
+					common stuff to GETSLF. Moved magical
+					numbers	to KOMMAC.  Moved part of low
+					segment code to IMPURE module.
+					Optimize code by using KL processor
+					code when possible. Don't output ^@
+					since that may screw up things.
+		Changed: (INITTY)@MONITO
+
+	KPJ	1986-11-19 21:36:51	Make "Invalid password" be a "?"-error.
+		Changed: (ZWRPSW,ZWRPSX)@TEXTER,CHKPAS@LOGIN
+
+6C(200)	KPJ	1986-11-18 16:38:51	(REASSIGN) OUTPUT (TO) PRINTER did
+					not work with TSK:-devices, because it
+					tried to re-open an open channel (and
+					TSK:-devices don't like that). Make
+					"Unknown name" an error message.
+		Changed: AROUPR@FILCON,UKNAME@GTNAME,MONITO
+
+6C(177)	KPJ	861113-1539		DBP macro eliminated fully.
+		Changed: ?,MONITO
+
+6C(176)	KPJ	1986-11-13 09:43:05	Added paranoid code to detect some
+					programmer brain damages.
+		Changed: KOMMAC,TEXTER,SITE,MONFIL,MONITO
+
+	KPJ	1986-11-12 14:17:48	Added Tops-10 7.03 file error codes
+					so we are prepared.
+		Changed: FILOPR@TEXTER
+
+6C(175)	KPJ	1986-11-11 15:34:09	CTRL/H from file to entry crashed KOM
+					because of typo (DBP macro typed DPB)
+					Change name of DBP to DECRBP.
+		Changed: KOMMAC,STRCON@STRCON
+
+6C(174)	KPJ	1986-11-11 03:51:43	Get rid of FOALLO MONITO bughalt (T10)
+					and "?Illegal memory WRITE" (T20) due
+					memory exhaustion.  Give an error when
+					memory allocation fails, instead. (This
+					should be done better, though. It just
+					barely does not crash.) The code never
+					expected MEMORY to get all used up.
+					It's hard to make it understand such
+					a concept. Foo!
+
+		Changed: (FOALLO,ALLOCM)@MONITO,TOPLOO@NEW,ISLURP@CRELOC,
+			 (RLIFUN,ALLSTA,EVAARG)@COMPUT,INMBR@ENTER,READ@READ,
+			 (RELALI,RELAWO,GTNTHW)@EDIT,(BEGLIN,STBEG)@STRCON,
+			 GENELI@ENTCON,(DEPCH,SBSLN1,EATLIN)@SEARCH,
+			 ZFOALL@TEXTER,(GETSTR,GETCR)@TERCON,CLEENT@WRITEE,
+			 RDCOMM@TOPCOM
+
+	KPJ	1986-11-10 16:20:58	Get rid of ISLURP CRELOC bughalt, and
+					return +2, so caller may handle the
+					problem. (Hm, LISREG@OBJSTA and
+					REGLIS@PRPEST look very much the same.)
+
+		Changed: (ADCOPE,ADPECO)@ADD,CHCOAU@CHKREC,ISLURP@CRELOC,
+			 INMBR@ENTER,(EXCOPE,EXPECO)@EXCLUD,SPPEST@LISPER,
+			 (CHRSTR,SUBMEM)@MEMBER,LISREG@OBJSTA,REGLIS@PRPEST,
+			 UPMEM@UPDLSE
+
+	KPJ	1986-11-10 14:27:01	EMPSIZ and ENASIZ are under FTEMP2 and
+					not FTEMPL.
+		Changed: KOMMAC
+
+6C(173)	KPJ	1986-11-03 13:19:25	Make KOM not crash with "prmein lisper"
+					etc. when LISTing PERSONs etc when no
+					PERSONs or CONFERENCEs.
+		Changed: LISTME@LISMEE,(LISTAD,LISTPE)@LISPER,
+			 (ZZLIZM,ZZLIZP)@TEXTER
+
+6C(172)	KPJ	1986-10-29 15:27:35	Hide FTQZ, FTFOA and FTRUN negative
+					logic using QZIF, FOAIF, and RUNIF
+					macros. Some more routines are really
+					QZ specific. Define QZ specific stuff
+					in KOMMAC in case undefined by UUOSYM.
+					Some LOGIN switches are QZ specific.
+					T10 bug fix switch FTBG02 to use QZ
+					specific TRMOP. (TTY QUIET) to fix
+					T10 monitor bug: LF echoes even if
+					TTY NO ECHO is set.
+		Changed: KOMMAC,ALLTAB,CALVID,CHATAB,LOGIN,MONITO,QUIT,RUNTAB,
+			 TERCON,TERTAB,TEXTER,UPDBEG
+
+6C(171)	KPJ	1986-10-27 13:00:34	AMIS support is QZ specific.
+		Changed: (CALLAM,CALAMI)@CALVID
+
+6C(170)	KPJ	1986-10-22 21:06:39	Don't crash with "?Address check on
+					device RPA0" here and there. Don't
+					hung-until-^C when a delayed command
+					get an error. Skip "external" names
+					in present yelling.
+		Changed: (OPINFI,OPOUFI)@MONFIL,DISLIN@DBPRO,EDITNR@MONITO,
+			 CHPREZ@CHKREC
+
+	KPJ	1986-10-20 15:01:52	SFDP had no +2 return (KOM believed
+					we had not SFD support in monitor)
+		Changed: SFDP@MONITO
+
+	KPJ	1986-10-14 15:44:27	FTEMPL and FTEMP2 assembly switches:
+					FTEMPL=0	no EMPLOYEEs support
+					FTEMPL#0	EMPLOYEEs support
+					FTEMP2=0	no EMP file in database
+					FTEMP2#0	EMP file in database
+
+					FTEMPL#0 implies FTEMP2#0.
+
+		Changed: ORGTAB@ALLTAB,(CHKREC,QEMPLO)@CHKREC,CHANTY@DEAMON,
+			 (ADDMEE,ARCENT)@CRELNK,CREPER@CREPER,METBAS@GENERA,
+			 OBJTAB@GTNAME,(ALLNAM,QNAMED,AVERNA)@MATCH,KOMMAC,
+			 (LASEMP,CCLOEM)@UPDBEG,(UPCOPP,UPTICO)@UPDLSE,
+			 (PRISTA,PREMST,PREMOR,PREMID,PREMPR)@OBJSTA,
+			 (OLDNAM,SETPFL,LOGEMP,FOAPSW,CREFOA)@LOGIN,
+			 (LOAEMP,ALOEMP,CLOEMP,CHKEMP)@LOAEMP,
+			 (ZZLOEM,ZLETTO,ZWBPRI,ZZZENA,ZZZEMP)@TEXTER,
+			 ININEW@ENTER,(GENENA,MAEMPL)@CREATM,
+			 (ENABUF.EMPBUF,ENAARE,EMPARE,BUFTAB)@MONFIL,
+			 (CREEMP,ALLEMP,MAKEMP)@CREEMP,NEWNAM@NEWNAM
+
+	KPJ	1986-10-08 16:02:40	FTSAVE assembly switch implemented:
+					< 0	use SSAVE% to save memory
+					= 0	use KOM routines to save memory
+					> 0	use SAVE% to save memory
+		Changed: KOMMAC,QUIT
+
+	KPJ	86-10-08 12:46:46	Tried to extract version and entry
+					vectors out of MONITO, and make the
+					MONITO module a normal module.
+					This tickled a LINK-10 bug which made
+					LINK-10 crash with IllMemRef. Will
+					have to live with the old format for
+					a while, until I find the LINK-10 bug.
+
+	KPJ	861003-1147		Add KOM% definition to ^A definition if
+					using KOM%. If JSYS name is undefined,
+					use "JSYS nnn" form instead.
+		Changed: KOMSTS@MONITO
+
+	KPJ	2-Oct-86 16:04:12	Display ID100 colour codes in image
+					mode.
+		Changed: TCOLOR@DBPRO
+
+	KPJ	2-Oct-86 15:51:11	Display VIEWDATA colour codes in image
+					mode.
+		Chamged: TERCON@TERCON
+
+	KPJ	2-Oct-86 15:43:50	Make ESC during "(Press return)" less
+					distasteful, by making a CR before
+					outputting the prompter. Text-phones
+					can't do a stray CR, so we let it be
+					as-is.
+		Changed: ASKRET@TERCON
+
+	KPJ	1-Oct-86 08:43:08	CENSIZ is a constant, not an address.
+					Since the data base size was incorrect
+					we got occational "eof monfil"s.
+		Changed: (NEWDSK,CREMET)@MONFIL
+
+	KPJ	1-Oct-86 08:15:44	Put EOF pointer to reflect maximum
+					file size, so SIN% won't get disturbed
+					by funny EOF (less "eof monfil"s).
+		Changed: (CREDSK,CREMET)@MONFIL,ZCREM4@TEXTER
+
+	KPJ	1-Oct-86 07:43:50	Be physical only when told so.
+		Changed: CREDSK@MONFIL
+
+	KPJ	30-Sep-86 14:08:46	When KOM-20 data base generation fails
+					tell user what happened, and don't
+					just simulate a dead fish.
+		Changed: CREDSK@MONFIL,(ZCRED1,ZCRED2,ZCREM2,ZCREM3)@TEXTER
+
+	KPJ	860925-1942		When a user does a ^C during read-only
+					read of database (CCL entry using the
+					REENTER EXEC command),	KOM attempts
+					to update the data base, and dies with
+					a outblk-2 monfil (pointed out by
+					BERTIL-HANSSON@ATHENA).
+		Changed: OUTBLK@MONFIL
+
+	KPJ	860925-1322		Since SSAVE% self opens the save file
+					with OPENF% in the monitor code, we
+					have to build the dump EXE file
+					ourselves to be able to use KOM% JSYS
+					(a non-trivial task). Rewrote SAVEUS
+					to handle this trickery. Currently the
+					code does not support dumping of PDV's.
+		Changed: (SAVEUS,DMPJFN,DMPMAK,DMPOPN,DMPDIR,DMPDAT,
+			  DMPCLS,DMPABT,DMPDRS,DMPENT,DMPTRM,DMPSKP,
+			  DMPWRD,DMPWWI)@QUIT
+
+	KPJ	860924-1413		Fixed stack mis-match bug.
+		Changed: SAVEUS@QUIT
+
+	KPJ	860924-1358		ODTIM% returns ":" between minutes and
+					seconds, so we must add some brain
+					damaged code to change it to something
+					less disgusting for GTJFN%.
+		Changed: SAVEUS@QUIT
+
+	KPJ	860924-1318		SAVBLK required for T20, too.
+		Changed: SAVBLK@QUIT
+
+	KPJ	1986-09-23 14:27:18	Test for non-existent object in REVIEW
+					BY function to get rid of gethdf addlnk
+					"internal error".
+		Changed: DIBYFU@REVFUN
+
+	KPJ	1986-09-23 13:27:05	SAVE. UUO destroys all ACs
+					(undocumented). Save and restore them.
+		Changed: (SAVEUS,SAVBLK)@QUIT
+
+	KPJ	1986-09-16 21:13:06	Dump memory to disk file in case of
+					"Internal error".
+		Changed: (ERRRUT,SAVEUS)@QUIT,ZNODMP@TEXTER
+
+	KPJ	1986-09-16 16:22:13	"There is no such entry" is ambiguous.
+					Explain what we mean, make it an error.
+		Changed: NONEXT@TEXTER
+
+	KPJ	1986-09-16 16:08:33	Less useless output:
+					      old		  new
+					"(Text NNN)"		"(NNN)"
+					"Text NNN"		"NNN"
+					All other objects are displayed like
+					before, e.g. "Person 4711"
+
+		Changed: (PRENTN,PRENNR,TXDELE,DISCOM)@DISPLA,
+			 PRINAM@PRIREC,SANORI@REVFUN
+
+	KPJ	860909-2013		Typo.
+		Changed: MONFIL
+
+	KPJ	1986-09-08 04:17:53	Changed GENERATE NEW DATABASE command
+					to GENERATE (NEW DATABASE) command.
+		Changed: ZZGEDB@TEXTER
+
+	KPJ	1986-09-08 02:22:37	SPACE+RETURN at (Press return) did
+					output one more character of the text.
+		Changed: TERCON@TERCON
+
+	KPJ	1986-09-08 02:10:33	Fixed outputting of internal data base
+					file names during GENERATE command.
+		Changed: GENDAT@GENERA
+
+	KPJ	1986-09-07 13:55:47	Add output data base file name
+					parameter to GENERATE NEW DATABASE
+					command.
+		Changed: (GENERA,GENARG,ASKGEN)@GENERA,(ZHLNEW,ZASNEW)@TEXTER,
+			 (GENFIL,NEWDSK)@MONFIL
+
+	KPJ	1986-09-06 02:46:16	Less talk when joining a conference.
+					Lessified text header and footers.
+		Changed: INFO@JOINMT,ZTITLE@TEXTER,PRENNR@DISPLA
+
+	KPJ	1986-08-30 14:38:27	CHANGE TELEPHONE help text elaborated.
+		Changed: ZASTEL@TEXTER
+
+	KPJ	1986-08-29 19:24:55	Don't call error message routine when
+					not an error message.
+		Changed: SUBMIT@FILPRO
+
+	KPJ	1986-08-29 13:55:24	Error in error message output routine.
+		Changed: ERRMSG@DISPLA
+
+	KPJ	1986-08-29 04:19:00	Major munging of text phone routines:
+					Entry consumer destroyed line position.
+					Error in handling of special characters
+					and text phone ACR after column 32.
+					No double prompters if we receive CRLF
+					instead of CR. Handle "no echo" with a
+					terminal with local echo (text phone).
+					Handle end-of-screen on text phones.
+					Handle formfeed output on text phones.
+					CHANGE PASSWORD should not echo the
+					password. Handle overprinting of pass-
+					words on text phones.
+
+		Changed: ENTCON@ENTCON,TERSPC@TERPRO,TGET@MONITO,
+			 (TPUTFF,ERASCR,ERLINE)@TERCON,GETPAS@NEWNAM,
+			 STRCON@STRCON
+
+	KPJ	1986-08-23 11:44:41	Incorrect question in "Are you sure?"
+					routine.
+		Changed: QSURE@OERASE
+
+	KPJ	1986-08-22 19:02:05	Send block and object trace directly
+					to the controlling terminal (T10) or
+					primary output (T20), so it won't
+					interfere with normal output.
+		Changed: OBJTRC@CREPER,BLKTRC@MONFIL,.NOUT@REFINA,KOMMAC
+	KPJ	860821-2108		Fixed "internal error" output. Forget
+					JSYS errors in KOM-TMPCOR.TMP reading.
+		Changed: ERRRUT@QUIT,XYZZY@TEXTER,(KOMRED,KOMTMP)@MONTMP
+
+	KPJ	860821-2019		Delete useless ERRMSG call.
+		Changed: ADENTR@ADDENT
+
+	KPJ	1986-08-12 15:07:42	LIST STATISTICS parameter removed.
+		Changed: (LISSTA,ALISTS,LISTST)@LISPER
+
+	KPJ	860811-1752		TECTMP is for T20 as well.
+		Changed: TECTMP@CALVID
+
+	KPJ	1986-08-11 17:21:29	Don't JRST into subroutines, they might
+					return from the grave, and make life
+					interesting for you!
+		Changed: LOGIN@LOGIN
+
+	KPJ	1986-08-08 15:43:44	Make LIST STATISTICS care about if
+					objects are protected (security fix).
+		Changed: SPESTA@LISPER
+
+	KPJ	1986-08-05 16:36:11	No BUGHLT if entry too long when ^Z
+					or !ENTER.
+		Changed:(Z2LON1,Z2LON2,Z2LON3)@TEXTER,CHKLEN@EDIT,
+			ADENTR@ADDENT,CHKADD@ENTCON
+
+	KPJ	1986-07-28 13:51:16	QUIPFL ("Obey") renamed to QUXPFL, due
+					to name collision.
+		Changed: CHJATAB@CHATAB,
+
+	KPJ	1986-07-23 12:49:42	Moved last texts to TEXTER, as well as
+					the macros used for language dependent
+					ASCIZ. Fixed incorrect Norwegian texts.
+		Changed: TEXTER,WRIENT,SEARCH
+
+	KPJ	1986-07-22 10:30:50	Moved command tables to ALLTAB.
+		Changed: ALLTAB,WRIENT,RUNTAB
+
+	KPJ	1986-07-21 17:25:23	Make entries marked by un-persons not
+					crash us with "gtflgs prirec". Instead,
+					list the un-persons as public markers.
+		Changed: (PRMARK,GTFLGS)@PRIREC
+
+	KPJ	860721-1301		RSCEND confused consumer and producer,
+					and made EDT and TV calls crash KOM-20
+					at return from subfork in a hairy
+					fashion...
+
+		Changed: RSCEND@CALVID
+
+	KPJ	1986-07-16 20:50:31	"Anropa FOA-skrivare" under FTFOA.
+		Changed: RUNTAB, TEXTER, UPDBEG
+
+......................................................................
+##############  BETA-TESTING STARTED AT FREJA ########################
+......................................................................
+
+	KPJ	860715-0047		Rewrote TOPS-20 KOM-login, in spite of
+					LOGIN% brain damage (LOGIN% requires
+					an account specifier at all times, and
+					there is no way to make LOGIN% use the
+					directory account-default; we try to
+					read it from the directory using the
+					password, and if that fails, just
+					pretend it's raining.) Display an EXEC
+					reminding message at login time.
+		Changed: (DIRBLK,ACCTNM,CALLOG)@LOGIN,ZAZOPW@TEXTER
+
+	KPJ	860715-0104		Handle ^Z correctly on T20 too.
+		Changed: TGET@MONITO
+
+	KPJ	860715-0018		FOAPPN is T10 only.
+		Changed: FOAPPN@SITE,MANYNA@LOGIN
+
+	KPj	860715-0016		540000,,0 is LH-only..
+		Changed: KOMTMP@MONTMP
+
+	KPJ	860714-2354		CALLO7 undefined.
+		Changed: CALLOG@LOGIN
+
+	KPJ	860714-2238		EDT and TV call routines bug fixed.
+		Changed: (CALLDT,CALTV)@CALVID
+
+	KPJ	1986-07-14 16:34:45	Added SED editor (T10).
+		Changed: OENTAB@WRIENT
+......................................................................
+##############  BETA-TESTING STARTED AT ODEN #########################
+......................................................................
+	KPJ	1986-06-26 22:46:00	Moved RUN blocks to CALVID from SITE.
+					Fixed TECO-20 call. Add EMACS, EDT
+					and TV editors for TOPS-20.
+		Changed: CALVID,SITE
+
+	KPJ	1986-06-16 14:43:41	Fixed bugs with CALL MONITOR handling
+					of break character. Use local language
+					for messages from CALL MONITOR. Confirm
+					break character when typed.
+		Changed: *@PTYKOM,PTY???@TEXTER
+
+	KPJ	1986-06-16 13:23:17	Don't display protected names when
+					reporting entering and leaving.
+		Changed: (REJOIN,RELEAV)@LISPRE
+
+	KPJ	1986-06-16 10:45:52	Test for FOAness with FOAPPN
+					subroutine, deleted hardwired PPN test.
+		Changed: XIT@MONITO
+
+	KPJ	1986-06-05 16:07:53	Anonymity support under FTANON assembly
+					switch.
+		Changed: KOMMAC,(ZANONY,ZANOHL)@TEXTER,WRITAB@ALLTAB,
+			 (ANONYM,ANONY)@NEWNAM,CCANON@UPDBEG
+
+	KPJ	1986-06-05 14:34:22	Fix problem with languages using
+					plural forms of verbs (SWE,NOR doesn't)
+					and make GERman texts less useless.
+		Changed: (ZHALEF,ZHALE1,ZHAJOI,ZHAJO1,ZNOW)@TEXTER,
+			 (REPLEA,REPJOI)@LISPRE
+
+	KPJ	1986-06-05 13:39:47	Corrected users leaving/entering code.
+		Changed: (REPLEA,REPJOI)@LISPRE
+
+	KPJ	1986-06-03 16:59:43	When interrupting a LIST STATISTICS
+					don't output summary line, either.
+		Changed: LISTST@LISPER
+
+	KPJ	1986-06-03 15:36:01	Get rid of "Statistics" (LIST COMMANDS)
+					since no statistics are given anyway.
+		Changed: LISTCO@LISCOM
+
+	KPJ	1986-06-02 19:27:36	Give proper error message for data base
+					problems. Fix JRST to INIDS8 from
+					various places, to standard +1 return
+					for error return.
+		Changed: (CREMET,INIREA,ZCOMBL,INIDSK)@MONFIL,
+			 (CCLENT,CREATE))@NEW
+
+	KPJ	1986-06-02 12:09:41	Fix WAIT command prompter.
+					(ref: Sven Olofsson QZ-DEC @ QOM#16095)
+		Changed: CWAIT@WAIT
+
+	KPJ	1986-05-26 19:57:57	Display membership list if allocated.
+		Changed: PRPEST@PRPEST
+
+	KPJ	1986-05-12 17:26:34	Handle LEAVE +2 return (made BEGIN
+					NAME command fail)
+		Changed: RSTART@QUIT
+
+	KPJ	1986-05-12 14:56:06	Security problem eliminated.
+		Changed: CONWRI@WRIENT
+
+	KPJ	1986-05-09 10:24:42	Rewrote and documented
+					ENDKOM/ENDKO0/ENDKO9/ENDKO8 routines.
+					If mail, return to command level if
+					QUIT command.
+
+	KPJ	1986-05-09 10:10:25	Added FTENQ code:
++		TTQ	1986-03-17 16:02:50	Remove ENQ/DEQ from member
++						list updates when leaving KOM
+		Changed: KOMMAC,LEAVE@QUIT,JOIN@JOINMT
+
+	KPJ	1986-05-09 09:43:36	Handle multiple return from OLDNAM.
+		Changed: CHKLOG@ENTER
+
+	KPJ	1986-05-09 09:15:46	Don't allow delayed DELETE FILE.
+		Changed: DELEFI@MONFIL
+
+	KPJ	1986-05-07 16:31:55	Disallow delayed CALL PROGRAM.
+					Changed DELCOM to return +1 if not OK
+					to use command as delayed command, +2
+					else.
+	Changed: (RYNARG,DELCOM,RUNARG)@RUNTAB,ZNTRIK@TEXTER
+
+	KPJ	1986-05-07 16:23:11	Fixed typo in file error messages.
+		Changed: REFINA@REFINA
+
+	KPJ	1986-05-06 16:59:11	Hacked Tops-10 ^Z handling on the
+					lowest level. Changed ILLACC routine
+					to generate ERRLOG entries, which will
+					be changed to include other data later.
+					Rewrote ILLACC program to understand
+					the ERRLOG file format. It uses the
+					new KOM:ERRLOG.ymm<407> file. ERRLOG
+					handling implemented for TOPS-20 too.
+					ERRLOG is NOSHIP until fully imple-
+					mented.
+		Changed: TGET@MONITO,LOGTRY@LOGIN,GETENT@ILLACC
+
+	KPJ	1986-05-02 15:05:18	Rewrote KOM-10 terminal driver.
+					Made EOFTTY T10-specific.
+		Changed: (TGET,TTINP,MICTTY,EOFTTY)@MONITO
+
+	KPJ	1986-04-28 20:52:30	Handle TABs correctly in output.
+		Changed: TPUTTA@TERCON
+
+	KPJ	28-Apr-86 13:41:57	Added JSYS name to ^A typeout.
+		Changed: KOMSTS@MONITO
+
+	KPJ	1986-04-24 14:03:02	Don't crash if can't delete file.
+		Changed: DELEFI@MONFIL
+
+	KPJ	1986-04-24 14:02:05	Don't allow CLEAR to destroy info.
+		Changed: CREOCC@CREATM,UKNAME@GTNAME,(MANYNA,PRMTCH)@LOGIN
+
+	KPJ	27-Mar-86 17:15:22	OLDPAG used on T20. Fixed bug in T20
+					logout routine.
+		Changed: (OLDPAG,BYEBYE)@MONITO
+
+	KPJ	1986-03-27 15:06:11	RUNBLK calls screwed up KOM-20 program
+					calls.
+		Changed: all RUNBLK calls@SITE
+
+	KPJ	1986-03-20 17:29:10	Changed RUN (PROGRAM) to CALL PROGRAM.
+					Changed CALL PROGRAM to MENU (TO) ..
+					Changed default device to SYS: for it.
+		Changed: RYNFIL@MONFIL,RUNTAB@RUNTAB,ALLTAB@ALLTAB
+
+	KPJ	1986-03-19 03:46:25	Added RUN (PROGRAM) command.
+		Changed: (RUNTAB,RUNPRG,RYNARG,CRUN,ZHLRUN)@RUNTAB,
+			 RYNFIL@MONFIL
+
+	KPJ	1986-03-19 01:11:26	Support writing of Tops-10 TMPCOR file.
+					Report length as for disk files.
+					Changed FCBEG and FCEND to identify
+					Tops-10 TMPCOR, and call TMCBEG and
+					TMCEND.  FCBEG now has an error return
+					on T10.	Allow user handle empty files.
+					Don't write "File size..." messages
+					to log file.
+		Changed: (OPINFI,OPOUFI,REPSIZ,FCBEG,FCEND)@MONFIL,
+			 OUENFI@CRELNK,(FILOUT,OUTFIL,REOUFI,CARCEN)@FILCON
+
+	KPJ	1986-03-18 23:54:27	Don't allow protection code precede
+					directory specification, file name
+					or extension.
+		Changed: (REFINA,READIR,DIROKP)@REFINA
+
+	KPJ	1986-03-17 18:09:30	Make RUNX return to command level when
+					RUN fails. Give an error message saying
+					what went wrong. This also means that
+					RUNX now *can* return.
+		Changed: RUNX@MONITO,ZRUN02@TEXTER,
+			 (CALLKE,CALLVI,CALLAM,CALLSO,CALLTE,CALLED)@CALVID,
+			 CALLOG@LOGIN,
+			 (CKOMCO,COLDCO,CNEWCO,CENGCO,CTALSW,CTALEN,CNORCO,
+			  CQOMCO,CGERCO,CTJTID,CREPRI,CTOUCH)@RUNTAB
+
+	KPJ	1986-03-05 17:39:52	SUBJECT type conferences under FTSUBJ
+					assembly switch.
+
+		Changed: (SUBFLG,LISTME,LIMEHE,PRMEIN,PRNATY,PRMESU)@LISMEE,
+			 LIMEEL@PRPEST,KOMMAC,OTYTAB@CHATYP
+
+	KPJ	1986-03-05 14:13:14	Fixed bug which made WITHDRAW/EXCLUDE
+					not work.
+		Changed: SEACON@EXCLUD
+
+	KPJ	1986-02-14 18:10:25	CREATE USER and CREATE CONFERENCE now
+					optionally privileged operations (ref.
+					request from EUROKOM, AIDA etc)
+					Under assembly switches FTUSER, FTCONF.
+		Changed: ORGTAB@ALLTAB,KOMMAC
+
+	KPJ	1986-02-14 17:57:10	PTY mode code generation now governed
+					by assembly switch FTPTYM.
+		Changed: (PTYFLG,CHATAB,PTYMOD,NOMODE,PTMODE)@CHATAB,
+			 (QSEEN,QLNPAS)@CHKNEW,DISLIN@DBPRO,GETPRE@JOINMT,
+			 REALET@NEXLET,(PLNKNR,PRSEND,PRMARK)@PRIREC,
+			 QDISPL@REPTIM,DELCOM@RUNTAB,ZZUPTY@TEXTER,
+			 CCPTMO@UPDBEG
+
+	KPJ	1986-02-12 15:09:06	JOIN <self> now means want to join
+					own mailbox.
+		Changed: JOIN@JOINMT
+
+	KPJ	1986-02-12 13:57:01	JOIN-class commands gave up without
+					error messages if object not found in
+					data base. Give appropriate error
+					message.
+		Changed: JOIN@JOINMT,BECOME@MEMBER
+
+	KPJ	1986-02-12 13:00:37	Made message less confusing.
+		Changed: ZRELET@LISPRE
+
+	KPJ	1986-02-10 16:50:38	5 times larger ENQ wait time (KOM-10)
+					before timeout.
+		Changed: ENQSL3@KOMMAC,MKENQ@MONITO
+
+	KPJ	1986-02-10 16:40:30	Deleted FTBG01 (AMIS 40 character hack)
+					support code.
+		Changed: PRCINM@MONITO,KOMMAC,CALAMI@CALVID
+
+	KPJ	1986-02-10 12:02:17	Identify data base open errors as
+					being from the system.
+		Changed: (MKENQQ,MKENQ)@MONITO
+
+	KPJ	1986-01-28 09:22:21	Tops-10 LOGIN gave ?LGNIPS error when
+					called after CTRL/O or space+return.
+					Reason: TMP:-files not written.
+		Changed: (TMCBEG,TMCEND)@MONTMP
+
+	KPJ	1986-01-20 21:36:01	Get rid of "New 0" syndrome.
+					Don't output any object# for "0".
+		Changed: BUFFER@KOMMAC,ZZZNEW@TEXTER
+
+	KPJ	1986-01-20 18:51:12	DON'T Say why a text is not shown.
+		Changed: QUNSEE@CHKNEW,KOMMAC,EXPTAB@CHATAB
+
+	KPJ	1986-01-15 15:52:57	Moved CCLLOG from NEW to LOGIN, where
+					it belongs.
+		Changed: LOGIN,NEW
+
+	KPJ	1986-01-13 01:13:29	Say why a text is not shown.
+		Changed: QUNSEE@CHKNEW,KOMMAC,EXPTAB@CHATAB
+
+	KPJ	1986-01-12 22:25:07	Don't expand when not logged in.
+		Changed: QEXPAN@COMMAT
+
+	KPJ	1986-01-12 22:19:11	When user types QUIT when logging in,
+					leave program.
+		Changed: (ZNAHLP,LOGIN)@LOGIN
+
+	KPJ	1986-01-12 22:02:37	When user tries to login using a
+					conference name, program crashed.
+					Reason: program believed we had an
+					employee on hand, but failed to find
+					the employee record.
+		Changed: OLDNAM@LOGIN
+
+	KPJ	1986-01-12 21:30:23	When the user tries to login with a
+					user name using the user# construct
+					and that user# points at a deleted or
+					non-existent user name, the user was
+					kicked out immediately. Re-ask PASMIN
+					times as for other errors.
+		Changed: WRONAM@LOGIN
+
+	KPJ	1986-01-12 20:21:52	KOM system name now defined as a macro
+					called NAMEID in FEATUR file.
+		Changed: ZDBNAM@NEW,FEATUR
+
+	KPJ	1986-01-11 17:17:35	"Speak swedish" had no swedish name,
+					made "Speak English" become doubly
+					defined.
+		Changed: ZTASWE@RUNTAB
+	KPJ	1986-01-09 12:53:11	Output deleted objects as numbers
+					since they have no names.
+		Changed: GETNAM@NAMMAT
+
+	KPJ	1986-01-08 05:44:37	Added "CALL QOM" command under feature
+					switch FTQOM (Tops-10 only) for ODEN.
+		Changed: SITE,RUNTAB,UPDBEG,KOMMAC, various FEATUR
+
+	KPJ	1986-01-02 15:46:58	Got rid of KL-instructions in code.
+		Changed: (INITTY,CTCCHK,RELTTY)@MONITO
+
+	KPJ	1986-01-02 14:30:43	Bug in INITTY (OUTCHR used when OUTSTR
+					intended) made KOM-10 not CRLF at start
+		Changed: INITTY@MONITO
+
+	KPJ	1985-12-10 16:11:53	Tell LOGIN-10 to set no time limit.
+
+		Changed: CALLOG@LOGIN
+
+	KPJ	1985-12-10 14:35:44	Make T20 message start with CRLF.
+
+		Changed: CREMET@MONFIL
+
+	KPJ	1985-12-07 23:07:47	Support DELETE FILE and input from TMP:
+					files. KOMRED-10 now uses same routine.
+
+		Changed: (TMXBEG,KOMRED)@MONTMP,REAFIL@FILPRO,
+			 (DELEFI,OPINFI)@MONFIL
+
+	KPJ	1985-12-07 17:36:52	Make us understand Tops-10 TMP: device
+					in case not re-defined by user. For
+					now, not supported, but give better
+					error message.
+
+		Changed: (OPINFI,OPOUFI)@MONFIL
+
+	KPJ	6-Dec-85 20:21:58	Output correct file name for program
+					on TOPS-20.
+		Changed: PRCINM@MONITO
+
+	KPJ	1985-12-05 16:51:46	Made command ANSWER behave like all the
+					other commands.
+		Changed: ANSWER@MKCOMM
+
+	KPJ	1985-11-28 05:49:23	Re-hacked BEL handling, which is moved
+					to the terminal consumer where it
+					belongs. PUTBEL routine eliminated.
+		Changed: CHPRIN@TERCON,REALET@NEXLET,REPWPR@CHKREC,
+			 DISLIN@DBPRO,GENDAT@GENERA,CWAIT@WAITX
+
+	KPJ	1985-11-28 05:09:33	.VC414 incorrectly defined terminal 
+					type for T20. This made VC414 handling
+					on T20 to not work.
+		Changed: KOMMAC (recompiled TERCON)
+
+	KPJ	1985-11-22 11:08:46	New format of 'home brew file design.'
+					(changed around 16-nov, but forgot to
+					to document it)
+		Changed: .HMGTJ@KOMMAC etc.
+
+	KPJ	1985-11-22 10:49:53	Obey ISO date setting personal flag
+					when outputting daytime when JOINing
+					a conference.
+		Changed: INFNRE@JOINMT
+
+	KPJ	1985-11-18 10:03:22	Handle skip return from MYNAME.
+	
+		Changed: PREDFI@CALVID
+
+	KPJ	16-Nov-85 22:54:33	Display "PPN" as user and directory in
+					LIST STATISTICS on TOPS-20.
+		Changed: SPPEST@LISPER
+
+	KPJ	16-Nov-85 22:36:41	".JSYSER" call changed to ".JSERR"
+					which was meant.
+		Changed: GENDAT@GENERA
+
+	<mumble, fill this in soon>
+
+................................... Latest version sent to FREJA
+
+	KPJ	1985-10-21 22:23:06	COLCYA should output CYAN, not BLUE.
+					(For viewdata terminals...)
+		Change: COLCYA@DBPRO
+
+	KPJ	1985-10-19 17:01:12	Allow whitespace after file name
+		Changed: REFINA@REFINA
+
+	KPJ	1985-10-18 08:58:40	Delete .BAK file from AMIS.
+		Changed: CALVID
+
+	KPJ	1985-10-17 15:45:59	SENDER: is written if not same as
+					previous (the first one is the author
+					by default). 
+		Changed: (PRIREC,PRSEND,PREVSE)@PRIREC
+
+	KPJ	1985-10-17 15:25:19	Corrected .NOUT calls in GENERA, LOGIN,
+					MONFIL, and QUIT. These calls caused
+					random IllMemRef crashes which have
+					hard (impossible) to reproduce.
+					AC1 was used as a byte pointer...
+		Changed: GENERA,LOGIN,MONFIL,QUIT
+
+	KPJ	1985-10-16 12:11:07	Display news control when Reporting
+					Disk Accesses.
+		Changed: CHKNEW@CHKNEW
+
+	KPJ	1985-10-16 09:24:49	Report disk accesses if personal flag
+					REPORT DISK ACCESSES is ON. New routine
+					BLKTRC for this.
+		Changed: (INBLK,OUTBLK,BLKTRC)@MONFIL
+
+	KPJ	1985-10-16 09:11:52	Report object accesses (GETOBJ,UPDOBJ)
+					if personal flag  REPORT DISK ACCESSES
+					is ON. New routine OBJTRC for this.
+		Changed: (GETOBJ,UPDOBJ,OBJTRC)@CREPER
+
+	KPJ	1985-10-09 16:15:07	Bug made only first line of entry be
+					displayed in certain cases.
+		Changed: DBPRO@DBPRO
+
+	KPJ	1985-10-09 13:13:28	Bug created bogus entry byte pointers.
+		1985-10-09 13:23:36
+		Changed: INITEX@DBCON,SUBDIS@DISPLA
+
+	KPJ	1985-10-xx xx:xx:xx	General code cleanup. Moved magical
+					numbers to KOMMAC. Merged CMPMAC into
+					KOMMAC. Better compile time messages.
+					Define all module headers with a macro
+					to ensure unified environment.
+
+	KPJ	1985-09-23 15:23:51	Merged CMPMAC into KOMMAC universal.
+					CMPMAC is not used anymore.
+		Changed: KOMMAC, COMPUT
+
+	KPJ	1985-09-19 09:50:32	Patch for zero length buffer from TTY:
+					(error reported with T10 V7.02 by
+					Richard Haller, U.of Oregon,
+					85-03-06 04.03).
+					Note:	The IN UUO should never return
+						a zero length buffer from the
+						TTY: device, it should block
+						until there is input. There
+						might be cases when this is not
+						true (e.g. PTY's).
+		Changed: TGET@MONITO
+
+	KPJ	1985-09-19 07:29:47	Fixed bug in SIXBIT field name parser
+					which did hang the program.
+		Changed: GETSIX@REFINA
+
+	KPJ	1985-09-18 17:43:00	CRLF to make LINPOS reflect reality.
+		Changed: INITTY@MONITO
+
+	KPJ	1985-09-18 09:36:52	Make RUNX routine handle UU.PHY;
+					make all RUN's go through RUNX
+					(including call of STD:LOGOUT.EXE)
+		Changed: (RUNBLK,RUNX,KILLME,XIT)@MONITO
+
+40	KPJ	1985-09-18 07:12:35	Display menu question if type-ahead
+					and expansion of command input is on.
+		Changed: RDCOMM@TOPCOM
+
+	KPJ	1985-09-14 19:25:31	Rewrote Bottoms-10 file name parser.
+					Made file open errors display error.
+		Changed: (OPINFI,GOFNAM,UNPFIL,BADFIL)@MONFIL,
+			 module REFINA.
+
+	KPJ	1985-09-14 18:50:26	Don't delete empty output files. KOM
+					should do what it is asked to.
+		Changed: FCEND@MONFIL
+
+	KPJ	1985-09-14 19:07:18	Add address information to header page
+					when outputting to a PRINTER conf.
+					Corrected the documentation of what is
+					going on. Moved the texts to TEXTER.
+		Changed: PRPEST,ARCENT@CRELNK,KOMMAC,MKFLAG@FILCON,
+			 (ZAADDR,ZADUNO)@TEXTER
+
+	KPJ	1985-09-11 21:42:39	Don't expand user names when not logged
+					in even if exact match. This handles
+					the problem giving names of form
+					"PERSON nnn" etc.
+		Changed: module LOGIN
+
+	KPJ	1985-09-10 04:17:34	Re-hash handling of PROTECTed PERSONs.
+					Also, don't say "(no organizer)" when
+					the object is a PERSON...
+					Also, show who created the obejct name
+					(last changed the name).
+		Changed: (PRNAST,PROBST)@OBJSTA
+
+37	KPJ	1985-09-08 18:48:47	Sanitized code.
+		Changed: (COMLIN,COMWOR,PUTBLA)@COMMAT
+
+36	KPJ	1985-09-08 17:15:14	STRINGs are now ASCIZ. PRINT macro now
+					takes only one argument. The KPJHAT
+					feature variable can now be eliminated.
+		Changed: almost every module...
+
+	KPJ	1985-09-05 08:34:36	Give organizer information in
+					LIST USERS command.
+		Changed: PRPEIN@LISPER
+
+35	KPJ	1985-09-02 13:08:54	Get rid of DETACH trapping before
+					calling SYS:LOGOUT.EXE on T10.
+		Changed: KILME2@MONITO
+
+33	KPJ	1985-08-23 13:21:08	Give a warning for DRECOR DELOBJ at
+					sign-off instead.
+		Changed:ZNSUCH@TEXTER,ENDPRE@CREPRE,SUBOBJ@SUBTRA,DRECOR@DELOBJ
+
+32	KPJ	1985-08-22 22:56:05	Handle CTRL/O gratiously, so that the
+					menu is not lost. Make CTRL/O mean an
+					automagic space-return at end-of-page.
+		Changed: (OSPCLR,TGET)@MONITO,TOPCOM@TOPCOM,GETCR@TERCON
+
+31	KPJ	1985-08-22 07:37:22	Always flush output after outputting a
+					text, since KOM will look for next text
+					before the buffer is flushed.
+		Changed: DISPLA@DISPLA
+
+30	KPJ	1985-08-21 14:51:26	Fix ZAP command to work with full word
+					addresses, make the ZAP display more
+					readable, and fix a ZAP display bug.
+					Make "Number of lines:" data appear in
+					the header in parentheses. Make
+					anonymity be ignored when UNMARKing.
+		Changed: (ZAPPOB,ZAPDIS)@ZAPOBJ,(DISPLA,NRLINE,PRHDLI)@DISPLA,
+			 UMARK@MARK
+
+27	KPJ	1985-08-16 07:19:25	Don't yell about ORIGINAL CONFERENCEs
+					when COMMENTing an entry and the link
+					is a SINGLE COPY, since we will not
+					send anything to that CONFERENCE
+					anyway.	
+		Changed: ADRECE@MKCOMM
+
+26	KPJ	1985-08-14 15:55:06	Fixed bug which made KOM crash when
+					giving PERSONAL or COMMENT commands
+					while already writing a text.
+		Changed: GTSOAR@MKCOMM
+
+25	KPJ	1985-08-13 00:44:30	New personal flag "MARKS (ARE) SECRET"
+		Changed: KOMMAC,CHATAB,TEXTER,PRIREC
+			 (NEW recompiled)
+......................................................................
+	KPJ,BCQ	1985-08-08 19:xx:xx	COM/COMSWE/XFRCOM recompiled/linked.
+					Reason: Data base expansion.
+		Changed: FEATUR
+......................................................................
+24	KPJ	1985-08-07 16:35:47	Added a file name parameter to the
+					GENERATE command.
+		Changed: GENDAT@GENERA,(INIDSK,NEWDSK)@MONFIL
+
+23	KPJ	1985-08-01 18:42:04	GENELI@ENTCON added to edit#20
+		Changed: GENELI@ENTCON
+
+22	KPJ	1985-08-01 18:17:55	NACOFI@NAMMAT added to edit#20
+		Changed: NACOFI@NAMMAT
+
+21	KPJ	1985-08-01 13:55:53	Bug reports from AIDA:
+		(1)	READ FILE and SUBMIT FILE gives ?Ill mem ref.
+			Diagn.:	Code in OPINFI@MONFIL T10-ed when should not.
+			Changed: OPINFI@MONFIL
+		(2)	Security problem. <censored>
+		(3)	Suggestion: T20 termtype 29 is FACIT TWIST screen.
+			Changed: CHKTTY@MONITO,SITE
+
+20	KPJ				Major hacking:
+		1985-07-26 xx:xx:xx	Prepared ZAPOBJ for string deletion.
+		1985-07-26 xx:xx:xx	Prepared SITE   for string deletion.
+		1985-07-26 xx:xx:xx	Prepared READ   for string deletion.
+		1985-07-26 xx:xx:xx	Prepared MONTMP for string deletion.
+		1985-07-26 xx:xx:xx	Prepared LOGIN  for string deletion.
+		1985-07-26 xx:xx:xx	Prepared "string" macro for deletion.
+		1985-07-26 xx:xx:xx	Prepared ENTCON for string deletion.
+		1985-07-26 xx:xx:xx	Prepared CREATM for string deletion.
+		1985-07-26 xx:xx:xx	Prepared CALVID for string deletion.
+		1985-07-26 xx:xx:xx	Prepared BINFUN for string deletion.
+		1985-07-26 xx:xx:xx	Prepared EVAL   for string deletion.
+		1985-07-26 xx:xx:xx	Prepared TERCON for string deletion.
+		1985-07-26 xx:xx:xx	Deleted CCLINE@STRCON routine. Rewrote
+					BEGLIN and STBEG routines for clarity.
+		1985-07-26 xx:xx:xx	Prepared WRIENT for string deletion.
+		1985-07-26 xx:xx:xx	Prepared PARSE  for string deletion.
+		1985-07-26 xx:xx:xx	Prepared NAMMAT for string deletion.
+		1985-07-26 xx:xx:xx	Prepared MONITO for string deletion.
+		1985-07-26 03:54:40	Added format of TABLE tables in KOMMAC
+		1985-07-26 03:20:17	Moved PRSTRI@PARSE to COMPUT where used
+		1985-07-26 03:22:52	Moved PRISTR@EVAL to PARSE where used 
+		1985-07-26 03:25:31	(PRISTR,PRSTRI)@PARSE localized.
+		1985-07-26 01:12:28	GECOST routine deleted (HRRZ str,0(tp))
+		Changed: TOPCOM,PTYPE@CHATYP,(TABCOM,EXPCOM)@COMMAT,
+			 (LITAEL,LIHLP)@LISCOM,PRPEST,PMEINF@SYSINF,
+			 PARSE,EVAL,COMPUT,KOMMAC,RNER1@MONITO,GETNAM@NAMMAT,
+			 PRSTR@STRPRO,@PRISTR@PARSE,PRPEFL@PRPEST,
+			 PRPRST@WRIENT,(GETSTR,GETCR)@TERCON,COMFUN@EVAL,
+			 CMPFUN@BINFUN,(MODBEG,EDIBUF,PREDFI)@CALVID,
+			 MAEMPL@CREATM,GENELI@ENTCON,MKBP@READ,
+			 (CENNAM,CENPRO)@SITE,ZEROST@ZAPOBJ
+
+17	KPJ	1985-07-25 19:41:45	"ASSIGN NUL:TTY:" made KOM-10 crash.
+					"TTY:" is now opened with UU.PHS bit
+	Changed: OPNTTY@MONITO
+
+16	KPJ	1985-07-26 01:30:09	GECOST routine deleted.
+	Changed: TOPCOM,CHATYP,COMMAT,LISCOM,PRPEST,SYSINF
+
+15	KPJ	1985-07-07 22:06:55	Bug in Tops-10 file name parser fixed.
+	Changed: REEXT@REFINA
+
+14	KPJ	1985-07-04 19:19:21	Bug with COMMENT ON: command fixed.
+	Changed: REPTYP@ADD,(ZAAFOO,ZAACOM)@TEXTER
+
+13	KPJ	1985-06-27 10:56:35	Don't output disk block when not
+					logged in.
+	Changed: OUTBLK@MONFIL
+......................................................................
+	New format of this file starts here.
+......................................................................
+KPJ	1985-06-27 10:08:28	Version 6B(12)-3: minor hacks in entry handling
+	Changed: KOMMAC,GENELI@ENTCON,COMTMP@CALVID,STRCON@STRCON,
+		 PRRELI@WRIENT
+
+KPJ	1985-06-25 13:57:57	Version 6B(11)-3:
+		(a)	Problem with ACR in commands during entry writing
+			fixed.
+		(b)	Better message to warn for short password at login.
+	Changed: ENTCON@ENTCON,OLDNAM@LOGIN
+
+KPJ	1985-06-14 14:59:12	Version 6B(10)-3:
+		(a)	KOM-10 crashed when SET PHYSICAL LIMIT nnnP was used
+			by the user. This was since SEE ignored the error
+			returns from PAGE. ("cannot happen").
+		(b)	UCD reported KOM-20 problem after editing. Same problem
+			in KOM-10 if TMPCOR buffer allocation fails during
+			EDIT commands.
+		(c)	Bug in ERROR macro truncated the error message. New
+			format of error report (including KOM-20 JSYS messages)
+		(d)	Bug i PAGIN routine clobbered AC GP2.
+		(e)	TMP:LME created and written only if a program-to-run
+			has been set (.STPGM)
+		(f)	"permanently" deleted from the WITHDRAW command,
+			various versions.
+
+	Changed: KOMMAC,COMPAR@COMPUT,(GTSOAR,SORACT,LISTPE,LISTAD)@LISPER,
+		(ZZEDIZ,ZCOMPA,ZZWID)@TEXTER,(TMCBEG,KOMRED,KOMWRI)@MONTMP,
+		(TMPBEG,VIDTMP,AMITMP,SOSTMP,TECTMP,EDITTMP)@CALVID,
+		(PAGIN,LOGTMP)@MONITO,CALLOG@LOGIN,LISTME@LISMEE
+
+KPJ	1985-06-04 02:25:58	Implemented password length testing code.
+	Changed: KOMMAC,(CHKPAS,OLDNAM)@LOGIN,GETPAS@NEWNAM
+
+KPJ	1985-05-30 17:31:37	Hacked TRPTTY for faster PTY/TTY throughput.
+	Changed: TRPTTY@PTYKOM
+
+KPJ	1985-05-30 16:47:54	Fix VC404P and VC414P to work (misused AC).
+	Changed: (VC404P,VC414P)@TERCON
+
+KPJ	1985-05-13 03:43:35	/NOINITIAL to LINK. JOBDAT symbols .JBREL and
+				.JBFF found to be used, now defined in KOMMAC.
+	Changed: KOMMAC
+	Recompiled: MONITO,MONFIL
+
+KPJ	1985-05-13 03:40:39	Deleted macros XINBUF,XOUBUF and XLOOK deleted.
+	Changed: KOMMAC
+
+KPJ	1985-05-08 14:35:00	Make letters less important, if so requested.
+				New personal flag LETTER PRIORITY for that.
+	Changed: KOMMAC,CHATAB,(MKMENU,FOOTAB)@MKMENU
+
+KPJ	1985-05-02 16:00:57	Don't display name of organizer if protected.
+				If no organizer, say so.
+	Changed: PROBTS@OBJSTA
+
+KPJ	1985-05-02 15:44:45	Don't display protected names of organizer.
+	Changed: CHKFRO@MEMBER
+				
+KPJ	1985-05-02 15:13:20	STATUS etc: allow organizer full access to
+				protected object (used to be only members).
+				Display "PPN" as "acct" on TOPS-20.
+				Fixed problem with super meeting destroying
+				info about "PPN".
+
+	Changed: (PRMEST,PROLOG)@OBJSTA
+
+KPJ	1985-05-02 14:23:53	STATUS etc: allow organizer full access to
+				protected object.
+	Changed:QPROTE@PRPEST
+
+KPJ	1985-05-02 14:08:14	LIST CONFERENCES: allow organizer of protected
+				conference get full information about it.
+	Changed: PRNATY@LISMEE
+
+KPJ	1985-04-25 02:27:43	LINK-10 gets confused if a local symbol has
+				same name as a global. Local symbol CHPRES
+				changed to CHPREZ to avoid brain damage.
+	Changed: CHPRES@CHKREC
+
+KPJ	1985-04-23 07:40:23	Set up free area pointer when starting program.
+				This is required to be able to do terminal I'O.
+				Somebody had forgot that.
+	Changed:(START,CCLENT,CREATE)@NEW
+
+KPJ	1985-04-22 23:43:37	VIEWDATA support added. All VIEWDATA hacking
+				under feature switch FTVIEW.
+	Changed: FEATUR,KOMMAC,(VIEWFL,CHKTTY)@MONITO
+
+KPJ	20-Apr-85 01:19:36	Implemented new fascist code to test for
+				various nasty conditions which makes us barf
+				(old ^C tests eliminated):
+		switches off UUO simulation on TOPS-20 for security reasons
+		(KL10) non-zero section not supported by us
+		need ^C capability on TOPS-20
+		refuses to go on after being stopped with ^C
+				Also, KOM login on TOPS-20 expects the EXEC
+				to LGOUT% us.
+	Changed: KOMMAC,(MORDOR,XIT)@MONITO,(START,CCLENT,CREATE)@NEW
+
+KPJ	18-Apr-85 21:07:52	Don't expand KOM-20 temporary file input.
+	Changed: QEXPAN@COMMAT,READ@READ
+
+KPJ	18-Apr-85 19:13:05	Tops-10 LMENU TMPCOR file is now TMP:LME (was
+				TMP:KJO). The contents have changed to the
+				new format understood by LMENU.
+	Changed: LOGTMP@MONITO
+
+KPJ	18-Apr-85 18:35:44	Fixed bug which made KOM-20 totally shutup
+				after returning from subfork (e.g. editors).
+				The code though we never return when running
+				another program (Tops-10 brain damage).
+	Changed: KOMWRI@MONTMP,(MODEND,CALLED,RSCEND)@CALVID
+
+KPJ	18-Apr-85 17:58:36	Routines for Tops-10 TMPCOR vs TOPS-20 rescan.
+				Routines for Tops-10 TMPCOR vs TOPS-20 file.
+				(Module MONTMP rewritten for clarity.)
+	Changed: LEAVE@QUIT,CCLLOG@NEW,LOGIN@LOGIN,
+		(KOMRED,KOMPRO,KOMTMP,TMPPRO)@MONTMP
+
+KPJ	18-Apr-85 15:35:25	Name of TMP file name macro changed to XTMPKO
+				due to name collision.
+	Changed: ZTMPCO@SITE,FEATUR
+
+KPJ	18-Apr-85 14:32:07	Fixed bug in handling of TOPS-20 controlling
+				terminal handling. KOM now understands TOPS-20
+				process controlling terminal concept.
+	Changed: INITTY@MONITO
+
+KPJ	16-Apr-85 23:34:38	Got rid of deleted code. Deleted program name
+				setting. Don't curl up and die with wrong error
+				when data base inaccessible.
+	Changed: INIDSK@MONFIL
+
+KPJ	16-Apr-85 19:10:25	Rewrote QUIT command, error routine, and exit
+				routine to not try to dequeue database if none
+				enqueued.
+				
+	Changed: (QUIT,ERRRUT,ENDKOM)@QUIT
+
+KPJ	16-Apr-85 16:24:07	Rewrote run block generation. LOGIN and LOGOUT
+				are called only by KOM-10.
+	Changed: SITE
+
+KPJ	1985-04-11 14:36:22	Get rid of OPSER timeout handling; KOM-10 can't
+				be logged out by OPSER, since KOM-10 wakes up
+				every 60s (HIBER).
+	Changed: TGET@MONITO
+
+KPJ	1985-04-10 17:13:46	Fixed bug in WHO (IS PRESENT) command, when
+				name of person overflowed its field. Made the
+				handling of protected names better (e.g. they
+				are now treated as unprotected if command
+				issued in administrator mode).
+	Changed: LIPRPE@LISPRE
+
+KPJ	1985-04-08 05:15:12	Fixed bug which made ONLY command loop.
+				Make CALL 3RIP command not assume we always run
+				KOM:NEW.EXE
+
+	Changed: TOPLOO@NEW,PRMEPL@RUNTAB
+
+KPJ	1985-04-04 20:02:58	Started elimination of the plethora of number
+				printers. Included TOPS-20 compatible general
+				number printer (NOUT%), and defined all the
+				fields necessary to make it work on Tops-10.
+				Made data base generate routine work on
+				Tops-10 (crummy method). Fixed bug in DEFINE
+				command. Included useful macros from TOPS-20
+				MONSYM/MACSYM (FLD, POINTR etc).
+				Moved macros to KOMMAC from DEFSPE.
+
+KPJ	1985-03-28 13:21:43	Use standard TOPS-20 masks for version word.
+				Use standard TOPS-20 macros to build fields.
+				New label for version word. Rewrote version
+				word output. This is now version 6A(1024)-6.
+				Got rid of Welcome message when generating
+				a new database. Instead, display what data base
+				we try to generate. Fix error in ERROR macro.
+				Make data base creation routine say what it
+				does, and why. Change in SITE to make the
+				TOPS-20 ASCIZ strings PRINTable (useless zero
+				words inserted).
+
+	Changed: KOMMAC,SKRYNK@TEXTER,CREDSK@MONFIL,(VERSIO,MYVERS)@MONITO
+		 PVERSI@NEW,(CENNAM,CENPRO)@SITE
+
+KPJ	1985-03-28 08:48:00	Fixed bug in CREDSK in MONFIL, which crashed
+				program during database generation.
+	Changed: CREDSK@MONITO
+......................................................................
+KPJ	1985-03-15 01:27:23	Latest version moved to FREJA.
+
+KPJ	1985-03-13 23:52:18	Version 1024 active. Version frozen to make
+				it easy to standardize the version on all
+				local machines.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+KPJ	1985-03-13 23:49:41	Included new forms of CALL commands, mostly
+				for Tops-10 at QZ. Fixed a few "cannot happen"
+				bugs. Made markers public when we are in
+				administrator mode.
+
+	Changed: SITE,RUNTAB,GTNAME,MONITO,PRMARK@PRIREC
+
+KPJ	1985-03-12 04:13:04	Include object type in STATUS listing.
+				Changed "Type: " to "Object type: ".
+	Changed: PPOPIN@PRPEST,ZHTYPE@OBJSTA
+
+KPJ	1985-02-26 07:54:55	Moved magical numbers to KOMMAC from MONITO.
+				Fixed bug in cost output routine.
+				Routine to test if T10 SFDs feature exists,
+				and how deep they are allowed to nest.
+				Bugfix to sidestep MACRO-10 bug with literals
+				(generates lots of Phase-errors, LINK-10
+				 crashes with illegal memory reference, and/or
+				 generates incorrect code.)
+				Got rid of local MONITO macros.
+				Restore ACR and TTY CRLF settings when halting.
+	Changed: KOMMAC, MONITO
+
+KPJ	1985-02-25 12:25:30	Fixed program name output routine for TOPS-20.
+	Changed: PRCINM@MONITO
+
+KPJ	1985-02-20 13:58:28	Moved macros from MONFIL to KOMMAC:
+				XFILOP, XLOOK, XAPPEN, XCENOP, XUPDAT,
+				XLOKUP, XCLOSE, XDELET, XIND, XOUTD, XUSET,
+				XUSETI, XUSETO
+	Changed: MONFIL, KOMMAC
+
+KPJ	1985-02-13 18:22:19	Fixed bugs introduced 1984-12-17 at deLISPifi-
+				cation of SEARCH. New symbol .CHQUO for quote.
+
+	Changed: KOMMAC,SEARCH
+
+KPJ	1985-02-13 12:02:22	Make error message better.
+
+	Changed: ZWRPSX@LOGIN
+
+KPJ	1985-02-04 14:35:45	Fix bug which swapped present preort mode.
+
+	Changed: REPCHA@LISPRE
+
+KPJ	1985-02-01 xx:xx:xx	***** DISC CRASH WIPED OUT CHANGES *****
+
+KPJ	1985-01-25 14:24:18	(i) Allow presentations to be written with an
+				external editor (they used to become garbled)
+				by making the TMP: file commands prefixed by
+				a command character ("!").
+				(ii) Make upper casing of TMP file contents
+				depend on a bug-fix-flag and only be done on
+				Tops-10 (it fixes a bug in LOGIN/NAME: switch).
+				(iii) Don't ask for presentations while we are
+				writing an entry, since the presentation would
+				destroy the entry we are writing.
+				(iv) Make EDIT commands faster when writing a
+				presentation by using object numbers instead.
+
+	Changed: COMTMP@CALVID,TMPCON@MONTMP,GETPRE@JOINMT,KOMMAC
+
+KPJ	1985-01-21 12:36:56	Make nr_of_lines independent of personal flag
+				SHOW RECEIVERS (fixed bug in "Lines: ").
+	Changed: (XLINES,DISPLA,NRLINE)@DISPLA
+
+KPJ	1985-01-18 18:01:09	When calling an editor, and ADMINISTRATOR MODE
+				is on, we have to save those in the text on
+				Tops-10, since the image is overwritten with
+				the editor image in memory. Fixed a misspelling
+	Changed: CHKPAS@LOGIN, OUTFIL@FILCON
+
+KPJ	1985-01-16 05:40:16	Allow LF to end commands (as in KOM V5).
+	Changed: TGET@MONITO
+
+KPJ	1985-01-16 03:47:11	Put back possibility to enter commands at
+				end-of-page prompt ("Please press return").
+	Changed: PARSCM@ENTCON
+
+KPJ	1985-01-15 05:08:13	When asking user to enter, and we are not
+				logged in, apply password security: always
+				ask for password, even if name is illegal or
+				ambigous (more work and less knowledge for
+				the bad guy). Changed error message to say the
+				correct thing.
+
+	Changed:(FOAPSW,OLDNAM,ASKPAS,MANYNA,LOGIN,CHKPAS)@LOGIN
+......................................................................
+KPJ	1985-01-14 04:11:27	*** latest version sent to Freja ***
+
+
+KPJ	1985-01-14 00:48:22	Make KOM-20 command CALL EXEC not barf if the
+				fork has disappeared when we CALL EXEC the next
+				time (someone may have RESETed it e.g.)
+	Changed: RUNFRK@MONITO
+
+KPJ	1985-01-13 23:16:04	Make CCL entry name matching understand object
+				numbers (PERSON nnnn).
+	Changed: CCLLOG@NEW
+
+KPJ	1985-01-10 02:16:21	Implemented a header showing number of lines in
+				an entry. LH of DIRNMA was allocated for this.
+				Changed mark routines to only use RH of DIRNMA.
+				Implemented code to compute number of lines of
+				a new entry, code to save the number in the
+				data base, and look for it, and display it.
+
+	Changed: (REMTEM,ADTEMA)@CREMAR
+		 KOMMAC,DISPLA@DISPLA,ZNRLIN@TEXTER,(NLINES,ADENTR)@ADDENT,
+		 ADSUPO@OUTENT,GETLEN@EDIT
+
+KPJ	1985-01-08 04:06:45	Make time output format indepedent of terminal
+				echo and of terminal paper/screen type.
+				ECHFLG used only in MONITO, localized.
+				QLFECH,QSHCOM,QSHREC,QQUIFI,QLISUB,PDLINE,
+				QREDIS and QSAPSW routines deleted. Report
+				both read and write disk accesses when
+				REPORT DISK ACCESSES personal flag is enabled.
+				Define symbolic name for ";" (.CHSEM), since it
+				is problematic with EMACS in the source files.
+
+	Changed: (ECHFLG,ECHOFF,ECHON)@MONITO,(QDISPL,QREPTI)@REPTIM,KOMMAC,
+		 (QLFECH,QSHCOM,QSHREC,QQUIFI,QLISUB,QREDIS)@CHATAB,
+		 SETSTA@ENTER,DISCOM@DISPLA,PRHALI@EDIT,(PDLINE,INFTIT)@JOINMT,
+		 REVDEF@REVIEW,WRIACC@MONFIL,(DSKACC,REPOR1,REPOR2)@TOPCOM,
+		 WRITMP@QUIT
+
+KPJ	1985-01-08 02:04:45	New personal flag LOGIN QUESTION. Default OFF.
+				Logic sense flag made a variable (less compile)
+				but it should really live in the data base.
+				If LOGIN QUESTION off (default), do not ask if
+				to login or not, just login. If LOGIN QUESTION
+				on, then display news and ask if to login.
+
+	Changed: KOMMAC,(EXPTAB,LOGIC)@CHATAB,ZZXHUH@TEXTER,
+		 (SEFLON,SEFLOF)@DEAMON,QFLAON@PRPEST,
+		 (CCLENT,INICNZ,INITIA)@NEW,CALLOG@LOGIN
+
+KPJ	1985-01-07 23:35:26	New personal flag COMMENT UNMARKS NOTICE.
+				Default ON (reversed logic).
+
+	Changed: KOMMAC,EXPTAB@CHATAB,ZZXAVM@TEXTER,WRICOM@MKCOMM
+
+KPJ	1985-01-07 20:54:46	Sanitized personal flag handling:
+				Made DISCONNECT AFTER LOGOUT personal flag
+				work on TOPS-20. Deleted QDISCO,QDEFER, and
+				QCHEAD routines. Defined symbolic names for
+				brokets, since they are hard to use in macros.
+				Made code use TXnn macros, and search MACTEN.
+				Use standard (TOPS-20) names on characters
+				instead of private ones. Optimized code by
+				getting rid of home brew macros.
+				
+	Changed: KOMMAC,(QDISCO,QDEFER,QCHEAD)@CHATAB,(KILLME,LOGTMP)@MONITO,
+		 (PRLNLI,PLNKNR,PRRECD,PRSEND,PRMARK)@PRIREC,DISLIN@DBPRO,
+		 PUTBEL@NEXLET
+
+KPJ	1985-01-07 19:24:45	SYMPFL personal flag (bit 20) deleted, since
+				never used.
+	Changed: KOMMAC
+
+KPJ	1984-12-17 13:53:06	Moved texts to TEXTER module, brushed up code.
+				Deleted the last traces of Martin NILsson's
+				LISP-like MACRO-macros, thus eliminating the
+				universal file NILMAC too. DEFSPE routines
+				rewritten.
+	Changed: CREPER!CREPRE!DBCON!DBPRO!DEAMON!DELOBJ brushed up.
+		 DEFSPE rewritten
+		 NILMAC terminated
+		 DEFSPE,DISPLA,TEXTER
+		 SEARCH deLISPized
+
+KPJ	1984-12-14 13:36:23	Make device names w/o file names echo OK.
+	Changed: PRFINA@REFINA
+
+KPJ	1984-12-14 12:38:50	Make KOM echo names for object numbers.
+	Changed: GEENNU@GTNAME
+
+KPJ	1984-12-14 10:44:54	Fixed bug in non-logged in new control.
+	Changed: (PRNEWS,QNEWS)@PRNEWS,CALLOG@LOGIN
+
+KPJ	1984-12-12 20:51:31	New routine ALWAYS which starts up a person
+				enough for news control (used to be a part of
+				ENTER). Split up QSURE into a a new routine
+				QYESNO for yes-no-answer. Change LOGIN to make
+				KOM ask a not-logged in user if he wants to
+				login after a news control.
+	Changed: (QYESNO,QSURE)@OERASE,(CALLOG,ZLOGIT)@LOGIN,
+		 (ENTER,ALWAYS)@ENTER,PRNEW@PRNEWS
+
+KPJ	1984-12-12 19:08:11	Use object numbers instead of names in editor
+				files (this speeds up things since no name
+				matching is involved). New flag EDIFLG to flag.
+
+	Changed: PRRELI@WRIENT,OUTFIL@FILCON,
+		 (EDIFLG,CALLVI,CALLAM,CALLSO,CALLTE,CALLED)@CALVID
+
+KPJ	1984-12-12 17:33:14	Show only the entry number when REVIEWing an
+				entry which we have no read access.
+	Changed: SANORI@REVFUN
+
+KPJ	1984-12-11 09:40:45	Get rid of CTRL/O (only implemented for T10
+				as yet) when outputting menu.
+	Changed: TOPCOM@TOPCOM
+
+KPJ	1984-12-11 06:49:31	RUNX literals must be in low segment, since
+				the RUNX zaps away the hiseg.
+	Changed: RUNX@MONITO
+
+................................... Latest version sent to FREJA
+
+KPJ	1984-12-11 06:17:04	Make ^Z end an entry in all positions of a line
+
+	Changed: CHKADD@ENTCON
+
+KPJ	1984-12-11 04:44:37	If user cannot make up its mind, KOM will help.
+
+	Changed: QBECME@JOINMT,(ZNO,ZYES,QSURE,DICE)@OERASE
+
+KPJ	1984-12-11 00:41:17	Fix the remaining tabulation margin problems.
+
+	Changed: PRMEIN@LISMEE,PRIREC@PRIREC,LIMEEL@PRPEST
+
+KPJ	10-Dec-84 16:41:48	Fixed misspellings in T20 code.
+	10-Dec-84 16:13:21
+	10-Dec-84 15:39:24
+	10-Dec-84 15:09:25
+	Changed: CRELOC,CREMAR,TTINP@MONITO,REPTIM
+
+KPJ	10-Dec-84 15:53:35	PPNFLG should not be seen on T20.
+	Changed: (VIDARG,CALLVI)@CALVID
+
+KPJ	1984-12-05 06:16:02	Get rid of SETLMA routine, and delete all calls
+				to it. Set LMARG to end of heading where appro-
+				riate. Make standard crash error messages.
+
+	Changed: (SETLMA,PRSHNA,GETNAM)@NAMMAT,PRVAL@COMPUT,
+		 LIMEEL@PRPEST,(PRNATY,PRMEIN)@LISMEE,PRLNLI@PRIREC
+
+KPJ	1984-12-04 21:43:50	Implement T10 LOGOUT command to care about
+				DISCONNECT flag. QZ-special hacking for
+				FOA: PPN 1161,3436 ==> logout always! (T10,QZ)
+	Changed: XIT@MONITO
+----------------------------------------------------------------------
+KPJ	1984-12-03 18:27:19	Version [1023] activated. Fixed bug in PVERSI
+				command, which made the program always call
+				itself "KOM" at startup.
+	Changed: PVERSI@NEW
+
+KPJ	1984-12-03 17:56:36	Make WHERE (AM I) command show what program,
+				version and data base we are using.
+	Changed: LIWHER@LISPRE
+
+KPJ	1984-12-03 14:21:18	Implemented new personal flag "DISCONNECT AFTER
+				LOGOUT", which is on by default (reversed
+				logic). The QUIT command changed to write a
+				TMP:KJO file (Tops-10 only), which contains
+				"K" when flag is on, "K/C" when off. This file
+				is to be written by LMENU.EXE program. Also,
+				the LOGOUT command is intended to inspect that
+				flag to disconnect only when wanted (NYI).
+	Changed: LOGTMP@MONITO,ENDKOM@QUIT,(QDISCO,EXPTAB)@CHATAB,ZZXLOG@TEXTER
+
+KPJ	1984-12-03 10:14:15	Implemented logic sense flag (since the data
+				base contains zeroes in the un-implemented
+				bits of the personal flags word, all flags are
+				OFF for oldthinkers; the sense flag says how
+				to treat a zero (normal:OFF, reverse logic:ON)
+				This is really a hack to make things work.
+	Changed: LOGIPF@KOMMAC,(SEONFL,SEOFFL,QDEFER)@CHATAB,
+		 (SEFLON!SEFLOF)@DEAMON,PUTBEL@NEXLET,QFLAON@PRPEST
+
+KPJ	1984-12-03 09:34:30	Personal flags were incorrectly initialized
+				since somebody believed that they always used
+				only a halfword. Surprise, surprise!
+	Changed: ININEW@ENTER,MAKPER@CREPER
+
+KPJ	1984-11-29 14:54:14	Write temporary file in logged-in directory 
+				(T20)/home directory (T10). However, this makes
+				AMIS barf at times (when the line generated is
+				longer than 40 character), and SOS barf some
+				times (due to SOS use of CHKACC UUO, which is
+				somewhat brain damaged).
+	Changed: (PREDFI,PMYDIR)@CALVID
+
+KPJ	1984-11-29 12:42:29	KOM-login with /NOMEANS switch
+	Changed: CALLOG@LOGIN
+
+KPJ	1984-11-29 12:40:13	Fixed bug in EDIT AMIS and EDIT SOS commands
+				(they don't support /RUNOFFSET: switch)
+	Changed: (AMITMP,SOSTMP)@CALVID
+
+KPJ	1984-11-29 07:18:12	New personal flag DEFERRED COMMANDS. New
+				routine QDEFER to test its status.
+	Changed: KOMMAC,(QDEFER,EXPTAB)@CHATAB,DISLIN@DBPRO,ZZXDFR@TEXTER
+
+KPJ	1984-11-29 05:35:22	Give user some advice when CREATEing PROTECTED
+				things.
+	Changed: CREATM@CREATM
+
+KPJ	1984-11-29 04:35:33	Tell user when non-existent "entry" number is
+				entered, and which number it was.
+	Changed: MANNUM@GTNAME
+
+KPJ	1984-11-29 03:52:15	Get rid of read access test on entry syntax.
+				This will make execution routines handles such
+				things, such as MARK.
+	Changed: GTLAST@MKCOMM
+
+KPJ	1984-11-29 03:36:00	Say reason we don't allow MARK command
+				("no read access") on entries we discard.
+	Changed: CMARK@MARK
+
+KPJ	1984-11-29 02:58:27	Make a SESSION cost output routine (in SEK)
+	Changed: (KILLME, COSTPR)@MONITO
+
+KPJ	1984-11-27 13:28:28	Change COMPLETE HEADINGS to SHORT HEADINGS,
+				and complement bit meaning.
+
+	Changed: QCHEAD@CHATAB, ZZXHED@TEXTER
+
+KPJ	1984-11-27 10:55:25	New personal switch COMPLETE HEADINGS;
+				new routine QCHEAD to test its status;
+				if this flag is reset, this holds:
+				(a) "Marked by", "Receiver:",
+				    "For information:", and "Single copy:"
+				     are packed;
+				(b) "Sender: ", "-- Received: " and "<nnn>"
+				    suppressed;
+				Got rid of a few spaces in the heading time;
+				Times are shown "yy-mm-dd hh.mm" if ISO format;
+				else "yy-mm-dd hh:mm", with optional "Today"
+				etc.; new routine PCOLON@REPTIM
+
+	Changed: (PRIREC,PLNKNR,PRRECD,PRSEND,PCOMLI,PRMARK)@PRIREC,
+		 (PRDAT,PTIME,PCOLON)@REPTIM,
+		 (EXPTAB,QCHEAD)@CHATAB
+		 PRHDLI@DISPLA
+
+KPJ	1984-11-23 16:05:32	Make SWITCH OFF DOOR BELL work on entry bells
+				as well.
+	Changed: DISLIN@DBPRO, PUTBEL@NEXLET
+
+KPJ	1984-11-23 12:22:20	TTQ command "LIST LETTERS" installed
+	Changed:REATAB@ALLTAB,CCLILE@UPDBEG,MAKLNK@CRELNK,
+		(SHDISP!SUBDIS)DISPLA,(ZLLEHL!LILETT)REVIEW,
+		CHLETT@CHKNEW,(PRINRE!CHKRDT)@PRIREC,ZZLILE@TEXTER
+
+KPJ	1984-11-23 11:45:52	Pre-requisite TTQ hacking for LIST LETTERS
+				command installed. Move language dependent
+				texts to new module TEXTER, for later easier
+				language changing.
+	Changed: DEMON,NEXLET,REVIEW,DISPLA,CHKNEW,PRIREC
+	Texts: also any module
+
+KPJ	1984-11-23 11:43:09	Make KOM/COM obey the line width specified by
+				the operating system without assuming any
+				wrapping in last column (makes 80 column
+				terminals display 80 columns).
+	Changed: TTYWID @ MONITO
+
+KPJ	1984-11-18 07:19:02	Permanently eliminated the bug which made COM
+				command LIST USERS crash COM.
+	Changed: KOMMAC, LISPER
+
+KPJ	1984-11-14 07:17:16	Changed BECOME ANONYMOUS to be more user
+				friendly. It gives now the state, and how
+				to change it back from anonymous.
+	Changed: ANONY@NEWNAM
+
+KPJ	1984-11-13 06:19:24	Enhanced "Marked by:" headers to summarize
+				the secretive markers.
+	Changed: PRIREC
+
+KPJ	1984-11-12 20:10:40	Implemented LOGOUT command.
+	Changed: ELSTAB@ALLTAB, AUSLOG@MONITO, ZLEAVE@QUIT, ZWELCE@QUIT
+
+KPJ	1984-11-12 17:47:16	Make the dialogue for "new names" point out
+	the possibility of spelling errors. Make KOM also stop saying
+	"too short" when it means "too few words".
+	Changed: NEWNAM@NEWNAM
+
+KPJ	1984-11-12 16:27:38	Allow REVIEW SEQUENTIALLY BY xxxx
+	This was prohibited by local Swedish governmental agency 
+	("Datainspektion")
+	Changed: ENDREV@REVIEW
+
+KPJ	1984-11-12 13:59:31	Extension of temporary file created by the
+				EDIT commands are now dependent of the language
+				of the data base.
+	Changed: CALVID
+
+KPJ	1984-11-12 13:51:28	New macro FALL introduced.
+	Changed: KOMMAC, QUIT
+
+KPJ	1984-11-12 12:55:26	
+	Now the ^C routine is called TRPSTP on both T10 and T20 (was called
+	CCINT on T20). Deleted inaccessible code in T10 TRPSTP. Set flag
+	STPFLG, when ^C succeeds, which is checked in QUIT.
+		Changed: TRPSTP@MONITO
+	Test on STPFLG: if set, CONTINUE and START are illegal.
+	New routine ICTRLC called when illegal to continue program.
+		Changed: ENDKOM@QUIT
+	Test STPFLG: if set, no START,REENTER or CREATEing allowed.
+		Changed: (START!CCLEN!CREATE)@NEW
+
+KPJ	1984-11-12 12:33:39	Moved some magical number to KOMMAC
+	Change:	KOMMAC, ZAPOBJ, EDIT, MONITO
+
+KPJ	1984-11-12 12:32:42	READ FILE/L[SA FIL now available in all the
+				four versions (KOM,COM,KOMENG,.COMSWE)
+	Change:	ALLTAB
+
+TTQ	1984-10-22 13:15:54
+	NAMMAT:	Only VERIFY NAME switches NAMFLG on 
+		Changed CMPNAM and AVERNA.
+	COMMAT:	Exact name matching on word level added.
+		Changed COMLIN and COMWOR.
+
+KPJ	1984-10-08 19:20:43	CREATE CONFERENCE requires the name to be
+				at least two words and tests for CTRL/chars
+				(as at login)
+	Changed: CREATM:GENENA, NEWNAM:(ZNEWN1,ZNEWN3,ZNEWN4,CHKNAM)
+
+KPJ	1984-10-05 13:18:13	Anonymous people are shown as "(anonymous)"
+	Changed:	PAUTNR@PRIREC
+
+KPJ	1984-10-05 13:13:09
+	Command files rewritten (for ODEN):
+		ALL.MIC		generate a first time KOM.REL libraryt from
+				the sources.
+		NEW.MIC		generate NEW(KOM), COMNEW(COM), NEWSWE(COMSWE),
+				and NEWENG(KOMENG) from .REL files
+		XP.MIC		re-compile a module to the KOM.REL
+
+KPJ	1984-10-04 12:53:09	Major hacking:
+
+		WRIENT:	(USE) EDITOR AMIS put under FTQZ and T10.
+			(USE) EDITOR EMACS for T20 not fully implemented yet.
+		FILCON:	Editor modes on first line supported (used by EDIT,
+			EMACS and AMIS)
+		CALVID:	AMIS !(-*-Text Language Fill-*-), fill setting depends
+			ACR settings. T10 and FTQZ only.
+		KOMMAC:	stupid macros are .NODDT'ed
+			Feature switches shown at compile time.
+			Definition of personal flags re-written for the future.
+		CHATAB:	NRFLAG variable deleted.
+			Implemented new personal flag DOOR BELL. If off,
+			bells are shown as ^G.
+		LISPER:	Code cleanup.
+		ENTCON:	Code cleanup (Martin NILsson's LISP-garbage etc)
+		MONITO:	Code cleanup.
+		ADDENT:	PNAMLI@ADDENT was identical to PRNALI@LOGIN. Deleted.
+		NEWNAM:	Fixed misspelling
+		MKMENU:	Code cleanup. Stupid macros crashed at run time.
+
+KPJ	1984-10-02 12:37:26	Changed "(secret name)" to "(protected name)"
+	Changed: PAUTNR@PRIREC
+
+KPJ	1984-10-02 12:38:10	Made KOM insert a line
+				!(-*-FOO-*-)
+				as the first line on the file saved by the
+				EDIT commands. "FOO" is one of:
+					Swedish Mode
+					English Mode
+					German Mode
+					Norwegian Mode
+					French Mode
+	Changed: OUTFIL@FILCON
+
+BCQ	1984-09-27 19:23:45	Remove hard-coded PPN for KOM: in the
+				ILLACC code, and insert a UU.PHS when
+				opening KOM:ILLACC.FOO instead. It'll
+				work much better on machines <> Oden
+				that way. Failed to compile the module
+				got a E-error, but not from my code.
+	Changed: LOGIN
+
+KPJ	1984-09-25 11:35:17	Say "(secret name)" when showing MARKED
+				entries if the name is withheld.
+	Changed: PRIREC
+
+KPJ	1984-09-25 10:20:53	RSET is a dummy under TOPS-20. Put under
+				T10 conditional.
+	Changed: MONITO, NEW
+
+KPJ	1984-09-25 10:06:54	STPFLG is only used on TOPS-20. Put STPFLG
+				hacking under T20 condition.
+	Changed: MONITO, QUIT
+
+KPJ	1984-09-25 03:00:37	Deleted KSYWRN variable. Documented buffer
+				control block, version word and 20x entry
+				vector for future generations. Variables
+				ENQWAT, HAVENQ now local to MONITO. UMODF
+				deleted (was PC%USR really).
+	Changed: MONITO
+
+KPJ	1984-09-25 02:13:31	Inserted (c) message as an ASCIZ in the high
+				segment code at label "COPYRIGHT:"
+	Changed: MONITO
+
+KPJ	1984-09-25 01:53:12	Made QUIT.MAC search UUOSYM only on Tops-10.
+				Made QUIT.MAC search MACSYM,MONSYM on 20x.
+	Changed: QUIT
+
+KPJ	1984-09-20 20:19:46	Made PWDILL be defined everywhere where needed.
+				(bugs found at TOPS-20)
+	Changed: GETPAS@NEWNAM, LOGIN
+
+KPJ	1984-09-20 20:22:01	Fixed misspelling in RUNTAB (which made 5
+				routines missing in SITE on TOPS-20)
+	Changed: RUNTAB
+
+KPJ	1984-09-20 17:13:32	Fixed "You is not a member of" message in the
+				WITHDRAW command.
+	Changed: MEMBER:(ZYOU,SAYWDR)
+................................... Latest version sent to FREJA
+
+KPJ	1984-09-14 10:37:46	Moved Tops-10 memory managing routines under
+				T10-conditionals.
+
+	Changed: COMPUT:	COMPAR,COMPCO
+		 LISPER:	GTSOAR,LISTPE,LISTAD
+		 MONITO:	PAGIN,PAGOUT,PAGDEL
+		 MONTMP:	TMCBEG,TMPBEG,TMCEND,TMPPRO
+
+KPJ	1984-09-14 09:42:48	Rewrote TOPS-20 RUNFRK routine to not crash
+				for evrything. It will now instead say what
+				went wrong, and return failure. This also is
+				a temporary fix to these errors:
+	known bug #8	if you reset your editor fork outside KOM,
+			you got "runfrk (sfrkv)" crash, with JSYS error
+			"Invalid process handle". Now you will not crash.
+	known bug #29	if you reset your EXEC fork outside KOM,
+			you got "runfrk (sfrkv)" crash, with JSYS error
+			"Invalid process handle". Now you will not crash.
+
+	Changed: RUNFRK@MONITO
+
+KPJ	1984-09-12 12:54:59	Made WITHDRAW command say when you are passive
+				member and when you are really withdrawn from
+				from conference.
+	Changed: DEAMON, KOMMAC, MEMBER
+
+KPJ	1984-09-12 10:50:21	Messages to letter writers are from now on
+				sent to a special conference, which normally
+				is not the same as Presentations (of new) COM
+				users, where they were sent before.
+	Changed: DEFSPE, UPDBEG, MKMESS
+
+KPJ	1984-09-10 14:07:43	Show "Sender:" always if not same as author.
+				This used to confuse users; PREVSE (previous
+				sender) hacking deleted in PRSEND routine.
+	Changed: PRIREC
+-----------------------------------
+Edit	1022	1984-09-07 15:31:36
+
+BCQ	1984-09-06 16:44:06	PASFLG must be referenced as global in LOGIN. 
+				Inserted a CLRBFI for TOPS-10 Text-Phone
+				users in STRCON.
+	Changed: LOGIN,	STRCON
+
+KPJ	1984-09-05 08:56:30	Stop SWITCH ON and SWITCH OFF commands
+				fiddle with administrator status, by moving
+				initialization code from SETSTA to ENTER,
+				where it belongs.
+	Changed: ENTER
+
+KPJ	1984-08-20 07:03:33	Eliminated the EINPPN code.
+	Changed: QUIT, SITE
+
+KPJ:	1984-08-28 03:50:13	Installed editor AMIS to be callable.
+	Changed: CALVID, SITE, WRIENT
+
+KPJ:	1984-08-16 08:34:32	Unsmallified TMPCON routine back again
+				(changed by JEQ 1984-03-21 19:50:55), since
+				it gave problems with "|" with LOGIN/NAME:..
+				(the TMP:LGN file)
+	Changed: MONTMP
+
+KPJ:	1984-08-15 10:45:09	Corrected REVIEW AGAIN to not allow reading
+				of entries to which we have no read access.
+	Changed: REVFUN
+
+KPJ:	1984-08-15 10:04:17	Updated help commands to discuss ethics, since
+				that was required by the Swedish government
+				agency Data-Inspektionen. Governed by feature
+				switch FTQZ.
+	Changed: HELP
+-----------------------------------
+Edit	1021	1984-08-08 19:03:09
+
+KPJ&BCQ: 1984-08-08 19:03:54	Really implemented Verify name command...
+	[ndrat: LOGIN, NAMMAT				
+
+TTQ:	1984-08-05 XX:YY:ZZ	Implemented Verify Name command.
+	[ndrat: NAMMAT, UPDBEG, ALLTAB
+
+KPJ:	1984-07-10 09:27:19	Implementerade MAXINF,MAXTEX,MAXDIR,MAXLNK,
+				och MAXMAR f|r att man ska slippa rota i filen
+				GENERA.MAC varje g}ng man {ndrar databasens
+				storlek. F|rsta steget f|r att g|ra KOM slippa
+				beh|va omkompileras bara f|r att databasens
+				storlek {ndras.
+	[ndrat:	GENERA, KOMMAC
+KPJ:	1984-06-25 16:01:41	^G interrupt routine crashed KOM with "inblk
+				monfil" (BUG REPORT 14).
+	[ndrat:	CGINT@MONITO
+KPJ:	1984-06-19 12:24:47	ANROPA MONITORN heter nu ANROPA EXEC p} T20.
+				CALL MONITOR is now PUSH (TO) EXEC on T20.
+	[ndrat:	CALMON@RUNTAB
+KPJ:	1984-06-19 12:06:26	Skrev om modulen med ANROPA <editor> i. Det
+				{r nu mycket enkelt att l{gga till nya och
+				{ndra befintliga editorer. JEQs patch f|r att
+				kunna anropa AMIS via EDIT inlagd. AMIS kan
+				nu ocks} anropas direkt under Tops-10. EMACS
+				kan nu anropas direkt under TOPS-20.
+	[ndrat:	hela CALVID
+
+KPJ:	1984-06-12 17:43:57	[NDRA L\SENORD v{ntar inte 5s l{ngre om de tv}
+				kopiorna av det nya l|senordet inte {r lika.
+	[ndrat:	CHKPAS@LOGIN,LOGIN@LOGIN,CHAPAS@NEWNAM. Ny variabel: IGNPWD.
+-----------------------------------
+Edit	1020	1984-06-08 18:40:21
+BCQ:	Fixat problem med TMP:BRK i PTYKOM. Nu ska den inte l{ngre f|rst|ra
+	TMP:BRK vid upprepade PUSH'es
+KPJ:	1984-04-25 17:29:59	nyhetskontroll f|r m|ten av typ SKRIVARE bort
+KPJ:	1984-04-26 11:00:44	"editera" => "redigera" i menyn
+	[ndrat:	GETUNS@PRNEWS,ZZEDTE@ALLTAB
+-----------------------------------
+Edit 1017:	1984-04-24 14:41:02
+*	TTQ:	Passiva medlemmar hoppas |ver vid LIST STAT <m|te>
+	[ndrat:	LISPER
+-----------------------------------
+Edit 1016:	1984-04-12 18:56:13
+*	TTQ:	Lagt till extra argument till (L[SA) ALLA NYHETER
+*	TTQ:	Sett till att SKUMMA fungerar p} brev vid PTY-mod
+*	TTQ:	Lagt till extra argument till LISTA STATISTIK
+	TTQ:	R{ttat fel i f|rdr|jda kommandon, inf|rd i edit 1010
+*	TTQ:	R{ttat fel i databasf|rdubblingsrutinen
+	[ndrat:	RDNEXT,NEXLET,LISPER,DBPRO,GENERA
+-----------------------------------
+Edit 1015:	1984-03-31 23:16:27
+	TTQ:	Hindrat o{ndlig loop vid avbruten utskrift
+	TTQ:	Tagit bort indragningen av inl{ggstexten inf|rd i edit 1014
+	[ndrat:	TERCON,DBPRO
+-----------------------------------
+Edit 1014:	1984-03-29 18:29:09
+*	BDQ:	Till}t formatet YYYY-MM-DD vid inl{sning av datum.
+*	BCQ:	Stoppat in en lite mera informativ utskrift om man 
+		misslyckas med att |ppna databasen. Samt stoppat in
+		FO.PRV-bitten f|r att <1,2> ska f} g|ra det med vilken
+		databas som helst.
+	TTQ:	R{ttat bugg med skrivskyddade m|ten introducerad i Edit 1013
+	TTQ:	Dragit in inl{ggstexten tv} tecken
+	TTQ:	Bytt ut TRNE mot TXNE i CHATAB.MAC
+	TTQ:	Sett till att {ven texten raderas n{r raden raderas
+	TTQ:	R{ttat fel i hanteringen av STATUS <person> <m|te>
+	TTQ:	Ut|kat syntaxen med UTESLUTA MEDLEM <person> <m|te>
+	TTQ:	Tagit bort parenteserna i LISTA ALLA KOMMENTARER
+	[ndrat:	SCNDAT,MONFIL,CHKREC,DBPRO,MKCOMM,CHATAB,OUTENT,GTNAME,
+		EXCLUD,ZAPOBJ
+-----------------------------------
+Edit 1013:	1984-03-19 12:56:12
+		Stoppat in NILMAC.MAC i SEARCH.MAC
+		Flyttat pagear f|r TMP:
+		Sparat kommentarf|rfattaren i MKCOMM
+		Sett till s} att kommentarf|rfattaren f}r kommentaren
+			vid skrivskyddade m|ten
+	[ndrat:	SEARCH,MONTMP,MKCOMM,CHKREC
+-----------------------------------
+Edit 1012:	1984-03-16 17:11:37
+		Tagit bort Martins macros ur EDIT.MAC
+		Tagit bort filen UNDO.MAC
+		R{ttat bugg i ORD-kommandot, introducerad i edit 1011
+	[ndrat:	EDIT,SEARCH,STRCON,MONITO,ENTCON
+-----------------------------------
+Edit 1011:	1984-03-06 13:20:11
+		Inl{gg i pres-m|ten blir [NDRA PRES
+		Ut|kat hj{lptexten f|r ADDERA
+		Ut|kat radl{ngden till 80 tecken
+		Ut|kat BER[KNA med bl a str{ngar och en massa annat
+		Lagt in }terst{llning av argument i felutg}ng i ]TERSE
+		Lagt in utskrift av INFO-filen i SYSTEM-INFO
+	[ndrat:	WRITEE,CHEPRE,ADD,KOMMAC,COMPUT,PARSE,EVAL,BINFUN,
+			RDOBJ,COMMAT,ENTCON,REVIEW,SYSINF
+-----------------------------------
+Edit 1010:	1984-01-30 17:02:13
+		R{ttat fel med f|rdr|jda kommandon
+		Skyddade m|ten annonseras inte
+		Sp{rren mot att l{gga till kommentarl{nkar borttagen
+		Sp{rrat [NDRA ORGANISAT\R av texter
+		Tagit bort INBUF ur OPINFI
+	*	Lagt in tidsargument till ]TERSE
+	*	Lagt in ny modul SCNDAT.MAC
+	*	G}r ej l{ngre till n}got m|te vid intr{de
+		R{ttat bugg i V[NTA + ?
+	[ndrat:	DBPRO,JOINMT,ADRELI,CHATYP,MONFIL,REVIEW,REVFUN,REVTAB,
+			SCNDAT,ENTER,WAITX
+-----------------------------------
+Edit 1007:	1984-01-01 14:00:15
+	*	R{ttat fel i ENDAST-kommandot
+	*	Inf|rt texttelefon som terminaltyp
+	*	[ndrat till BEGYNNE NAVN i norska KOM
+		Lagt in en BELL i V[NTA
+		Modiferat bell-hanteringen
+	[ndrat:	ONLYRE,TERTAB,ALLTAB,WAITX,NEXLET,CHKREC
+-----------------------------------
+Edit 1006:	1983-11-17 17:36:37
+	*	G|r 5 f|rs|k att |ppna databasen
+	*	F|rdubblat arean f|r listceller till 256 st
+	[ndrat:	MONFIL,ADDLIS
+-----------------------------------
+Edit 1005:	1983-10-26 14:18:22
+		R{ttat bugg som orsakade ill mem ref vid referens till
+			ett skr{pobjekt
+	*	Lagt in sp{rr mot o{ndliga inl{gg
+	*	En massa TOPS-20-anpassningar
+	*	Tagit bort REVIEW FILE
+	*	Tagit bort en blank rad f|re v{lkomsth{lsningen
+	[ndrat:	CREPER,EDIT,ADDENT,KOMMAC,GENERA,QUIT,RUNTAB,SITE,WRIENT,
+			MONFIL,MONITO,REVTAB,NEW
+-----------------------------------
+Edit 1004:	1983-10-04 16:48:27
+	*	Inf|rt N{tverksbuggs-flaggan
+	*	Gjort att redigera-kommandona fungerar {ven utan
+			tolkning p}slagen
+	*	Sparar felcoden vid databas|ppningen
+	[ndrat:	KOMMAC,CHATAB,TERCON,ENTCON,FILCON,WRIENT,MONFIL
+-----------------------------------
+Edit 1003:	1983-09-22 15:34:17
+	*	Inf|rt aktivering av organisationer och skrivare
+	*	Man blir ej l{ngre utsl{ngd till monitorn vid detach
+	*	Lagt in utskrift av version i SYSTEM-INFO
+		R{ttat fel i rapport-flaggan, dvs permanent-flaggan
+	[ndrat:	DEAMON,FILCON,MONITO,NEW,SYSINF,CHATYP
+-----------------------------------
+Edit 1002:	1983-09-06 17:34:49
+		R{ttat l|senordsbuggen som gjorde att man ibland fick
+			skriva l|senordet i on|dan vid CCL-entry
+		Kanske r{ttat m|jlig bugg vid n{rvarolistan
+	[ndrat:	QUIT,LISPRE
+-----------------------------------
+Edit 1001:	1983-08-19 12:52:15
+	*	[ndrat filnamnsparsern s} att <,> tolkas som UFD:et
+	*	Ingen nyhetskontroll vid ^C
+	*	ENDAST FR]N inf|rt
+	*	STATUS skriver ut LAPP
+	*	STATUS skriver ut skyddade m|ten f|r de beh|riga
+	*	VERSION skrivs i st f VER
+	*	(S[TTA) PERMANENT inf|rt
+	*	Underst|d f|r text-telefon inf|rt
+	[ndrat:	REFINA,QUIT,MONITO,ONLYRE,OBJSTA,CHKREC,NEW,
+		KOMMAC,CREPER,UPDBEG,CHATAB,CHATYP,
+		TERCON,TERPRO,STRCON,LOGIN,TERTAB
+-----------------------------------
+Edit 1000:	1983-08-05 14:01:52
+	*	R{ttat GENERA, s} att inte recordnummer }teranv{nds
+	*	[ndrat s} att f|rfattarens mottagarl{nk ibland visas
+	*	Lagt till "{r nu" vid organisationsmarkeringen
+		KSYS-interruptet borttaget
+	*	TTY PAGE 0 s{tts numera
+	*	TMP:BRK {r inf|rd
+	*	Inf|rt ENDAST -N
+	*	Spr}kliga korrigeringar
+	*	Lagt in PPN-uppgift i LISTA M\TEM
+	*	(TOPS-20) Redigera-kommandona fungerar nu genom att
+		editorn k|rs i en subprocess.
+	*	(TOPS-20) Egen ^T-f{lla under switchen FTHACK. Ett antal
+		sm}buggar fixade i tops20-koden.
+	*	Gjort s} man alltid slipper ge l|senord p} nytt efter CONTINUE,
+		om man har "Spara l|senord" p}slaget.
+	*	R{ttat bugg i samband med ^C vid l|senordsfr}gan
+	[ndrat:	GENERA,PRIREC,LOAEMP,MONITO,LOGIN,QUIT,PTYKOM,ONLYRE,
+		ALLTAB,WRIENT,CHATAB,RUNTAB,ADD,LISMEE,
+		CALVID,FILPRO,MONFIL,SITE
+-----------------------------------
+Edit 777:	1983-07-01 10:50:47
+		Inf|rt switchen FTDB som v{ljer databas
+		ANROPA ENGELSKA anropar KOM:COMSWE i st{llet och
+		CALL SWEDISH anropar KOM:KOMENG i st{llet
+		[ndrat h{lsningsmeddelandet
+		Inf|rt kommandona TALA SVENSKA och TALA ENGELSKA
+	[ndrat:	KOMMAC,GENERA,SITE,NEW,RUNTAB,WRITEE
+-----------------------------------
+Edit 776:	1983-06-10 10:05:10
+	*	R{ttat fel i PTYKOM
+	*	Inf|rt sm{rre r{ttelser i TOPS-20-koden
+		R{ttat utskrift av 2-siffriga tal
+		R{ttat fel i ALLA NYHETER
+	[ndrat:	PTYKOM,MONFIL,MONITO,LISPER,PRPEST,SITE,REPTIM,RDNEXT
+-----------------------------------
+Edit 775:	1983-06-01 21:54:03
+	*	Stoppat in senaste {ndringarna f|r TOPS-20.
+		Nu fungerar ^L och ^Z samt kommandot ANROPA MONITORN
+		{ven under TOPS-20. Villkorlig assemblering inlagd
+		f|r en del nytillkommen TOPS-10-specifik kod.
+	[ndrat:	KOMMAC,MONITO,MONFIL,NEW,SITE,LOGIN,REFINA,CALVID,
+		RUNTAB,TERCON,PRPEST
+-----------------------------------
+Edit 774:	1983-05-25 15:04:09
+		ACCTIM anv{nder PR2NUM f|r att klara av stora tider
+		Tagit bort radbrytningen vid filutmatning
+	*	R{ttat ^C-hanteringen
+	[ndrat:	REPTIM,FILCON,MONITO
+-----------------------------------
+Edit 773:	1983-04-27 13:09:28
+		Inf|rt ett extra numeriskt argument till DUMPA
+		Inf|rt kommandot ANROPA KOM och CALL SWEDISH COM
+		Tagit bort texten: Du {r den enda ...
+		R{ttat fel i namn-l{ngds-kontrollen
+		Inf|rt ppn-uppgift i LISTA PERSONER i ADM-mod
+		[ndrat TMP:LGI till TMP:LGN
+		Inf|rt flaggan SISPFL, datum i SIS-format
+	[ndrat:	ZAPOBJ,RUNTAB,SITE,UPDBEG,LISPRE,NEWNAM,LISPER,LOGIN,
+		KOMMAC,REPTIM,CHATAB
+-----------------------------------
+Edit 772:	1983-04-20 16:45:52
+		[ndrat nya KOM till KOM:USER och gamla till KOM:KOM
+		Lagt in loggning av felaktiga l|senord
+		R{ttat fel i kommentartr{dhanteringen
+		[ndrat felutskriften vid oinloggad k|rning
+	[ndrat:	SITE,LOGIN,REVTAB
+-----------------------------------
+Edit 771:	1983-04-11 10:16:49
+	*	Lagt in kortad v{ntetid oinloggat
+		Gjort LOGFLG global
+		Tagit bort {ndringen av TTY WIDTH
+	[ndrat:	MONITO,LOGIN,RUNTAB
+-----------------------------------
+Edit 770:	1983-04-06 14:06:52
+	*	Lagt in interrupt p} KSYS
+		Tagit bort p}slagningen av TTY NO GAG
+		R{ttat interruptrutinen f|r ^C
+		S{ndare: skrivs alltid ut i PTY-mod
+	[ndrat:	MONITO,PRIREC
+-----------------------------------
+Edit 767:	1983-03-18 17:43:14
+		Lagt in DEBRK. i interruptrutinen f|r ^C
+		R{ttat utskrift av TMP:KOM
+		L}tit PRTAB och GETLMA }terg} till sin gamla form
+	[ndrat:	MONITO,QUIT,STRPRO,TERCON
+-----------------------------------
+Edit 766:	1983-03-14 20:13:43
+		R{ttat felet som orsakade att nya personer fick gamla
+		personers plats i databasen
+	[ndrat:	CREPER
+-----------------------------------
+Edit 765:	1983-03-10 16:24:53
+		Bytt PRINT STR,ZTMKOM mot CALL PRCINM och tagit bort ZTMKOM.
+		Lagt till PRCINM, som skriver ut "run file name".
+		Tagit bort SPLDAY, lagt till UDTX, {ndrat i PDAT.
+		Markerat var CCOC-orden b|r {ndras under TOPS-20, tagit
+		bort ett tecken ur FormFeed-sekvensen f|r ANSI-terminaler
+		samt lagt till nollst{llning av LINPOS i ERASCR.
+		Lagt m{rke till underlighet i TPUTTA...
+		Lagt till anv{ndning av tab/space eller ANSI-styrkoder
+		i GETLMA, dock verkar det som om ANSI-koderna skulle beh|va
+		lite fillers, i 9600 baud blir det skrynk ibland.
+		Tab/space eller ANSI-koder i PRTAB, samma problem
+		som i GETLMA ovan. Markerat CCOC-{ndring f|r TOPS-20.
+	*	Stoppar in SELFPP i PERPPN, sist i ACTPER.
+		Lagt till CHKNAM, anropas fr}n NEWNAM.
+		Lagt till UU.PHS i OPNCEN, f|r att anv{nda "physical" KOM:.
+	[ndrat:	CALVID,MONITO,SITE,REPTIM,TERCON,STRPRO,DEAMON,NEWNAM,LOGIN
+-----------------------------------
+Edit 764:	1983-02-22 16:28:06
+		Korrigerat hj{lptexten till \VERG] NORMALMOD
+		Tagit bort ANROPA MINI-KOM
+		Sp{rrat att ett ensamt END p} en rad tolkas som kommando
+		Sp{rrat att ett ensamt BEGIN p} en rad tolkas som kommando
+		Sparat SEQFLG n{r ett f|rdr|jt kommando utf|rs
+		Snyggat till listan |ver tvetydiga namn
+	[ndrat:	CHATAB,RUNTAB,SITE,ONLYRE,QUIT,DBPRO,LOGIN
+-----------------------------------
+Edit 763:	1983-02-10 14:50:20
+		R{ttat (LISTA) ALLA KOMMENTARER
+		R{ttat nollst{llning av inmatning
+		Flyttat sovningen vid felaktigt l|senord
+	[ndrat:	ZAPOBJ,NEW,LOGIN
+-----------------------------------
+Edit 762:	1983-02-07 15:30:24
+		[ndrat (GET) ENCOURAGEMENT till GET ENCOURAGEMENT
+		[ndrat FOA:TOUCH till PUB:TOUCH
+		Tagit bort avancerad mod
+		[ndrat LINKS FROM OBJECT till LINKS TO OBJECT
+	[ndrat:	ALLTAB,SITE,KOMMAC,UPDBEG,ENTER,TOPCOM,TERTAB,CHATAB,
+		RUNTAB,EDIT,WRIENT,ADD,MOVENT,MKMENU,UNDO,GTNAME,OBJSTA
+-----------------------------------
+Edit 761:	1983-02-03 18:28:38
+		Hindrat l{sningar och skrivningar p} KOM:
+	[ndrat:	MONFIL,SITE,REFINA
+-----------------------------------
+Edit 760:	1983-02-01 15:25:48
+		R{ttat rutinen f|r databasskapelse
+		Lagt in nollst{llning av slutet av medlemslistan
+	[ndrat:	NEW,MONFIL,CRELOC
+-----------------------------------
+Edit 757:	1983-01-24 18:10:06
+		Lagt in test p} PTYFLG i QSEEN
+		Tagit bort |verhoppandet av egna inl{gg
+		Tagit bort kommandointerpretationen vid filinl{sning
+	[ndrat:	CHKNEW,JOINMT,ONLYRE,ADDENT,FILPRO
+-----------------------------------
+Edit 756:	1983-01-21 17:46:25
+		Lagt in utskrift av login PPN p} personer
+		Lagt in utskrift av login PPN p} organisationer
+	[ndrat:	PRPEST,OBJSTA
+-----------------------------------
+Edit 755:	1983-01-19 18:15:49
+		Tagit bort LOPSUM ur NEW
+		Bytt ut RESET mot CALL RSET i NEW
+		S{nkt PSI-prioriteterna, s} att 0, 1 och 2 anv{nds
+		 i st{llet f|r 0, 2 och 3. (P} JEQ's inr}dan.)
+		F|rhindrat krympande av l}gsegmentet i FOALLO.
+		Lagt till PAGIN, PAGOUT och PAGDEL.
+		Anrop av PAGIN vid COMPA2.
+		Anrop av PAGOUT vid COMPCO.
+		Flyttat CELBEG och CELEND.
+		 (M}ste nu vara globala f|r att kunna hanteras i COMPUT.)
+		Anrop av PAGDEL vid LISTM9.
+		Flyttat SORARE, lagt till SORASZ, storleken p} SORARE.
+		 (Dessa m}ste ocks} vara globala, refereras i LISMEE.)
+		Anrop av PAGDEL vid LISTP9.
+		Anrop av GTSOAR vid SORACT.
+		Lagt till GTSOAR.
+		Anrop av PAGDEL vid LISTA9.
+		Test p} PERDPP i CHFOMA.
+		Flyttat TMCBUF och TMPBUF.
+		Anrop av PAGIN vid TMCBEG.
+		Anrop av PAGDEL vid TMCEN9.
+		Anrop av PAGIN vid TMPBEG.
+		Anrop av PAGDEL vid TMPPR8.
+	[ndrat:	NEW,MONITO,COMPUT,PARSE,LISMEE,LISPER,LOGIN,MONTMP
+-----------------------------------
+Edit 754:	1983-01-17 15:50:31
+		Lagt in utskrift av namn i presentationen
+		[ndrat .CONT till .CONTINUE
+		Nollst{llt medlemsregisteret vid B\RJA NAMN
+	[ndrat:	DISPLA,QUIT,ENTER
+-----------------------------------
+Edit 753:	1983-01-12 10:26:28
+		Lagt till /INPLACE i REDIGERA (MED) TECO
+		Inf|rt kommandot GE PPN (]T)
+	[ndrat:	CALVID,ALLTAB,UPDBEG,ZAPOBJ,REFINA
+-----------------------------------
+Edit 752:	Inf|rt REDIGERA (MED) TECO
+		Plockat bort /RUN: ur ZTMKOM
+		R{ttat bugg i FLYTTA som gjorde att vem som helst kunde
+		flytta vad som helst till sej sj{lv
+	[ndrat:	SITE,CALVID,WRIENT,LOGIN,MOVENT
+-----------------------------------
+Edit 751:	Slagit av TTY CRLF f|r att f|rhindra felaktiga
+		radbrytningar p} ID100
+	[ndrat:	MONITO,DBPRO
+-----------------------------------
+Edit 750:	F} ^L att fungera {ven p} ID100
+	[ndrat:	TERTAB
+-----------------------------------
+Edit 747:	Lagt in reverse video p} inl{ggstext p} VT100-terminaler
+	[ndrat:	DBPRO
+-----------------------------------
+Edit 746:	Lagt in en blank efter edit-numret
+		Utskrift av tomma rader i status f|r m|ten stoppad
+		F{rg- och marginals{ttningen f|r namn r{ttad
+-----------------------------------
+Edit 745:	Lagt in utskrift av edit-numret
+
+( "*" markererar de {ndringar som {nnu inte {r inf|rda i KOM ver 7.)
+   

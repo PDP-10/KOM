@@ -1,0 +1,417 @@
+;Oden::DSKG:REVTAB.MAC<62,7777,MAC> 1986-06-25 06:56:25, Edit by KPJ @ 1SKEDE
+;6	Added CRLF before REVIEW AFTER and REVIEW BEFORE questions.
+;Oden::DSKD:REVTAB.MAC[62,7777,MAC] 1985-10-09 04:07:59, Edit by KPJ
+;5	PARDTM is now called SCNDAT.
+;Oden::Oden::DSKD:REVTAB.MAC<62,7777,MAC> 1985-10-08 00:33:03, Edit by KPJ
+;4	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:REVTAB.MAC<62,7777,MAC> 1985-08-01 08:32:37,Editor: KPJ @ Dumper
+;3	Got rid of dummy "LINES" in SCAN and REVIEW commands.
+;	Merged several routines. Moved texts to TEXTER.
+;Oden::DSKD:REVTAB.MAC<62,7777,MAC> 1985-08-01 07:52:56,Edit: KPJ @ Loud Room
+;2	Expunged deleted code.
+;Oden::DSKD:REVTAB.MAC[62,7777] 1984-11-12 15:41:34, Edit by K.JAAKKOLA
+;1	SEARCH UUOSYM only on Tops-10.
+
+	SEARCH	kommac		;[KPJ.1]
+	PROLOG	(revtab)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computer Centre, 1984-08-15 10:21:46
+
+;	D A T A   A R E A
+
+
+abonr::	0			;subject
+bacfl::	-1			;backward flag
+bynr::	0			;author
+disnr::	0			;number of entries to show
+entmax::-1			;number of lines to show
+nohflg::0			;no heading flag
+recflg::0			;receiver flag
+seqflg::0			;sequence flag
+tonr::	0			;receiver
+
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+; REVTAB	table for REVIEW arguments
+
+revtab::table	sn,[EXP 0,dishlp],zzhelp##	;help
+	table	sn,[EXP 0,dislas],zlast##	;last
+	table	sn,[EXP 0,disfir],zfirst##	;first (lines)
+	table	sn,[EXP 0,disall],zall##	;all
+	table	sn,[EXP 0,dislet],zlette##	;letters
+	table	sn,[EXP 0,dispre],zprese##	;presentation
+	table	sn,[EXP 0,discod],zcomed##	;(the) commented
+	table	sn,[EXP	0,disaco],zalcom##	;all comments
+	table	sn,[EXP 0,disnex],znext##	;next
+	table	sn,[EXP 0,disby],zby##		;by
+	table	sn,[EXP 0,disby],zfrom##	;from
+	table	sn,[EXP 0,disto],zto##		;to
+	table	sn,[EXP 0,dissme],zsubme##	;(the commented) tree
+	table	sn,[EXP 0,disntx],znotex##	;no text
+	table	sn,[EXP 0,disaga],zagain##	;again
+	table	sn,[EXP 0,disseq],zseque##	;(in) sequence
+	table	sn,[EXP 0,disind],zindiv##	;individually
+	table	sn,[EXP 0,dismar],zalmar##	;all marked
+	table	sn,[EXP 0,diswoh],zwohed##	;no heading
+	table	sn,[EXP 0,diswre],zwirec##	;with receivers
+	table	sn,[EXP 0,disnre],zworec##	;no receivers
+	table	sn,[EXP 0,diswtx],zwitex##	;with text
+	table	sn,[EXP 0,diswhe],zwihed##	;with heading
+	table	sn,[EXP 0,disbac],zbackw##	;backwards
+	table	sn,[EXP 0,disfor],zforwa##	;forwards
+	table	sn,[EXP 0,getbfr],zbefor##	;before
+	table	sn,[EXP 0,getaft],zafter##	;after
+	endtab
+;-
+
+
+;+
+;GETAFT		REVIEW AFTER command
+;-
+
+getaft:	save	<str,nr,quest##>
+	MOVEI	t,aftqst			;routine to ask for data
+	MOVEM	t,quest##			;set it to be called
+	CALL	read##				;get the data
+	 JRST	getaf9				;no data
+	CALL	scndat##			;<KPJ.5> parse daytime
+	 SETO	nr,				;failed
+	MOVEM	nr,afttim##			;save data
+getaf9:	return
+
+;+
+;AFTQST		ask for REVIEW AFTER
+;-
+
+aftqst:	save	<str>
+	CALL	preol##
+	print	zzaftq##		;"After what daytime? "
+	return
+
+;+
+;GETBFR		REVIEW BEFORE command
+;-
+
+getbfr:	save	<str,nr,quest##>
+	MOVEI	t,bfrqst			;set question to ask
+	MOVEM	t,quest##
+	CALL	read##				;ask for the data
+	 JRST	getbf9				;no data
+	CALL	scndat##			;<KPJ.5> parse daytime
+	 HRLOI	nr,^O377777			;failed
+	MOVEM	nr,bfrtim##			;save the big fucking radio
+getbf9:	return
+
+
+;+
+;BFRQST		ask for REVIEW BEFORE
+;-
+
+bfrqst:	save	<str>
+	CALL	preol##
+	print	zzbfrq##		;"Before what daytime? "
+	return
+
+
+;+
+;DISHLP		REVIEW HELP command
+;-
+
+dishlp:	save	<tp>
+	MOVE	tp,revtab		;get sub command table
+	CALL	pcomma##		;display the REVIEW subcommands
+	SETOM	errfl##			;command ready
+	return
+
+
+;+
+;DISLAS		REVIEW LAST command
+;accepts	TONR/	receiver (or 0)
+;returns	+1 always, with
+;		BACFL/	-1 (means BACKWARDS)
+;		TONR/	current conference (if =0)
+;-
+
+dislas:	CALL	gedinr			;get number of entries
+	SETOM	bacfl			;display backwards
+	SKIPE	tonr			;receiver defined ?
+	 JRST	disla9			;yes, dont change it
+	MOVE	t,conf##
+	MOVEM	t,tonr			;set receiver
+disla9:	return
+
+
+;+
+;GEDINR		get number of entries to display
+;returns	DISNR/	number (if any input)
+;		ERRFL/	-1 always
+;-
+
+gedinr::save	<nr>
+	ifoff	hlpflg##,gedin1		;help wanted ?
+	print	zlahlp##		;yes, give it
+	SETOM	errfl##			;interrupt
+gedin1:	CALL	getnum##		;get argument
+	 JRST	gedin9			;no argument
+	MOVEM	nr,disnr		;save argument
+gedin9:	return
+
+
+;+
+;DISFIR		REVIEW FIRST command
+;		SCAN FIRST command
+;-
+
+disfir:	save	<nr>
+	CALL	getnum##		;get argument
+	 MOVEI	nr,1			;default one
+	MOVEM	nr,entmax		;save argument
+	SKIPL	nohflg			;no heading ?
+	 JRST	disfi9
+	SOJG	nr,disfi9		;more than one line ?
+	SETOM	seqflg			;no, get sequence
+disfi9:	return
+
+
+;+
+;DISALL		REVIEW ALL command
+;-
+
+disall:	SETOM	disnr			;get all entries
+	SETZM	bacfl			;display forwards
+	SKIPE	tonr			;receiver defined ?
+	 JRST	disal9			;yes
+	MOVE	t,conf##		;no, set current conference
+	MOVEM	t,tonr
+disal9:	return
+
+
+;+
+;DISLET		REVIEW LETTERS command
+;-
+
+dislet:	CALL	gedinr			;get number of letters
+	SETOM	bacfl			;display backwards
+	MOVE	t,crenr##		;set receiver
+	MOVEM	t,tonr
+	SKIPE	revfun##		;function defined ?
+	 JRST	disle9			;yes
+	MOVEI	t,gelale##		;set review function
+	MOVEM	t,revfun##
+disle9:	return
+
+
+;+
+;DISPRE		REVIEW PRESENTATION command
+;-
+
+dispre:	CALL	gtoldn##		;get objects
+	ifon	errfl##,dispr9		;error ?
+	MOVE	t,arglis##		;get list of objects
+	MOVEM	t,entlis##
+	MOVEI	t,enlifu##		;entry list function
+	MOVEM	t,revfun##
+dispr9:	return
+
+
+;+
+;DISCOD		REVIEW (THE) COMMENTED command
+;		implies a REVIEW ALL COMMENTS
+;-
+
+discod:	setmem	curlis##,hdfrob##	;get from links
+	branch	disaco			;display all from links
+
+
+;+
+;DISACO		REVIEW ALL COMMENTS comments
+;-
+
+disaco:	SETOM	disnr			;get all comments
+	SETZM	bacfl			;display forwards
+	setmem	revfun##,dicofu##	;set review function
+	return
+
+
+;+
+;DISNEX		REVIEW NEXT command
+;-
+
+disnex:	branch	gedinr			;get number of entries
+
+
+
+;+
+;DISBY		REVIEW BY and REVIEW FROM commands
+;-
+
+disby:	save	<nr>
+	CALL	gtmana##		;get author
+	 JRST	disby8			;error
+	MOVEM	nr,bynr			;save author
+	SKIPE	revfun##		;function defined ?
+	 JRST	disby9			;yes, dont change it
+	SKIPE	tonr			;receiver defined ?
+	 JRST	disby9			;yes, dont set function
+	setmem	revfun##,dibyfu##	;set review function
+	TRNA	
+disby8:	 SETOM	errfl##			;error
+disby9:	return
+
+
+;+
+;DISTO		REVIEW TO command
+;-
+
+disto:	save	<nr>
+	CALL	gtmana##		;get receiver
+	 JRST	disto8			;error
+	MOVEM	nr,tonr			;save receiever
+	SKIPE	revfun##		;function defined ?
+	 JRST	disto9			;yes
+	MOVEI	t,ditofu##		;set review function
+	MOVEM	t,revfun##		;. . .
+	TRNA
+disto8:	 SETOM	errfl##			;error
+disto9:	return
+
+
+;+
+;DISSME		REVIEW (THE COMMENTED) TREE command
+;-
+
+dissme:	save	<nr,bfp,gp1>
+	MOVE	nr,lastnr##		;get last seen entry
+	CALL	getobj##		;get it
+	 JRST	dissm8			;error
+	MOVE	nr,dirsub(bfp)		;get sub meeting link
+	CALL	getobj##		;get link
+	 JRST	dissm8			;error
+	MOVE	nr,lnkrec(bfp)		;get sub meeting
+	CALL	getobj##		;get sub meeting
+	 JRST	dissm8			;sub meeting removed
+	MOVEM	nr,abonr		;save subject
+	SETOM	disnr			;get all
+	SETZM	bacfl			;display forwards
+	SKIPE	revfun##		;function defined ?
+	 JRST	dissm9			;yes
+	setmem	revfun##,diabfu##	;set review function
+	TRNA
+dissm8:	 SETOM	errfl##			;error
+dissm9:	return
+
+
+;+
+;DISNTX		REVIEW/SCAN NO TEXT command
+;DISWTX		REVIEW/SCAN WITH TEXT command
+;-
+
+disntx:	SETOM	seqflg			;show in sequence
+	TDZA	t,t			;show no text
+diswtx:	 SETO	t,			;no limit
+	MOVEM	t,entmax
+	return
+
+
+;+
+;DISAGA		REVIEW AGAIN command
+;-
+
+disaga:	CALL	gedinr			;get number of entries
+	setmem	revfun##,diagfu##	;set review function
+	return
+
+
+;+
+;DISIND		REVIEW INDIVIDUALLY command
+;DISSEQ		REVIEW (IN) SEQUENCE command
+;-
+
+disind:	TDZA	t,t			;clear sequence flag
+disseq:	 SETO	t,			;set sequence flag
+	MOVEM	t,seqflg		;save it
+	return
+
+
+;+
+;DISMAR		REVIEW ALL MARKED command
+;-
+
+dismar:	setmem	revfun##,dimafu##	;set review function
+	SETOM	disnr			;review all
+	return
+
+
+;DISWHE		REVIEW/SCAN WITH HEADING command
+;DISWOH		REVIEW/SCAN NO HEADING command
+;-
+
+diswhe:	TDZA	t,t			;clear no heading flag
+diswoh:	 SETO	t,			;set no heading flag
+	MOVEM	t,nohflg
+	return
+
+
+;+
+;DISWRE		REVIEW/SCAN WITH RECIEVERS command
+;DISNRE		REVIEW/SCAN NO RECIEVERS command
+;-
+
+diswre:	SKIPA	t,[1]			;increase receiver flag
+disnre:	 SETO	t,			;decrease receiver flag
+	MOVEM	t,recflg
+	return
+
+
+;+
+;DISBAC		REVIEW BACKWARDS command
+;-
+
+disbac:	CALL	gedinr			;get number of entries
+	SETOM	bacfl			;set backward flag
+	return
+
+
+;+
+;DISFOR		REVIEW FORWARDS command
+;-
+
+disfor:	CALL	gedinr			;get number of entries
+	SETZM	bacfl			;set backwards flag off
+	return
+
+
+;+
+;SCATAB		table for SCAN command
+
+scatab::table	sn,[EXP 0,scahlp],zzhelp##	;help
+	table	sn,[EXP 0,disfir],zfirst##	;first (lines)
+	table	sn,[EXP 0,disntx],znotex##	;no text
+	table	sn,[EXP 0,diswtx],zwitex##	;with text
+	table	sn,[EXP 0,disnre],zworec##	;no receivers
+	table	sn,[EXP 0,diswre],zwirec##	;with receivers
+	table	sn,[EXP 0,diswoh],zwohed##	;no heading
+	table	sn,[EXP 0,diswhe],zwihed##	;with heading
+	endtab
+;+
+
+
+
+
+;+
+;SCAHLP		SCAN HELP command
+;-
+
+scahlp:	save	<tp>
+	MOVE	tp,scatab		;get sub command table
+	CALL	pcomma##		;print all commands
+	SETOM	errfl##			;command ready
+	return
+
+	END
+..and no more

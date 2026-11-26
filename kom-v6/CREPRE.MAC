@@ -1,0 +1,127 @@
+;Oden::DSKG:CREPRE.MAC<62,7777,MAC> 1987-06-19 14:20:09, KPJ @ L89 <1,2>
+;5	We are not in present record when not logged in.
+;Oden::DSKD:CREPRE.MAC<62,7777,MAC> 1985-09-30 21:44:31, Edit by K P J
+;4	Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:CREPRE.MAC[62,7777] 1984-12-17 09:15:35, Edit by KPJ @ L89
+;3	Brush up code.
+;Oden::DSKD:CREPRE.MAC[62,7777] 1984-09-18 19:51:44, Edit by B.CARLSSON
+;2 	No good to use the macro fromto if you say fromto (foo),(bar).
+;	Since macro will barf.
+;Oden::Dskd:Crepre.Mac[62,7777] 1984-05-14 16:19:24, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(crepre)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 16:19:24
+
+;	D A T A   A R E A
+
+
+prenr:	0			;present list number
+
+	CODE
+
+;+
+;CREPRE		creates a new present list record
+;accepts	CONF/	present conference
+;		NAMLIS/	write mark
+;returns	PRENR/	number of new record
+;-
+
+crepre::save	<nr>
+	CALL	allpre		;allocate record number
+	MOVEM	nr,prenr	;save record number
+	CALL	makpre		;create a present record 
+	return
+
+
+;+
+;ALLPRE		allocate present list element
+;returns	NR/	number of new record
+;-
+
+allpre:	save	<gp1,bfp>
+	CALL	gudate##	;get current date
+	MOVEI	gp1,pre		;get present file
+	MOVEI	nr,1		;get first record
+allpr1:	CALL	find##		;get record
+	 JRST	allpr2		;end of file
+	MOVE	t,preper(bfp)	;get present person
+	CAME	t,selfnr##	;self ?
+	 AOJA	nr,allpr1	;no, get next record
+	JRST	allpr9
+
+allpr2:	MOVEI	gp1,pre-1	;get activity file
+	CALL	allold##	;get oldest
+	MOVEI	gp1,pre		;get present file
+allpr9:	CALL	makpoi##	;make pointer
+	return
+
+
+
+;+
+;MAKPRE		make a new record
+;accepts	NR/	record number
+;		CONF/	present conference
+;		NAMLIS/	write mark
+;-
+
+makpre:	save	<bfp,gp1>
+	CALL	updobj##		;get record area
+	 JRST	makpr1			;record not found
+	SKIPG	0(bfp)			;record deleted ?
+makpr1:	 CALL	incpre			;increase sum of sessions
+	CALL	clerec##		;clear record
+	MOVEM	nr,0(bfp)		;save object number
+	MOVE	t,curdat##		;save creation date
+	MOVEM	t,pretim(bfp)
+	MOVE	t,selfnr##		;save creator
+	MOVEM	t,preper(bfp)
+	MOVE	t,conf##		;save present conference
+	MOVEM	t,premee(bfp)
+	SKIPN	gp1,namlis##		;get write status
+	 JRST	makpr9			;not writing
+	MOVE	t,0(gp1)		;[BCQ.2] save first receiver
+	MOVEM	t,prewri(bfp)		;[BCQ.2]
+makpr9:	return
+
+
+
+;+
+;INCPRE		increase sum of sessions
+;accepts	GP1/	present file
+;-
+
+incpre:	save	<nr,bfp,gp1>
+	CALL	insuob##		;increase total sum
+	MOVE	nr,selfnr##		;get self
+	CALL	updobj##		;get person
+	 TRNA				;not defined
+	  AOS	pernpr(bfp)		;increase number of sessions
+	return
+
+
+;+
+;ENDPRE		clear up present list
+;accepts	PRENR/	present list record
+;returns	+1 always, with ERRFL non-zero if error
+;-
+
+endpre::save	<nr>
+	SETZM	errfl##			;<KPJ.4> no errors yet
+	SKIPG	nr,prenr		;get record
+	 JRST	endpr9			;<KPJ.4> no record
+	CALL	drecor##		;delete your own record
+	 JRST[	SETOM	errfl##		;<KPJ.4> failed
+		CALL	qlogin##	;<KPJ.5> logged in?
+		 $Skipa			;<KPJ.5> sure
+		  JRST	endpr9		;<KPJ.5> nope, we are done
+		CALL	preol##		;<KPJ.4> crlf
+		print	znsuch##	;<KPJ.4> "you are not present"
+		JRST	endpr9]		;<KPJ.5!KPJ.4>
+endpr9:	return
+
+	END
+..and no more

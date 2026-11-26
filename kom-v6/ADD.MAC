@@ -1,0 +1,433 @@
+;Oden::DSKG:ADD.MAC<62,7777,MAC> 1987-09-09 10:29:09, KPJ @ L89 <10,50>
+;15	Test for "@" as first character when adding as a member.
+;Oden::DSKG:ADD.MAC<62,7777,MAC> 1987-05-13 14:51:22, KPJ @ L89 <1,2>
+;14	Correct call to COMMAT in GTYPTA.  Handle GTTYTA error code.
+;Oden::DSKG:ADD.MAC<62,7777,MAC> 1986-11-10 15:38:10, Edit by KPJ @ L89
+;13	Handle +2 return from ISLURP.
+;Oden::DSKD:ADD.MAC[62,7777,TTQ] 1986-01-15 15:25:12, Edit by THOLERUS T
+;12	Made ADDMEM global, called from MEMBER module
+;Oden::DSKD:ADD.MAC<62,7777,MAC> 1985-11-01 07:21:10, Edit by KPJ
+;11	Return -2 error from GTTYTA (used by QYESNO).
+;Oden::DSKD:ADD.MAC<62,7777,MAC> 1985-10-01 07:52:00, Edit by KPJ
+;10	Sanitized code.
+;Oden::DSKD:ADD.MAC<62,7777,MAC> 1985-09-24 08:56:03, Edit by KPJ
+;7	Introduced PROLOG macro. New format of PRINT macro.
+;Oden::DSKD:ADD.MAC<62,7777,MAC> 1985-07-04 19:03:53, Edit by KPJ @ L89
+;6	Fixed bug with COMMENT ON: command (et al.). Also added defensive code
+;	for the future.
+;Freja::<KOM.6-SOURCES>ADD.MAC.4 15-Mar-85 03:53:48,Editor:KPJ-JAAKKOLA
+;5	Made copyright a comment.
+;Oden::DSKD:ADD.MAC[62,7777] 1984-11-19 13:06:13, Edit by K.JAAKKOLA
+;4	Moved texts to TEXTER.MAC (for easier later changes)
+;	SEARCH fixed to search correct files for T10 and T20.
+;Oden::DSKD:ADD.MAC[62,7777] 1984-10-12 12:52:11, Edit by K.JAAKKOLA
+;3	Global ADDMEM never referenced outside this module. Now local.
+;	Included copyright.
+;Oden::Dskd:Add.Mac[62,7777] 1984-05-11 16:09:44, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 changes. Updated copyright notice.
+;Oden::Dsk:Add.New[1116,134] 1982-03-02 18:49:59, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(add)		;<KPJ.7>
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	copyright <QZ Computing Centre, 1984>		<KPJ.5!KPJ.3>
+;
+;+
+;	ADD.MAC contains ADD command routines.
+;-
+
+;	D A T A   A R E A
+
+
+actflg::0				;activate flag
+oadlis:	0				;add list
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+add::	comhed	0,addarg,cadd,ccadd##,zaddhl##	;ADD command
+;-
+
+;+
+;ADDARG		argument to ADD command
+;returns	+1 always
+;	with	OADLIS	\
+;		LNTYPE	- arguments
+;		ARGLIS	/
+;-
+
+addarg:	save	<quest##,menuq##>
+	MOVEI	t,asknad		;ask what to add
+	MOVEM	t,quest##
+	CALL	gtname##		;get list of names
+	SKIPGE	errfl##			;error ?
+	 JRST	addar9			;yes
+	MOVE	t,arglis##		;no, save add list
+	MOVEM	t,oadlis
+	MOVEI	t,zwhadd##		;ask "as what should these be added"
+	MOVEM	t,menuq##
+	CALL	gelnty			;get link type
+	SKIPGE	errfl##			;error ?
+	 JRST	addar9			;yes, exit
+	MOVEI	t,askfad		;no, ask for FROM object
+	MOVEM	t,quest##
+	CALL	gtname##		;get object number
+addar9:	return
+
+
+
+;+
+;ASKNAD		ask for what to add
+;returns	+1 always
+;-
+
+asknad:	save	<str>
+	MOVEI	str,zhladd##		;explanation of ADD command
+	SKIPGE	hlpflg##		;help wanted?
+	 CALL	prstr##			;yes, explain ADD command
+	CALL	preol2##		;new line
+	print	zasadd##		;ask who wanted added
+	CALL	preol##			;new line
+	branch	prher##			;print prompter and return
+
+
+
+;+
+;GELNTY		get link type
+;accepts	MENUQ/	menu question
+;returns	+1 always,
+;	with	LNTYPE/	type got
+;		ERRFL/	-1 if no type got
+;			-2 if empty reply
+;			-3 ambiguous
+;			 0 OK
+;-
+
+gelnty:	save	<tp,nr>
+	MOVE	tp,ltytab		;get link type table
+	CALL	gttyta			;get type from table
+	SKIPL	t,errfl##		;<KPJ.14> any error?
+	 JRST	gelnt8			;<KPJ.14> no
+	CAMN	t,[-2]			;<KPJ.14> no answer?
+	 JRST	gelnt9			;<KPJ.14>
+	CAMN	t,[-3]			;<KPJ.14> ambiguous?
+	 JRST[	CALL	ambcom##	;<KPJ.14> yes, say so
+		JRST	gelnt9]		;<KPJ.14>
+
+;	(assume error code -1)
+
+	MOVEI	str,zflaar##		;<KPJ.14> "no such keyword"
+	CALL	errcom##		;<KPJ.14>
+	$Skipa				;<KPJ.14>
+gelnt8:	 MOVEM	nr,lntype##		;<KPJ.14> no, save link type
+gelnt9:	return
+
+
+
+
+
+;+
+;LTYTAB		link type table
+
+ltytab:	table	sn,[EXP 0,typrec],zareco## ;(as) receivers (of)
+	table	sn,[EXP 0,typkno],zaicro## ;(as) info copy receivers (of)
+	table	sn,[EXP 0,typexc],zaexco## ;(as) single copy receiver (of)
+	table	sn,[EXP 0,typmem],zamemo## ;(as) member (of)
+	endtab
+
+
+
+;+
+;GTTYTA		get type from table
+;accepts	TP/	type table
+;		MENUQ/	menu question
+;returns	+1 always,
+;	with	ERRFL/	error:
+;			-1	no matching answer (invalid answer)
+;			-2	no answer
+;			-3	ambiguous answer
+;			0	OK, with NR/	value
+;-
+
+gttyta::save	<quest##>
+	MOVEI	t,pcomma##		;print all commands
+	MOVEM	t,quest##
+	CALL	rdcomm##		;read command
+	 JRST[	MOVNI	t,2		;<KPJ.11> error
+		MOVEM	t,errfl##	;<KPJ.11> no reply, set error "-2"
+		JRST	gttyt9]		;and exit
+	CALL	gtypta			;get type
+gttyt9:	return
+
+
+
+
+
+;+
+;GTYPTA		get type from table
+;accepts	TP/	type table
+;returns	+1 always
+;	with	NR/	value
+;		ERRFL/	-1 if no match
+;			-3 ambiguous
+;-
+
+gtypta:	CALL	commat##		;match ?
+	 JRST[	SETOM	errfl##		;<KPJ.14> +1, no match
+		JRST	gtypt9]		;<KPJ.14>
+	  JRST[	MOVE	nr,@agrval##	;<KPJ.14> +2 yes, get link type
+		MOVE	nr,1(nr)	;get link type
+		JRST	gtypt9]		;<KPJ.14> done
+	MOVNI	t,3			;<KPJ.14> +3 ambiguous
+	MOVEM	t,errfl##		;<KPJ.14>
+gtypt9:	return
+
+
+
+
+
+;+
+;ASKFAD		ask for object to add to
+;returns	+1 always
+;-
+
+askfad: save	<str>
+	CALL	addhlp			;give add help
+	print	zastad##		;ask to what you want them added
+	branch	prher##			;print prompter
+
+
+
+;+
+;ADDHLP		give add help
+;returns	+1 always
+;-
+
+addhlp:	save	<str>
+	MOVEI	str,zhltad##		;add help text
+	SKIPGE	hlpflg##		;help wanted?
+	 CALL	prstr##			;yes
+	branch	preol2##		;blank line
+
+
+
+;+
+;CADD		add objects to objects
+;accepts	OADLIS	\
+;		LNTYPE	- arguments
+;		ARGLIS	/
+;returns	+1 always
+;-
+
+cadd:	save	<gp1,tp,nr>
+	MOVE	tp,oadlis		;get arg list
+cadd2:	MOVE	nr,0(tp)		;get TO object
+	CALL	chkrec##		;check receiver
+	JUMPE	nr,cadd3		;any receiver ?
+	MOVE	gp1,arglis##		;get add list
+cadd1:	MOVE	t,0(gp1)		;get FROM object
+	MOVEM	t,froobj##
+	CALL	adobob			;add object to object
+	SKIPE	gp1,1(gp1)		;get next FROM object
+	 JRST	cadd1
+cadd3:	SKIPE	tp,1(tp)		;get next TO object
+	 JRST	cadd2
+	return
+
+
+
+
+
+;+
+;ADOBOB		add object to object
+;		requires organizer or administrator capabilities
+;		On failure, operation is rejected, and an error message output
+;		On success, the operation is reported
+;accepts;	NR/	the TO object
+;		LNTYPE/	link type wanted
+;		FROOBJ/	the FROM object
+;returns	+1 always.
+;-
+
+adobob:	save	<nr,gp1,gp2>
+	MOVEM	nr,toobj##		;set to object
+	MOVE	t,lntype##		;<KPJ.15> get link type
+	CAIN	t,typmem		;<KPJ.15> membership link wanted?
+	 JRST[	LDB	t,[POINT 9,nr,8]	;<KPJ.15> get file#
+		CAIE	t,mee			;<KPJ.15> conference?
+		 CAIN	t,per			;<KPJ.15> or person?
+		  $Skipa			;<KPJ.15> yes
+		   JRST	.+1			;<KPJ.15> wasn't
+		CALL	getobj##		;<KPJ.15> get the object
+		 JRST	.+1			;<KPJ.15> ugh, let'm try
+		SKIPG	0(bfp)			;<KPJ.15> existent?
+		 JRST	.+1			;<KPJ.15> no, let'm try
+		MOVEI	t,recstr(bfp)		;<KPJ.15> point at name
+		HRLI	t,(POINT 7,)		;<KPJ.15> make byte pointer
+		ILDB	t2,t			;<KPJ.15> get first character
+		CAIE	t2,"@"			;<KPJ.15> "@name"?
+		 JRST	.+1			;<KPJ.15> no, continue
+		CALL	chkorg##		;<KPJ.15> yes, we organize?
+		 JRST[	CALL	saynot##	;<KPJ.15> no, barf
+			JRST	adobo9]		;<KPJ.15> and refuse
+		JRST	.+1]			;<KPJ.15> yes, continue
+	MOVE	nr,froobj##		;get from object
+	CALL	chkorg##		;organizer ?
+	 JRST[	CALL	saynot##	;no, don't allow him
+		JRST	adobo9]
+	CALL	updbeg##		;start update
+	MOVE	t,lntype##		;get link type
+	CAIN	t,typmem		;is the link of type member ?
+	 JRST[	CALL	addmem		;yes, add member
+		JRST	adobo1]
+	CALL	crelnk##		;no, create link
+adobo1:	CALL	updend##		;end of update
+	CALL	reptyp			;report type of addi(c)tion
+adobo9:	return
+
+
+
+
+
+;+
+;ADDMEM		add member
+;accepts	TOOBJ/	person
+;		FROOBJ/	conference
+;returns	+1 always
+;-
+
+addmem::save	<nr,gp1>		;<TTQ.12>
+	MOVE	nr,froobj##		;get conference
+	CALL	chkmee##		;conference ?
+	 JRST	addme9			;no, error
+	MOVE	nr,toobj##		;get person
+	MOVE	gp1,froobj##		;get conference
+	CALL	adcope			;add conference to person
+	EXCH	nr,gp1			;exchange person and conference
+	CALL	adpeco			;add person to conference
+addme9:	return
+
+
+
+
+
+;+
+;ADCOPE		add conference to person
+;accepts	NR/	person
+;		GP1/	conference
+;returns	+1 always
+;-
+
+adcope:	save	<gp2,txt,bfp,gp1>
+	CALL	chkper##		;person ?
+	 JRST	adcop9			;no, error
+	CALL	islurp##		;slurp in register
+	 JRST	adcop9			;<KPJ.13> failed, give up
+	MOVEM	gp2,txt			;save start of register
+	CALL	seacon##		;search for conference
+	 JRST	adcop1			;not member
+	SKIPLE	0(gp2)			;already member ?
+	 JRST	adcop9			;yes
+adcop1:	EXCH	nr,gp1			;get conference
+	CALL	bememb##		;become member
+	EXCH	nr,gp1			;get person
+	CALL	updobj##		;get person
+	 error	<adcope add>
+	AOS	permem(bfp)		;one more membership
+	CALL	endper##		;get end of register
+	CALL	oslurp##		;slurp out
+adcop9:	return
+
+
+
+
+
+;+
+;ADPECO		add person to conference
+;accepts	NR/	conference
+;		GP1/	person
+;returns	+1 always
+;-
+
+adpeco:	save	<gp2,txt>
+	CALL	islurp##		;slurp in register
+	 JRST	adpec9			;<KPJ.13> failed, give up
+	MOVEM	gp2,txt			;save start of register
+	CALL	addper			;add person
+	CALL	endcon##		;get end of register
+	CALL	oslurp##		;slurp out
+	SETZM	actflg			;clear activate flag
+adpec9:	return				;<KPJ.13>
+
+
+
+
+
+;+
+;ADDPER		add person
+;accepts	GP1/	person
+;		NR/	conference
+;		GP2/	member list
+;returns	+1 always
+;	with	GP2/	member element
+;-
+
+addper::save	<gp1,bfp>
+	CALL	seaper##		;search for person
+	 JRST[	SETZM	mbrsiz(gp2)	;not member, new end mark
+		JRST	addpe2]
+	SKIPLE	0(gp2)			;already member ?
+	 JRST	addpe9			;yes, done
+addpe2:	MOVEM	gp1,mbrper(gp2)		;save person
+	MOVE	t,curdat##		;save creation date
+	MOVEM	t,mbrtim(gp2)
+	SETZM	mbrnum(gp2)		;clear last seen entry
+	SETOM	actflg			;activate member list
+	CALL	updobj##		;get conference
+	 error	<addper add>
+	AOS	meemem(bfp)		;one more member
+addpe9:	return
+
+
+
+
+
+
+;+
+;REPTYP		report type of addition
+;		outputs "<TO object> added as <mumble> to <FROM object>"
+;accepts	TOOBJ/	objects
+;		FROOBJ/	objects
+;		LNTYPE/	link type
+;returns	+1 always
+;-
+
+reptyp::save	<gp2,str,nr>
+	CALL	preol##			;new line
+	MOVE	nr,toobj##		;get TO object
+	CALL	prname##		;output  name of TO object
+	MOVE	nr,lntype		;<KPJ.6> get link type
+	SETZ	str,			;<KPJ.6>
+	CAIN	nr,typrec
+	 MOVEI	str,zaarec##		;"as receiver of"
+	CAIN	nr,typkno
+	 MOVEI	str,zaaicr##		;"as info copy of"
+	CAIN	nr,typcom
+	 MOVEI	str,zaacom##		;"as a comment of"
+	CAIN	nr,typexc
+	 MOVEI	str,zaaexc##		;"as single copy of"
+	CAIN	nr,typmem
+	 MOVEI	str,zaamem##		;"as member of"
+	CAIN	str,0			;<KPJ.6> message defined?
+	 MOVEI	str,zaafoo##		;<KPJ.6> no, just mumble
+	CALL	prstr##			;output it
+	MOVE	nr,froobj##		;get from object
+	CALL	prname##		;output its name
+	return
+
+	END
+..and no more

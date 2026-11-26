@@ -1,0 +1,1441 @@
+;Freja::Qs:<Kom.6.Macro>Login.Mac.24 880225-1917,KPJ-Jaakkola
+;114	LOGIN% clears the job's capabilities.  Put them back.  We need the
+;	^C capability.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1987-05-14 20:26:32, KPJ @ H.HOLE <1,2>
+;113	Test correct password.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1987-05-13 11:15:35, KPJ @ L89 <10,50>
+;112	Rename ENCRYP to ENKRYP, because of name collision.
+;	Add half-duplex support under FTHALF assembly switch.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1987-05-08 17:17:22, KPJ @ L89 <62,50>
+;111	Make an area to save password area in, when we are changing random
+;	passwords.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1987-04-05 04:02:41, KPJ @ H.HOLE <1,2>
+;110	WRONAM localized. Give login try routine the object# of the object
+;	we failed to login as (0 if invalid name).
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1987-02-23 14:02:58, Edit by KPJ @ L89
+;107	Make EMPLOYEE LOGIN work.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1987-02-09 12:09:42, Edit by KPJ @ L89
+;106	Cleaned up and optimized code.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1987-01-04 00:34:12, Edit by KPJ @ H.HOLE
+;105	Moved password logger to ERRLOG, where it belongs.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1987-01-02 05:14:41, Edit by KPJ @ H.HOLE
+;104	TMCEND returns +2 on success. Output message for user when it does.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-12-28 08:14:23, Edit by KPJ @ H.HOLE
+;103	Forget current conference if incorrect password in LOGIN.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-12-11 18:33:43, Edit by KPJ @ L89
+;102	PUTCH is a macro.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-12-11 16:34:55, Edit by KPJ @ L89
+;101	Handle +2 return from GELAMA.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-11-19 21:33:40, Edit by KPJ @ L89
+;100	Incorrect password is an error.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-10-29 13:53:57, Edit by KPJ @ L89
+;77	Use QZIF/FOAIF/RUNIF. Put QZ specific LOGIN switches under QZIF.
+;	FTBG00 stuff as BUGFIX macro.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-10-14 16:52:58, Edit by KPJ @ L89
+;76	Employee support under FTEMPL.
+;Oden::Freja::Qs:<Kom.6.Macro>Login.Mac.18 860811-1739,KPJ-Jaakkola
+;75	Mismatched T10 conditional.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-08-11 17:05:25, Edit by KPJ @ L89
+;74	ENDKO0 called when ENDKO9 intended. Better not call subroutines
+;	a JRST...
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-08-11 16:45:03, Edit by KPJ @ L89
+;73	Better clear person number when QUITing.
+;Freja::Qs:<Kom.6.Macro>Login.Mac.5 860715-0047,KPJ-Jaakkola
+;72	FOAPPN is T10 only. LOGIN% requires an account specifier (there is no
+;	way to make LOGIN% use the default-account), so we try to read it from
+;	the directory using the password. If fails, just pretend it's raining.
+;Freja::Qs:<Kom.6.Macro>Login.Mac.4 860714-2354,KPJ-Jaakkola
+;71	CALLO7 undefined, deleted.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-07-11 13:13:25, Edit by KPJ @ L89
+;70	Use UU.PHS on KOM:ERRLOG.TXT only if data base has it.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-06-26 22:30:47, Edit by KPJ @ L89
+;67	Moved RUNLOG here from SITE.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-06-12 11:44:51, Edit by KPJ @ L89
+;66	Added code for half duplex under FTHALF switch.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-06-12 10:17:27, Edit by KPJ @ L89
+;65	Name collision (ZWHADD now ZGRONK)
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-06-09 18:55:33, Edit by KPJ @ L89
+;64	Handle TOPS-20 KOM-login better.
+;Oden:.DSKG:LOGIN.MAC<62,7777,MAC> 1986-06-05 16:51:51, Edit by KPJ @ L89
+;63	Anonymity under FTANON. Text moved to TEXTER. Enabled half-duplex
+;	doormat handler.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-06-05 16:41:10, Edit by KPJ @ L89
+;62	Moved texts to TEXTER.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-05-22 09:26:29, Edit by KPJ @ L89
+;61	Error in LOGTRY-20.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-05-02 17:30:35, Edit by KPJ @ L89
+;60	Fixed password logging:
+;	not logged in:	don't log empty password replies
+;	logged in:	don't log empty password replies or ambiguous names
+;	Also, use "KOM:ERRLOG.ymm" file from now.
+;	Don't tell crackers they are logged.
+;Oden::DSKG:LOGIN.MAC<62,7777,MAC> 1986-03-17 18:14:35, Edit by KPJ
+;57	RUNX now can return. Handle that (end of edit#9).
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1986-01-15 15:41:04, Edit by KPJ
+;56	Moved CCLLOG here from NEW.
+;Oden::DSKD:LOGIN.MAC[62,7777,MAC] 1986-01-12 22:19:16, Edit by KPJ
+;55	When user types QUIT when logging in, leave program.
+;Oden::DSKD:LOGIN.MAC[62,7777,MAC] 1986-01-12 22:02:37, Edit by KPJ
+;54	When user tries to login as a conference, program crashed.
+;	Reason: program believed we had an employee on hand, but failed to find
+;	the employee record.
+;Oden::DSKD:LOGIN.MAC[62,7777,MAC] 1986-01-12 21:30:23, Edit by KPJ
+;53	When the user tries to login with a user name using the user# construct
+;	and the user# points at a deleted or non-existent user name, the user
+;	was kicked out immediately. Re-ask PASMIN times as for other errors.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1986-01-08 14:36:45, Edit by KPJ
+;52	Clear input on ambiguous name.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-12-10 16:11:53, Edit by KPJ
+;51	Tell LOGIN to set no time limit.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-11-28 09:23:54, Edit by KPJ
+;50	Corrected bug in ILLACC (job login not supported for T20).
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-11-05 22:33:45, Edit by KPJ
+;47	Implemented ILLACC logging for TOPS-20 (changed format somewhat to
+;	to make it usable for e.g. error logging, too).
+;	Changed name of file from "KOM:ILLACC.ynn" to "KOM:ERRLOG.ynn".
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-11-01 06:59:39, Edit by KPJ
+;46	Make sure the user wants to login; refuse anything except YES, NO,
+;	MAYBE or empty reply.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-10-17 15:13:44, Edit by KPJ
+;45	Correct call to NOUT% handler.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-10-04 19:13:23, Edit by KPJ
+;44	Introduced PROLOG macro.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-09-20 15:40:04, Edit by KPJ
+;43	Output a door mat to put the key under. (disabled)
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-09-20 15:20:10, Edit by KPJ
+;42	
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-09-20 15:13:05, Edit by KPJ
+;41	Don't expand anything when not logged in (tested by QEXPAN@COMMAT)
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-09-20 14:10:23, Edit by KPJ
+;40	Give highly fascistic warning text to crackers after two login tries.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-09-18 10:08:37, Edit by KPJ
+;37	Use UU.PHY for RUN on STD:LOGIN.EXE
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-09-11 21:42:39, Edit by KPJ
+;36	Make edit#8 work even if exact match. This will fix the problem with
+;	giving names of form "PERSON nnn" etc.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-09-06 10:25:31, Edit by KPJ
+;35	Expunged KPJHAT variabel from source. Fixed bug in creation of
+;	new persons from employees.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-09-04 14:23:48, Edit by KPJ
+;34	Make QYESNO call correctly.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-06-25 09:34:57, Edit by KPJ @ L89
+;33	Be more explicit when logging in.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-06-20 04:51:14, Edit by KPJ @ GR\N
+;32	ZAZOO localized.
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-06-19 20:39:29, Edit by KPJ @ Nadja
+;31	Display minimum length allowed for passwords. Made a global subroutine
+;	for that
+;Oden::DSKD:LOGIN.MAC<62,7777,MAC> 1985-06-04 01:06:40, Edit by KPJ @ NADJA
+;30	Implemented password length testing code.
+;Freja::Ps:<KOM.6-SOURCES>LOGIN.MAC.3 18-Apr-85 17:30:13,Editor:KPJ-JAAKKOLA
+;27	Use KOM temporary-file reader when we read KOM temporary file.
+;Freja::<KOM.6-SOURCES>LOGIN.MAC.3 15-Mar-85 04:35:55,Editor:KPJ-JAAKKOLA
+;26	Default answer on LOGIN QUESTION is YES. Say so.
+;Oden::DSKD:LOGIN.MAC[62,7777,MAC] 1985-03-01 18:10:47, Edit by KPJ @ L89
+;25	Swedish PTT "text telephone" under switch FTPHON.
+;Oden::DSKD:LOGIN.MAC[62,7777,MAC] 1985-02-13 12:00:24, Edit by KPJ @ L89
+;24	Make error message introduced in [edit #20] better.
+;Oden::DSKD:LOGIN.MAC[62,7777] 1985-02-04 14:44:36, Edit by KPJ @ L89
+;23	New flag LGNFLG, which signals we need upcase LOGIN/NAME:-switch.
+;Oden::DSKD:LOGIN.MAC[62,7777] 1985-01-30 13:57:58, Edit by KPJ @ L89
+;22	Make edit [KPJ.16] work: full news output at login time.
+;Oden::DSKD:LOGIN.MAC[62,7777] 1985-01-18 17:31:13, Edit by KPJ @ VENUS
+;21	Misspelling in edit 20.
+;Oden::DSKD:LOGIN.MAC[62,7777] 1985-01-15 04:04:19, Edit by KPJ @ HOME
+;20	Make edit [KPJ.8] really work. Also, make unknown names work likewise.
+;	Changed error message to say the right thing.
+;Oden::DSKD:LOGIN.MAC[62,7777] 1985-01-08 02:24:05, Edit by KPJ @ L89
+;17	Obey personal flag LOGIN QUESTION. Search MACTEN.
+;Oden::DSKD:LOGIN.MAC[62,7777] 1984-12-12 20:23:10, Edit by KPJ @ L89
+;16	Ask user if he really wants to login, after displaying how much news
+;	the user has. Call QYESNO@OERASE to ask for YES or NO, and routine
+;	ALWAYS@ENTER to start up person enough to do news. Call QNEWS to say
+;	if we have any news.
+;Oden::DSKD:LOGIN.MAC[62,7777] 1984-11-29 12:42:29, Edit by K.JAAKKOLA
+;15	/NOMEANS to LOGIN when logging in.
+;Oden::DSKG:LOGIN.MAC[62,7777] 1984-10-08 18:08:57, Edit by K.JAAKKOLA
+;14	Got rid of useless macros. General code cleanup.
+;Freja::Qs:<Kom.6-Sources>Login.Mac.2  5-Oct-84 16:48:07,Editor:KPJ-Jaakkola
+;13	"Last login" did not work. Disable it until it works.
+;Oden::DSKG:LOGIN.MAC[62,7777] 1984-10-05 12:52:22, Edit by K.JAAKKOLA
+;12	Show anonymous as "(anonymous)"
+;Oden::Dskg:Login.cmac[62,7777] 1984-10-02 12:45:23, Edit by K.Jaakkola
+;11	PNAMLI@ADDENT and PRNALI@LOGIN were essentially the same routine.
+;	New variable PROBJP (0=no object number, -1=output object number)
+;Oden::DSKG:LOGIN.MAC[62,7777] 1984-09-27 19:16:22, Edit by B.CARLSSON
+;10	Cleanup the ILLACC code, remove the hard-coded PPN for KOM:
+;	and insert an UU.PHS when opening KOM:, to make sure the user
+;	doesn't have his own KOM:..
+;Oden::Dskd:Login.Mac[62,7777] 1984-09-14 18:37:55, Edit by K.Jaakkola
+;9	Stupid SAVE and RETURN macros made MACRO generate a few hundred
+;	phase errors (P), so some ultra violence was used to get rid of
+;	the losing macros. Now it works.
+;Oden::Dskd:Login.Mac[62,7777] 1984-09-14 12:13:43, Edit by K.Jaakkola
+;8	(a)	CHKPAS changed to fake a password test when PWDILL is set
+;		non-zero. (This is used to ask for password from not logged
+;		in user when name is garbage. User is not informed of
+;		multiple matches when not logged in.)
+;	(b)	ZREFOL text changed to not pose a question "which of these
+;		do you mean?", since that confuses users.
+;	(c)	Rewrote SETPGS for greater clarity.
+;	(d)	CHKFOA and CHFOMA rewritten to work for any debiting PPN,
+;		and not be picky about FOA (not need to test for FOA PPN here)
+;	(e)	FOAPSW and CREFOA rewritten to handle any employee objects.
+;		There was no special need to check for FOA.
+;	(f)	BCQs TOPS-20 hacks included:
+;;;;	Freja::QS:<BJORN-CARLSSON.KOM-LOGIN>LOGIN.MAC.1, 10-Sep-84 16:40:52,
+;;;;							Ed: BJORN-CARLSSON
+;;;;3	Updated with KOM-Login hacks. AND *CLEANED-UP* FOA-Conditionals,
+;;;;	that had nothing but historical/hysterical reason to be there!
+;Oden::Dskd:Login.Mac[62,7777] 1984-09-13 10:57:57, Edit by K.Jaakkola
+;7	Temporary hack [KPJ.6] eliminated, since LOGIN works now.
+;Oden::Dskd:Login.Mac[62,7777] 1984-08-31 07:49:47, Edit by K.Jaakkola
+;6	Temporary hack for COM to set name to PERSON nnnn at LOGIN/NAME:
+;	to circumvent bug in LOGIN SCAN which made "{}|" illegal in names.
+;	This is under FTQZ. Presumably something more permanent should be
+;	to handle strip off "illegal" chars before calling LOGIN.
+;Oden::DSKD:LOGIN.MAC[62,7777] 1984-08-08 18:58:03, Edit by B.CARLSSON
+;5	Made PRNALI global since it was needed in Verify Name command.
+;	Forgotten by somebody.../BCQ&KPJ
+;Oden::DSKD:LOGIN.MAC[62,7777] 1984-06-18 19:25:38, Edit by B.CARLSSON
+;4	Removed external reference from ignpwd in this module since
+;	it's declared here!
+;Oden::Dskd:Login.Mac[62,7777] 1984-06-12 17:32:23, Edit by KPJ Jaakkola
+;3	Implemented the IGNPWD word which is tested by CHKPAS to see if it
+;	is to sleep 5 sec if the copies of the password mis-match (called
+;	from LOGIN and NEWNAM). Sleeps only at LOGIN time now.
+;Oden::Dskd:Login.Mac[62,7777] 1984-05-23 03:15:00, Edit by KPJ Jaakkola
+;2	Updated copyright notice.
+;Oden::Dskd:Login.Mac[62,7777] 1984, Edit by Bj|rn Carlsson
+;1	Hacked to not give yellow news to Aftonbladet (local newspaper) no more
+
+	SEARCH	kommac
+	PROLOG	(login)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-23 03:14:38
+
+;	D A T A   A R E A
+
+	maxtry==5		;[KPJ.14] Allow max 5 login tries
+
+T20,<
+logcap:	BLOCK	2			;<KPJ.114> store capabilities here
+					;<KPJ.114> (zapped by LOGIN%)
+dirblk:	BLOCK	.CDDAC+1		;<KPJ.72> put directory info here
+acctnm:	BLOCK	<^D39+1>/5		;<KPJ.72> account string stored here
+>;T20
+T10,<
+Bugfix	(ftbg00,<>,<
+lgnflg::BLOCK	1
+>)					;<KPJ.77!KPJ.23>
+>;T10
+IFN	fthalf,<
+pwdpro: BLOCK	1		;<KPJ.43> HIDKEY used: password producer
+				;<KPJ.43> if =TERPRO, then output a door mat
+>;fthalf
+probjp::BLOCK	1		;[KPJ.5] PRNALI used: 'Append object number'
+				;[KPJ.5]   0 = don't output object number
+				;[KPJ.5]  -1 = output object number, too
+pwdans:	BLOCK	1		;<KPJ.60> CHKPAS used: encrypted password
+				;<KPJ.60> entered (0=empty reply)
+pwdill::BLOCK	1		;[KPJ.4] CHKPAS used: 'Fake a password check'
+				;[KPJ.4]   0 = really test password
+				;[KPJ.4]  -1 = fake a password test
+ignpwd::BLOCK	1		;[KPJ.3] CHKPAS used: 'Ignore password error'
+				;[KPJ.3]   0 = wait when password mismatch
+				;[KPJ.3]  -1 = ignore problem
+IFG	<pasmin>,<		;<KPJ.30> if code not suppressed,
+paslen::BLOCK	1		;<KPJ.30> length of password given
+				;<KPJ.30> (used to warn about short passwords)
+>;pasmin			;<KPJ.30>
+IFN	ftempl,<		;<KPJ.76>
+empnr::	0			; employee number
+>;ftempl
+pwflag:: 0			;[BDQ] flag is on when we have a valid password
+logflg::
+FOAIF,<	0>				;<KPJ.77!SEE> on if we are logged in
+NFOAIF,<-1>				;<KPJ.77>
+logppn:	0				;[SEE] T10:	PPN for login
+					;<KPJ.64> T20:	user# for login
+nambeg:	BLOCK	ormarg			;name area
+namptr::Z				;name pointer
+nrmemb::0				;number of own memberships
+
+;Note:	the length (PASMAX=ORMARG) is "known" by other modules, so don't
+;	change it without changing it everywhere.
+
+pasptr::0				;password pointer
+pasbeg::BLOCK	pasmax			;random password area
+pusptr::0				;<KPJ.114> own password pointer
+pusbeg::BLOCK	pasmax			;<KPJ.111> own password stored ASCIZ
+torgny::-1				;<KPJ.114> Torgny at large
+pazptr::0				;<KPJ.64> password pointer
+
+selffo:	0				;own FOA section number
+trycnt:	maxtry				;try count
+;-----------------------------------
+T20,<				;[KPJ.8] BCQs TOPS-20 KOM-login hacks
+komlgn::BLOCK	1		;KOM-login flag
+>;T20
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;CCLLOG		CCL login		<KPJ.56>
+;-
+
+ccllog::save	<quest##,nr,gp1>
+	CALL	komred##		;get input from temporary file
+	 nop				;ignore failure skip
+	MOVEI	t,asknam		;ask for the name
+	MOVEM	t,quest##
+ccllo2:	CALL	readx			;get info
+	MOVE	t,chpt##		;copy input string pointer
+	MOVEM	t,namptr
+	MOVE	t,selffl##
+	CALL	geennu##		;check for object number
+	 $Skipa				;+1 nope
+	  JRST	ccllo7			;+2 yeah, use it
+	CALL	nammat##		;look for a match
+	 JRST	ccllo3			;+1 new name
+	 JRST	ccllo1			;+2 name got
+	CALL	manyna			;+3 many names
+	JRST	ccllo2			;<KPJ.60> ask for name again
+ccllo4:	CALL	wronam			;wrong name
+	JRST	ccllo2
+
+ccllo3:	SKIPGE	tmiflg##		;TMPCOR input ?
+IFE	ftlog,<				;<KPJ.110>
+	 JRST	ccllo4
+>;IFE ftlog
+IFN	ftlog,<				;<KPJ.110>
+	 JRST[	$Setz	t,0		;<KPJ.110> "invalid name"
+		JRST	ccllo4]		;<KPJ.110>
+>;IFN ftlog
+	JRST	start##			;no, start ordinary
+
+ccllo1:	MOVE	nr,@agrval##		;get person
+ccllo7:	CALL	getold			;get info from old person
+	return
+
+
+
+;+
+;QUITAB		QUIT table
+;-
+quitab:	table	sn,[EXP 0,0],zzquit##	;<KPJ.55>
+	endtab
+
+
+;+
+;QUITP		returns true if QUIT entered
+;returns	+1 if not
+;		+2 if QUIT enterered
+;-
+
+quitp:	save	<tp>		;<KPJ.55>
+	MOVEI	t,sn		;set "normal mode"
+	MOVEM	t,cursta##	;. . .
+	MOVE	tp,quitab	;get QUIT table
+	CALL	commat##	;match
+	 $Skipa			;+1 no match
+	  skpret		;+2 one match
+	 return			;+3 many matches (same as no match)
+
+;+
+;LOGIN		activate ("login") user in KOM.
+;		creates a new object if the person is new
+;returns	NAME/	name of the person
+;		SELFNR/	person object number
+;-
+
+login::	save	<quest##,gp1,bfp,txt,nr>
+	SETZM	selfnr##		;<KPJ.73> unknown user by default
+	MOVEI	t,maxtry		;<KPJ.14> set up maximum try count
+	MOVEM	t,trycnt		;<KPJ.14> . . .
+	SKIPN	notmp##			;first entry ?
+	 CALL	komred##		;<KPJ.27> yes, get input from TMP
+	  nop				;<KPJ.27> ignore failure
+	MOVEI	t,asknam		;ask for the name
+	MOVEM	t,quest##
+login1:	CALL	readx			;get user name (or whatever)
+	MOVE	t,chpt##		;save name pointer
+	MOVEM	t,namptr
+	CALL	geennu##		;get person object#
+	 $Skipa				;+1 no number
+	  JRST	login5			;+2 number got
+	CALL	nammat##		;look for a match
+	 JRST	login3			;+1 new name
+	 JRST	login2			;+2 old name
+	CALL	manyna			;+3 many matches, possibly output them
+	JRST	login1			;<KPJ.60> try again
+wrname:	CALL	wronam			;wrong name
+	JRST	login1
+
+login2:	MOVE	nr,@agrval##		;get person object#
+login5:
+IFN	ftlog,<				;<KPJ.110>
+	PUSH	P,nr			;<KPJ.110> save object#
+>;ftlog
+	CALL	oldnam			;login old user
+IFE	ftlog,<				;<KPJ.110>
+	 JRST	wrname			;wrong password
+	 JRST	login1			;<KPJ.60> not allowed
+>;ftlog=0
+IFN	ftlog,<				;<KPJ.110>
+	 JRST[	POP	P,t		;<KPJ.110> get object#
+		JRST	wrname]		;<KPJ.110>
+	 JRST[	POP	P,t		;<KPJ.110> get object#
+		CALL	logtry##	;<KPJ.110> log this, too
+		JRST	login1]		;<KPJ.110>
+	POP	P,0(P)			;<KPJ.110> get rid of object#
+>;ftlog
+	SKIPN	logflg			;<SEE> do we need to LOGIN?
+	 CALL	callog			;<SEE!KPJ.8> yes, log in job
+	JRST	login9			;<KPJ.8>
+
+login3:	CALL	quitp			;<KPJ.55> QUIT?
+	 $Skipa				;<KPJ.55> no
+	  JRST[	CALL	preol##		;<KPJ.55> yes, newline
+		JRST	endko9##]	;<KPJ.74!KPJ.55> and bye, bye!
+	CALL	qlogin##		;[KPJ.20] Are we logged in?
+	 $Skipa				;[KPJ.20] Yes, go on
+	  JRST[	SETOM	pwdill		;[KPJ.20] no, fake a password check
+		SETZM	ignpwd		;[KPJ.20] wait 5s if not matching
+		MOVE	t,agrend##	;[KPJ.20] eat up name...
+		MOVEM	t,chpt##	;[KPJ.20] ...and chew a password
+		CALL	askpas		;[KPJ.20] ask for password (fails)
+		 nop			;[KPJ.20] will always return here
+		JRST	wrname]		;[KPJ.20] return
+	CALL	newnam##		;login new user
+	 JRST[	CALL	getrid		;<KPJ.60> +1 no password given
+		JRST	login1]		;<KPJ.60>
+login9:	return				;	  +2 password given
+
+
+
+
+
+;+
+;ASKNAM		ask for the name of the user
+;-
+
+asknam::save	<str>
+	CALL	namhlp			;give name help
+	print	zasnam##		;"Please type your name"
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+
+
+;+
+;NAMHLP		give name help
+;-
+
+namhlp::save	<str>
+	MOVEI	str,znahlp##	;"Yep, a name, like, see. Go it, huh?"
+	SKIPGE	hlpflg##	;<KPJ.14> help wanted?
+	 CALL	prstr##		;yes
+	branch	preol2##		; new line
+
+
+
+
+
+;+
+;READX		get information but don't accept empty reply
+;-
+
+readx::	save	<free>
+	SKIPA	free,[nambeg]	;get name area
+readx1:	 SETOM	hlpflg##	;give help
+	CALL	read##		;get info
+	 JRST	readx1		;empty reply, get info again
+	return
+
+
+
+
+
+;+
+;MANYNA		many names matches
+;
+;	(a) Not logged in:	fake a password check	[KPJ.8]
+;	(b) FOA ppn:		say name was ambiguous (FTFOA hack)
+;	(c) otherwise:		display all the matching names
+;-
+
+manyna::save	<str>
+	CALL	qlogin##		;<BCQ> Are we logged in?
+	 $Skipa				;<BCQ> yes, go on
+	  JRST[	SETOM	pwdill		;[KPJ.8] no, fake a password check
+		SETZM	ignpwd		;[KPJ.20] wait 5s if not matching
+		MOVE	t,agrend##	;[KPJ.20] eat up name...
+		MOVEM	t,chpt##	;[KPJ.20] ...and chew a password
+		CALL	askpas		;[KPJ.20] ask for password (fails)
+		 nop			;[KPJ.8] will always return here
+IFN	ftlog,<	MOVNI	t,2>		;<KPJ.110> "ambiguous name"
+		CALL	wronam		;<KPJ.60> log this stuff
+		JRST	manyn9]		;[KPJ.8] return
+T10,<					;<KPJ.72>
+FOAIF,<	CALL	foappn##		;[KPJ.8] yes, logged in. FOA PPN ?
+	 JRST[	print	zmanyn##	;[KPJ.8] "Ambiguos name"
+		CALL	clear##		;<KPJ.52> error, clear input
+		JRST	manyn9]		;[BCQ] leave, don't print the matches
+>;FOAIF
+>;T10
+	CALL	prmtch			;print all that match
+	CALL	clear##			;<KPJ.52> error, clear input
+manyn9:	return
+
+
+
+
+
+;+
+;PRMTCH		output all the names that match
+;accepts	AGRVAL/	pointer to the first match
+;-
+
+prmtch::save	<str,nr,tp,acrfl##>
+	SKIPGE	silflg##		;silent?
+	 JRST	prmtc9			;yes
+	SETOM	acrfl##			;use ACR
+	MOVE	tp,agrval##		;get list of names
+	CALL	preol##			;new line
+	print	zmanyn##		;"Name is ambiguous"
+	print	zrefol##		;"You may mean one of these:"
+	CALL	preol##			;new line
+	SETOM	probjp			;[KPJ.11] print object#, too
+	CALL	prnali			;[KPJ.11] print name list
+	CALL	clear##			;clear input
+prmtc9:	return
+
+
+
+
+;+
+;PRNALI		output a list of names, optionally followed by object number
+;accepts	TP/	name list
+;		PROBJP/	= 0	don't output object number
+;			=-1	output object number
+;-
+
+prnali::save	<nr,tp,str>
+prnal0:	CALL	fircom##		;get first name
+	 JRST	prnal9			;end of list
+IFN	ftanon,<			;<KPJ.63>
+	SKIPGE	nr,0(tp)		;get receiver
+	 JRST[	CALL	preol##		;[KPJ.12] some body anonymous
+		print	zanony##	;[KPJ.12] "(anonymous)"
+		JRST	prnal1]		;[KPJ.12] back to main line
+>;End IFN ftanon
+IFE	ftanon,<			;<KPJ.63>
+	MOVM	nr,0(tp)		;<KPJ.63> get user
+>;End IFE ftanon
+	CALL	preol##			;some body known, new line
+	CALL	prname##		;print its name
+prnal1:	SKIPE	probjp			;[KPJ.11] output object number, too?
+	 JRST[	CALL	putbla##	;[KPJ.11] yes, one blank
+		CALL	prennr##	;[KPJ.11] output "(object number)" too
+		JRST	.+1]		;[KPJ.11] back to mainline
+	CALL	necoel##		;get next name
+	SKIPL	intflg##		;interrupt?
+	 JRST	prnal0			;no, continue
+prnal9:	return
+
+	
+
+;+
+;WRONAM		wrong name given, ask for a new
+;-
+
+
+wronam:					;<KPJ.110>
+IFN	ftlog,<				;<KPJ.47> if error logging is enabled
+	CALL	logtry##		;<BCQ> log this failure
+>;ftlog
+	CALL	getrid			;get rid of type ahead etc.
+	SOSG	trycnt			;<KPJ.53> last try ?
+	 JRST	endko9##		;yes, leave
+	return
+
+
+;+
+;GETRID		get rid of type ahead, clear things etc.
+;-
+
+getrid:	CALL	clear##			;error, clear input
+	SETZM	selfnr##		;clear person
+	SETZM	conf##			;<KPJ.103> forget conference
+	CALL	ininew##		;new person
+	MOVEI	t,asknew		;ask for a new name
+	MOVEM	t,quest##		;. . .
+	return
+
+;+
+;ASKNEW		ask for a new name
+;-
+
+asknew:	save	<str>
+	CALL	namhlp			;give name help
+	print	zasnna##		;"Re-enter name:"
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+
+;+
+;OLDNAM		activate ("login") an old user in KOM
+;accepts	NR/	person object#
+;		PUSWOR/	old password
+;returns	+1 if wrong password
+;		+2 if not allowed, wrong object etc.
+;		+3 if correct password, with SELPW/ encrypted password
+;-
+
+oldnam::save	<bfp,gp1>
+IFN	ftempl,<			;<KPJ.76>
+oldna0:					;<KPJ.76>
+>;ftempl
+	CALL	chkper##		;PERSON ?
+IFE	ftempl,<			;<KPJ.76>
+	 JRST	oldna7			;<KPJ.76> no, not allowed
+>;ftempl=0
+IFN	ftempl,<			;<KPJ.76>
+	 JRST[	CALL	logemp		;no, try login EMPLOYEE
+		 JRST	oldna7		;<KPJ.60!KPJ.54> error
+		JRST	oldna3]		;<KPJ.107> ok, we are logged in
+>;ftempl
+	CALL	getobj##		;yes, get PERSON
+	 JRST	oldna2			;error
+
+	CALL	getold			;get info from old person
+	CALL	chkfoa			;<KPJ.8> logged in, or KOM-login legal?
+	 JRST	oldna7			;<KPJ.60!KPJ.8> no, can't this way
+	MOVE	t,selffl##		;<BCQ> get my flags
+	Txne	t,spapfl		;<KPJ.60!BCQ> save password flag?
+	 SKIPN	pwflag			;<BDQ> yes, have a valid password?
+	  JRST	oldna2			;<BDQ> no, ask
+	MOVE	t,selfpw##		;<BDQ> get password
+	CAMN	t,puswor##		;<KPJ.112!BDQ> same as old password?
+	 JRST	oldna8			;yes, dont ask, +3 return
+oldna2:	SETZM	ignpwd			;<BCQ,4> wait 5s if passwords mismatch
+
+	SETZM	pwdill			;<KPJ.8> really ask for password
+	CALL	askpas			;ask for the password
+	 JRST[	SETZM	conf##		;<KPJ.103> forget current conference
+		SKIPE	pwdans		;<KPJ.60> empty reply?
+		 JRST	oldna9		;no, wrong password, +1 return
+		JRST	oldna7]		;<KPJ.60> yes, +2 return
+IFG	<pasmin>,<			;<KPJ.30> length testing wanted?
+	MOVE	t,paslen		;<KPJ.30> get password length
+	CAIGE	t,pasmin		;<KPJ.30> short password?
+	 JRST[	CALL	shopwd		;<KPJ.31> yell about password length
+		CALL	preol##		;<KPJ.33>
+		print	zshor2##	;<KPJ.33> tell how to change it
+		JRST	.+1]		;<KPJ.30> but allow it
+>;pasmin				;<KPJ.30>
+IFN	ftempl,<
+oldna3:
+>;End IFN ftempl
+	MOVE	t,paswor##		;save own password
+	MOVEM	t,selfpw##		;. . .
+	SETOM	pwflag			;<BDQ> we have entered a valid password
+	Fall	oldna8			;<KPJ.60> +3 return
+
+oldna8: skpret				;+3 return, right password
+oldna7:	skpret				;+2 return, bad object etc.
+oldna9:	return
+
+
+;+
+;SHOPWD		yell about short password
+;-
+
+IFG	pasmin,<			;<KPJ.31> if password length checking
+shopwd::print	zshort##		;<KPJ.30> yes, mumble about it
+	MOVEI	1,.PRIOUT		;<KPj.45> primary output
+	MOVEI	2,pasmin		;<KPJ.31> minimum length
+	MOVEI	3,^D10			;<KPJ.31> decimal radix
+	CALL	.nout##			;<KPJ.31> display length
+	 CALL[	print[	ASCIZ !???!]	;<KPJ.31> failed
+		RET]			;<KPJ.31> not fatal
+	MOVEI	ch,"."			;<KPJ.31> period
+	CALL	putch			;<KPJ.31>
+	return
+>;pasmin
+
+;+
+;GETOLD		get info from an old person object
+;		outputs original name of person
+;accepts	NR/	person object#
+;returns	CHPT/	pointing to end of name
+;		SELFNR/	person object number
+;		CRENR/	person object number
+;-
+
+getold::save	<bfp,gp1>
+	MOVEM	nr,selfnr##		;save number
+	MOVEM	nr,crenr##		;save creator number
+	CALL	getobj##		;get yourself
+	 BUG(HLT,<getold login>,<selfnr##>)
+	CALL	setpfl			;set personal flags
+	CALL	gelama##		;set last marked entry
+	 nop				;<KPJ.101> ***FOO*** failed, ignore
+	return
+
+
+
+
+
+;+
+;SETPFL		set personal flags (and a number of other stuff)
+;-
+
+setpfl:	save	<nr,gp1,bfp>
+	MOVE	nr,selfnr##		;get yourself
+	CALL	getobj##		;get person
+	 JRST	setpf1			;not defined
+	MOVE	t,perpas(bfp)		;<KPJ.112> save password
+	MOVEM	t,puswor##		;<KPJ.112> . . .
+	MOVE	t,perpfl(bfp)		;get personal flags
+	MOVEM	t,selffl##		;. . .
+	MOVE	t,perpgs(bfp)		;get own page size
+	MOVEM	t,selfpg##		;. . .
+	MOVE	t,permem(bfp)		;set number of memberships
+	MOVEM	t,nrmemb		;. . .
+	MOVE	t,pernre(bfp)		;set number of read entries
+	MOVEM	t,nrred##		;. . .
+IFN	ftempl,<			;<KPJ.76>
+	MOVE	t,pernle(bfp)		;set number of created EMPLOYEE links
+	MOVEM	t,nrelnk##		;. . .
+>;ftempl
+	MOVE	t,pernlm(bfp)		;. . .
+	MOVEM	t,nrmlnk##		;. . .
+	fromto	pernlp(bfp),nrplnk##	;. . .
+	fromto	pernlt(bfp),nrtlnk##	;. . .
+	MOVE	t,persys(bfp)		;set last seen system message
+	MOVEM	t,selfsy##		;. . .
+setpf1:	CALL	setpgs			;set page size
+	return
+
+
+
+
+
+;+
+; SETPGS  --  set page size
+; gets page size in SELFPG
+;-
+
+setpgs::save	<nr>
+	CALL	ttypgs##	; [BDQ & BCQ]
+	SKIPL	papflg##	;[KPJ.8] terminal screen?
+	 HLRZ	nr,nr		;[KPJ.8] yes, move it to RH
+	HRRZ	nr,nr		;[KPJ.8] get paper size (or screen size)
+	MOVEM	nr,maxlin##	; save page size
+	return
+
+
+
+
+
+;+
+;"CHKFOA"	"check if FOA employee" (original T.Tholerus comment)
+;......................................................................
+;"What this routine *REALLY* does is to check
+;	if you are logged in
+;OR	if you have "debiting" PPN
+;OR	if you are "organization marked"
+;  AND	if that organization has a "debiting" ppn.
+;
+; If one of these conditions is fullfilled you will be logged into KOM/COM.
+;	PERIOD."
+;			(Quote from B.Carlsson QZ)
+;......................................................................
+;returns
+;	+1 if illegal to use KOM
+;	+2 otherwise
+;-
+
+chkfoa::save	<str>
+	SETOM	logflg			;[SEE] assume we are logged in
+	CALL	qlogin##		;[SEE] are we logged in?
+	 JRST	chkfo8			;[SEE] yes +2 success return
+	SETZM	logflg			;[SEE] no, remember this
+	CALL	chfoma			;do we have a debiting PPN?
+	 JRST	chkfo8			;yes, may use KOM
+					;no, give an error message:
+	CALL	preol##			;new line
+	print	zntfom##		;"You are not registered, get lost"
+	CALL	preol##			;new line
+	JRST	chkfo9			;failure, +1 return
+
+chkfo8:	skpret				;nice fellow
+chkfo9:	return
+
+
+
+
+
+;+
+;CHFOMA	check if:			[KPJ.8]
+;	(a) we have a debiting PPN for this person,
+; or	(b) we have an organization mark on this person,
+;   and	(c) that organization has a debiting PPN.
+;accepts
+;	SELFNR/	person
+;returns
+;	+1 if success
+;	+2 if failure
+;-
+
+chfoma:	save	<nr,bfp,gp1>
+	MOVE	nr,selfnr##	; get self
+	CALL	getobj##	; get self
+	 JRST	chfom8		; not marked
+	SKIPE	nr,perdpp(bfp)	;[SEE] any debiting PPN?
+	 JRST	chfom1		;[SEE] yes, use it
+	SKIPN	nr,perdeb(bfp)	;[KPJ.8] person has debiting PPN?
+	 JRST	chfom8		; no
+	CALL	getobj##	;[SEE] get organization
+	 JRST	chfom8		;[SEE] ?
+	SKIPN	nr,meedeb(bfp)	;[SEE] PPN set?
+	 JRST	chfom8		;[SEE] no
+chfom1:	MOVEM	nr,logppn	;[SEE] no, save PPN for login
+	SKIPA
+chfom8:	 skpret
+	return
+
+
+
+;+
+;ASKPAS		ask for the password of yourself, for security
+;accepts	PUSWOR/	encrypted right password
+;		IGNPWD/	=0: wait 5s if passwords mismatch
+;		PWDILL/	=0: really check password
+;			#0: fake a password check (always fail)
+;		PASLEN/	length of password given	<KPJ.30>
+;			(if PASMIN gt 0)
+;returns	+1 wrong password or empty reply (PWDANS/ 0 if empty reply)
+;		+2 right password, with PUSBEG(1:PASMAX) containing it
+;-
+
+askpas:	save	<quest##>
+	CALL	echoff##		;turn off echo
+	MOVEI	t,askopw		;ask for password
+	MOVEM	t,quest##		;. . .
+IFN	fthalf,<
+	MOVE	t,produc##		;<KPJ.43> get producer
+	MOVEM	t,pwdpro		;<KPJ.43> save it for later	
+>;fthalf
+	MOVE	t,puswor##		;<KPJ.113> test this password
+	MOVEM	t,paswor##		;<KPJ.113> . . .
+	MOVE	t,[POINT 7,pusbeg]	;<KPJ.114> save password here
+	MOVEM	t,pusptr		;<KPJ.114> . . .
+	SETZM	torgny			;<KPJ.114> get rid of Torgny
+	CALL	chkpas			;check password
+	 $Skipa				;wrong password
+	  skpret			;<KPJ.113> right password
+	SETOM	torgny			;<KPJ.114> back to Torgny's world
+	CALL	echon##			;turn on echo again
+	return
+
+
+
+
+
+;+
+;ASKOPW		ask for an old password
+;-
+
+askopw:	save	<str>
+IFN	fthalf,<
+	MOVE	t,produc##		;<KPJ.43> get producer
+	MOVEM	t,pwdpro		;<KPJ.43> new password producer
+>;fthalf
+	ifoff	hlpflg##,askop1		;help wanted ?
+	print	zhlopw##		;"specify password"
+	CALL	preol##			;new line
+askop1:	CALL	preol##			;new line
+	print	zasopw##		;"Password:"
+IFN	fthalf,<
+	CALL	dormat			;<KPJ.112> door mat
+>;fthalf
+	return
+
+;+
+IFN	fthalf,<			;<KPJ.112>
+;HALFP		test for halfduplex etc.
+;returns	+1 if not need door mat
+;		+2 if need door mat
+;-
+
+halfp:
+T10,<
+IFE	<t3-t2-1>,<
+	MOVE	t,[2,,t2]		;<KPJ.66> len,,argblk
+	$Dmovi	t2,[EXP .TOHLF,-1]	;<KPJ.112> half wit, self
+>;t3=t2+1
+IFN	<t3-t2-1>,<
+	MOVEI	t,.TOHLF		;<KPJ.112> half wit
+	MOVEM	t,trmblk##+0		;<KPJ.112> . . .
+	SETOM	trmblk##+1		;<KPJ.112> self
+	MOVE	t,[2,,trmblk##]		;<KPJ.112> len,,argblk
+>;t3#t2+1
+
+	TRMOP.	t,			;<KPJ.66> are we halfwit?
+	 $Setz	t,			;<KPJ.66> ***FOO*** probably not
+	CAIE	t,0			;<KPJ.66> full duplex?
+>;T10
+T20,<	
+	MOVEI	1,.PRIIN		;<KPJ.66> self
+	RFMOD%				;<KPJ.66> get JFN mode word
+	ANDI	2,TT%DUM		;<KPJ.66> extract duplexity
+	CAIE	2,<FLD(.TTFDX,TT%DUM)>	;<KPJ.66> full duplex?
+>;T20
+	 skpret				;<KPJ.66> no, half duplex, +2 return
+	return
+>;fthalf
+
+;+
+;HIDKEY		hide key under door mat
+;-
+
+IFN	fthalf,<
+hidkey:	save	<ch,str>
+	MOVE	t,pwdpro		;<KPJ.43> get producer
+	CAIE	t,terpro##		;<KPJ.43> terminal input?
+	 JRST	hidke9			;<KPJ.43> njet
+	MOVEI	ch,.CHCRT		;<KPJ.43> jawohl, get a door mat
+	CALL	putch			;<KPJ.43> to hide key under
+	MOVE	str,dormat		;<KPJ.43> HIDE hide..
+	CALL	prstr##			;<KPJ.43>
+hidke9:	return
+
+blaffa:	[ASCIZ	!WWWWWWWWWWWWWWWWW!]
+dormat:	[ASCIZ	!*****************!]
+	[ASCIZ	!EEEEEEEEEEEEEEEEE!]
+	[ASCIZ	!skjdydubdouytefug!]
+	[ASCIZ	!%$#&%#&#$#+?'*@~&!]
+blafln==.-blaffa
+>;fthalf
+
+
+
+;+
+;CHKPAS		check if right password
+;accepts
+;	PASWOR/	correct password
+;	TORGNY/	= 0	test own password, save password in PUSBEG
+;		=-1	test random password, as Torgny wants us to
+;	PWDILL/	= 0	really test password		[KPJ.8]
+;		=-1	just fake a test (used when name is balooney)
+;			(will make routine always return +1)
+;returns
+;	+ 1 if wrong password or empty reply (PWDANS/ 0 if empty reply)
+;	+ 2 if right password
+;-
+
+chkpas::save	<nr,str,gp1>
+	SETZM	pwdans			;<KPJ.60> no answer yet
+IFN	ftphon,<			;<KPJ.25>
+	SKIPE	phone##			;<BCQ> a text phone?
+	 SETOM	pasflg##		;<BCQ> yes, remember this is password
+>;ftphon
+	PUSH	P,free			;<KPJ.113> *ugh*
+	MOVEI	free,pasbeg		;<KPJ.113> store password here
+	CALL	read##			;get info
+	 JRST[	POP	P,free		;<KPJ.113> end of *ugh*
+IFN	fthalf,<CALL	hidkey>		;<KPJ.43> hide key
+		JRST	chkpa9]		;<KPJ.113>
+	POP	P,free			;<KPJ.113>
+IFN	fthalf,<			;<KPJ.43>
+	CALL	hidkey			;<KPJ.43> hide key
+>;fthalf
+	SETZM	pasflg##		;<BCQ> clear the flag
+	MOVE	t,chpt##		;save password pointer
+	MOVEM	t,pasptr
+	CALL	enkryp			;<KPJ.112> encrypt password
+	MOVEM	nr,pwdans		;<KPJ.60> save password answer
+	JUMPE	nr,chkpa9
+	CAMN	nr,paswor##		;same password ?
+	 JRST	chkpa8			;yes, ready
+chkpa1:	CALL	qlogin##		;[KPJ.20] logged in?
+	 SKIPA	str,[zwrpsw##]		;[KPJ.20!21] yes, password error
+	  MOVEI	str,zwrpsx##		;[KPJ.20] no, password or name error
+	CALL	errmsg##		;<KPJ.100!KPJ.20> output message
+	CALL	toutpu##		;[SEE] output all text
+	SKIPE	ignpwd			;<KPJ.3!BCQ,4> care about mismatch?
+	 JRST	chkpa9			;<KPJ.3> No, this is CHANGE PASSWORD
+	MOVEI	gp1,5			;[SEE] Yes, we sleep for 5 seconds,
+	CALL	sleepn##		;[SEE]since this is login password test
+	JRST	chkpa9			;ask for password again
+
+chkpa8:	MOVE	str,pwdill		;[KPJ.8] faking the password check?
+	JUMPN	str,chkpa1		;[KPJ.8] yes, all passwords "incorrect"
+	print	zthank##		;"Thx."
+	skpret				;password given
+chkpa9:	SETZM	pasflg##		;[BCQ] clear password flag if not done
+	return
+
+
+
+
+
+
+;+
+;ENKRYP		encrypt a password				<KPJ.112>
+;accepts	CHPT/	password
+;returns	+1 always, with
+;		NR/	a code number
+;		PASLEN/	length of password given		<KPJ.30>
+;			(if PASMIN .gt. 0)
+;-
+
+enkryp::save	<ch>
+IFG	<pasmin>,<			;<KPJ.30>
+	SETZM	paslen			;<KPJ.30> initialize password length
+>;pasmin .GT. 0
+	$Setz	nr,			;<KPJ.112> clear number
+crypt1:	LSH	nr,2			;shift 2 bits
+	CALL	getsho##		;get character
+	JUMPE	ch,crypt8		;end of line ?
+	CALL	qalpha##		;alphanumeric ?
+	 JRST	crypt8			;no, stop
+	SKIPN	torgny			;<KPJ.114> Torgny at large?
+	 IDPB	ch,pusptr		;<KPJ.114> no, save password
+	CALL	convc##			;convert character
+	ADD	nr,ch			;add character
+IFG	<pasmin>,<			;<KPJ.30>
+	AOS	paslen			;<KPJ.30> count character
+>;pasmin .gt. 0
+	CALL	nexsho##		;get next character
+	JRST	crypt1
+
+crypt8:	SKIPE	torgny			;<KPJ.114> Torgny at large?
+	 JRST	crypt9			;<KPJ.114> yes, exit
+	$Setz	t,.CHNUL		;<KPJ.114> make ASCIZ
+	IDPB	t,pusptr		;<KPJ.114>
+crypt9:	return
+
+
+
+
+
+
+
+
+
+;+
+IFN	ftempl,<			;<KPJ.76>
+;LOGEMP		login employee, create user from employee if needed
+;returns	+1 if some error
+;		+2 if correct
+;-
+
+logemp:	save	<bfp,gp1,str>
+	CALL	getobj##		;get employee
+	 JRST	logem9			;error
+	CAIE	gp1,emp			;employee ?
+	 JRST	logem7			;no
+	CALL	foapsw			;[KPJ.8] check employee password
+	 JRST	logem9			;wrong password
+	CALL	crefoa			;[KPJ.8] create person from employee
+	JRST	logem8			;ready
+
+logem7:	CALL	preol##			;new line
+	CALL	prname##		;print name of conference
+	print	znotpe##		;" is not a person."
+KL10,<	TRNA>
+KL10N,<	SKIPA>
+logem8:	 skpret				;person logged in
+logem9:	return
+>;ftempl
+
+
+
+;+
+IFN	ftempl,<			;<KPJ.76>
+;FOAPSW		check employee password	[KPJ.8]
+;accepts	BFP/	employee
+;returns	+1 if wrong password
+;		+2 if right
+;-
+
+foapsw:	save	<nr,str>
+	CALL	preol2##		;blank line
+	print	zfoana##		;"Barf, barf, FOA password wanted:"
+	CALL	preol##			;blank line
+	MOVE	nr,emppas(bfp)		;get password
+	MOVEM	nr,paswor##		;save right password
+	SETZM	ignpwd			;[BCQ,4] wait 5s if passwords mismatch
+	SETZM	pwdill			;[KPJ.8] really ask for password
+	CALL	askpas			;ask for password
+	 $Skipa				;wrong password
+	  skpret			;right password
+	return
+>;ftempl
+
+
+
+
+
+;+
+IFN	ftempl,<			;<KPJ.76>
+;CREFOA		create PERSON from EMPLOYEE	[KPJ.8]
+;accepts	BFP/	employee
+;returns	EMPNR/	employee number
+;-
+
+crefoa:	save	<str,bp>
+	MOVE	t,emporg(bfp)		;get organisation
+	MOVEM	t,orgnr##
+	MOVEM	nr,empnr		;set employee number
+	MOVEI	str,recstr(bfp)		;<KPJ.35> get name string
+	CALL	mkbp##			;make byte pointer
+	MOVEM	bp,namptr		;save name pointer
+	CALL	manepe##		;make new person
+	return
+>;ftempl
+
+
+;+
+;CALLOG		login user
+;	T10:	call SYS:LOGIN.EXE which then returns to KOM	[KPJ.8]
+;		accepts/	LOGPPN/	PPN to use
+;		returns	never
+;	T20:	logs user in with LOGIN%
+;		returns +1 always
+;-
+
+callog:	CALL	always##		;[KPJ.16] start up person
+	MOVE	t,selffl##		;[KPJ.17] get personal flags
+	Txnn	t,huhpfl		;[KPJ.17] LOGIN QUESTION?
+	 JRST	callo1			;[KPJ.17] no question, login always
+	CALL	prnew##			;[KPJ.22] news control
+	CALL	preol##			;[KPJ.16] better make new line
+	CALL	deque##			;[KPJ.16] get rid of data base
+callo0:	CALL	toutpu##		;[KPJ.16] output all buffers
+	MOVEI	t,zlogit##		;<KPJ.16> "do you want to login?"
+	MOVEM	t,menuq##		;<KPJ.16>
+	SETZM	errfl##			;[KPJ.16] no errors
+	CALL	qyesno##		;[KPJ.16] yes or no?
+	SKIPE	errfl##			;[KPJ.16] errors?
+	 JRST[	SKIPL	errfl##		;<KPJ.46> empty reply?
+		 JRST[	SETZM	nr,	;<KPJ.26> yes, make it a YES
+			print	zyepp##	;<KPJ.26> say we assume YES
+			JRST	.+1]	;<KPJ.26> pretend we got a yes
+		print	zgronk##	;<KPJ.46> "Huh?"
+		CALL	clear##		;<KPJ.46> error, clear input
+		JRST	callo0]		;<KPJ.46> ask again...
+	JUMPL	nr,endko9##		;[KPJ.16] no means farewell
+callo1:
+T10,<	CALL	preol##			;new line
+	MOVE	t,ztmpco##		;set TMPCOR name
+	MOVEM	t,tmcnam##
+	CALL	tmcbeg##		;start TMPCOR output for this program
+	 JRST	callo2			;TMPCOR failed
+
+	MOVE	nr,selfnr##		;get self
+	CALL	prname##		;print own name
+	MOVEI	ch,.CHSEMI		;[KPJ.23] get semicolon
+	CALL	putch			;[KPJ.23] output it
+	MOVE	t,pasptr		;get password
+	MOVEM	t,chpt##		;. . .
+	CALL	prcoli##		;output it
+	CALL	tmcend##
+	 CALL	preol##			;<KPJ.104> failed, continue though
+
+callo2:	MOVSI	t,'lgn'			;[SEE] write TMP:LGN
+	MOVEM	t,tmcnam##		;[SEE] store name
+	CALL	tmcbeg##		;[SEE] start tempcore output
+	 JRST[	print	zzload##	;"- cannot LOGIN - try again later"
+		JRST	endko9##]	;bye!
+	MOVE	gp1,logppn		;[SEE] get PPN to be used
+	CALL	prippn##		;[SEE] save it for LOGIN
+QZIF,<	print[	ASCIZ !/time:0/nomeans/setpgm:lmenu/name:"!]> ;<KPJ.77>
+NQZIF,<	print[	ASCIZ !/name:"!]>	;<KPJ.51!KPJ.15!SEE> set user name
+	MOVE	nr,selfnr##		;[SEE] get self
+Bugfix	(ftbg00,<>,<SETOM lgnflg>)	;<KPJ.77!KPJ.23> make it uppercased
+	CALL	prname##		;[SEE] print name
+Bugfix	(ftbg00,<>,<SETZM lgnflg>)	;<KPJ.77!KPJ.23> stop making it
+					;[TEQ] removed "SYS:" from next line
+	print[	ASCIZ !"/run:!]		;<KPJ.77!SEE> set program to run
+	CALL	prcinm##		;[SEE] write name of KOM program
+	CALL	preol##			;[SEE] new line
+	CALL	tmcend##		;[SEE] end of file
+	 JRST[	print	zzload##	;<KPJ.104> failed, too bad
+		JRST	endko9##]	;<KPJ.104> bye!
+	MOVE	gp1,[UU.PHY+1,,[EXP 'std   ','login ','exe   ',0,0,0]]
+	CALL	grrblk##		;<KPJ.103> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.103> can't, tell user
+		JRST	endko9##]	;<KPJ.103> die a painful death
+	CALL	relase##		;[SEE] release terminal
+				;<KPJ.67!KPJ.37!SEE> STD:LOGIN.EXE,CCL,phys
+	CALL	runx##			;[KPJ.8!SEE] bye for ever
+	branch	endko9##		;<KPJ.57> farewell, cruel world
+>;T10
+T20,<	save	<gp1>			;<KPJ.57> will be clobbered
+	CALL	preol##			;<KPJ.64> end of line
+	CALL	toutpu##		;<KPJ.64> dump buffer
+	GJINF%				;<KPJ.72> what's up, Doc?
+	JUMPN	1,callo9		;<KPJ.72> (hm, how did we get here?)
+	MOVE	2,pasptr		;<KPJ.72> pointer to password
+	CALL	acct			;<KPJ.72> get default account
+	MOVEI	1,.FHSLF		;<KPJ.114> us
+	RPCAP%				;<KPJ.114> find out the capabilities
+	 ERCAL	fatal##			;<KPJ.114> arrrgh
+	MOVEM	2,logcap+0		;<KPJ.114> save awy the capabilities
+	MOVEM	3,logcap+1		;<KPJ.114> . . .
+	HRRZ	1,logppn		;get "PPN" again
+	HRLI	1,(5B2)			;make a user designator
+	MOVE	2,pasptr		;pointer to password
+	HRROI	3,acctnm		;<KPJ.72> account byte pointer
+	LOGIN%				;let's login
+	 ERJMP	.+2			;...failed
+	  JRST	callo8			;OK
+;(capabilities not zapped when LOGIN% fails)
+>;T20
+;-----------------------------------
+;Ask user for 20x password (KOM password failed to LOGIN%)
+
+T20,<	CALL	azkpaz			;<KPJ.72> ask for TOPS-20 password
+	 nop				;<KPJ.72> anything goes
+	CALL	preol##			;<KPJ.72> nice with CRLF here
+	MOVE	2,pazptr		;<KPJ.72> pointer to password
+	CALL	acct			;<KPJ.72> get the account
+	HRRZ	1,logppn		;<KPJ.72> get "PPN" again
+	HRLI	1,(5B2)			;<KPJ.72> make a user designator
+	MOVE	2,pazptr		;<KPJ.72> pointer to password
+	HRROI	3,acctnm		;<KPJ.72!KPJ.64> use default account
+	LOGIN%				;<KPJ.72> let's login
+	 ERJMP	calz08			;<KPJ.114!KPJ.72> ...failed
+	  JRST	callo8			;<KPJ.72> OK
+;(capabilities not zapped when LOGIN% fails)
+calz08:	PUSH	P,1			;<KPJ.114!KPJ.72>
+	CALL	preol##			;<KPJ.72> nice with a CRLF here
+	CALL	hubba			;<KPJ.72> simulate EXEC a while
+	HRROI	1,[0]			;<KPJ.64> no message
+	ESOUT%				;<KPJ.64> standard error message
+	MOVEI	1,.PRIOUT		;<KPJ.64> on TTY
+	HRLOI	2,.FHSLF		;<KPJ.64> last error, this fork
+	SETZ	3,			;<KPJ.64> any size
+	ERSTR%				;<KPJ.64> output error message
+	 nop				;<KPJ.64>
+	 nop				;<KPJ.64>
+	HRROI	1,[BYTE (7) .CHCRT,.CHLFD,.CHNUL]
+	PSOUT%				;<KPJ.64> add CRLF
+	POP	P,1			;<KPJ.64>
+	CAIN	1,LGINX4		;<KPJ.64> invalid password?
+	 JRST[	print	zerpsw##	;"Wrong TOPS-20 password."
+		JRST	calloz]		;bye, bye
+	print	zlgerr##		;"System error"
+	CALL	jsyser##		;output latest JSYS error
+calloz:	CALL	preol##			;<KPJ.72> nicer with CRLF here
+	CALL	toutpu##		;empty the buffer
+	JRST	endko9##		;and leave this cruel world...
+>;T20
+;-----------------------------------
+;Successful 20x LOGIN%
+
+;First, put back the capabilities the monitor gracefully cleared for us...
+
+T20,<
+callo8:	MOVEI	1,.FHSLF		;<KPJ.114> put back capabilities
+	MOVE	2,logcap+0		;<KPJ.114> . . .
+	MOVE	3,logcap+1		;<KPJ.114> . . .
+	EPCAP%				;<KPJ.114> . . .
+	 ERJMP	calz08			;<KPJ.114> can't, treat as fatal
+	CALL	hubba			;<KPJ.72> make luser comfortable
+	HRROI	1,[ASCIZ ! (PASSWORD) (ACCOUNT) !] ;<KPJ.72> simulate more
+	PSOUT%				;<KPJ.72>
+	SETZM	acctnm+<<^D39+1>/5>	;<KPJ.72> wham!
+	HRROI	1,acctnm		;<KPJ.72> output account name
+	PSOUT%				;<KPJ.72> **FOO** no numeric accounts..
+	SETOM	komlgn			;gee! we made it! let's not forget it..
+	HRROI	1,[BYTE (7) .CHCRT,.CHLFD,.CHNUL]
+	PSOUT%				;<KPJ.64> add CRLF
+	HRROI	1,[ASCIZ ! Job !]	;<KPJ.64>
+	PSOUT%				;<KPJ.64>
+	GJINF%				;<KPJ.64> get job data
+	MOVE	2,3			;<KPJ.72!KPJ.64> shuffle job#
+	MOVEI	1,.PRIOUT		;<KPJ.64> ctty
+	MOVEI	3,<FLD(^D10,NO%RDX)>	;<KPJ.72!KPJ.64>
+	NOUT%				;<KPJ.64>
+	 ERJMP[	MOVEI	1,"?"		;<KPJ.64>
+		PBOUT%			;<KPJ.64>
+		JRST	.+1]		;<KPJ.64>
+	HRROI	1,[ASCIZ ! on !]	;<KPJ.64>
+	PSOUT%				;<KPJ.64>
+	JUMPL	4,[			;<KPJ.64> det?
+		HRROI	1,[ASCIZ !detached!] ;<KPJ.64>
+		PSOUT%			;<KPJ.64>
+		JRST	.+2]		;<KPJ.64>
+	 JRST[	HRROI	1,[ASCIZ !TTY!]	;<KPJ.64>
+		PSOUT%			;<KPJ.64>
+		MOVE	2,4		;<KPJ.64> shuffle
+		MOVEI	1,.PRIOUT	;<KPJ.64>
+		MOVEI	3,<FLD(8,NO%RDX)>;<KPJ.72!KPJ.64>
+		NOUT%			;<KPJ.64>
+		 ERJMP[	MOVEI	1,"?"	;<KPJ.64>
+			PBOUT%		;<KPJ.64>
+			JRST	.+1]	;<KPJ.64>
+		MOVEI	1,":"		;<KPJ.72> make device name
+		PBOUT%			;<KPJ.72>
+		JRST	.+1]		;<KPJ.64>
+	MOVEI	1,.CHSPC		;<KPJ.64>
+	PBOUT%				;<KPJ.64>
+	GTAD%				;<KPJ.64> now
+	MOVE	4,1			;<KPJ.64> shuffle
+	MOVEI	1,.PRIOUT		;<KPJ.64>
+	MOVE	2,4			;<KPJ.64>
+	MOVSI	3,(^O501,,0)		;<KPJ.64> ho hum
+	ODTIM%				;<KPJ.64>
+	 nop				;<KPJ.64> ***FOO***
+	MOVEI	1,.CHSPC		;<KPJ.64>
+	PBOUT%				;<KPJ.64>
+	MOVEI	1,.PRIOUT		;<KPJ.64>
+	MOVE	2,4			;<KPJ.64> now
+	MOVSI	3,(^O400100,,0)		;<KPJ.64> ho hum
+	ODTIM%				;<KPJ.64>
+	 nop				;<KPJ.64> ***FOO***
+	HRROI	1,[ASCIZ !, Last login !] ;<KPJ.64>
+	PSOUT%				;<KPJ.64>
+	SETO	1,			;<KPJ.64> self
+	HRROI	2,4			;<KPJ.72!KPJ.64> one word into AC4
+	MOVEI	3,.JILLN		;<kPJ.72!KPJ.64> last login time
+	GETJI%				;<KPJ.64> get it
+	 ERJMP[	SETZ	4,		;<KPJ.64> failed, say never
+		JRST	.+1]		;<KPJ.64>
+	JUMPE	4,[			;<KPJ.64>
+		HRROI	1,[ASCIZ !Never!] ;<KPJ.64>
+		PSOUT%			;<KPJ.64>
+		JRST	.+2]		;<KPJ.64>
+	 JRST[	MOVE	2,4		;<KPJ.64> shuffle
+		MOVEI	1,.PRIOUT	;<KPJ.64>
+		MOVSI	3,(^O501,,0)	;<KPJ.64>
+		ODTIM%			;<KPJ.64>
+		 nop			;<KPJ.64> ***FOO***
+		MOVEI	1,.CHSPC	;<KPJ.64>
+		PBOUT%			;<KPJ.64>
+		MOVEI	1,.PRIOUT	;<KPJ.64>
+		MOVE	2,4		;<KPJ.64>
+		MOVSI	3,(^O400100,,0)	;<KPJ.64>
+		ODTIM%			;<KPJ.64>
+		 nop			;<KPJ.64> ***FOO***
+		JRST	.+1]		;<KPJ.64>
+	HRROI	1,[BYTE (7) .CHCRT,.CHLFD,.CHNUL]
+	PSOUT%				;<KPJ.64> that's all, folx!
+callo9:	return				;goback, as they say in COBOL
+>;T20
+
+;+----------------------------------
+;HUBBA	EXEC simulator for (l)user entertainment		<KPJ.72>
+
+T20,<
+hubba:	CALL	toutpu##		;output pending output
+	HRROI	1,[ASCIZ !@LOGIN (USER) !] ;simulate EXEC
+	PSOUT%				;. . .
+	MOVEI	1,.PRIOUT
+	HRRZ	2,logppn		;get "PPN"
+	HRLI	2,(5B2)			;make user#
+	DIRST%				;display name
+	 ERJMP[	MOVEI	1,"?"		;failed, display *something*
+		PBOUT%			; (***FOO***)
+		JRST	.+1]
+	return
+>;T20
+
+;+----------------------------------
+;ACCT		get default account from 20x directory
+;accepts	LOGPPN/	0,,usernumber
+;		2/	pointer to password string
+;returns	+1 always, with ACCTNM/	account string (39 characters)
+;-
+
+T20,<
+acct:	MOVE	3,2			;shuffle (holy password)
+	MOVEI	1,.CDDAC+1		;word 0,...,.CDDAC wanted
+	MOVEM	1,dirblk+.CDLEN		;store length of block
+	MOVE	1,[POINT 7,acctnm]	;where to put account name
+	MOVEM	1,dirblk+.CDDAC		;. . .
+	MOVE	1,logppn		;get our "PPN"
+	HRLI	1,(^O540000,,0)		;make directory#
+	MOVEI	2,dirblk		;stuff down it here
+	GTDIR%				;get the stuff
+	ERJMP[	SETZM	acctnm		;argh, no account then
+		JRST	.+1]		;...failed
+	return
+>;T20
+;+----------------------------------
+;AZKOPW		ask for 20x password
+
+T20,<
+azkopw:	save	<str>
+IFN	fthalf,<
+	MOVE	t,produc##		;<KPJ.43> get producer
+	MOVEM	t,pwdpro		;<KPJ.43> new password producer
+>;fthalf
+	SKIPL	hlpflg##		;help wanted ?
+	 JRST	azkop1			;no
+	print[	ASCIZ !? Password!]	;give the help
+azkop1:	CALL	preol##			;new line
+	print	zazopw##		;"TOPS-20 password:"
+IFN	fthalf,<
+	CALL	dormat			;<KPJ.113> door mat
+>;fthalf
+	return
+;+----------------------------------
+;AZKPAZ		ask for 20x password
+;-
+
+azkpaz:	save	<quest##>
+	CALL	echoff##		;turn off echo
+	MOVEI	t,azkopw		;ask for password
+	MOVEM	t,quest##
+IFN	ftphon,<			;[KPJ.25]
+	SKIPE	phone##			;[BCQ] a text phone?
+	 SETOM	pasflg##		;[BCQ] yes, remember this is password
+>;ftphon
+	CALL	read##			;get info
+	 nop
+	SETZM	pasflg##		;[BCQ] clear the flag
+	MOVE	t,chpt##		;save password pointer
+	MOVEM	t,pazptr
+	CALL	echon##			;turn on echo again
+	return
+>;T20
+
+
+IFN	fthalf,<
+;+
+;DORMAT		output door mat to hide key under
+;-
+
+dormat:	MOVE	t,pwdpro		;<KPJ.43> get producer
+	CAIN	t,terpro##		;<KPJ.43> terminal input?
+	 CALL	halfp			;<KPJ.66> yes, half wit?
+	  JRST	dorma9			;<KPJ.66> no, no door mat for key
+	CALL	preol##			;<KPJ.43> yes, new line
+	$Setz	t,			;<KPJ.43> initialize door mat counter
+dorma1:	MOVE	str,blaffa(t)		;<KPJ.43> get door mat
+	PUSH	P,t			;<KPJ.43> save counter
+	CALL	prstr##			;<KPJ.43> output a part of it
+	MOVEI	ch,.CHCRT		;<KPJ.43> CR
+	CALL	putch			;<KPJ.43> output it
+	POP	P,t			;<KPJ.43> restore counter
+	ADDI	t,1			;<KPJ.43> increment door mat index
+	CAIGE	t,blafln		;<KPJ.43> last done?
+	 JRST	dorma1			;<KPJ.43> no, more
+dorma9:	return
+>;fthalf
+	END
+..and no more

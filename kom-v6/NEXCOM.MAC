@@ -1,0 +1,89 @@
+;Oden::DSKG:NEXCOM.MAC<62,7777,MAC> 1987-01-06 06:20:22, Edit by KPJ @ H.HOLE
+;4	Test for "too many" entries when checking for "next comment".
+;Oden::DSKG:NEXCOM.MAC<62,7777,MAC> 1986-06-09 15:18:30, Edit by KPJ @ L89
+;3	Moved texts to TEXTER.
+;Oden::DSKD:NEXCOM.MAC<62,7777,MAC> 1985-10-04 19:43:19, Edit by K P J
+;2	Introduced PROLOG macro.
+;Oden::Dskd:Nexcom.Mac[62,7777] 1984-09-04 04:40:28, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(nexcom)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computer Centre, 1984-09-04 04:40:52
+
+;	D A T A   A R E A
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+nexcom::comhed	qnexco,runarg##,reacom,ccnexc##,zncohl## ;(Read) next comment
+skicom::comhed	0,runarg##,skipco,ccskco##,zsachl## 	 ;Skip (comments)
+;-
+
+
+
+
+;+
+; QNEXCO  --  check if to include "(Read) next comment" command
+;-
+
+qnexco:	SKIPE	nxconr##		;any comments?
+	 JRST[	CALL	tooman##	;yes, too many unseen in conference?
+		 JRST	.+1		;yes, no "(Read) next comment"
+		skpret			;no, do this command
+		JRST	.+1]
+	return
+
+
+
+
+;+
+; REACOM  --  read next comment
+;-
+
+reacom:	save	<nr,str>
+	SKIPN	nr,nxconr##	; get comment
+	 JRST	reaco8		; no comment
+	CALL	direob##	; display comment
+	CALL	chknew##	; check news
+	SKIPE	nxennr##	; more news ?
+	 JRST	reaco9		; yes
+	SKIPN	nxconr##	; more comments ?
+	 CALL	sayall##	; no, all seen
+	JRST	reaco9
+
+reaco8:	CALL	preol##		; blank line
+	print	znocom##	;"No comments."
+reaco9:	return
+
+
+
+
+
+
+
+
+;+
+; SKIPCO  --  skip all comments
+;-
+
+skipco:	save	<nr,gp2>
+skipc1:	skipn	nr,nxconr##	; get next comment
+	 JRST	skipc9		; no more comments
+	CALL	entsee##	; mark it seen
+	CALL	chcomm##	; get next comment
+	JRST	skipc1
+
+skipc9:	return
+
+
+
+
+
+
+	END
+..and no more

@@ -1,0 +1,285 @@
+	UNIVER	DBSMAC
+	.DIREC	.NOBIN
+;;;	.TEXT	"/LOCALS/SYMSEG:LOW"
+
+RP%FIL==777B8
+RP%REC==777777777B35
+
+DEFINE	FLD(VALUE,MASK),<<<<VALUE>B<POS(<MASK>)>>&<MASK>>>
+DEFINE	RECPTR(FILE,RECORD)<<<FLD <FILE>,RP%FIL>!<FLD ^D<RECORD>,RP%REC>>>
+
+	met==	1		; MET file
+	inf==	2		; INF file
+	tex==	3		; TEX file
+	dir==	4		; DIR file
+	pna==	5		; PNA file
+	per==	6		; PER file
+	pac==	7		; PAC file
+	mna==	10		; MNA file
+	mee==	11		; MEE file
+	num==	12		; NUM file
+	lnk==	13		; LNK file
+	pre==	14		; PRE file
+	loc==	15		; LOC file
+	lac==	16		; LAC file
+	mar==	17		; MAR file
+	ena==	20		; ENA file
+	emp==	21		; EMP file
+	sub==	22		; SUB file
+	sac==	23		; SAC file
+	maxmet==23		; maximum number of files
+
+	firwrd==1		; first word in block
+	blksiz==200		; block size, one disk block
+	BLKLSH==7
+	blsize==blksiz-firwrd	; net block size
+
+;	R E C O R D   D E F I N I T I O N S
+
+; META RECORD
+
+	phase	0
+metrec:!block	1		; record number
+metsi:!	block	1		; record size
+metmax:!block	1		; maximum number of records
+metrpb:!block	1		; number of records per block
+metnr:!	block	1		; number of records
+metcnr:!block	1		; number of created records
+metrac:!block	1		; number of file read accesses
+metwac:!block	1		; number of file write accesses
+metbeg:!block	1		; start block of file
+metbus:!block	1		; buffer size
+metsiz:!dephas
+
+; TEXT RECORD
+
+	phase	0
+	block	1		; record number
+texdir:!block	1		; text object (DIR)
+texnex:!block	1		; next text part (TEX)
+	texssi==^d15
+texstr:!block	texssi		; text string
+texsiz:!dephas
+
+; OBJECT RECORD
+
+	phase	0
+	block	1		; record number
+objtim:!block	1		; creation time
+objcre:!block	1		; creator (PER) *** (REC)
+objtyp:!block	1		; type of object
+objlto:!block	3		; all links to object (LNK)
+objlfr:!block	3		; all links from object (LNK)
+objsiz:!dephas
+
+; DIRECTORY RECORD
+
+	phase	0
+	block	objsiz		; object block
+dirtby:!block	3		; all texts by the same creator (DIR)
+dirtex:!block	1		; text pointer (TEX)
+dirobj:!block	1		; presented object (REC)
+dirmar:!block	1		; all marks on this entry (MAR)
+dirnma:!block	1		; number of marks
+dirsub:!block	1		; sub meeting (SUB) *** (LNK, probably)
+dirsiz:!dephas
+
+; PERSON NAME RECORD
+
+	phase	0
+	block	1		; record number
+	strssi==^D15		; name string size
+pnanam:!block	strssi		; name string
+pnasiz:!dephas
+
+; RECEIVER RECORD
+
+	phase	0
+	block	objsiz		; object block
+rectim:!block	1		; name creation time
+reccre:!block	1		; name creator
+recstr:!block	strssi		; name string
+rectex:!block	1		; presentation text (DIR)
+recfil:!block	1		; archive file pointer (DIR)
+recsup:!block	1		; super meeting (MEE) *** (REC)
+recloc:!block	3		; local data base (LOC)
+recsiz:!dephas
+
+; PERSON RECORD
+
+	phase	0
+	block	recsiz		; receiver block
+pertby:!block	3		; all texts created by person (DIR)
+permem:!block	1		; number of memberships
+perpre:!block	1		; time for last presence
+persti:!block	1		; accumulated present time
+perpas:!block	1		; encrypted password
+perpgs:!block	1		; page size
+perppn:!block	1		; personal ppn
+pernre:!block	1		; number of read entries
+perlsl:!block	1		; last seen letter (LNK)
+pernum:!block	1		; number of last seen letter
+persys:!block	1		; last seen system message (DIR)
+permes:!block	1		; message to letter writers (DIR)
+perncm:!block	1		; number of created marks
+pernpe:!block	1		; number of created persons
+pernte:!block	1		; number of created text parts
+pernme:!block	1		; number of created meetings
+pernlp:!block	1		; created links to persons
+pernlm:!block	1		; created links to meetings
+pernlt:!block	1		; created links to texts
+pernle:!block	1		; created links to employees
+pernpr:!block	1		; number of created present records
+permar:!block	1		; all objects marked by person (MAR)
+pernma:!block	1		; number of marked objects
+peremp:!block	1		; employee (EMP)
+peradr:!block	1		; address (DIR)
+perpfl:!block	1		; personal flags
+perdeb:!block	1		; debiting (MEE)
+pertel:!block	1		; telephone (DIR)
+perdpp:!block	1		; debiting ppn
+	block	7		; future use
+persiz:!dephas
+
+; PERSON ACTIVE RECORD
+
+	phase	0
+	block	1		; record number
+pactim:!block	1		; last active time
+pacsiz:!dephas
+
+; MEETING NAME RECORD
+
+	phase	0
+	block	1		; record number
+mnanam:!block	strssi		; name string
+mnasiz:!dephas
+
+; MEETING RECORD
+
+	phase	0
+	block	recsiz		; receiver block
+meemem:!block	1		; number of members in object
+meedeb:!block	1		; debiting info
+meesiz:!dephas
+
+; NUMBER RECORD
+
+	phase	0
+	block	1		; record number
+numtim:!block	1		; last active time
+numnum:!block	1		; number of links to object
+numtyp:!block	1		; type of meeting
+numsiz:!dephas
+
+; LINK RECORD
+
+	phase	0
+	block	1		; record number
+lnktim:!block	1		; creation time
+lnkcre:!block	1		; creator (PER)
+lnktyp:!block	1		; type of link
+lnklto:!block	3		; all links to same object (LNK)
+lnklfr:!block	3		; all links from same object (LNK)
+lnkrec:!block	1		; receiver (OBJ) *** (REC, probably)
+lnkobj:!block	1		; received object (OBJ) *** (REC, probably)
+lnkrdt:!block	1		; received date
+lnksiz:!dephas
+
+; PRESENT RECORD
+
+	phase	0
+	block	1		; record number
+pretim:!block	1		; present time
+preper:!block	1		; present person (PER)
+premee:!block	1		; present in meeting (MEE)
+prewri:!block	1		; present writing flag (OBJ)
+pretty:!block	1		; tty number
+presiz:!dephas
+
+; LOCAL REGISTER RECORD
+
+	phase	0
+	block	1		; record number
+loctim:!block	1		; creation time
+locobj:!block	1		; owner (OBJ) *** (REC, probably)
+loclis:!block	3		; all local blocks of the same owner (LOC)
+	losize==blsize-.	; local data area size
+locreg:!block	losize		; local data area
+locsiz:!dephas
+
+; LOCAL ACTIVE RECORD
+
+	phase	0
+	block	1		; record number
+lactim:!block	1		; last active time
+lacobj:!block	1		; owner (OBJ) *** (REC)
+lacsiz:!dephas
+
+; MEMBER ELEMENT RECORD
+
+	phase	0
+meltim:!block	1		; last presence
+melmee:!block	1		; meeting (MEE)
+mellnk:!block	1		; last seen entry (LNK)
+melnum:!block	1		; number of last seen entry
+melfut:!block	2		; future use
+melsiz:!dephas
+
+; MEETING MEMBER ELEMENT RECORD
+
+	phase	0
+mbrtim:!block	1		; last presence
+mbrper:!block	1		; member person (PER)
+mbrnum:!block	1		; number of last seen entry
+mbrsiz:!dephas
+
+; MARK RECORD
+
+	phase	0
+	block	1		; record number
+martim:!block	1		; creation time
+marcre:!block	1		; creator (PER)
+martyp:!block	1		; mark type
+martex:!block	1		; marked entry (DIR)
+marpcr:!block	1		; previous mark of the same person (MAR)
+marpte:!block	1		; previous mark of the same entry (MAR)
+marsiz:!dephas
+
+; EMPLOYEE NAME RECORD
+
+	phase	0
+	block	1		; record number
+enanam:!block	strssi		; name string
+enasiz:!dephas
+
+; EMPLOYEE RECORD
+
+	phase	0
+	block	recsiz		; receiver block
+emporg:!block	1		; organisation (MEE)
+empid:!	block	1		; organisation identifier
+emppas:!block	1		; encrypted password
+emppri:!block	1		; local printer (MEE)
+empper:!block	1		; person object (PER)
+empsiz:!dephas
+
+; SUB MEETING RECORD
+
+	phase	0
+	block	objsiz		; object block
+subloc:!block	3		; local data base
+submem:!block	1		; number of members
+subdir:!block	1		; top entry (DIR)
+subsiz:!dephas
+
+; SUB MEETING ACTIVE RECORD
+
+	phase	0
+	block	1		; record number
+sactim:!block	1		; last active time
+sacnum:!block	1		; number of links to object
+sacsiz:!dephas
+
+	END
+no more

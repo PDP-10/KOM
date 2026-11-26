@@ -1,0 +1,163 @@
+;Oden::DSKG:FILPRO.MAC<62,7777,MAC> 1986-12-28 20:43:09, Edit by KPJ @ H.HOLE
+;13	Better handling of TTY: input in SUBMIT FILE etc.
+;Oden::DSKG:FILPRO.MAC<62,7777,MAC> 1986-08-29 19:22:04, Edit by KPJ @ L89
+;12	Don't call ERRMSG when no error message.
+;Oden::DSKG:FILPRO.MAC<62,7777,MAC> 1986-07-22 15:03:17, Edit by KPJ @ QZKTH
+;11	Moved texts to TEXTER.
+;Oden::DSKD:FILPRO.MAC<62,7777,MAC> 1985-12-07 22:09:14, Edit by KPJ
+;10	Handle TMPCOR files.
+;Oden::DSKD:FILPRO.MAC<62,7777,MAC> 1985-10-25 10:19:54, Edit by KPJ
+;7	Fixed bug in file name asker.
+;Oden::DSKD:FILPRO.MAC<62,7777,MAC> 1985-10-08 04:28:49, Edit by KPJ
+;6	Added FILPRO entry point. New format of PRINT macro.
+;Oden::DSKD:FILPRO.MAC<62,7777,MAC> 1985-10-03 07:20:02, Edit by KPJ
+;5	FILPRO@MONFIL is renamed FILPRX@MONFIL. FILPRO is entry to this module.
+;	(.FILPR expunged) Introduced PROLOG macro.
+;	Handle file errors gracefully. Sanitized code.
+;Oden::DSKD:FILPRO.MAC<62,7777,MAC> 1985-06-20 03:17:09, Edit by KPJ @ GR\N
+;4	SUBMIT is global on T20 only.
+;Oden::DSKD:FILPRO.MAC<62,7777,MAC> 1985-06-12 16:46:44, Edit by KPJ @ L89
+;3	Fixed bug in SUBMIT with wrong consumer after file inserted in entry.
+;	Routine SAFISU eliminated.
+;Oden::Dskd:Filpro.Mac[62,7777] 1984-05-14 17:23:13, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dsk:Filpro.New[1116,134] 1982-03-02 20:16:53, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(filpro)	;<KPJ.5>
+filpro:!
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 17:23:12
+
+;	D A T A   A R E A
+
+T10,<
+filtrm::BLOCK	1		;<KPJ.13> #0: input file is a TTY
+>;T10
+
+;	P R O G R A M   C O D E
+
+	CODE			;<KPJ.5>
+
+;+
+infile::comhed	0,gtifil,submit,ccsufi##,zinfhl##	;submit file to entry
+typfil::comhed	0,gtifil,reafil,cctyfi##,ztfihl##	;type file on terminal
+delfil::comhed	0,gtifil,delefi##,ccdefi##,zdfihl## 	;delete a file
+xonxof::comhed	0,noarg##,perxon,ccsufi##,zxonhl##	;read (from) personal
+							;	computer
+;-
+
+;+
+;GTIFIL		get input file
+;returns	ERRFL/	=0 success, file opened
+;			<0 failure
+;			>0 success, TMPCOR (Tops-10 only)
+;-
+
+gtifil::save	<quest##,str,gp1>
+	SKIPGE	silflg##		;silent?
+	 JRST	gtifi8			;<KPJ.5> yes, error return
+	MOVEI	t,askfil		;ask for file name
+	MOVEM	t,quest##
+	CALL	read##			;get file name
+	 JRST	gtifi8			;<KPJ.5> no name given
+	CALL	opinfi##		;open input file
+	TRNA				;<KPJ.5> return from open
+gtifi8:	 SETOM	errfl##			;<KPJ.5> error return
+	return
+
+;+
+;ASKFIL		ask for a file name
+;-
+
+askfil::save	<str>
+	SKIPL	hlpflg##		;<KPJ.7> help wanted ?
+	 JRST	askna1			;no
+	print	zhlfil##		;"enter file name: FILENAME.EXT"
+askna1:	CALL	preol2##		;new line
+	print	zasfil##		;"file name?"
+	branch	prher##			;and prompt
+
+
+
+;+
+;PERXON		READ (FROM) PERSONAL COMPUTER command
+;-
+
+perxon:	save	<selffl##,consum##,quest##,menuq##,hdmenu##>
+	print	zperix##		;<KPJ.11> "Use CTRL/Z to exit"
+	CALL	preol##
+	MOVE	t,selffl##		;get personal flags
+	Txz	t,acrpfl!ncopfl!nexpfl!nbrpfl ;get rid of lunacy
+	MOVEM	t,selffl##		;set flags
+	CALL	ecbeg##			;start entry
+	PUSH	P,produc##		;save producer
+	MOVEI	t,terpro##		;read from terminal
+	MOVEM	t,produc##
+	SETOM	cmdpfl##		;ignore commands
+	CALL	@produc##		;do so
+	SETOM	intflg##		;no more writing
+	SETZM	cmdpfl##		;restore commands
+	POP	P,produc##		;restore producer
+	CALL	ecend##			;ready
+	print	zprxon##		;<KPJ.11> "Done"
+	return
+
+;+
+;SUBMIT		SUBMIT FILE command code
+;-
+
+T10,<submit:>
+T20,<submit::>
+	save	<selffl##,quest##,menuq##,hdmenu##,str,consum##> ;<KPJ.3>
+	MOVEI	t,nexpfl		;get no expansion flag
+	ORM	t,selffl##		;set flag
+	CALL	ecbeg##			;start entry
+	CALL	reafil			;read file
+	CALL	ecend##			;ready
+	MOVEI	t,tercon##		;<KPJ.12> to terminal
+	MOVEM	t,consum##		;<KPJ.12> . . .
+T10,<	SETZM	filtrm>			;<KPJ.13>
+	CALL	preol##			;<KPJ.13> looks better with a CRLF
+	print	zfisub##		;"file inserted in the entry"
+	return
+
+
+
+
+
+;+
+;REAFIL		read file
+;accepts	IFITYP/	=0: disk file	(Tops-10 only)
+;			#0: TMPCOR file	(Tops-10 only)
+;-
+
+reafil:	save	<produc##,gp1,gp2>	;<KPJ.10>
+T10,<	SKIPE	ifityp##		;<KPJ.10> disk file?
+	 JRST[	MOVEI	gp1,1		;<KPJ.10> need a page
+		MOVEI	gp2,tmpbuf##/1K	;<KPJ.10> not used?
+		CALL	tmxbeg##	;<KPJ.10> start producer
+		 JRST	reafi9		;<KPJ.10> no more core
+		CALL	@produc##	;<KPJ.10> call producer
+		JRST	reafi9]		;<KPJ.10> done
+>;T10
+	CALL	fpbeg			;start file producer (FILPRX@MONFIL)
+	CALL	@produc##		;transfer characters
+	CALL	fpend##			;stop file input
+T10,<reafi9:>				;<KPJ.10>
+	return
+
+
+;+
+;FPBEG		start file input
+;-
+
+fpbeg::	MOVEI	t,filprx##		;<KPJ.5> read from file
+	MOVEM	t,produc##
+	return
+
+
+	END
+..and no more

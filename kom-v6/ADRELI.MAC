@@ -1,0 +1,413 @@
+;Oden::DSKG:ADRELI.MAC<62,7777,MAC> 1986-06-16 12:23:15, Edit by KPJ @ L89
+;10	Changed ZMOREC to ZMOREK (name collision)
+;Oden::DSKD:ADRELI.MAC<62,7777,MAC> 1985-10-01 14:13:29, Edit by KPJ
+;7	Introduced PROLOG macro. Sanitized code.
+;Freja::<KOM.6-SOURCES>ADRELI.MAC.4 15-Mar-85 04:11:15,Editor:KPJ-JAAKKOLA
+;6	Made (c) a comment.
+;Oden::DSKD:ADRELI.MAC[62,7777] 1984-11-19 13:30:24, Edit by K.JAAKKOLA
+;5	Moved all language texts to TEXTER.MAC
+;Oden::DSKD:ADRELI.MAC[62,7777] 1984-11-19 09:47:25, Edit by K.JAAKKOLA
+;4	Changed role of LETHLP somewhat.
+;Oden::DSKD:ADRELI.MAC[62,7777] 1984-10-12 12:58:33, Edit by K.JAAKKOLA
+;3	Global ADECLI never referenced outside this module. Now local.
+;	Inserted COPYRIGHT macro.
+;Oden::Dskd:Adreli.Mac[62,7777] 1984-05-11 16:19:46, Edit by KPJ Jaakkola
+;2	Merged the T20 and T10 versions: "COMMENT ON" command can now be
+;	given by anyone on any entry. Updated copyright notice.
+;Oden::Dsk:Adreli.New[1116,134] 1982-03-02 18:21:48, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(adreli)
+adreli::!
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	copyright <QZ Computing Centre, 1984>		<KPJ.6!KPJ.3>
+
+;	D A T A   A R E A
+
+
+arglis::0				;argument list
+exclis::0				;SINGLE COPY list
+foalfu::[RET]				;for all function
+knolst::0				;INFORMATION COPY receiver list
+namlis::0				;name list
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;	S Y N T A X   T A B L E S
+addrec::comhed	0,aaddre,caddre,ccadre##,zarehl##	;add receivers
+knorec::comhed	0,aknore,cknore,ccknre##,zicrhl## 	;add info copy
+extcop::comhed	0,aknore,cextco,ccecre##,zecrhl##	;add single copy
+addcom::comhed	0,aaddco,caddco,ccadco##,zadcom##	;add comments
+;-
+
+
+;+
+;ADNALI		add to name list
+;accepts	NR/	name
+;-
+
+adnali::save	<tp>
+	MOVEI	tp,namlis		;get name list
+	CALL	addlis##		;add to list
+	return
+
+
+;+
+;AADDRE		add receiver argument
+;returns	ARGLIS/	argument list
+;-
+
+aaddre:	save	<quest##>
+	MOVEI	t,askadr		;ask for receivers
+	MOVEM	t,quest##
+	SKIPGE	wriflg##		;writeing ?
+	 JRST	aaddr1			;yes
+	SKIPN	nr,lastnr##		;no, get last seen entry
+	 JRST	aaddr7			;no entry seen
+	CALL	chkorg##		;own entry ?
+	 JRST	aaddr8			;no, error
+aaddr1:	CALL	gtname##		;get names
+	JRST	aaddr9
+
+aaddr7:	CALL	sanocu			;say no current entry
+	TRNA
+aaddr8:	 CALL	saynot##		;no, error
+aaddr9:	return
+
+
+
+
+
+;+
+;ASKADR		ask for more receivers
+;-
+
+askadr:	save	<str>
+	CALL	lethlp			;letter help
+	print	zmorek##		;"More receivers:"
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+;+
+;LETHLP		give name list help if wanted	[KPJ.4]
+;-
+
+lethlp::save	<str>
+	MOVEI	str,zhllet##		;ask for a list of names
+	SKIPGE	hlpflg##		;help wanted ?
+	 CALL	prstr##			;give help
+	CALL	preol2##		;new line
+	return
+
+
+;+
+;SANOCU		say no current entry
+;-
+
+sanocu:	save	<str>
+	SKIPL	silflg##		;silent ?
+	 JRST[	CALL	preol##		;no, new line...
+		print	znocur##	;...and say "no current entry"
+		JRST	.+1]
+	SETOM	errfl##			;set error flag
+	return
+
+
+
+;+
+;CADDRE		add more receivers
+;accepts	ARGLIS/	more receivers
+;-
+
+caddre::save	<foalfu>
+	SKIPL	wriflg##		;writeing ?
+	 JRST[	MOVEI	t,typrec	;no, set link type
+		MOVEM	t,lntype##
+		CALL	recadd		;add receivers
+		JRST	caddr9]
+	MOVEI	t,adrece		;yes, add receiver
+	MOVEM	t,foalfu
+	CALL	faname			;add all names
+caddr9:	return
+
+
+
+
+
+;+
+;RECADD		add receivers
+;accepts	LASTNR/	FROM object
+;		LNTYPE/	link type
+;		ARGLIS/	TO objects
+;-
+
+recadd:	save	<nr,tp,froobj##,toobj##>
+	MOVE	t,lastnr##		;save FROM object
+	MOVEM	t,froobj##
+	MOVE	tp,arglis		;get receivers
+recad2:	MOVE	nr,0(tp)		;get receiver
+	CALL	chkrec##		;check receiver
+	JUMPE	nr,recad3		;any receiver ?
+	MOVEM	nr,toobj##		;save to object
+	CALL	updbeg##		;start update
+	CALL	crelnk##		;create link
+	CALL	updend##		;end of update
+	CALL	reptyp##		;report
+recad3:	SKIPE	tp,1(tp)		;get next receiver
+	 JRST	recad2			;more receivers
+	MOVE	t,oldnex##		;keep next entry flag
+	MOVEM	t,nexflg##
+	return
+
+
+
+
+
+;+
+;ADRECE		add receiver
+;accepts	NR/	receiver
+;-
+
+adrece:	save	<nr,str>
+	CALL	adname			;add name to name list
+	JUMPN	nr,[			;any receiver ?
+		CALL	prname##	;yes, print name of receiver
+		print	zadrec##	;"added as receiver"
+		CALL	preol##		;new line
+		JRST	.+1]
+	return
+
+
+
+;+
+;ADNAME		add name to name list
+;accepts	NR/	name
+;returns	NR/	new receiver
+;-
+
+adname::save	<tp>
+	CALL	chkrec##		;check receiver
+	MOVEI	tp,namlis		;get receiver list
+	CALL	addlis##		;add receiver
+	return
+
+
+
+
+
+;+
+;FANAME		do for all names
+;		calls FOALFU with NR/	number of activity
+;accepts	ARGLIS/	name list
+;-
+
+faname::save	<tp,nr>
+	SKIPN	tp,arglis		;get argument list
+	 JRST	fanam9			;no names got
+fanam1:	MOVE	nr,0(tp)		;get activity
+	CALL	@foalfu			;do for all names
+	SKIPE	tp,1(tp)		;get next activity
+	 JRST	fanam1
+fanam9:	return
+
+
+
+;+
+;AKNORE		add receiver argument
+;returns	ARGLIS/	argument list
+;-
+
+aknore:	save	<quest##>
+	MOVEI	t,askadr		;ask for receivers
+	MOVEM	t,quest##
+	SKIPGE	wriflg##		;writeing ?
+	 JRST	aknor1			;yes
+	SKIPN	nr,lastnr##		;get last seen entry
+	 JRST[	CALL	sanocu		;no entry seen, say no current activity
+		JRST	aknor9]
+	CALL	chkfro##		;check FROM object
+	JUMPE	nr,[			;error ?
+		CALL	saynot##	;yes, not allowed
+		JRST	aknor9]
+aknor1:	CALL	gtname##		;get names
+aknor9:	return
+
+
+
+
+
+;+
+;CKNORE		add to INFORMATION COPY list
+;accepts	ARGLIS/	name list
+;-
+
+cknore:	save	<foalfu>
+	SKIPL	wriflg##		;writeing ?
+	 JRST[	MOVEI	t,typkno	;set link type
+		MOVEM	t,lntype##
+		CALL	recadd		;add receivers
+		JRST	cknor9]
+	MOVEI	t,aknlir		;add name to INFORMATION COPY list
+	MOVEM	t,foalfu
+	CALL	faname			;do it for every name
+cknor9:	return
+
+
+
+
+
+;+
+;AKNLIR		add name to INFORMATION COPY list and repport
+;-
+
+aknlir:	save	<str,nr>
+	CALL	adknli			;add to INFORMATION COPY list
+	JUMPN	nr,[			;any receiver ?
+		CALL	prname##	;print name
+		print	zadicr##	;"added as INFORMATION COPY"
+		CALL	preol##		;new line
+		JRST	.+1]
+	return
+
+
+
+;+
+;ADKNLI		add name to FOR INFORMATION list
+;-
+
+adknli::save	<tp>
+	CALL	chkrec##		;check receiver
+	MOVEI	tp,knolst		;get info list
+	CALL	addlis##		;add to list
+	return
+
+
+
+;+
+;CEXTCO		add to SINGLE COPY list
+;accepts	ARGLIS/	name list
+;-
+
+cextco:	save	<foalfu>
+	SKIPL	wriflg##		;writeing ?
+	 JRST[	MOVEI	t,typexc	;set link type
+		MOVEM	t,lntype##
+		CALL	recadd		;add receivers
+		JRST	cextc9]
+	MOVEI	t,aeclir		;add name to SINGLE COPY list
+	MOVEM	t,foalfu
+	CALL	faname			;do it for every name
+cextc9:	return
+
+
+
+
+
+;+
+;AECLIR		add name to SINGLE COPY list and report
+;-
+
+aeclir:	save	<str,nr>
+	CALL	adecli			;add to extra copy list
+	JUMPN	nr,[			;any receiver ?
+		CALL	prname##	;print name
+		print	zadecr##	;"added as single copy"
+		CALL	preol##		;new line
+		JRST	.+1]
+	return
+
+
+;+
+;ADECLI		add name to SINGLE COPY list
+;-
+
+adecli:	save	<tp>
+	CALL	chkrec##		;check receiver
+	MOVEI	tp,exclis		;get SINGLE COPY list
+	CALL	addlis##		;add to list
+	return
+
+
+;+
+;AADDCO		argument to ADD comment link command
+;returns	ARGLIS/	entries got
+;-
+
+aaddco:	save	<nr,quest##>
+	MOVEI	t,askcom##		;ask for entries
+	MOVEM	t,quest##
+	SKIPGE	wriflg##		;writeing? 
+	 JRST	aaddc1			;yes
+	SKIPN	nr,lastnr##		;anything seen ?
+	 JRST[	CALL	sanocu		;no, say no curremt entry
+		JRST	aaddc9]
+aaddc1:	CALL	gtnumb			;get entry numbers
+aaddc9:	return
+
+
+
+
+
+;+
+;GTNUMB		read a list of numbers
+;accepts	QUEST/	gets a question
+;returns	ARGLIS/	pointing to a name list
+;-
+
+gtnumb:	save	<tp>
+	CALL	read##			;read numbers
+	 JRST	gtnum8			;no reply
+	SETZM	arglis			;clear number list
+	MOVEI	tp,arglis		;get list
+	CALL	mannum##		;get many numbers
+	 TRNA				;error
+	  TRNA				;ok
+gtnum8:	   SETOM errfl##		;set error
+gtnum9:	return
+
+
+
+
+
+;+
+;CADDCO		add more comment links to current entry
+;accepts	ARGLIS/	entry list
+;-
+
+caddco:	save	<foalfu>
+	SKIPL	wriflg##		;writeing ?
+	 JRST[	MOVEI	t,typcom	;no, set link type
+		MOVEM	t,lntype##
+		CALL	recadd		;add comment links
+		JRST	caddc9]
+	MOVEI	t,admoco		;add more comment links
+	MOVEM	t,foalfu
+	CALL	faname			;do it for every entry
+caddc9:	return
+
+
+
+
+
+;+
+;ADMOCO		add more comment links
+;accepts	NR/	entry
+;-
+
+admoco:	save	<str,tp>
+	MOVEI	tp,comlis##		;get comment list
+	CALL	addlis##		;add comment link
+	CALL	prname##		;output entry number
+	print	zcomtd##		;"commented"
+	CALL	preol##			;new line
+	return
+
+	END
+..and no more

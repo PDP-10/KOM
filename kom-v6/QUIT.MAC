@@ -1,0 +1,949 @@
+;Aida::Ss:<Kom.6C3.Src>Quit.Mac.2,  7-Aug-87 17:06:37, Ed: Zot
+;61?	Use GTKOM% rather than GTJFN% if FTJSY2 set 
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1987-03-12 16:55:11, Edit by KPJ @ L89 <1,2>
+;60	Say goodbye to leaving user with BEGIN (WITH NEW NAME)
+;Freja::Qs:<Kom.6.Macro>Quit.Mac.67 870308-0718,KPJ-Jaakkola
+;57	Corrected word pointer test in .JSERR, made ERRTXT global, and
+;	doubled its size.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1987-01-29 09:40:58, Edit by KPJ @ L89
+;56	Ignore temporary file/TMPCOR when using BEGIN (WITH NEW NAME) command.
+;Freja::Qs:<Kom.6.Macro>Quit.Mac.64 870116-0421,KPJ-Jaakkola
+;55	Moved BUGCOD and BUGACS to ERRLOG, too.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1987-01-04 00:21:19, Edit by KPJ @ H.HOLE
+;54	Moved BUGHLT handler to ERRLOG where it belongs.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-12-28 04:07:44, Edit by KPJ @ H.HOLE
+;53	Moved KOMWRI call from LEAVE2 to LEAVE, where it belongs.
+;Oden::DSKG:QUIT.MAC[62,7777,MAC] 1986-12-23 19:05:23, Edit by KPJ @ ORANGE
+;52	KOMWRI returns +1 on failure.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-12-17 15:35:43, Edit by KPJ @ L89
+;51	Moved TMP:LME writing to KOMWRI@MONTMP. Split LEAVE routine to two
+;	routines: LEAVE which has mail-message testing, and LEAVE2 without.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-10-29 14:34:35, Edit by KPJ @ L89
+;50	Use QZIF/FOQZIF/RUNIF.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-10-08 16:02:40, Edit by KPJ @ L89
+;47	FTSAVE assembly switch:
+;		< 0	use SSAVE% to save memory
+;		= 0	use KOM routines to save memory
+;		> 0	use SAVE% to save memory
+;Tor::Ps:<KPJ.KOM>QUIT.MAC.9 30-Sep-86 16:07:50, Edit by KPJ
+;46	Eliminated bug introduced in edit#44.
+;Tor::Ps:<KPJ.KOM>QUIT.MAC.6 30-Sep-86 13:42:53, Edit by KPJ
+;45	If memory save fails, don't tell user. Since we are using buffered I/O,
+;	the message will appear out of phase anyway.
+;Tor::Ps:<KPJ.KOM>QUIT.MAC.4 29-Sep-86 18:17:29, Edit by KPJ
+;44	DMPWWI created incorrect page map, using bogus byte pointer.
+;Tor::Ps:<KPJ.KOM>QUIT.MAC.3 29-Sep-86 17:34:33, Edit by KPJ
+;43	DMPWWI call fixed.
+;Freja::QS:<KOM.6.MACRO>QUIT.MAC.20 860925-1322, KPJ-JAAKKOLA
+;42	Since SSAVE% self opens the save file with OPENF% in monitor code, we
+;	will have to build the dump EXE file ourselves to be able to use KOM%
+;	(a non-trivial task).
+;Freja::QS:<KOM.6.MACRO>QUIT.MAC.12 860924-1413, KPJ-JAAKKOLA
+;41	Fixed stack mis-match bug. Saving TOPS-20 memory image is hairy.
+;Freja::QS:<KOM.6.MACRO>QUIT.MAC.10 860924-1358, KPJ-JAAKKOLA
+;40	ODTIM% returns ":" between minutes and seconds, so we must add some
+;	brain damaged code to change it to something less disgusting.
+;Freja::QS:<KOM.6.MACRO>QUIT.MAC.9 860924-1318, KPJ-JAAKKOLA
+;37	SAVBLK required for T20, too.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-09-23 13:27:05, Edit by KPJ @ DK
+;36	SAVE. UUO destroys all ACs (gimme a break!). Save TOPS-20 error code.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-09-16 21:13:06, Edit by KPJ @ H.HOLE
+;35	Less code for BUGHLTs. Add code to save memory image att BUGHLT.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-09-14 19:28:45, Edit by KPJ @ H.HOLE
+;34	Edit #32 broke Tops-10 version of error message output.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-08-22 04:17:27, Edit by KPJ @ 1SKEDE
+;33	QUXPFL is wrong sense. Make it make sense.
+;Freja::Qs:<Kom.6.Macro>Quit.Mac.4 860821-2031,Kpj-Jaakkola
+;32	Better "internal error" error message format.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-07-28 13:52:12, Edit by KPJ @ L89
+;31	QUIPFL renamed QUXPFL, since QUIPFL is used for other stuff.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-07-24 13:29:59, Edit by KPJ @ L89
+;30	Implemented "Obey QUIT command" logic.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-07-09 12:30:22, Edit by KPJ @ 1SKEDE
+;27	Use default method for accessing return address.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-06-09 15:34:58, Edit by KPJ @ L89
+;26	Handle new ZUNFIN format.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-05-12 17:26:34, Edit by KPJ @ Loud Room
+;25	Handle LEAVE +2 return.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-05-09 10:24:42, Edit by KPJ @ L89
+;24	Rewrote and documented ENDKOM/ENDKO0/ENDKO9/ENDKO8 routines.
+;	If mail, return to command level if QUIT command.
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-05-09 10:10:25, Edit by KPJ @ L89
+;23	Added FTENQ code:
+;	;DSKG:QUIT.MAC[62,7777,TTQ] 1986-03-17 16:02:50, Edit by THOLERUS T
+;	;22	Remove ENQ/DEQ from member list updates when leaving KOM
+;Oden::DSKG:QUIT.MAC<62,7777,MAC> 1986-04-25 12:52:23, Edit by KPJ @ L89
+;22	Get rid of OPDEFed funny macros.
+;Oden::DSKD:QUIT.MAC[62,7777,MAC] 1986-01-12 22:56:16, Edit by KPJ
+;21	Make ENDKO0 global (called from LOGIN@LOGIN)
+;Freja::QS:<KOM.6-SOURCES>QUIT.MAC.10 16-Nov-85 22:33:11,Editor:KPJ-JAAKKOLA
+;20	NOENQP is used on T10 only.
+;Oden::DSKD:QUIT.MAC<62,7777,MAC> 1985-11-14 15:58:50, Edit by KPJ
+;17	Fixed bug in fatal-error-output routine (. it was fatal .)
+;Oden::DSKD:QUIT.MAC<62,7777,MAC> 1985-10-17 15:17:24, Edit by KPJ
+;16	Corrected call to NOUT% handler.
+;Oden::DSKD:QUIT.MAC<62,7777,MAC> 1985-10-08 00:15:55, Edit by KPJ
+;15	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:QUIT.MAC<62,7777,MAC> 1985-06-12 17:14:36, Edit by KPJ @ L89
+;14	Create TMP:LME only if logged in via KOM.
+;Oden::DSKD:QUIT.MAC<62,7777,MAC> 1985-06-11 14:08:10, Edit by KPJ @ L89
+;13	Moved JSYS error hacking routine JSYSER and .JSERR here from MONITO.
+;	Hacked ERROR macro to work. Moved texts to TEXTER module.
+;Freja::Ps:<KOM.6-SOURCES>QUIT.MAC.4 18-Apr-85 17:58:36,Editor:KPJ-JAAKKOLA
+;12	Use KOMWRI temporary file writer when outputting KOM temporary file.
+;	WRITMP routine eliminated.
+;Freja::Ps:<KOM.6-SOURCES>QUIT.MAC.2 16-Apr-85 19:10:25,Editor:KPJ-JAAKKOLA
+;11	Rewrote this to make it work.
+;Oden::DSKD:QUIT.MAC[62,7777] 1985-01-08 08:17:47, Edit by KPJ @ L89
+;10	Output PERSON number instead of name in TMPCOR save file.
+;Oden::DSKD:QUIT.MAC[62,7777] 1985-01-08 07:52:10, Edit by KPJ @ L89
+;7	Get rid of QSAPSW call. Search MACTEN.
+;Oden::DSKD:QUIT.MAC[62,7777] 1984-12-03 14:00:43, Edit by KPJ @ L89
+;6	Make QUIT command output a TMP:KJO file for LMENU program.
+;Oden::DSKD:QUIT.MAC[62,7777] 1984-11-12 13:00:08, Edit by K.JAAKKOLA
+;5	Test on STPFLG: if set, CONTINUE and START are illegal.
+;	Exception: when writing an entry.
+;Oden::Dskd:Quit.Mac[62,7777] 1984-09-25 10:05:58, Edit by K.Jaakkola
+;4	STPFLG hacking never necessary on Tops-10. Put into T20 conditional.
+;	Introduced FALL macro where appropriate.
+;Oden::Dskd:Quit.Mac[62,7777] 1984-09-25 01:54:07, Edit by K.Jaakkola
+;3	Search UUOSYM only on Tops-10. Search MACSYM,MONSYM on 20x.
+;Oden::Dskd:Quit.Mac[62,7777] 1984-08-20 07:03:33, Edit by K.Jaakkola
+;2	Updated (c) notice. Eliminated the EINPPN code.
+;Oden::Dsk:Quit.New[1116,134] 1982-03-02 20:25:42, Edit by Lars Enderin
+;1	Inserted ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(quit)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-20 07:03:06
+
+;	D A T A   A R E A
+
+
+T20,<
+dmpjfn:	BLOCK	1		;<KPJ.42> JFN of dump file
+>;T20
+T10,<				;<KPJ.35>
+savacs:	BLOCK	^O20		;<KPJ.36> SAVE. destroys all ACs, save them
+>;T10
+savblk:
+T10,<	BLOCK	6>		;<KPJ.35> SAVE. block
+T20,<	BLOCK	filmax>		;<KPJ.37> file name
+errtxt::BLOCK	<2*errsiz+4>/5+1	;<KPJ.57!KPJ.13> error message buffer
+	errlen==<.-errtxt>*5-1		;<KPJ.57> length of it (incl. NUL)
+ctcfl:	0			;Control-C flag
+errfl::	0			;error flag
+pretim:	Z			;present time
+mailqt:	BLOCK	1		;<KPJ.24> mail yelling flag
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+quit::	comhed	inccom##,runarg##,cquit,ccquit##,zquihl##	;quit
+;-
+
+;+
+;CQUIT		QUIT command
+;		during text entry: same as ENTER
+;		during other time: leave program
+;-
+
+cquit:	SKIPL	entflg##		;writing a text?
+	 JRST[	CALL	endko0		;<KPJ.24> no, QUIT means bye, bye
+		 nop			;<KPJ.24> ***MAIL***
+		JRST	cquit9]		;<KPJ.24>
+	CALL	finent##		;yes, just ENTER the text
+cquit9:	return
+
+
+;+
+T20,<
+;JSYSER		output latest error		<KPJ.13>
+;-
+jsyser::MOVE	1,[POINT 7,errtxt]	;error message buffer pointer
+					;(plus some useless zero word)
+	HRLOI	2,.FHSLF		;latest error for us
+	MOVEI	3,errsiz		;size of buffer
+	ERSTR%				;get error message
+	 ERJMP[	print	erstr1##	;failed...
+		JRST	jsysr9]
+	 ERJMP[	print	erstr2##	;failed...
+		JRST	jsysr9]
+	print	errtxt		;success, say what went wrong
+jsysr9:	RET
+>;T20
+
+;+
+T20,<
+;.JSERR	 combine KOM error message with latest JSYS error	<KPJ.13>
+;accepts	STR/	word or byte pointer to an ASCIZ
+;returns	STR/	word pointer to an ASCIZ
+;-
+
+.jserr::HLRZ	t,str			;<KPJ.57> inspect LH of pointer
+	CAIN	t,0			;0,,n (pointer is a word pointer)?
+	 HRLI	str,(POINT 7,)		;<KPJ.57> make a 7-bit byte pointer
+					;copy STR/ message to ERRTXT/
+	MOVE	t,[POINT 7,errtxt]	;byte pointer to target message buffer
+	MOVE	t2,str			;byte pointer to source message buffer
+	MOVSI	t3,(IOWD errlen,1)	;<KPJ.57> -length,,0 (in bytes)
+jserr1:	ILDB	t4,t2			;copy string to buffer
+	JUMPN	t4,[	IDPB	t4,t
+			AOBJN	t3,jserr1
+			JRST	jserr9]	;<KPJ.57> buffer full, quit
+
+	MOVE	t2,[POINT 7,xyzzy##]	;", latest JSYS error: "
+jserr2:	ILDB	t4,t2			;append message
+	JUMPN	t4,[	IDPB	t4,t
+		AOBJN	t3,jserr2
+		JRST	jserr9]		;<KPJ.57> buffer full, quit
+IFN	<t-1>,<	MOVE	1,t>		;<KPJ.52> in case changed
+	HRLOI	2,.FHSLF		;[KPJ.11] self fork, most recent error
+IFN	<t3-3>,<MOVE	3,t3>		;<KPJ.52> in case changed
+	TRZ	3,-1			;-length,,0
+	ERSTR%				;get error string
+	 ERJMP[	MOVEI	str,erstr1##
+		JRST	jserr5]
+	 ERJMP[	MOVEI	str,erstr2##
+jserr5:		PUSH	P,1		;<KPJ.52> save pointer
+		CALL	prstr##
+		POP	P,1		;<KPJ.52> restore pointer
+		JRST	.+1]
+jserr9:
+IFN	<t-1>,<	MOVE	t,1>
+KL10,<	MOVEI	t4,.CHNUL>		;put NUL at end of buffer
+KL10N,<	SETZ	t4,.CHNUL>
+	IDPB	t4,t
+	MOVEI	str,errtxt		;get word pointer
+	return
+>;T20
+
+
+
+
+
+;+
+;SAVEUS		save memory image on a disk file		<KPJ.35>
+T10,<
+;File:	"dev:1xxxxx.EXE"
+;where		"dev:"		same device as data base
+;		"1xxxxx"	random file name, except first character is "1"
+;		".EXE"		extension is EXE
+
+;requires Tops-10 7.02 or later
+>;T10
+T20,<
+;File:	"KOM:yy-mm-dd-hhmm-ss-ERROR-DUMP.EXE.-1;P770202"
+;where		"yy-mm-dd"	current date
+;		"hhmmss"	current time
+>;T20
+;-
+
+saveus::
+T10,<	MOVE	t,opncen##+.FODEV	;data base device
+	MOVEM	t,savblk+0		;save there
+	MOVE	t,[%CNDAT]		;get 15-bit date
+	GETTAB	t,			;. . .
+	 SETZ	t,			;failed, no date
+	MOVE	t2,[%CNTIM]		;get daytime in jiffies
+	GETTAB	t2,			;. . .
+	 SETO	t2,			;failed, no time
+	HRLZ	t,t			;date to LH
+	HRR	t,t2			;time to RH
+	MOVEI	t2,'1'			;SIXBIT "1" ...
+	MOVE	t3,[POINT 6,t]		;... where to put it ...
+	IDPB	t2,t3			;... put it there
+	MOVEM	t,savblk+1		;that's our file name
+	MOVSI	t,('exe   ')		;this is mandatory anyway
+	MOVEM	t,savblk+2		;. . .
+	SETZM	savblk+3		;unused
+	SETZM	savblk+4		;no PPN
+	SETZM	savblk+5		;no core
+	MOVEI	t,savblk		;argblk
+	MOVEM	0,savacs+0		;<KPJ.36> save AC 0
+	MOVE	0,[1,,savacs+1]		;<KPJ.36> save ACs 1..17
+	BLT	0,savacs+^O17		;<KPJ.36> . . .
+IFE	ftphys,<SAVE.	t,>		;not /PHYSICAL
+IFN	ftphys,<SAVE.	t,UU.PHY>	;/PHYSICAL
+	 nop				;<KPJ.45> failed, ignore
+	MOVE	0,[savacs+1,,1]		;<KPJ.36> restore ACs 1..17
+	BLT	0,^O17			;<KPJ.36> . . .
+	MOVE	0,savacs+0		;<KPJ.36> restore AC 0
+>;T10
+T20,<	CALL	dmpmak			;<KPJ.42> create dump file name
+	 JRST	saveu9			;<KPJ.42> failed
+	CALL	dmpopn			;<KPJ.42> open the file
+	 JRST	saveu9			;<KPJ.42> failed
+IFE	ftsave,<			;<KPJ.47>
+	CALL	dmpdir			;<KPJ.42> output directory part
+	 JRST	saveu2			;<KPJ.42> failed
+	CALL	dmpdat			;<KPJ.42> output data part
+	 JRST	saveu2			;<KPJ.42> failed
+>;no JSYS
+IFN	ftsave,<			;<KPJ.47>
+	CALL	dmpmem			;<KPJ.47> dump memory with JSYS
+	 JRST	saveu2			;<KPJ.47> failed
+>;JSYS
+IFLE	ftsave,<			;<KPJ.47> if not SAVE% then
+	CALL	dmpcls			;<KPJ.42> close dump file
+	 JRST	saveu2			;<KPJ.42>
+>;not SAVE%
+	JRST	saveu9			;success, exit
+
+saveu2:	CALL	dmpabt			;<KPJ.42> abort dump
+	 nop				;<KPJ.42> failed, ignore error
+saveu9:
+>;T20
+	return
+
+
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPDIR		write directory area of dump file
+;accepts	DMPJFN/	JFN
+;		(and section 0 as a whole)
+;returns	+1 failure
+;		+2 success, which directory area written
+;-
+
+dmpdir:	CALL	dmpdrs			;<KPJ.42> output directory section
+	 JRST	dmpdi9			;<KPJ.42> failed
+	CALL	dmpent			;<KPJ.42> output entry vector section
+	 JRST	dmpdi9			;<KPJ.42> failed
+;	CALL	dmppdv			;<KPJ.42> output PDV section
+;	 JRST	dmpdi9			;<KPJ.42> failed
+	CALL	dmptrm			;<KPJ.42> output terminating section
+	 JRST	dmpdi9			;<KPJ.42> failed
+	CALL	dmpskp			;<KPJ.42> skip to next file page
+	 JRST	dmpdi9			;<KPJ.42> failed
+	skpret				;<KPJ.42> success, +2 return
+dmpdi9:	return				;<KPJ.42>
+>;no JSYS
+>;T20
+
+
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPPDV		dump PDV section to dump file	(not yet implemented)
+;accepts	DMPJFN/	JFN
+;returns	+1 failure
+;		+2 success
+;-
+
+;dmppdv:				###MORE CODE HERE###
+;	return
+>;no JSYS
+>;T20
+
+
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPTRM		output terminating section to dump file
+;accepts	DMPJFN/	JFN
+;returns	+1 failure
+;		+2 success
+;-
+
+dmptrm:	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	MOVE	2,[^O1777,,1]		;<KPJ.42> terminating section
+	BOUT%				;<KPJ.42>
+	ERJMP	dmptr9			;<KPJ.42> failed
+
+	skpret				;<KPJ.42> success, +2 return
+dmptr9:	return				;<KPJ.42>
+>;no JSYS
+>;T20
+
+
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPENT		output entry vector section to dump file
+;accepts	DMPJFN/	JFN
+;returns	+1 success
+;		+2 failure
+;-
+
+dmpent:	MOVEI	1,.FHSLF		;<KPJ.42> us
+	GEVEC%				;<KPJ.42> get our entry vector
+	ERJMP	dmpen9			;<KPJ.42> failed
+	MOVE	3,2			;<KPJ.42> save entry vector word
+
+	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	MOVE	2,[^O1775,,3]		;<KPJ.42> entry vector section, 3 words
+	BOUT%				;<KPJ.42>
+	ERJMP	dmpen9			;<KPJ.42> failed
+
+;	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	HLRZ	2,3			;<KPJ.42> get entry vector length
+	BOUT%				;<KPJ.42>
+	ERJMP	dmpen9			;<KPJ.42> failed
+
+;	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	HRRZ	2,3			;<KPJ.42> get entry vector address
+	BOUT%				;<KPJ.42>
+	ERJMP	dmpen9			;<KPJ.42> failed
+
+	skpret				;<KPJ.42> success, +2 return
+dmpen9:	return				;<KPJ.42>
+>;no JSYS
+>;T20
+
+
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPDRS		output directory section to dump file
+;accepts	DMPJFN/	JFN
+;		(and section 0 as a whole)
+;returns	+1 failure
+;		+2 success
+
+dmpdrs:	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	MOVSI	2,(^O1776,,0)		;<KPJ.42> the identifier
+	BOUT%				;<KPJ.42> (filled in later)
+	ERJMP	dmpdr9			;<KPJ.42> failed
+
+	CALL	dmpwrd			;<KPJ.42> dump page word
+	 JRST	dmpdr9			;<KPJ.42>
+
+	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	RFPTR%				;<KPJ.42> get file position
+	 ERJMP	dmpdr9			;<KPJ.42> failed
+	PUSH	P,2			;<KPJ.42> save file pointer
+	MOVEI	2,0			;<KPJ.42> back to HOF
+	SFPTR%				;<KPJ.42> get there
+	 ERJMP[	POP	P,2		;<KPJ.42> failed
+		JRST	dmpdr9]		;<KPJ.42>
+	MOVE	2,0(P)			;<KPJ.42> get EOF position
+	HRLI	2,(^O1776,,0)		;<KPJ.42> and the identifier
+	BOUT%				;<KPJ.42> write into header
+	ERJMP[	POP	P,2		;<KPJ.42> failed
+		JRST	dmpdr9]		;<KPJ.42>
+	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	POP	P,2			;<KPJ.42> restore file pointer
+	SFPTR%				;<KPJ.42> back to EOF
+	 ERJMP	dmpdr9			;<KPJ.42>
+	skpret				;<KPJ.42> success, +2 return
+dmpdr9:	return				;<KPJ.42>
+>;no JSYS
+>;T20
+
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPSKP		skip to data area in dump file
+;accepts	DMPJFN/	JFN
+;returns	+1 failure
+;		+2 success
+;-
+
+dmpskp:	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	RFPTR%				;<KPJ.42> get EOF position
+	 ERJMP	dmpsk9			;<KPJ.42> failed
+	CAIL	1,^O1000		;<KPJ.42> is it still on page 0?
+	 JRST	dmpsk9			;<KPJ.42> no, a MISTEAK in the code
+
+	MOVE	1,dmpjfn		;<KPJ.42> JFN
+	MOVEI	2,^O1000		;<KPJ.42> next page
+	SFPTR%				;<KPJ.42>
+	 ERJMP	dmpsk9			;<KPJ.42> failed
+
+	skpret				;<KPJ.42> success, +2 return
+dmpsk9:	return				;<KPJ.42>
+>;no JSYS
+>;T20
+
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPWRD		dump directory words to dump file
+;accepts	DMPJFN/	JFN
+;returns	+1 failure
+;		+2 success
+;-
+
+dmpwrd:	SETZ	gp1,0		;<KPJ.42> start at page# 0
+	MOVEI	gp2,^O1000	;<KPJ.42> save whole section 0
+	MOVEI	t3,1		;<KPJ.42> start at file page# 1
+	SETZ	t4,0		;<KPJ.42> no pages in group, yet
+	SETZ	str,0		;<KPJ.42> previous page does not exist
+
+dmpwr1:	HRRZ	1,gp1		;<KPJ.42> page#
+	HRLI	1,.FHSLF	;<KPJ.42> ourself
+	RMAP%			;<KPJ.42> get map data for that page#
+	ERJMP	dmpwr9		;<KPJ.42> failed
+
+	CAMN	2,str		;<KPJ.42> same access on this page as on prev.?
+	 JRST[	ADDI	t4,1	;<KPJ.42> yes, one more in the group, and...
+		JRST	dmpwr2]	;<KPJ.42> 	...continue with next page
+
+	CAIN	str,0		;<KPJ.42> no, did previous page exist?
+	 JRST[	SETZ	t4,0	;<KPJ.42> no, start of new group, then...
+		MOVE	str,2	;<KPJ.42>	...so save new access, and
+		JRST	dmpwr2]	;<KPJ.42>	  ...continue with next page
+
+				;<KPJ.42> yes, make a directory entry
+	MOVE	str,2		;<KPJ.42> (save new access, first)
+
+	CALL	dmpwwi		;<KPJ.42> output directory entry
+	 JRST	dmpwr9		;<KPJ.42> failed
+
+	SETZ	t4,0		;<KPJ.42> start of new group, now
+
+dmpwr2:	ADDI	gp1,1		;<KPJ.42> increment page#
+	SOJG	gp2,dmpwr1	;<KPJ.42> step through whole section 0
+
+	JUMPN	str,[		;<KPJ.42> did last page exist?
+		CALL	dmpwwi	;<KPJ.42> yes, output directory entry
+		 JRST	dmpwr9	;<KPJ.43>
+		JRST	.+1]	;<KPJ.42> back to reality
+	skpret			;<KPJ.42> success, +2 return
+dmpwr9:	return			;<KPJ.42>
+>;no JSYS
+>;T20
+
+
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPWWI		output directory entry to dump file
+;accepts	DMPJFN/	JFN
+;		T3/	dump file page#
+;		T4/	#pages in group (0 means only 1p)
+;		GP1/	current page# in process
+;returns	+1 failure
+;		+2 success
+;-
+
+dmpwwi:	MOVE	1,dmpjfn	;<KPJ.42> JFN
+	MOVE	2,t3		;<KPJ.42> file page#
+	TLZ	2,(^O777000,,0)	;<KPJ.42> make space, make space!
+	TLO	2,(1B1!1B2)	;<KPJ.42> access: share, write
+	BOUT%			;<KPJ.42> access bits and file page#
+	ERJMP	dmpww9		;<KPJ.42> failed
+
+	MOVE	2,gp1		;<KPJ.42> current page# in process
+	SUBI	2,1		;<KPJ.42> back up to end-of-group
+	SUB	2,t4		;<KPJ.42> back up to beginning-of-group
+	TLZ	2,(^O777000,,0)	;<KPJ.45> clear away previous trash
+	MOVE	1,t4		;<KPJ.46> shuffle
+	LSH	1,^D<36-<3*3>>	;<KPJ.46!KPJ.45> shift into place
+	OR	2,1		;<KPJ.46!KPJ.45> insert #pages (0 means 1p)
+	MOVE	1,dmpjfn	;<KPJ.42> JFN
+	BOUT%			;<KPJ.42>
+	ERJMP	dmpww9		;<KPJ.42>
+
+	ADDI	t3,1		;<KPJ.42> at least one page written
+	ADD	t3,t4		;<KPJ.42> at then the group, too
+
+	skpret			;<KPJ.42> success, +2 return
+dmpww9:	return			;<KPJ.42>
+>;no JSYS
+>;T20
+
+T20,<
+IFE	ftsave,<			;<KPJ.47> no JSYS
+;+
+;DMPDAT		dump data area to dump file
+;accepts	DMPJFN/	JFN
+;		(and section 0 as a whole)
+;returns	+1 failure
+;		+2 success
+;-
+dmpdat:	MOVEI	gp1,0			;<KPJ.41> start at page 0
+	MOVEI	gp2,^D512		;<KPJ.41> section 0 has 512 pages
+dmpda1:	HRRZ	1,gp1			;<KPJ.41> get page#
+	HRLI	1,.FHSLF		;<KPJ.41> us
+	RMAP%				;<KPJ.41> get map data
+	ERJMP	dmpda9			;<KPJ.41> failed
+	CAME	1,[-1]			;<KPJ.41> non-existent page?
+	 JRST[	MOVE	1,dmpjfn	;<KPJ.41> no, get JFN
+		HRRZ	2,gp1		;<KPJ.41> get page#
+		LSH	2,9		;<KPJ.41> make word address
+		HRLI	2,(POINT ^D36,)	;<KPJ.41> make byte pointer to page
+		MOVNI	3,^O1K		;<KPJ.41> output one page
+		SOUT%			;<KPJ.41> wham!
+		ERJMP	dmpda9		;<KPJ.41> failed
+		JRST	.+1]		;<kPJ.42>
+	ADDI	gp1,1			;<KPJ.41> next page
+	SOJG	gp2,dmpda1		;<KPJ.41> output the very lot
+	skpret				;<KPJ.42> success, +2 return
+dmpda9:	return				;<KPJ.42>
+>;no JSYS
+>;T20
+
+
+T20,<
+IFN	ftsave,<			;<KPJ.47> SAVE% or SSAVE%
+;+
+;DMPMEM		dump memory to file using SSAVE% or SAVE% JSYS
+;accepts	DMPJFN/	dump file JFN
+;returns	+1 failure
+;		+2 success
+;-
+
+dmpmem:
+	MOVE	1,dmpjfn		;<KPJ.47> get JFN
+	HRLI	1,.FHSLF		;<KPJ.47> this process
+IFL	ftsave,<			;<KPJ.47> SSAVE% wanted
+	MOVSI	2,(-^O1000,,0)		;<KPJ.47> 512p, start a page 0
+	MOVEI	3,0			;<KPJ.47> not used
+	SSAVE%				;<KPJ.47> save memory
+>;SSAVE%
+IFG	ftsave,<			;<KPJ.47> SAVE% wanted
+	MOVE	2,[^O777760,,^O20]	;<KPJ.47> -len,,start (not ACs)
+	SAVE%				;<KPJ.47> save memory
+>;SAVE%
+	ERJMP	dmpme9			;<KPJ.47> failed
+	skpret				;<KPJ.47> success, +2 return
+	return				;<KPJ.47>
+>;SAVE% or SSAVE%
+>;T20
+
+T20,<
+;+
+;DMPMAK		make dump file name	(TOPS-20)
+;returns	+1 failed
+;		+2 success, with SAVBLK/ file name
+;File name format: "KOM:yymmdd-hhmm-ss-ERROR-DUMP.EXE.-1;P770202"
+;-
+
+dmpmak:	HRROI	1,savblk		;where to put file name
+	HRROI	2,[ASCIZ !kom:!]	;default (better ideas?)
+	MOVEI	3,.CHNUL		;ASCIZ
+	SOUT%				;put it buffer
+	 ERJMP	dmpma9			;failed, no dump
+	MOVNI	2,1			;current daytime
+	MOVE	3,[OT%NTM!OT%SCL]	;no time
+	ODTIM%				;output date
+	 ERJMP	dmpma9			;failed, no dump
+	MOVEI	2,"-"			;delimiter is "-"
+	IDPB	2,1			;. . .
+	MOVNI	2,1			;current time
+	MOVE	3,[OT%NDA!OT%NCO]	;no date, no ":"'s
+	ODTIM%				;output time
+	 ERJMP	dmpma9			;failed, no dump
+;################################################################
+;#	Due to brain damage in ODTIM%, you cannot get rid of ":"#
+;#	between the minutes and seconds. This crummy code backs	#
+;#	over the seconds and changes the ":" to "-", so GTJFN%	#
+;#	will love the filespec. (SIGH!)				#
+;################################################################
+REPEAT	2,<
+	BKJFN%				;<KPJ.40> back up 2 positions...---...
+	 ERJMP	dmpma9			;<KPJ.40>
+>;End REPEAT 2
+	MOVEI	2,"-"			;<KPJ.40> change ":" to "-"
+	DPB	2,1			;<KPJ.40>
+REPEAT	2,<ILDB	2,1>			;<KPJ.40> GOBACK, as they say in COBOL
+;################################################################
+;#		START OF LESS BRAIN DAMAGED CODE		#
+;################################################################	
+	HRROI	2,[ASCIZ !-error-dump.exe.-1;P770202!]
+					;append extension
+	MOVEI	3,.CHNUL		;. . .
+	SOUT%				;. . .
+	 ERJMP	dmpma9			;failed, no dump
+	MOVEI	2,.CHNUL		;make ASCIZ
+	IDPB	2,1			;. . .
+	skpret				;<KPJ.42> success, return +2
+dmpma9:	return
+>;T20
+
+
+
+T20,<
+;DMPOPN		open dump file		(TOPS-20)
+;accepts	SAVBLK/	file name
+;returns	+1 failure
+;		+2 success, with DMPJFN/ JFN
+
+dmpopn:	MOVSI	1,(GJ%SHT!GJ%FOU)	;short, next generation
+	HRROI	2,savblk		;<KPJ.37> file name
+IFE	ftjsy2,<GTJFN%>			;get handle for that file
+IFN	ftjsy2,<GTKOM%>			;get handle for that file
+	 ERJMP	dmpop9			;failed, no dump
+	HRRZ	1,1			;extract JFN
+	MOVEM	1,dmpjfn		;save JFN
+	MOVE	2,[FLD(^D36,OF%BSZ)!OF%WR] ;write 36 bits bytes
+IFE	ftjsys,<OPENF%>			;<KPJ.41> open file w/o WHEEL
+IFN	ftjsys,<KOM%>			;<KPJ.41> open file with WHEEL
+	 ERJMP	.+2			;<KPJ.41> failed
+	  JRST	dmpop8			;<KPJ.42> success
+	MOVE	1,dmpjfn		;<KPJ.42> failed, get rid of JFN
+	RLJFN%				;<KPJ.42>
+	 ERJMP	.+1			;<KPJ.42> ***FOO***
+	TRNA				;<KPJ.42>
+dmpop8:	skpret
+dmpop9:	return
+>;T20
+
+
+T20,<
+IFLE	ftsave,<			;<KPJ.47> not SAVE%
+;+
+;DMPCLS		close dump file		(TOPS-20)
+;accepts	DMPJFN/	JFN
+;returns	+1 failure
+;		+2 success
+;-
+
+dmpcls:	MOVE	1,dmpjfn		;<KPJ.42>
+	CLOSF%				;close file
+	 ERJMP	dmpcl9			;failed, we will die anyway
+	skpret				;<KPJ.42> +2 return
+dmpcl9:	return				;<KPJ.42>
+>;not SAVE%
+>;T20
+
+
+
+T20,<
+;+
+;DMPABT		abort dump file		(TOPS-20)
+;accepts	DMPJFN/	JFN
+;returns	+1 failure
+;		+2 success
+;-
+
+dmpabt:	HRRZ	1,dmpjfn
+	HRLI	1,(CZ%ABT)		;<KPJ.41> abort and release
+	CLOSF%				;<KPJ.41>
+	 ERJMP	dmpab9			;<KPJ.41> failed ***FOO***
+	skpret				;<KPJ.42> succeess, +2 return
+dmpab9:	return				;<KPJ.42>
+>;T20
+
+
+
+;+		clean up after session
+;ENDKOM		entry from:
+;		TRPDAT@MONITO	detached and timed out (or "deaf terminal")
+;		TRPSTP@MONITO	^C
+;		TTINP @MONITO	input timed out
+;		MKENQ @MONITO	failed to get ENQ lock
+;		ERASE @OERASE	ERASEd self
+;returns	never
+;-
+
+endkom::SETOM	sema##			;disallow DETACH to (DETSLP@MONITO)
+	SETOM	mailqt			;<KPJ.24> no MAIL testing
+	SKIPN	pwflag##		;password given ?
+	 SETZM	selfnr##		;no, clear self
+	SKIPE	ctcfl			;<KPJ.11> been here before already?
+	 JRST[	SETZM	ctcfl		;<KPJ.11> clear error
+T10,<		SETZM	noenqp##>	;<KPJ.20> no ENQ problems no more
+		JRST	xit##]		;stop session. START if CONTINUEd.
+	SETOM	ctcfl			;error has occured
+	rstreg				;<KPJ.24>
+	Fall	endko0			;<KPJ.24>
+;++++++++++++++++++++++++++++++++++++
+;ENDKO0		entry from:
+;		ENDKOM@QUIT	QUITing (no return allowed)
+;		LOGIN @LOGIN	QUIT command
+;		CQUIT @QUIT	QUIT command
+;returns	+1 if ***MAIL***, else never
+;-
+
+endko0::CALL	deque##			;dequeue all pending requests
+	SETZM	lfcnt##			;clear line feed count
+	CALL	tcbeg##			;terminal output
+	SKIPGE	wriflg##		;<KPJ.11> writing a text?
+	 JRST[	print	zunfin##	;Yes, "You have an unfinished entry"
+		CALL	preol##		;<KPJ.40> new line
+		print	zunfi1##	;"use command CONTINUE"
+		SETZM	stpflg##	;[KPJ.5] allow CONT if writing entry
+		CALL	preol##		;new line
+		JRST	.+1]		;
+	rstreg				;<KPJ.24>
+	CALL	leave			;leave program
+	 RET				;<KPJ.24>
+	print	zleaco##		;"You are now leaving this program."
+	Fall	endko9			;<KPJ.24>
+;+++++++++++++++++++++++++++++++++++
+;ENDKO9		entry from:
+;		ENDKO0@QUIT		QUITing for any reason
+;		LOGIN @LOGIN	(1)	failed to login after N tries
+;				(2)	answer NO to login question
+;				(3)	failed write TMP:LGN
+;				(4)	failed to RUN physical STD:LOGIN.EXE
+;				(5)	failed GTDIR% or LOGIN% at login time
+;returns	never
+;-
+
+endko9::CALL	mors			;<KPJ.60> say goodbye to luser
+	rstreg				;<KPJ.24>
+	Fall	endko8			;<KPJ.24>
+;+++++++++++++++++++++++++++++++++++
+;ENDKO8		entry from:
+;		ENDKO9@QUIT	QUITing for any reason
+;		GENDAT@GENERA	Failed to CLOSF% data base
+;		INIDSK@MONFIL	"COM is not available"
+;		INIINF@MONFIL	"Data base missing"
+;		NEWDSK@MONFIL	failed to FILOP./OPENF%/GTJFN% new data base
+;		CCLENT@NEW	CCL entry command exit
+;returns	never
+;-
+
+endko8::CALL	relase##		;release all channels
+	CALL	discin##		;disable ^C interrupt
+	CALL	psioff##		;clear interrupt system
+	CALL	deque##			;dequeue all pending requests
+	SETZM	ctcfl			;<KPJ.11> clear error
+T10,<	SETZM	noenqp##>		;<KPJ.20> no ENQ problems no more
+	rstreg
+	JRST	xit##			;stop session. START if CONTINUEd.
+;-
+
+
+
+
+;+
+;MORS		say goodbye to leaving luser
+;accepts	SELFNR/	user number (or 0)
+;returns	+1 always
+;-
+
+mors:	SKIPE	selfnr##		;self defined ?
+	 JRST[	CALL	prhali##	;print line
+		print	zwelba##	;"Good bye."
+		CALL	colwhi##	;stop colour
+		JRST	.+1]
+	return
+
+;+
+;LEAWRI		output mail message when leaving	<KPJ.51>
+;accepts	MAILQT/	#0 if ignoring mail test
+;returns	+1	mail waiting
+;		+2	no mail waiting
+;-
+
+leawri:	save	<str>
+	CALL	chknew##		;<KPJ.24> check news
+	SKIPE	nxlenr##		;<KPJ.24> any letters ?
+	 JRST[	SKIPE	mailqt		;<KPJ.24> skip this stuff?
+		 JRST	.+1		;<KPJ.24> OK, OK...
+		SETOM	mailqt		;<KPJ.24 no more yelling
+		CALL	preol##		;<KPJ.24>
+		print	zgolet##	;"*** You have mail ***"
+		CALL	preol##		;new line
+		MOVE	t,selffl##	;<KPJ.30> get our flags
+		Txnn	t,quxpfl	;<KPJ.31!KPJ.30> obey QUIT command?
+		 JRST	.+1		;<KPJ.30> yep, never to return
+		JRST	leawr9]		;<KPJ.24>
+	SETZM	mailqt			;<KPJ.24> want mail test next time
+	skpret				;<KPJ.51>
+leawr9:	return
+
+
+
+;+
+;LEAVE		leave program, with mail yelling test
+;accepts	MAILQT/	#0 if ignoring mail test
+;returns	+1	mail waiting
+;		+2	no mail waiting
+;-
+
+leave::	CALL	leawri			;<KPJ.51> test for yelling
+	 JRST	leave9			;<KPJ.51> yell, yell, and return
+	CALL	leave2			;<KPJ.51> kill off everything
+	CALL	komwri##		;<KPJ.12> write temporary file for us
+	 nop				;<KPJ.52> failed, no disaster
+	skpret				;<KPJ.51> +2 return
+leave9:	return				;<KPJ.51>
+
+
+;+
+;LEAVE2		leave program, without mail yelling test
+;returns	+1	always
+;-
+
+leave2::CALL	updbeg##		;start update
+IFE	ftenq,<				;<KPJ.23>
+	CALL	updlse##		;	  update last seen entry count
+>;End IFE ftenq				;<KPJ.23>
+IFN	ftenq,<				;<KPJ.23>
+	CALL	updcou##		;<KPJ.23> update last seen entry count
+>;End IFN ftenq				;<KPJ.23>
+	CALL	endpre##		;clear present list
+	CALL	updend##		;end of update
+IFN	ftenq,<				;<KPJ.23>
+	CALL	upmeli##		;<KPJ.23> update member lists
+>;End IFN ftenq
+	CALL	deque##			;dequeue all pending requests
+	CALL	toutpu##		;output old text
+	return
+
+
+;+
+restar::comhed	0,resarg,rstart,ccrest##,zrsthl## ;Begin (with new) name
+;-
+
+
+
+
+
+;+
+; RESARG  --  argument to restart command
+;-
+
+resarg:	ifon	silflg##,resar8	; stop silent command
+	CALL	runarg##	; no argument
+	JRST	resar9
+
+resar8:	SETOM	errfl		; error
+resar9:	return
+
+
+
+
+
+;+
+;RSTART		restart COM
+;-
+
+rstart:
+T10,<
+QZIF,<	HRROI	t,.GTQJS		;<KPJ.50!BCQ> a QZ special table
+	GETTAB	t,
+	 SETZ	t,			;***FOO***
+	TLNE	t,(QJ.COM)		;[BCQ] logged in via COM?
+	 JRST[	print	zznalw##	;<KPJ.50> "Not allowed if COM LOGIN"
+		JRST	rsta99]
+>;QZIF
+>;T10
+	SETZM	mailqt			;<KPJ.25>
+	CALL	leave			;leave program
+	 nop				;<KPJ.25> no problem
+	CALL	mors			;<KPJ.60> goodbye, luser
+	SETZM	conf##			;clear current conference
+	SETZM	curmbr##		;clear current conference pointer
+	SETZM	selfnr##		;clear current person
+	SETZM	pwflag##		;[BDQ] clear password
+	CALL	clebuf##		;clear buffers
+	MOVEI	free,frebeg##		;clear free area
+	SETZM	seelis##		;clear seen entries
+	MOVE	t,[XWD seelis##,seelis##+1]
+	BLT	t,seeend##		;clear area
+	SETOM	notmp##			;<KPJ.56> ignore TMPCOR now
+	CALL	enter##			;enter com again
+rsta99:	return
+
+	END
+..and no more

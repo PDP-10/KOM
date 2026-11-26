@@ -1,0 +1,406 @@
+;Oden::DSKG:NEW.MAC<62,7777,MAC> 1987-06-25 16:17:12, KPJ @ DK <10,50>
+;37	Enable KOM-10 ^C trap during CCL entry too.  Also, get rid of any
+;	initialization messages to the terminal (which incidentally happened
+;	to disappear due to the old RESET bug), or users will COMPLAIN!
+;Freja::Qs:<Kom.6.Macro>New.Mac.14 870819-1419,KPJ-Jaakkola
+;36	Bug in version number printer.
+;Oden::DSKG:NEW.MAC<62,7777,MAC> 1986-12-11 18:43:20, Edit by KPJ @ L89
+;35	PUTCH is a macro.
+;Oden::DSKG:NEW.MAC<62,7777,MAC> 1986-11-20 11:03:46, Edit by KPJ @ L89
+;34	Make STACKP and TOPLOO global.
+;Oden::DSKG:NEW.MAC<62,7777,MAC> 1986-11-11 03:07:34, Edit by KPJ @ H.HOLE
+;33	Handle +2 return from FOALLO.
+;Qzeta::DSKA:NEW.MAC<5,16,MAC> 1986-10-27 16:03:31, Edit by KPJ @ L89
+;32	Incorrect file extension displayed  when generating new data base.
+;Freja::Qs:<Kom.6.Macro>New.Mac.3 860715-0034,KPJ-Jaakkola
+;31	FOAPPN is under T10.
+;Oden::DSKG:NEW.MAC<62,7777,MAC> 1986-07-11 13:03:41, Edit by KPJ @ L89
+;30	Don't assume null extension.
+;Oden::DSKG:NEW.MAC<62,7777,MAC> 1986-06-25 01:15:31, Edit by KPJ @ 1SKEDE
+;27	Globalized ZDBNAM.
+;Oden::DSKG:NEW.MAC<62,7777,MAC> 1986-06-04 16:23:23, Edit by KPJ @ L89
+;26	Initialize world with CCL entry, as well.
+;Oden::DSKG:NEW.MAC<62,7777,MAC> 1986-06-02 18:02:53, Edit by KPJ @ L89
+;25	Handle +1 return from CREDSK and INIREA.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1986-01-15 16:18:46, Edit by KPJ
+;24	Initialize CCL entry as well.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1986-01-15 15:41:23, Edit by KPJ
+;23	Moved CCLLOG to LOGIN where it belongs.
+;Oden::DSKD:NEW.MAC[62,7777,MAC] 1986-01-12 20:21:29, Edit by KPJ
+;22	Added NAMEID macro.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-11-14 08:08:40, Edit by KPJ
+;21	Handle problem with low segment buildup.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-11-06 05:17:05, Edit by KPJ
+;20	Make a RESET% if CLOSF% fails on data base.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-10-04 19:39:49, Edit by KPJ
+;17	Introduced PROLOG macro.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-09-05 07:21:31, Edit by KPJ
+;16	Sanitized code. Got rid of KPJHAT, too.
+;Freja::QS:<KOM.6-SOURCES>NEW.MAC.8 25-Aug-85 00:29:01,Editor:KPJ-JAAKKOLA
+;15	Undefined external in T20 code.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-07-10 19:29:59, Edit by KPJ
+;14	Move RESET to beginning of code where it belongs.
+;	Re-entry point REE included (called from XIT@MONITO)
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-04-23 07:40:23, Edit by KPJ @ L89
+;13	Set up free area pointer when starting program. This is required to
+;	be able to do terminal I'O. Somebody had forget that.
+;Freja::Ps:<KOM.6-SOURCES>NEW.MAC.4 20-Apr-85 02:16:11,Editor:KPJ-JAAKKOLA
+;12	Installed calls to new fascist control code. Old ^C tests deleted.
+;Freja::Ps:<KOM.6-SOURCES>NEW.MAC.2 18-Apr-85 17:28:51,Editor:KPJ-JAAKKOLA
+;11	Called new KOM temporary-file reader.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-04-08 03:14:29, Edit by KPJ @ NADJA
+;10	Make ONLY-command be given only foirst time through.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-04-03 16:34:02, Edit by KPJ @ L89
+;7	Changed calls to PROCT6 and PROCTN to .NOUT general number printer.
+;Oden::DSKD:NEW.MAC<62,7777,MAC> 1985-03-28 12:22:32, Edit by KPJ @ L89
+;6	Rewrote PVERSI routine. Make data base CREATE say what data base it
+;	tries to generate, and get rid of useless WELCOM message. Use standard
+;	character TOPS-20 names.
+;Oden::DSKD:NEW.MAC[62,7777] 1985-01-13 23:05:24, Edit by KPJ @ AIDA
+;5	Make TMPCOR login understand PERSON-numbers.
+;Oden::DSKD:NEW.MAC[62,7777] 1985-01-08 01:57:34, Edit by KPJ @ L89
+;4	Initialize logic sense flag.
+;Oden::DSKD:NEW.MAC[62,7777] 1984-11-12 13:10:53, Edit by K.JAAKKOLA
+;3	Test STPFLG: if set, no START,REENTER or CREATEing allowed.
+;Oden::Dskd:New.Mac[62,7777] 1984-09-25 10:18:27, Edit by K.Jaakkola
+;2	RSET calls only for Tops-10.
+;Oden::Dskm:New.Mac[62,7777] 1984-04-03 10:35:35, Editor: KPJ Jaakkola
+;1	Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(new)
+new::!
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-03-13 08:08:06
+
+;	D A T A   A R E A
+
+savfre::frebeg			; save area for free pointer
+stack:	BLOCK	stksiz		; stack area
+
+frebeg::BLOCK	fresiz		; free area
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+stackp::IOWD	stksiz,stack	; stack pointer
+
+
+;+
+;REENT		reenter start
+;START		main program
+;-
+
+reent::	SETZM	selfnr##		;clear current person
+	SETZM	conf##			;clear current meeting
+start::	JSP	5,mordor##		;<KPJ.12> call special fascist code
+	MOVE	P,stackp		;<KPJ.14> set up stack pointer
+T10,<	CALL	rset##>			;<KPJ.14!KPJ.2> reset job
+	MOVE	free,savfre		;<KPJ.13> set free area pointer
+ree::	CALL	initia			;initialize everything
+	CALL	enter##			;enter KOM
+
+toploo::CALL	mkmenu##		;make a new menu
+	SKIPL	wriflg##		;<KPJ.34> writing ?
+	 JRST[	CALL	zerent##	;<KPJ.34> no, clear entry
+		CALL	clebuf		;clear buffer
+		MOVE	free,savfre	;<KPJ.26!KPJ.13> set free area pointer
+		CALL	foallo##	;return space
+		 nop			;<KPJ.34> failed, who cares really?
+		MOVE	t,[POINT 7,[0]]	;clear input
+		MOVEM	t,chpt##	;. . .
+		JRST	.+1]		;<KPJ.34>
+	SETZM	intflg##		;clear interrupt flag
+	CALL	topcom##		;do commands
+	SETZM	firflg##		;<KPJ.10> not first time any more
+	JRST	toploo			;go to top loop
+
+
+;+
+;CCLENT		CCL entry
+;-
+
+cclent::JSP	5,mordor##		;<KPJ.12> call special fascist code
+	MOVE	P,stackp		;nset up stack pointer
+	MOVE	free,savfre		;<KPJ.13>  set up free area pointer
+T10,<	CALL	rset##>			;<KPJ.37!KPJ.31!KPJ.2> reset job
+	CALL	inicnz			;[KPJ.4] initialize logic sense flag
+	CALL	initia			;<KPJ.26> initialize world
+	CALL	ininew##		;<KPJ.24> initialize variables
+T10,<	CLRBFO				;<KPJ.37> make people happy
+FOAIF,<	CALL	foappn##		;<KPJ.31> FOA PPN ?
+	 JRST	start			;yes, ordinary start
+>;FOAIF
+>;T10
+	CALL	initty##		;initialize terminal
+	CALL	inirea##		;open data base for reading only
+	 JRST	endko0##		;<KPJ.25> failed, exit
+	CALL	ccllog##		;<KPJ.23> CCL login
+	MOVE	nr,selfnr##		;get self
+	CALL	inmbr##			;input member register
+	CALL	prinew##		;print all news
+	JRST	endko8##		;ready, leave quickly
+
+
+
+
+;+
+;INICNZ		initialize logic sense flag		[KPJ.4]
+;-
+
+inicnz:	MOVE	t,[logipf]	;get logic sense
+	MOVEM	t,logic##	;initialize
+	return
+
+;+
+; INITIA  --  make initializations
+;-
+
+initia:	CALL	inivar		;initialize variables
+	CALL	inicnz		;[KPJ.4] initialize logic sense flag
+	CALL	initty##	; initialize the terminal
+	CALL	welcom		; say welcome
+	CALL	inidsk##	; initialize the disk
+	CALL	enacin##	; enable ^C interrupt
+	return
+
+
+;+
+;INIVAR		initialize all variables we expect set from image
+;-
+
+inivar:
+REPEAT	0,<
+	SETZM	actflg##	;activate flag (ADD)
+	SETZM	actflg##+1	;add list (ADD:OADLIS)
+	SETZM	entnr##		;entry number (ADDENT)
+;	MOVEI	t,lisare##	;list area (ADDLIS)
+;	MOVEM	t,lisfre##	;. . .
+;	SETZM	savhdo##	;save area for head object (ADDLNK)
+;	SETZM	savlnr##	;save area for link number (ADDLNK)
+;	SETZM	savobj##	;save area for object number (ADDLNK)
+;	SETZM	savold##	;save area for old link (ADDLNK)
+	SETZM	arglis##	;argument list (ADRELI)
+	SETZM	exclis##	;Single copy: list (ADRELI)
+	MOVEI	t,[RET]		;"for all" function (ADRELI)
+	MOVEM	t,foalfu##	;. . .
+	SETZM	knolst##	;Information copy: list (ADRELI)
+	SETZM	namlis##	;name list (ADRELI)
+	MOVE	t,[opgsz1,,opgsz2] ;own page size (screen,,paper) (CHAPGS)
+	MOVEM	t,selfpg##	;. . .
+	SETZM	preobj##	;presented object (CHAPRE)
+;	SETZM	savtel##	;save area for telephone
+;	SETZM	flag##		;wanted flag (CHATAB)
+IFN	ftptym,<
+	SETZM	ptyflg##	;pty mode flag (CHATAB)
+>;ftptym
+	SETZM	filnr##		;archive file (CHATYP)
+	SETZM	supmee##	;super conference (CHATYP)
+				;CHKNEW:
+;	SETZM	lalink		;last seen link
+;	SETZM	laseli##	;old last seen link
+	SETZM	nrdele##	;number of deleted entries
+	SETZM	nrlett##	;number of unseen letters
+	SETZM	nrseen##	;number of already seen entries
+	SETZM	nrsubt##	;number of subtracted entries
+	SETZM	nxconr##	;number of next unseen comment
+	SETZM	nxcoln##	;next unseen comment link
+	SETZM	nxennr##	;number of next unseen entry
+	SETZM	nxenln##	;next unseen entry link
+	SETZM	nxlenr##	;number of next unseen letter
+	SETZM	nxleln##	;next unseen letter link
+	SETZM	nxmenr##	;number of next meeting
+	SETZM	nxoenr##	;number of next unseen entry in next meeting
+	SETZM	nxoeln##	;next unseen entry in next meeting link
+;	SETZM	wantre##	;wanted receiver
+>;End REPEAT 0
+	return
+
+;+
+;WELCOM		say welcome to luser
+;-
+
+welcom:	save	<str>
+	CALL	colcya##	;start cyan
+	print	zwelco##	;"Welcome to "
+	CALL	pversi		;output name and version
+	print[	ASCIZ !, !]
+	return
+
+
+
+;+
+;PVERSI		output name and version
+;format:	mx(n)-i
+;		where	m	major version
+;			x	minor version (suppressed if 0):
+;				"A".."Z"	if 1:27
+;				"."nn		if >27
+;			n	edit number
+;			-i	last hacker
+;-
+
+pversi::save	<bp,ch,nr,str>
+	print	zdbnam
+	print[	ASCIZ !, version !]
+	MOVEI	1,.PRIOUT			;<KPJ.7> standard output
+	LDB	2,[POINTR myvers##,VI%MAJ]	;<KPJ.6> get major version
+	MOVEI	3,<FLD(8,NO%RDX)>		;<KPJ.7> octal
+	CALL	.nout##				;<KPJ.7> output it
+	 nop					;<KPJ.7> ***FOO***
+
+	LDB	2,[POINTR myvers##,VI%MIN]	;<KPJ.7> get minor version
+	JUMPN	2,[
+		CAILE	2,"Z"-"@"		;<KPJ.6> in range 1:27 ?
+		 JRST[	MOVEI	ch,"."		;<KPJ.6> no, use new format
+			CALL	putch		;<KPJ.6>
+			MOVEI	1,.PRIOUT	;<KPJ.7> standard output
+			LDB	2,[POINTR myvers##,VI%MIN] ;<KPJ.36>
+			MOVEI	3,<FLD(8,NO%RDX)> ;<KPJ.7> octal number
+			CALL	.nout##		;<KPJ.7> output it
+			 nop			;<KPJ.7> ***FOO***
+			JRST	.+1]
+		MOVE	ch,2			;<KPJ.7> shuffle
+		ADDI	ch,"@"			;make letter
+		CALL	putch			;output it
+		JRST	.+1]
+	LDB	2,[POINTR myvers##,VI%EDN]	;<KPJ.7> point at edit number
+	JUMPN	2,[				;any edits?
+		MOVEI	ch,.CHLPR		;<KPJ.6> left paren
+		CALL	putch			;<KPJ.6> output it
+		MOVEI	1,.PRIOUT		;<KPJ.7> standard output
+		LDB	2,[POINTR myvers##,VI%EDN]
+		MOVEI	3,<FLD(8,NO%RDX)>	;<KPJ.7> octal
+		CALL	.nout##			;<KPJ.7> output it
+		 nop				;<KPJ.7> ***FOO***
+		MOVEI	ch,.CHRPR		;<KPJ.6> right paren
+		CALL	putch			;<KPJ.6> output it
+		JRST	.+1]
+	LDB	2,[POINTR myvers##,VI%WHO]	;<KPJ.7> get last hacker
+	JUMPN	2,[
+		MOVEI	ch,"-"			;<KPJ.6>
+		CALL	putch
+		MOVEI	1,.PRIOUT		;<KPJ.7> standard output
+		LDB	2,[POINTR myvers##,VI%WHO] ;point at last hacker
+		MOVEI	3,<FLD(8,NO%RDX)>	;<KPJ.7> octal number
+		CALL	.nout##			;<KPJ.7> output it
+		 nop				;<KPJ.7> ***FOO*** failed
+		JRST	.+1]
+	return
+;+
+zdbnam::nameid
+IFE	zdbnam-.,<
+	PRINTX	? ZDBNAM (NAMEID) is not defined
+	PASS2
+	END>
+;-
+
+
+
+
+;+
+; CLEBUF  --  clear all buffers
+;-
+
+clebuf::save	<gp1,bfp,txt>
+	MOVEI	gp1,met			;get meta file
+	CALL	gemere##		;get meta record
+	MOVE	gp1,metmax(bfp)		;get last file
+
+clebu1:	CALL	getbuf##		;get buffer
+	SETZM	bufblk(txt)		;clear buffer
+	SOJG	gp1,clebu1		;get next file
+
+	return
+
+
+;+
+;CREATE		create a new data base
+;-
+
+create::JSP	5,mordor##		;<KPJ.12> call special fascist code
+	MOVE	P,stackp		;set up stack pointer
+	MOVE	free,savfre		;<KPJ.13> set up free area pointer
+T10,<	CALL	rset##>			;[KPJ.2] reset job
+	CALL	initty##		;initialize the terminal
+	CALL	credis			;<KPJ.6>  what database try to generate
+	CALL	credsk##		;initialize the disk
+	 nop				;<KPJ.25> failed, but so what?
+T10,<	EXIT	0,			;<KPJ.6> really EXIT
+	HALT	.			;in case EXIT is changed...
+>;T10
+T20,<	CALL	toutpu##		;force out TTY output buffer
+	SETO	1,
+	CLOSF%				;close all files
+	 ERJMP[	RESET%			;<KPJ.20> might help somewhat
+		error	<create new>]	;<KPJ.20> give up anyway
+	RESET%				;<KPJ.25> die hard
+	HALTF%
+	JRST	evec##+2		;<KPJ.15> OK, you asked for it..
+>;T20
+
+;+
+;CREDIS		say what data base we try to generate.	<KPJ.6>
+;-
+
+credis:	print	zcredi##		;"I will generate data base file "
+T10,<	SKIPE	gp1,cendev##			;<KPJ.32> any device?
+	 JRST[	CALL	prcin3##		;<KPJ.32> yes, output it
+		MOVEI	ch,":"			;end with a colon
+		CALL	putch			;output it
+		JRST	.+1]
+	MOVE	gp1,cennam##			;get data base name (SIXBIT)
+	CALL	prcin3##			;output it
+	MOVEI	ch,"."				;start extension
+	CALL	putch				;do it
+	MOVE	gp1,cenext##			;<KPJ.32!KPJ.30> get extension
+	CALL	prcin3##			;<KPJ.30> output it
+	MOVE	t,cenpat##+.PTPPN		;get PPN
+	JUMPN	t,[				;any defined?
+		MOVEI	ch,ppnbeg		;start of PPN
+		CALL	putch			;output beginning bracket
+		MOVE	gp1,cenpat##+.PTPPN	;get PPN
+		CALL	prippn##		;output it
+		MOVEI	ch,ppnend		;end of PPN character
+		CALL	putch			;output it
+		JRST	.+1]
+	LDB	2,[POINTR cenpro##,RB.PRV]	;<KPJ.7> T10 protection code
+	CALL	ppcode				;<KPJ.7> output it
+>;T10
+	
+T20,<	print	cennam##			;data base name in ASCIZ
+	MOVEI	2,cenpro##			;<KPJ.7> point at protection
+	CALL	ppcode				;<KPJ.7> output protection code
+>;T20
+	CALL	preol##
+	return
+
+
+
+;+
+;PPCODE		output protection code
+;accepts	2/	protection code to output (T10)
+;			pointer to protection code (T20)
+;-
+
+ppcode:	PUSH	P,2				;save protection code
+T10,<	MOVEI	ch,.CHLBR>			;T10 start of protection code
+T20,<	MOVEI	ch,.CHSEM>			;T20 start of protection code
+	CALL	putch				;output it
+T10,<	MOVEI	1,.PRIOUT			;<KPJ.7> standard output
+	POP	P,2				;<KPJ.7> get protection code
+	MOVE	3,[FLD(3,NO%COL)!FLD(8,NO%RDX)]	;<KPJ.7> three octal digits
+	CALL	.nout##				;<KPJ.7> output it
+	 nop					;<KPJ.7> ***FOO*** failed
+	MOVEI	ch,.CHRBR			;right bracket
+	CALL	putch				;output it
+>;T10
+T20,<	POP	P,str				;get pointer to protection code
+	CALL	prstr##				;have fun
+>;T20
+	return
+
+	END
+..and no moer 

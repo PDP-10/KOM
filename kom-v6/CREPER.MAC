@@ -1,0 +1,484 @@
+;Oden::DSKG:CREPER.MAC<62,7777,MAC> 1987-05-14 18:36:59, KPJ @ H.HOLE <10,50>
+;16	PUSWOR contains our own password.
+;Oden::DSKG:CREPER.MAC<62,7777,MAC> 1986-12-11 18:22:07, Edit by KPJ @ L89
+;15	Don't call PUTCH in object trace.
+;Oden::DSKG:CREPER.MAC<62,7777,MAC> 1986-10-14 16:25:00, Edit by KPJ @ L89
+;14	Employee support under FTEMPL.
+;Oden::DSKG:CREPER.MAC<62,7777,MAC> 1986-08-22 18:31:23, Edit by KPJ @ L89
+;13	Trace message should be directly to the terminal.
+;Freja::Qs:<Kom.6.Macro>Creper.Mac.7 860821-1753,KPJ-Jaakkola
+;12	PROBNR destroyes our central JFN, so let's use own routine to output
+;	the object trace.  Display error message from NOUT% if appears.
+;Freja::Qs:<Kom.6.Macro>Creper.Mac.6 860821-1742,KPJ-Jaakkola
+;11	Make object trace more readable.
+;Oden::DSKG:CREPER.MAC<62,7777,MAC> 1986-07-09 00:34:46, Edit by KPJ @ 1SKEDE
+;10	Refer to return address using standard method.
+;Oden::DSKD:CREPER.MAC<62,7777,MAC> 1985-10-16 09:11:52, Edit by KPJ
+;7	Report object accesses if REPORT DISK ACCESSES is ON.
+;Oden::DSKD:CREPER.MAC<62,7777,MAC> 1985-09-30 20:29:41, Edit by KPJ
+;6	Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:CREPER.MAC[62,7777] 1984-12-17 09:11:22, Edit by KPJ @ L89
+;5	Brush up code.
+;Oden::DSKD:CREPER.MAC[62,7777] 1984-12-03 09:37:30, Edit by K.Jaakkola
+;4	Somebody believed that they always used only a halfword.
+;	Surprise, surprise!
+;Oden::DSKD:CREPER.MAC[62,7777] 1984-11-02 09:43:14, Edit by K.JAAKKOLA
+;3	Moved magical numbers to KOMMAC.
+;Oden::DSKD:CREPER.MAC[62,7777] 1984-10-22 16:19:38, Edit by K.JAAKKOLA
+;2	Don't search UUOSYM on T20.
+;Oden::Dskd:Creper.Mac[62,7777] 1984-05-14 16:14:35, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(creper)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 16:14:34
+
+;	D A T A   A R E A
+
+
+objnr::	0			;object number
+obtype::0			;object type
+oldnr:	Z			;oldest person
+oldpre:	Z			;oldest presence
+puswor::0			;<KPJ.16> encrypted password, self
+paswor::0			;encrypted password, random
+pernr::	0			;person number
+savgp1:	Z			;save area for file number
+
+	CODE
+
+;+
+;CREPER		creates a new person
+;accepts	NAMPTR/	name pointer
+;		PASWOR/	password
+;		SELFPP/	own PPN
+;		ORGNR/	organisation
+IFN	ftempl,<;EMPNR/	employee record>
+;returns	PERNR/	number of new person
+;-
+
+creper::save	<nr>
+	CALL	allper			;allocate person number
+	MOVEM	nr,pernr		;save person number
+	CALL	makper			;create a person object
+	CALL	crenam##		;create a name record
+	return
+
+
+
+;+
+;ALLPER		allocate person number
+;returns	NR/	number of new person
+;-
+
+allper:	save	<gp1>
+	MOVEI	gp1,per			;get person file
+	CALL	allold			;allocate oldest object
+	CALL	makpoi			;make pointer
+	CALL	delobj##		;delete old person
+	return
+
+;+
+;ALLOLD		allocate oldest object
+;accepts	GP1/	object file file
+;returns	NR/	number of oldest object
+;-
+
+allold::save	<bfp,gp1,gp2>
+	MOVE	t,curdat##		;get current date
+	MOVEM	t,oldpre
+	MOVEI	t,1			;start with first person
+	MOVEM	t,oldnr
+	ADDI	gp1,1			;get person active file
+	MOVEI	nr,1			;get first person
+allol1:	CALL	find##			;get person
+	 JRST	allol8			;no more persons
+	SKIPG	0(bfp)			;existing person ?
+	 JRST	allol7			;no, ready
+	MOVE	t,objtim(bfp)		;get last presence
+	CAML	t,oldpre		;older ?
+	 AOJA	nr,allol1		;no, get next person
+	PUSH	P,t			;[BCQ] save t
+	MOVE	t,objtyp(bfp)		;[BCQ] get type of object
+	TRNE	t,noclfl		;[BCQ] no cleaning flag is on?
+	 JRST[	POP	P,t		;[BCQ] yes, so don't reuse this object!
+		AOJA	nr,allol1]	;[BCQ] try next instead!
+	POP	P,t			;[BCQ] restore what we clobberd
+	MOVEM	t,oldpre		;save oldest presence
+	MOVEM	nr,oldnr		;save person number
+	AOJA	nr,allol1		;get next person
+
+allol8:	MOVE	nr,oldnr		;get oldest person
+	CALL	find##			;get person
+	 nop				;ignore error, we just need know place
+allol7:	MOVEM	nr,gp2			;save person number
+	MOVM	nr,0(bfp)		;get number of old person
+	JUMPE	nr,allol9		;new person ?
+	MOVEM	gp1,savgp1		;save file
+	CALL	splpoi			;split pointer
+	CALL	corfil##		;correct file part ?
+	 JRST	allol9			;no, error
+	MOVEM	nr,gp2			;save old person number
+	MOVE	gp1,savgp1		;get file
+	CALL	gelaob##		;get number of persons
+	ADD	gp2,nr			;get number of new person
+allol9:	MOVE	nr,gp2			;get person number
+	return
+
+
+;+
+;MAKPOI		make an object pointer
+;accepts	GP1/	file number
+;		NR/	record number
+;returns	NR/	object pointer
+;-
+
+makpoi::DPB	gp1,[POINT 9,nr,8]	;save file number
+	return
+
+;+
+;MAKPER		make a new person
+;accepts	NR/	number of person
+;-
+
+makper:	save	<bfp,gp1,nr,obtype>
+	MOVEI	t,<cloofl!meeofl>	;default closed
+	MOVEM	t,obtype
+	CALL	creobj			;create object
+	MOVE	t,supmee##		;set super meeting
+	MOVEM	t,recsup(bfp)
+	MOVE	t,curdat##		;save last presence
+	MOVEM	t,perpre(bfp)
+	MOVE	t,paswor		;save password
+	MOVEM	t,perpas(bfp)
+	MOVE	t,orgnr##		;save organisation
+	MOVEM	t,perdeb(bfp)
+IFN	ftempl,<			;<KPJ.14>
+	MOVE	t,empnr##		;save employee
+	MOVEM	t,peremp(bfp)
+>;ftempl
+	MOVE	t,selfpp##		;save PPN
+	MOVEM	t,perppn(bfp)
+	MOVE	t,[defpfl]		;[KPJ.4] set default flags
+	MOVEM	t,perpfl(bfp)		;[KPJ.4]
+	MOVE	t,[opgsz1,,opgsz2]	;[KPJ.3] set page size
+	MOVEM	t,perpgs(bfp)		;[KPJ.3] (screen,,paper)
+	CALL	makact			;make active record
+	MOVE	nr,crenr##		;get creator
+	CALL	updobj			;get person
+	 JRST	makpe9			;not defined
+	AOS	pernpe(bfp)		;one more person
+makpe9:	return
+
+
+
+;+
+;CREOBJ		create an object
+;accepts	NR/	number of object
+;		OBTYPE/	object type
+;returns	OBJNR/	object number
+;		BFP/	pointing to object
+;-
+
+creobj::MOVEM	nr,objnr		;save object number
+	CALL	newrec			;create new record
+	MOVE	t,crenr##		;save creator
+	MOVEM	t,objcre(bfp)
+	MOVE	t,obtype		;save object type
+	MOVEM	t,objtyp(bfp)
+	return
+
+
+;+
+;NEWREC		create a new record
+;accepts	NR/	record number
+;returns	BFP/	pointing to record
+;-
+
+newrec::save	<gp1>
+	CALL	updobj			;get person area
+	 nop				;new person
+	CALL	insuob			;increase sum of objects
+	CALL	clerec			;clear record
+	MOVEM	nr,0(bfp)		;save object number
+	MOVE	t,curdat##		;save creation date
+	MOVEM	t,objtim(bfp)
+	return
+
+
+;+
+;UPDOBJ		get and update an object
+;accepts	NR/	object number
+;returns	+1 if wanted object not found
+;		+2 if correct object got
+;		GP1/	object
+;		BFP/	object
+;-
+
+updobj::
+updobx:	CALL	objtrc			;<KPJ.7> trace
+	CALL	getobj			;get object
+	 TRNA				;object not found
+	  skpret			;object found
+	CALL	corfil##		;correct file ?
+	 TRNA				;no, error
+	  CALL	markwr##		;file written
+	return
+
+
+
+;+
+;GETOBJ		get an object
+;accepts	NR/	object id (type "TEXT 4711")
+;returns	+1 one of
+;		   (a) not a legal file# in bits 1:8 of object id
+;		   (b) zero object# in bits 9:36 of object id
+;		+2 if object got, with
+;		   GP1/	object
+;		   BFP/	object
+;-
+
+getobj::save	<gp2,nr>
+getobx:	CALL	objtrc			;<KPJ.7> object trace
+	MOVM	nr,nr			;object# (negative if marked "deleted")
+	MOVE	gp2,nr			;save object# in GP2
+	CALL	geplac			;get place
+	 JRST	getob9			;illegal object id, return +1 (failure)
+					;NR = position
+	CALL	getrec##		;get object
+	CAMN	gp2,0(bfp)		;our wanted correct object ?
+	 JRST	getob8			;yes, return +2
+	ADD	gp2,0(bfp)		;no, check if deleted
+	JUMPN	gp2,getob9		;deleted correct object ?
+getob8:	skpret				;+2 return (success)
+getob9:	return
+
+
+
+;+
+;GEPLAC		get place
+;accepts	NR/	object id (of type "TEXT 4711")
+;returns	+1 one of
+;		   (a) not a legal file# in bits 0:8
+;		   (b) object# is zero (of type "TEXT 0")
+;		+2 if OK, with
+;			NR/	record#
+;			GP1/	file#
+;			BFP/	address of META record
+;-
+
+geplac::CALL	splpoi			;split object id to (file#,object#)
+					;returns NR=file#, GP1=object#
+	CALL	corfil##		;is it a legal file# ?
+	 JRST	gepla9			;no, return +1 (error)
+	JUMPLE	nr,gepla9		;if not positive, return +1 (error)
+	CALL	gemere##		;get META record for that file
+					;BFP/	pointer to META record
+	CAIE	gp1,met			;is it the META file ?
+	 JRST[	MOVN	t,metmax(bfp)	;no, get -(number of objects)
+		SUBI	nr,1		;subtract one
+		ANDCM	nr,t		;get place
+		ADDI	nr,1		;add one
+		JRST	.+1]
+	skpret				;+2 return (success)
+gepla9:	return
+
+
+
+
+;+
+;SPLPOI		split pointer
+;			 0 1      8 9	    36
+;			+-+--------+----------+
+; objecft id		!0!file#   !  object# !
+;			+-+--------+----------+
+;accepts	NR/	object id
+;			(bit 0 expected to have been zeroed)
+;returns	+1 always, with
+;		NR/	object#
+;		GP1/	file# (1:19)
+;-
+
+splpoi::LDB	gp1,[POINT 9,nr,8]	;get file number
+	SETZ	t,0
+	DPB	t,[POINT 9,nr,8]	;clear file part
+	return
+
+
+
+;+
+;INSUOB		increase sum of objects
+;accepts	BFP/	object
+;		GP1/	file number
+;-
+
+insuob::save	<bfp,gp1>
+	SKIPG	0(bfp)			;old object ?
+	 JRST	insuo1			;no
+	CALL	gemere##		;get meta record
+	JRST	insuo2			;just add created objects
+
+insuo1:	CALL	gemere##		;get meta record
+	AOS	metnr(bfp)		;increase sum of objects
+insuo2:	AOS	metcnr(bfp)		;increase sum of created objects
+	MOVEI	gp1,met			;get meta file
+	CALL	markwr##		;file written
+	return
+
+;+
+;CLEREC		clear record
+;accepts	BFP/	pointing to record
+;		GP1/	pointing to file
+;-
+
+clerec::save	<nr>
+	CALL	geresi			;get record size
+	CALL	clarea			;clear area
+	return
+
+
+
+;+
+;GERESI		get record size
+;accepts	GP1/	file number
+;returns	NR/	record size
+;-
+
+geresi:	save	<bfp>
+	CALL	gemere##		;get meta record
+	MOVE	nr,metsi(bfp)		;get record size
+	return
+
+
+
+;+
+;CLAREA		clear area
+;accepts	BFP/	pointing to start of area
+;		NR/	length of area
+;-
+
+clarea::save	<bfp,nr>
+	SOJLE	nr,clare9		;empty area ?
+	SETZM	0(bfp)			;no, clear first cell
+	JUMPLE	nr,clare9		;more cells ?
+	ADD	nr,bfp			;yes, get end of area
+	HRL	bfp,bfp			;copy area to itself
+	ADDI	bfp,1			;  with offset, thus clearing
+	BLT	bfp,0(nr)		;    it entirely
+clare9:	return
+
+
+
+
+
+;+
+;MAKACT		make active record
+;returns	BFP/	active record
+;		GP1/	active record	
+;-
+
+makact::save	<nr>
+	CALL	obtoac##		;get active file
+	CALL	updobj			;get person area
+	 nop				;new record
+	CALL	clerec			;clear record
+	MOVEM	nr,(bfp)		;set record number
+	MOVE	t,curdat##		;save creation date
+	MOVEM	t,objtim(bfp)
+makac9:	return
+
+;+
+;OBJTRC		object trace, output message to controlling terminal
+;accepts	SELFFL/	our flags
+;		NR/	object#
+;-
+
+objtrc:	MOVE	t,selffl##		;<KPJ.7> get our flags
+	Txnn	t,rdapfl		;<KPJ.7> Report Disk Accesses?
+	 JRST	objtr9
+	save	<nr,gp1,str,ch>		;<KPJ.7> yes, save old faithfuls
+	MOVE	t,consum##		;<KPJ.13> get consumer
+	CAIN	t,tercon##		;<KPJ.13> to terminal?
+	 CALL	toutpu##		;<KPJ.13> yes, empty output buffer
+	MOVM	nr,nr			;<KPJ.7> delete deletedness
+	SETZ	str,			;<KPJ.7> nothing yet
+	HRRZ	t,-TTQsav(P)		;<KPJ.10!KPJ.7> get return address
+	CAIN	t,getobx+1		;<KPJ.7> GETOBJ?
+	 MOVEI	str,[ASCIZ !<GETOBJ !]	;<KPJ.11> yeah			">"
+	CAIN	t,updobx+1		;<KPJ.7> UPDOBJ?
+	 MOVEI	str,[ASCIZ !<UPDOBJ !]	;<KPJ.11>			">"
+	CAIN	str,0			;<KPJ.7> none?
+	 MOVEI	str,[ASCIZ !<(OBJTRC)!] ;<KPJ.11> none			">"
+T10,<	OUTSTR	@str>			;<KPJ.13> display message
+T20,<	HRRO	1,str			;<KPJ.13> display message
+	PSOUT%
+>;T20
+	CALL	splpoi			;<KPJ.12> split object# (GP1,NR)
+	MOVE	t2,gp1			;<KPJ.12> get file#
+	CAILE	t2,0			;<KPJ.12> negative?
+	 CAILE	t2,maxmet		;<KPJ.12> or too large?
+	  JRST[
+T10,<		MOVEI	1,.CTTRM>	;<KPJ.13> controlling terminal
+T20,<		MOVEI	1,.PRIOUT>	;<KPJ.12> yes, display as "nnn."
+		MOVE	2,gp1		;<KPJ.12>
+		MOVEI	3,<FLD(^D10,NO%RDX)> ;<KPJ.12>
+T10,<		CALL	.nout##		;<KPJ.12> output it
+		 OUTSTR	@1		;<KPJ.13> display error message
+		OUTCHR[	"."]		;<KPJ.13>
+>;T10
+T20,<		NOUT%			;<KPJ.13>
+		 ERCAL[	HRROI	1,[0]
+			ESOUT%
+			MOVEI	1,.PRIOUT
+			HRLOI	2,.FHSLF
+			MOVEI	3,0
+			ERSTR%
+			 nop
+			 nop
+			RET]
+		MOVEI	1,"."		;<KPJ.13>
+		PBOUT%			;<KPJ.13>
+>;T20
+		JRST	objtr1]		;<KPJ.12>
+	MOVE	str,gp1			;<KPJ.12> get file#
+	SUBI	str,1			;<KPJ.12>
+	LSH	str,1			;<KPJ.12>
+	HRRZ	str,objtab##(str)	;<KPJ.12> make object type name pointer
+	HLRZ	str,@str		;<KPJ.12> get object type name
+T10,<	OUTSTR	@str>			;<KPJ.13>
+T20,<	HRRO	1,str			;<KPJ.13>
+	PSOUT%				;<KPJ.13>
+>;T20
+T10,<	OUTCHR[	.CHSPC]>		;<KPJ.13!KPJ.12> output space
+T20,<	MOVEI	1,.CHSPC		;<KPJ.13!KPJ.12> output space
+	PBOUT%				;<KPJ.13!KPJ.12>
+>;T20
+objtr1:
+T10,<	MOVEI	1,.CTTRM>		;<KPJ.13> controlling terminal
+T20,<	MOVEI	1,.PRIOUT>		;<KPJ.12>
+	MOVE	2,nr			;<KPJ.12>
+	MOVEI	3,<FLD(^D10,NO%RDX)>	;<KPJ.12>
+T10,<	CALL	.nout##			;<KPJ.12>
+	 OUTSTR	@1			;<KPJ.13>
+>;T10
+T20,<	NOUT%
+	 ERCAL[	HRROI	1,[0]
+		ESOUT%
+		MOVEI	1,.PRIOUT
+		HRLOI	2,.FHSLF
+		MOVEI	3,0
+		ERSTR%
+		 nop
+		 nop
+		RET]
+>;T20
+T10,<	OUTCHR[	.CHRBR]>		;<KPJ.13!KPJ.7> end of message
+T20,<	MOVEI	1,.CHRBR		;<KPJ.13!KPJ.7> end of message
+	PBOUT%
+>;T20
+	rstreg				;<KPJ.7> back from reality
+objtr9:	RET
+	END
+..and no more

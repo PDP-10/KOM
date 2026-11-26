@@ -1,0 +1,531 @@
+;Oden::DSKG:PTYKOM.MAC<62,7777,MAC> 1986-12-19 18:18:09, Edit by KPJ @ L89
+;14	Make interrupt routines callable from low segment even if high segment
+;	is concealed.
+;Oden::DSKG:PTYKOM.MAC<62,7777,MAC> 1986-12-17 17:40:51, Edit by KPJ @ L89
+;13	PSITTY  renamed to PSIOUT.
+;Oden::DSKG:PTYKOM.MAC<62,7777,MAC> 1986-06-16 14:43:41, Edit by KPJ @ L89
+;12	Moved texts to TEXTER. Use standard symbols. Fixed break character
+;	handling.
+;Oden::DSKD:PTYKOM.MAC<62,7777,MAC> 1985-11-06 05:43:40, Edit by KPJ
+;11	Changed "internal error" messages to standard form.
+;Oden::DSKD:PTYKOM.MAC[62,7777,MAC] 1985-10-05 00:47:40, Edit by KPJ @ ORANGE
+;10	Introduced PROLOG macro.
+;Oden::DSKD:PTYKOM.MAC<62,7777,MAC> 1985-08-25 06:01:03, Edit by KPJ
+;7	PTYJOB and TRPTTY localized.
+;Oden::DSKD:PTYKOM.MAC<62,7777,MAC> 1985-06-20 02:59:25, Edit by KPJ @ GR\N
+;6	Rewrote TMPBRK routine to make it conform with standard routine format.
+;Oden::DSKD:PTYKOM.MAC<62,7777,MAC> 1985-05-30 17:31:37, Edit by KPJ @ Ljuster|
+;5	Hacked TRPTTY for faster PTY/TTY throughput.
+;Oden::DSKD:PTYKOM.MAC[62,7777] 1984-11-27 12:36:11, Edit by K.Jaakkola
+;4	Re-hacked module, commented it, split into subroutines.
+;	(.REQUI for implementation of "SEND" command into KOM.)
+;	New macros: TMSG, PMSG
+;	New routines: GETPTY, GETTTY, TMPBRK
+;Oden::DSKD:PTYKOM.MAC[62,7777] 1984-09-18 19:42:16, Edit by B.CARLSSON
+;3	Make this module search KOMMAC too, since someone has put
+;	a T20-conditional in it, and also make a quick end for
+;	Twenny sites compiling it.
+;Oden::DSKG:PTYKOM.MAC[62,7777] 1984-06-08 18:37:49, Edit by B.CARLSSON
+;2	(1020)	PTYKOM ska numera inte f|rst|ra TMP:BRK l{ngre.
+;Oden::DSKG:PTYKOM.NEW[62,657] 1982-09-21 12:51:39, Edit by ERICSON T
+;1	Don't generate more (or less) buffers for TTY than we have reserved
+;	space for. Define symbols for # of i/o buffers for PTY too.
+;Oden::DSK:PTYKOM.MAC 198x-xx-xx xx:xx:xx, Edit by P.DANIELSSON
+;					   Edit by B.CARLSSON
+;0	Original code appeared in AMIS ("M-X Push to Exec$"). Introduced into
+;	KOM code by B.Carlsson.
+
+	SEARCH	kommac
+T20,<	PRINTX	%PTYKOM module is not yet used on TOPS-20.
+	PASS2
+	END
+>;T20
+	PROLOG	(ptykom)
+					; I/O channels
+T10,<	pty==17			; PTYnn:
+	tty==1			; TTY:
+
+	ptytim==^D60		;sleep time for PTY (1min)
+>;T10
+				; AC definitions:
+	s1==1			; scratch ACs, used for arg passing
+	s2==2
+	t1==3			; temporary ACs
+	t2==4
+	t3==5
+	t4==6
+
+DEFINE	Tmsg	(foo)<
+	HRROI	s1,foo
+	CALL	ttystr>
+DEFINE	Pmsg	(foo)<
+	HRROI	S1,[ASCIZ foo]
+	CALL	ptystr>
+
+	RELOC			;low segment
+
+
+				; PSI conditions
+cndpty:	EXP	pty		; input done on PTY
+	XWD	psipty##-psivec##,PS.RID
+	XWD	1,0
+
+cndout:	EXP	tty		; TTY condition
+	XWD	psiout##-psivec##,PS.RID
+	XWD	2,0
+
+tib:	BLOCK	3		; input buffer header block for TTY:
+tob:	BLOCK	3		; output buffer header block for TTY:
+
+pib:	BLOCK	3		; input buffer header block for PTY
+pob:	BLOCK	3		; output buffer header block for PTY
+
+	nofpti==2		; Number of input buffers
+	nofpto==2		; Number of output buffers
+
+ptyibf:	BLOCK	nofpti*23	; PTY input buffer space
+ptyobf:	BLOCK	nofpto*23	; PTY output buffer space
+
+pagmod:	BLOCK	1		; page mode bit of TTY:
+ptyjob:	BLOCK	1		; Job number of subjob (sometimes)
+disflg:	BLOCK	1		; Flag to indicate disconnect wanted
+tmparg:	XWD	'brk',0
+	IOWD	1,tmpbuf
+tmpbuf:	BLOCK	1
+	Z
+digit:	0
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;PTYKOM		main part
+;-
+ptykom::SETZM	disflg				;clear flag
+	SKIPN	s1,number##			;[BCQ] any defined break char?
+T10,<	 CALL	tmpbrk				;[KPJ.4] no, read TMP:BRK
+	  TRNA					;<KPJ.12> TMP:BRK character OK
+>;T10
+	   SETZ	s1,				;<KPJ.12> no break character
+	TRZ	s1,parity			;<KPJ.12> kill parity
+	JUMPN	s1,[				;<KPJ.12> any break character?
+		CAILE	s1,.CHDEL		;<KPJ.12> out of range?
+		 JRST[	print	pty001##	;<KPJ.12> too large
+			SETZM	s1,		;<KPJ.12> ignore it
+			JRST	.+1]		;<KPJ.12>
+		CAIG	s1,.CHNUL		;<KPJ.12> out of range?
+		 JRST[	print	pty002##	;<KPJ.12> too small
+			SETZM	s1,		;<KPJ.12> ignore it
+			JRST	.+1]		;<KPJ.12>
+		JRST	.+1]			;<KPJ.12> OK, GA
+	MOVEM	s1,number##			;<KPJ.12!BCQ> save character
+T10,<	MOVEI	s1,trptty		;get address of new interrupt routine
+	MOVEM	s1,qqqout##		;save address of new interrupt routine
+	MOVEI	s1,pty			;get PTY channel...
+	GETCHR	s1,			;...device characteristics
+	CAIN	s1,0			;if not zero, we already got PTY open
+>;T10
+	 CALL	getpty			;not open, get a PTY
+	MOVEI	s1,pty
+	JOBSTS	s1,
+	 SETZ	s1,
+	HRRZS	s1
+	ANDI	s1,JB.UJN			;just keep job number
+	MOVEM	s1,ptyjob
+	MOVE	s1,[PS.FRC+ttycon##]
+	PISYS.	s1,
+	 TRN
+	CLOSE	tty,				;close the TTY (already open)
+	CLRBFI					;clear input bfr for type-ahead
+	CALL	gettty				;open TTY: in PIM
+	CALL	ptypsi				;make PSI and terminal settings
+	Tmsg	pty003##			;"Type "
+	SKIPE	t1,number##			;any break character?
+	 CALL[	Tmsg	pty004##		;"a "
+		CAIN	t1,.CHDEL		;is it a Rubout ?
+		 JRST[	Tmsg	pty005##	;"Rubout"
+			JRST	typchr]
+		CAIGE	t1,.CHSPC		;is it a CTRL character?
+		 CALL[	Tmsg	pty006##	;yes, "CTRL/"
+			ADDI	t1,"@"		;convert to alphabetic
+			AOS	0(P)
+			AOS	0(P)
+			RET]
+		 CALL[	CAIE	t1,.CHSPC	;space?
+			 RET			;no
+			POP	P,t2		;get rid of return address
+			Tmsg	pty007##	;"Space"
+			JRST	typchr]
+		 CALL[	MOVEI	s1,.CHQUO	;<KPJ.12> quote
+			CAIN	t1,.CHQUO	;quote?
+			 MOVEI	s1,"'"		;<KPJ.12> yes, use apostrophe
+			CALL	ttyout		;<KPJ.12> output character
+			RET]
+		MOVE	s1,t1			;get character
+		CALL	ttyout			;and output it
+		MOVE	t1,number##
+		CAIG	t1,.CHSPC		;space?
+		 JRST	typchr
+		MOVEI	s1,.CHQUO		;<KPJ.12> quote
+		CAIN	t1,.CHQUO		;quote?
+		 MOVEI	s1,"'"			;<KPJ.12> yes, use apostrophe
+		CALL	ttyout			;<KPJ.12> output whatever
+typchr:		Tmsg	pty010##		;" or "
+		RET]
+	Tmsg	pty011##			;'"DISCON" to monitor."
+	CALL	ttoclr				;force out the TTY buffer
+	SKIPE	ptyjob				;do we have a PTY job?
+	 JRST[	HRRI	s1,'wak'		;wake function to DISCON
+		HRL	s1,ptyjob		;get job number
+		PIJBI.	s1,			;wake it!
+		 nop				;don't mind
+		JRST	zzzzzz]			;go to sleep, and communicate
+
+	Pmsg	<terminal >			;start monitor command
+	MOVEI	t1,.TOTRM
+	SETO	t2,
+	MOVE	s1,[2,,t1]
+	TRMOP.	s1,				;read terminal type setting
+	 JRST[	Tmsg	pty012##		;"Failed get terminal type"
+		JRST	sett11]			;<KPJ.12>
+	MOVE	s2,s1				;save terminal type
+	Pmsg	<type >				;set terminal type
+sett10:	SETZ	s1,
+	LSHC	s1,6				;get a SIXBIT character
+	JUMPN	s1,[
+		ADDI	s1,"A"-'A'		;convert it to ASCII
+		CALL	ptyout			;and output to PTY
+		JRST	sett10]			;go get next character
+sett11:	Pmsg	< defer page>
+	MOVEI	s1,"."			;<KPJ.12> simulate TOPS-10 monitor dot
+	CALL	ttyout			;<KPJ.12>
+	OUTPUT	pty,				;flush PTY buffer
+
+zzzzzz:	SKIPE	disflg				;disconnect wanted?
+	 JRST[	PUSH	P,s1			;yes,
+		PUSH	P,t1
+		JRST	quit]			;quit
+	MOVE	t1,[HB.RWJ+^D1000*ptytim]	;wake protection, sleep a while
+	HIBER	t1,
+	 error	<ptykom ptykom>			;shouldn't fail
+	JRST	zzzzzz				;sleep forever
+
+;+
+;TRPCJI		routine to catch a cross job interrupt from subjob.
+;'POP' menas that we should disconnect from the PTY.
+;-
+
+trpcji::PORTAL	.+1			;<KPJ.14>
+	PUSH	P,s1			;we need some workspace
+	PUSH	P,t1
+	PUSH	P,t2
+	PUSH	P,t3
+	HLRZ	t1,psicji##+.PSVIS	;get jobnumber of request.
+	PJOB	t2,			;get our job number
+	MOVEM	t1,ptyjob		;save the jobnumber for later on
+	CTLJOB	t1,			;get controlling job-number
+	 JRST	cjideb			;dismiss this interrupt
+	CAME	t1,t2			;are we the controlling job?
+	 JRST	cjideb			;no, so dismiss
+	HRRZ	t1,psicji##+.PSVIS	;get code sent by sub
+	CAIE	t1,'pop'		;are we supposed to POP?
+	 JRST	cjideb			;no, so dismiss this foony Interrupt
+	SETOM	disflg			;set flag.
+cjideb:	POP	P,t3
+	POP	P,t2			;restore our workspace
+	POP	P,t1
+	POP	P,s1
+	DEBRK.				;and dismiss this interrupt
+	 error	<trpcji-1 ptykom>
+	error	<trpcji-2 ptykom>
+
+
+;+
+;QUIT		should deactivate interrupts on input done and return
+;		to main program
+;-
+quit:	PUSH	p,t2
+	PUSH	p,t3
+	Movx	S1,PS.FRC+cndpty
+	PISYS.	S1,			;remove PTY condition
+	 error	<quit-1 ptykom>
+	MOVE	s1,[3,,t1]
+	Movx	t1,.TOPAG+.TOSET
+	SETO	t2,
+	MOVE	t3,pagmod
+	TRMOP.	s1,
+	 error	<quit-2 ptykom>
+	MOVEI	s1,ptyret
+	MOVEM	s1,psiout##+.PSVOP
+	POP	p,t3
+	POP	p,t2
+	POP	p,t1
+	POP	p,s1
+	DEBRK.
+	 error	<quit-3 ptykom>
+	FALL	ptyret			; No interrupt, so Jump instead!
+
+;+
+;PTYRET		(undocumented)
+;-
+
+ptyret:	Movx	t1,PS.FRC+PS.FCS+cndout
+	PISYS.	t1,			; Remove tty-condition
+	 error	<ptyret-1 ptykom>
+	MOVEI	t1,trpout##		; New address in PSI vector
+	MOVEM	t1,qqqout##		; Save in PSI Vector
+	MOVE	t1,[PS.FAC+ttycon##]
+	PISYS.	t1,			; Add usual tty condition
+	 error	<ptyret-2 ptykom>
+	SKIPN	number			;[BCQ] any break char?
+	 JRST	ptyr10			;[BCQ] no, so don't write anything
+	SETZM	tmpbuf			;[BCQ] clear the buffer
+	MOVE	t2,[POINT 7,tmpbuf]	;[BCQ] get a point to buffer
+	LDB	s1,[POINT 3,number,^D29] ;[BCQ,1020] get first digit
+	ADDI	s1,"0"			;[BCQ] convert to ASCII
+	IDPB	s1,t2			;[BCQ] store away
+	LDB	s1,[POINT 3,number,^D32] ;[BCQ,1020] get next octal number
+	ADDI	s1,"0"			;[BCQ,1020] convert to ASCII
+	IDPB	s1,t2			;[BCQ,1020] store away
+	LDB	s1,[POINT 3,number,^D35] ;[BCQ,1020] get next digit
+	ADDI	s1,"0"			;[BCQ,1020] convert
+	IDPB	s1,t2			;[BCQ,1020] store away
+	MOVE	s1,[.TCRWF,,tmparg]	;[BCQ,1020] point to arg. block
+	TMPCOR	s1,			;[BCQ,1020] write TMP:BRK
+	 nop				;[BCQ,1020] life is hard sometimes..
+ptyr10:	CALL	reitty##		;re-initialize TTY
+	print	pty000##		;<KPJ.12> "Returning to "
+	CALL	prcinm##		;<KPJ.12> output program name
+	return
+
+
+;+
+;TRPTTY		input done trap for TTY:
+;-
+trptty:	PORTAL	.+1			;<KPJ.14>
+	MOVE	s1,psiout##+.PSVFL	; get flags
+	TRNN	s1,PS.RID		; input done?
+	 JRST	tdebrk			; no, dismiss this interrupt
+	MOVE	t1,number##
+trpt10: SOSGE	tib+.BFCTR		; anything to read from buffer?
+	 JRST[	IN	tty,		; get a buffer
+		 JRST	trpt10		; ok, we got something in the buffer
+		STATZ	tty,IO.ERR	; error?
+		 error	<trptty ptykom>	; yes, some error
+		OUTPUT	pty,		; no, force out the PTY buffer
+		JRST	tdebrk]
+	ILDB	s1,tib+.BFPTR		; yes, get a byte
+	JUMPN	t1,[			; He has a break character?
+		TRZ	s1,parity	;get rid of parity
+		CAME	s1,number##	; is it the break character?
+		 JRST	.+1		;<KPJ.12> otherwise continue
+		CAIN	s1,.CHDEL	;<KPJ.12> RUBOUT?
+		 JRST[	OUTSTR[	ASCIZ !^?!]
+			JRST	quit]	;<KPJ.12> yes, display it and quit
+		CAIL	s1,.CHSPC	;<KPJ.12> CTRL/character?
+		 JRST[	OUTCHR	s1	;<KPJ.12> no, show as is
+			JRST	quit]	;<KPJ.12> and quit
+		ADDI	s1,"@"		;<KPJ.12> convert CTRL to UPPERCASE
+		OUTCHR[	"^"]		;<KPJ.12> indicate CTRL/
+		OUTCHR	s1		;<KPJ.12> display what CTRL/character
+		JRST	quit]		;<KPJ.12> and quit
+	CALL	ptyout			; give byte to PTY
+	JRST	trpt10			; back for more
+tdebrk:	DEBRK.				; and return from interrupt
+	 error	<tdebrk-1 ptykom>
+	 error	<tdebrk-2 ptykom>
+
+;+
+;TRPPTY		input done trap for PTY
+;-
+trppty::PORTAL	.+1			;<KPJ.14>
+	PUSH	P,s1
+trpp10: SOSGE	pib+.BFCTR		; anything to read from buffer?
+	 JRST	pgetbf			; no, get another buffer
+	ILDB	s1,pib+.BFPTR		; yes, get a byte
+	TRZ	s1,parity		;get rid of parity
+	CALL	ttyout			; give byte to TTY:
+	JRST	trpp10			; back for more
+pgetbf:	INPUT	pty,			; ok, get one more buffer
+	SKIPE	pib+.BFCTR		; did we get anything?
+	 JRST	trpp10			; yes, we got something in the buffer
+	STATZ	pty,IO.ERR		; error?
+	 error	<trppty-1 ptykom>	;yep
+	Movx	s1,77B5			; anything in the tty-buffer?
+	TDNE	s1,tob+.BFPTR
+	 CALL	ttoclr			; force out the tty-buffer
+	POP	P,s1			; restore s1
+	DEBRK.				; and return from interrupt
+	 error	<trppty-2 ptykom>
+	 error	<trppty-3 ptykom>
+
+;+
+;PTYSTR		output an ASCIZ to PTY
+;accepts	S1/	address of ASCIZ string
+;-
+ptystr:	save	<t1,t2>
+	MOVE	t1,s1			; Copy arg. into T1
+	MOVE	t2,[POINT 7,0(t1)]	; Get a bytepointer
+ptyst1:	ILDB	s1,t2			; Get character
+	JUMPN	s1,[	CALL	ptyout	; output the character
+			JRST	ptyst1]	; and get the next
+	return
+
+;+
+;PTYOUT		output a byte to the PTY
+;accepts:	S1/	character
+;-
+ptyout:	SOSGE	pob+.BFCTR		;room left in PTY output buffer?
+	 JRST[	OUTPUT	pty,		;no, write it out
+		JRST	ptyout]		;and try again
+	IDPB	s1,pob+.BFPTR		;yes, put the byte there
+	RET
+
+;+
+;TTYSTR		output an ASCIZ to TTY
+;accepts:	S1/	address of ASCIZ string
+;-
+ttystr:	save	<t1,t2>
+	MOVE	t1,s1			;copy argument
+	MOVE	t2,[POINT 7,0(t1)]	;get a byte pointer
+ttyst1:	ILDB	s1,t2			;get character from ASCIZ
+	JUMPN	s1,[	CALL	ttyout	;output the character...
+			JRST	ttyst1]	;...get the next character
+	return
+
+;+
+;TTYOUT		output a byte to the TTY
+;accepts:	S1/	character to output
+;		TOB/	TTY buffer
+;-
+ttyout:	SOSGE	tob+.BFCTR		;room left in buffer?
+	 JRST[	CALL	ttoclr		;no, flush out the buffer...
+		JRST	ttyout]		;...and re-do
+	CALL	makevp			;make even parity
+	IDPB	s1,tob+.BFPTR		;store byte in buffer
+	RET
+
+;+
+;MAKEVP		make even parity			[KPJ.4]
+;accepts:	S1/	character, right-justified, 7 bits
+;returns:	S1/	character, with parity
+
+;From:	DIGITAL manual "DECsystem-10 DECSYSTEM-20 Processor Reference Manual",
+;	manual AA-H391A-TK, p.2-114
+;-
+
+makevp:	save	<t1>
+	MOVEI	t1,(s1)			;copy character with high bit as is,
+	LSH	t1,-4			;...then fold into low 4 bits
+	XORI	t1,(s1)			;.....with opposite parity
+	TRCE	t1,14			;are left two both 0 ?
+	 TRNN	t1,14			;...or both 1 ?
+	  TRC	s1,parity		;yes, change high bit
+	TRCE	t1,3			;are right two both 0 ?
+	 TRNN	t1,3			;...or both 1 ?
+	  TRC	s1,parity		;yes, change for even, restore for odd
+	return
+
+;+
+;TTOCLR		output the TTY buffer
+;-
+ttoclr:	OUT	tty,			;write out the buffer
+	 RET				;ok
+	STATZ	tty,IO.ERR		;failed, hard error?
+	 error	<ttoclr ptykom>	;yes, trouble....
+
+	PUSH	P,t1			;no, just busy
+	SETZ	T1,			;sleep until interrupted
+	HIBER	T1,
+	 JFCL				;failed...
+	POP	P,T1
+
+	JRST	ttoclr			;OK, try again to flush the buffer
+
+;+
+;GETPTY		open a PTY for us
+;-
+
+getpty:	OPEN	pty,[			;open a PTY....
+		EXP	.IOASC+UU.FSP	;....with Full SCNSER support
+		SIXBIT	!pty!
+		XWD	pob,pib]
+	 error	<getpty ptykom>
+	PUSH	P,.JBFF			;save old lowseg end
+	MOVEI	s1,ptyibf		;we want our own input buffers
+	MOVEM	s1,.JBFF		;tell monitor where to put buffers
+	INBUF	pty,nofpti		;build them
+	MOVEI	s1,ptyobf		;we want our own output buffers
+	MOVEM	s1,.JBFF		;tell monitor where to put buffers
+	OUTBUF	pty,nofpto		;build them
+	POP	P,.JBFF			;restore old lowseg end
+	INPUT	pty,			;do a dummy IN
+	OUTPUT	pty,			;do a dummy OUT
+	RET
+
+;+
+;GETTTY		get a TTY
+;-
+
+gettty:	OPEN	tty,[			;open TTY: ...
+		EXP	.IOPIM+UU.AIO	;... in Packed Image Mode
+		SIXBIT	!tty!
+		XWD	tob,tib]
+	 error	<gettty ptykom>
+	PUSH	P,.JBFF			;save old lowseg end
+	MOVEI	S1,ttibuf##		;we want our own input buffers
+	MOVEM	S1,.JBFF		;tell monitor where to put them
+	INBUF	tty,noftti		;build buffers
+	MOVEI	S1,ttobuf##		;we want our own output buffers
+	MOVEM	S1,.JBFF		;tell monitor where to put them
+	OUTBUF	tty,noftto		;build buffers
+	POP	P,.JBFF			;restore old lowseg end
+	OUTPUT	tty,			; Do some dummy outs
+	INPUT	tty,
+	RET
+
+;+
+;TMPBRK		read TMP:BRK
+;returns	S1/ break character to use
+
+tmpbrk:	MOVE	s1,[.TCRRF,,tmparg]
+	TMPCOR	s1,			;[BCQ] read TMP:BRK
+	 JRST	tmpbr8			;<BCQ!KPJ.6> not found
+	MOVE	t1,[POINT 7,tmpbuf]	;[BCQ] get a point to tmpcore buffer
+	SETZ	s1,
+tmpbr1:	ILDB	s2,t1			;<BCQ!KPJ.6> get a byte from buffer
+	CAIL	s2,"0"
+	 CAILE	s2,"7"
+	  JRST	tmpbr9			;[BCQ] end of TMPCOR input
+	SUBI	s2,"0"			;[BCQ] convert to number
+	LSH	s2,^D36-3
+	LSHC	s1,3			;[BCQ] shift in place
+	JRST	tmpbr1			;<BCQ!KPJ.6> get the next digit
+tmpbr8:	skpret
+tmpbr9:	return
+
+;+
+;PTYPSI		initialize PSI conditions and terminal settings
+;-
+
+ptypsi:	Movx	t1,PS.FAC+cndout	;add input done trap for TTY:
+	PISYS.	t1,
+	 error	<ptypsi-1 ptykom>
+	Movx	t1,PS.FAC+cndpty	; add input done trap for PTY
+	PISYS.	t1,			;  and turn on PSI
+	 error	<ptypsi-2 ptykom>
+	MOVE	s1,[2,,[EXP .TOPAG,-1]]
+	TRMOP.	s1,			; read page mode bit
+	 error	<ptypsi-3 ptykom>
+	MOVEM	s1,pagmod		; save it
+	MOVE	s1,[3,,[EXP .TOPAG+.TOSET,-1,0]] ; clear page mode
+	TRMOP.	s1,
+	 error	<ptypsi-4 ptykom>
+	MOVE	s1,[3,,[EXP .TOPBS+.TOSET,-1,0]]
+	TRMOP.	s1,			; set empty PIM break set
+	 error	<ptypsi-5 ptykom>
+	RET
+
+	END
+..and no more

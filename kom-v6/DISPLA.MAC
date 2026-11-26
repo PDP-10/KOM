@@ -1,0 +1,513 @@
+;Freja::Qs:<Kom.6.Macro>Displa.Mac.12 870308-0645,KPJ-Jaakkola
+;27	WARMSG to write warnings with. Analogous to ERRMSG.
+;Oden::DSKG:DISPLA.MAC<62,7777,MAC> 1986-12-11 18:23:51, Edit by KPJ @ L89
+;26	PUTCH is a macro.  Use DECRYPT macro.
+;Oden::DSKG:DISPLA.MAC<62,7777,MAC> 1986-09-16 14:30:09, Edit by KPJ @ H.HOLE
+;25	PRENNR changed to output object number. Not used for entry# output (cf
+;	edit 23). New routine PRENTN to output "(entry number)".
+;Oden::DSKG:DISPLA.MAC<62,7777,MAC> 1986-09-08 02:36:19, Edit by KPJ @ H.HOLE
+;24	Display entry number even when interrupted during text output (broken
+;	during edit#20, probably).
+;Oden::DSKG:DISPLA.MAC<62,7777,MAC> 1986-09-06 05:50:20, Edit by KPJ @ H.HOLE
+;23	Lessified text header and footers.
+;Oden::DSKG:DISPLA.MAC<62,7777,MAC> 1986-08-29 13:48:15, Edit by KPJ @ L89
+;22	Error in error message output routine...
+;Freja::Qs:<Kom.6.Macro>Displa.Mac.5 860821-1955,KPJ-Jaakkola
+;21	Start error messages with a "?" on a new line.
+;Oden::DSKD:DISPLA.MAC<62,7777,MAC> 1985-10-16 16:19:54, Edit by KPJ
+;20	Changed format of entry headers:
+;	"(Text 4711)"	changed to	"(4711)"
+;	"(18)"		changed to	"/18 lines/"
+;Oden::DSKD:DISPLA.MAC<62,7777,MAC> 1985-10-09 13:23:36, Edit by KPJ
+;17	Bug created bogus byte pointers.
+;Oden::DSKD:DISPLA.MAC<62,7777,MAC> 1985-09-30 23:19:05, Edit by KPJ
+;16	Introduced PROLOG macro. Defined cache size in KOMMAC (no magical
+;	numbers here please..). Sanitized code.
+;Oden::DSKD:DISPLA.MAC<62,7777,MAC> 1985-08-22 07:29:38, Edit by KPJ @ DECgrupf
+;15	Flush output buffer after displaying entry.
+;Oden::DSKD:DISPLA.MAC<62,7777,MAC> 1985-08-18 02:39:11, Edit by KPJ @ DECgrupf
+;14	Put "Nr of lines" into the header line in parentheses.
+;Oden::DSKD:DISPLA.MAC<62,7777,MAC> 1985-06-20 03:10:29, Edit by KPJ @ GR\N
+;13	PRHDLI localized.
+;Oden::DSKD:DISPLA.MAC[62,7777,MAC] 1985-03-08 20:19:56, Edit by KPJ @ NADJA
+;12	Output "*** Text deleted ***" message on standard output.
+;Oden::DSKD:DISPLA.MAC[62,7777] 1985-02-04 16:04:19, Edit by KPJ @ L89
+;11	Delete "Subject:  " text if present, in LIST LETTERS listing.
+;Oden::DSKD:DISPLA.MAC[62,7777] 1985-01-21 12:06:36, Edit by KPJ @ L89
+;10	Make nr_of_lines independent of personal flag SHOW RECEIVERS.
+;Oden::DSKD:DISPLA.MAC[62,7777] 1985-01-10 02:20:31, Edit by KPJ @ GRAV
+;7	Add code to display number of lines of an entry.
+;Oden::DSKD:DISPLA.MAC[62,7777] 1985-01-08 04:45:35, Edit by KPJ @ L89
+;6	Got rid of QSHCOM call. Search MACTEN.
+;Oden::DSKD:DISPLA.MAC[62,7777] 1984-12-17 10:51:21, Edit by KPJ @ L89
+;5	Moved language dependent texts to TEXTER. Brushed up code.
+;Oden::DSKD:DISPLA.MAC[62,7777,TTQ] 1984-11-22 15:45:40, Edit by THOLERUS T
+;4	Added SHDISP (short display) and SUBDIS for "LIST LETTERS" command
+;Oden::DSKD:DISPLA.MAC[62,7777] 1984-11-21 15:22:46, Edit by K.JAAKKOLA
+;3	Search correct universals on T10 and T20. Lessified output in the
+;	headers (PRHDLI). Got rid of useless "funny macros".
+;	Also included TTQs later hacks (.REQUI for LIST LETTERS):
+;	;DSKD:DISPLA.MAC[62,7777] 1984-11-19 15:12:57, Edit by THOLERUS T
+;	;3	Previewed letters not marked seen
+;Oden::Dskd:Displa.Mac[62,7777] 1984-05-14 16:27:22, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dsk:Displa.New[1116,134] 1982-03-02 21:06:09, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(displa)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 16:27:22
+
+;	D A T A   A R E A
+
+
+xlines:	BLOCK	1			;[KPJ.10] number of lines of entry
+authnr::0				;author number
+lastnr::0				;last seen entry
+nrcomm:	0				;number of comments
+seeflg::-1				;[TTQ.3] mark entry as seen
+seeptr:	seelis				;seen pointer
+seelis::BLOCK	seesiz			;<KPJ.16> entry cache
+seeend::0
+
+	CODE
+
+;+
+;	S Y N T A X   T A B L E S
+
+reares::comhed	qreare,noarg##,rerest,ccrere##,zrrehl##	;read the rest
+
+;DISPLA		display an entry
+;accepts	NR/	entry number
+;		ENTMAX/	number of lines to show
+;		NOHFLG/	heading info
+;		RECFLG/	heading info
+;-
+
+displa::save	<nr,gp1,bfp,gp2,authnr>
+	CALL	getobj##		;get object
+	 JRST	displ9			;no entry
+	CAIN	gp1,dir			;entry?
+	 JRST	displ2			;yes, display it
+	CALL	chkper##		;person ?
+	 JRST	displ3			;no
+	CALL	prnast##		;print name
+	CALL	preol##			;new line
+	CALL	praddr##		;print address
+	CALL	prtele##		;print telephone
+displ3:	SKIPLE	nr,rectex(bfp)		;get presentation
+	 CALL	displa			;display it
+	JRST	displ9			;ready
+
+displ2:	HLRZ	t,dirnma(bfp)		;<KPJ.14!KPJ.10> get number of lines
+	MOVEM	t,xlines		;<KPJ.14!KPJ.10> save the info
+	SKIPG	0(bfp)			;entry deleted ?
+	 JRST[	CALL	txdele		;yes, report text deleted
+		JRST	displ8]		;<KPJ.24>
+	CALL	entsee			;entry seen
+	MOVE	t,objcre(bfp)		;get author
+	MOVMM	t,authnr		;save author
+	MOVE	t,objlto+1(bfp)		;save number of comments
+	MOVEM	t,nrcomm
+	MOVE	t,dirtex(bfp)		;get text part
+	MOVEM	t,savdtx##
+	SETZM	savdcn##		;clear text pointer
+	MOVE	gp2,entmax##		;get number of lines
+	CALL	prhdli			;print heading line
+	CALL	prirec##		;print receivers
+	CALL	morrec##		;more receivers ?
+	JUMPE	gp2,displ8		;<KPJ.24> no text ?
+	CALL	distxt			;display text
+displ8:	CALL	discom			;display number of comments
+displ9:	CALL	toutpu##		;<KPJ.15> flush output
+	return
+
+
+;+
+;NRLINE		display number of lines in entry (if known)	[KPJ.7]
+;accepts	XLINES/	number of lines in entry
+;-
+
+nrline:	save	<bfp,gp2,nr>
+	MOVE	t,xlines		;[KPJ.10] get number of lines
+	JUMPE	t,nrlin9		;unknown
+	MOVEI	ch,"/"			;<KPJ.20!KPJ.14> start #lines
+	CALL	putch			;<KPJ.14> output it
+	MOVE	nr,xlines		;[KPJ.10] get number of lines
+	CALL	prnum##			;write them out
+	MOVE	t,xlines		;<KPJ.20> get #lines
+	CAIN	t,1			;<KPJ.20> only one?
+	 SKIPA	str,[zxline##]		;<KPJ.20> yes, " line"
+	  MOVEI	str,zxlinz##		;<KPJ.20> no, " lines"
+	CALL	prstr##			;<KPJ.20> say " line" or " lines"
+	MOVEI	ch,"/"			;<KPJ.20!KPJ.14> close parenthesis
+	CALL	putch			;<KPJ.14> output it
+nrlin9:	return
+
+
+
+
+;+
+;PRENTN		output "(entry number)", e.g. "(4711)"
+;accepts	NR/	object number
+;-
+
+prentn::save	<ch,gp1,nr>
+	SKIPGE	intflg##		;<KPJ.25> interrupt?
+	 JRST	prent9			;<KPJ.25> yes, exit
+	MOVEI	ch,.CHLPR		;<KPJ.25> open parenthesis
+	CALL	putch			;<KPJ.25> . . .
+	CALL	splpoi##		;<KPJ.25> get number
+	CALL	prnum##			;<KPJ.25> output entry number
+	MOVEI	ch,.CHRPR		;<KPJ.25> closing parenthesis
+	CALL	putch			;<KPJ.25> . . .
+prent9:	return				;<KPJ.25>
+
+
+;+
+;PRENNR		output object number as "(type nnnn)", e.g. "(PERSON 4711)"
+;accepts	NR/	object number
+;-
+
+prennr::save	<ch,gp1,nr>
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	prenn9			;yes, exit
+	MOVEI	ch,.CHLPR		;output left paren
+	CALL	putch
+	CALL	probnr##		;<KPJ.23> output number
+	MOVEI	ch,.CHRPR		;output right paren
+	CALL	putch
+prenn9:	return
+
+
+
+
+
+;+
+;TXDELE		report text deleted
+;accepts	NR/	entry
+;-
+
+txdele::save	<ch,gp1,nr>
+	CALL	preol##		;new line
+	CALL	prentn		;<KPJ.25> output "(entry number)"
+	CALL	texdel		;say text deleted
+txdel9:	return
+
+
+
+
+
+;+
+;TEXDEL		say text deleted
+;-
+
+texdel::save	<str>
+	print	zdeltx##		;<KPJ.12> "*** text deleted ***"
+	return
+
+
+
+;+
+;WARMSG		output warning message to terminal to controlling terminal
+;accepts	STR/	byte pointer to ASCIZ
+;returns	+1 always, with message written to controlling terminal
+;-
+
+warmsg::save	<consum##>
+	CALL	tcbeg##			;output to terminal
+	CALL	preol##			;new line
+	PUSH	P,str			;save message pointer
+	print[	BYTE (7) .CHCRT,.CHLFD,"%",.CHNUL]
+	POP	P,str			;restore message pointer
+	CALL	prstr##			;output message
+	CALL	tcend##
+	return
+;+
+;ERRMSG		output error message to terminal to controlling terminal
+;accepts	STR/	byte or word pointer to ASCIZ string
+;returns	+1 always, with message written to controlling terminal
+;-
+
+errmsg::save	<consum##>
+	CALL	tcbeg##			;output to terminal
+	CALL	preol##			;new line
+	PUSH	P,str			;<KPJ.22> save message pointer
+	print[	BYTE (7) .CHCRT,.CHLFD,"?",.CHNUL]
+	POP	P,str			;<KPJ.22> restore message pointer
+	CALL	prstr##			;output message
+	CALL	tcend##
+	return
+
+
+;+
+;ENTSEE		mark entry as seen
+;accepts	NR/	entry
+;-
+
+entsee::save	<gp1>
+	MOVEM	nr,lastnr		;save entry number
+	SKIPL	seeflg			;[TTQ.3] whole entry seen?
+	 JRST	entse9			;no
+	CAMN	nr,nxlenr##		;yes, next letter displayed ?
+	 SETZM	nxlenr##		;yes, clear next letter
+	CAMN	nr,nxennr##		;next entry displayed ?
+	 SETZM	nxennr##		;yes, clear next entry
+	CAMN	nr,nxconr##		;next comment displayed ?
+	 SETZM	nxconr##		;yes, clear next comment
+	CAMN	nr,nxoenr##		;next other entry displayed ?
+	 SETZM	nxoenr##		;yes, clear next other entry
+	MOVE	gp1,seeptr		;get seen pointer
+	MOVEM	nr,0(gp1)		;save entry number in cache
+	ADDI	gp1,1			;remember we saved in cache
+	CAIL	gp1,seeend		;cache full?
+	 MOVEI	gp1,seelis		;yes, get start of list
+	MOVEM	gp1,seeptr		;save new pointer
+entse9:	return				;[TTQ.3]
+
+
+
+
+
+;+
+;PRHDLI		output heading line
+;accepts	BFP/	directory
+;-
+
+prhdli:	save	<gp1,ch,nr>		;<KPJ.13>
+	SKIPL	intflg##		;interrupt ?
+	 SKIPGE	nohflg##		;no, any heading ?
+	  JRST	prhdl9			;no heading
+	CALL	preol##			;new line
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	prhdl9			;yes, exit
+	MOVEI	ch,.CHLPR		;<KPJ.20<> left paren
+	CALL	putch			;<KPJ.20> output it
+	PUSH	P,gp1			;<KPJ.20> save
+	PUSH	P,nr			;<KPJ.20> ...
+	CALL	splpoi##		;<KPJ.20> split pointer
+	CALL	prnum##			;<KPJ.20> output entry number
+	POP	P,nr			;<KPJ.20> restore
+	POP	P,gp1			;<KPJ.20> ...
+	MOVEI	ch,.CHRPR		;<KPJ.20> closing paren
+	CALL	putch			;<KPJ.20> output
+	MOVE	gp1,objtim(bfp)		;get creation time
+	CALL	putbla##		;<KPJ.16> a space
+	CALL	pdate##			;output date
+	CALL	putbla##		;<KPJ.16> a space
+	CALL	nrline			;<KPJ.14>
+	CALL	putbla##		;<KPJ.16> a space
+	MOVE	nr,objcre(bfp)		;get creator
+	CALL	prinam##		;output author name
+prhdl9:	return
+
+
+
+
+
+;+
+;DISTXT		display text
+;accepts	NR/	current entry
+;		SAVDTX/	text number
+;		GP2/	number of lines to show
+;-
+
+distxt:	SKIPGE	intflg##		;interrupt ?
+	 JRST	distx9			;yes, exit
+	JUMPE	gp2,distx9		;enough lines ?
+	CALL	preol##			;new line
+	SETOM	firflg##		;from beginning
+	CALL	dbpro##			;display text
+distx9:	return
+
+
+
+
+
+;+
+;DISCOM		output entry footer information
+;accepts	NR/	entry number
+;		NRCOMM/	number of comments
+;-
+
+discom:	save	<nr,str,intflg##,ch>
+	SETZM	intflg##		;clear interrupt
+	SKIPE	linpos##		;at start of line ?
+	 JRST	disco2			;no
+	CALL	prentn			;<KPJ.25> output "(entry number)"
+	CALL	prhali##		;print half line
+	MOVE	t,selffl##		;[KPJ.6] get personal flags
+	Txnn	t,sacpfl		;[KPJ.6] SHOW ALL COMMENTS?
+	 JRST	disco3			;no, just the number
+	CALL	dialco			;display all comments
+	JRST	disco9
+
+disco3:	SKIPN	nr,nrcomm		;get number of comments
+	 JRST	disco9			;no comments
+	print[	ASCIZ !  !]		;2 spaces
+	MOVEI	ch,.CHLPR		;left paren
+	CALL	putch
+	CAIN	nr,1			;just one ?
+	 JRST	disco1			;yes
+	CALL	prnum##			;print number
+	print	zcomms##		;" comments"
+	JRST	disco9
+
+disco2:	print[	ASCIZ !  !]		;2 spaces
+	CALL	prentn			;<KPJ.25> just output "(entry number)"
+	JRST	disco9
+
+disco1:	print	zcomm1##		;"1 comment"
+disco9:	return
+
+
+
+;+
+;DIALCO		display all comments
+;accepts	NR/	entry number
+;-
+
+dialco:	save	<nr,bfp,gp1,str>
+	CALL	getobj##		;get entry
+	 JRST	dialc9			;error
+	MOVE	nr,objlto+2(bfp)	;get first link
+dialc2:	CALL	getobj##		;get link
+	 JRST	dialc9			;end of list
+	SKIPG	0(bfp)			;link deleted ?
+	 JRST	dialc1			;yes, get next
+	MOVE	nr,lnkobj(bfp)		;get comment
+	CALL	preol##			;new line
+	print	zcomin##		;"(comment in"		;)
+	CALL	prinam##		;print comment number
+	MOVEI	ch,.CHRPR		;matching parenthesis
+	CALL	putch
+dialc1:	SKIPE	nr,lnklto+2(bfp)	;get next link
+	 JRST	dialc2
+dialc9:	return
+
+
+
+;+
+;DISNOH		display without heading
+;accepts	NR/	entry number
+;		GP2/	number of lines to show
+;-
+
+disnoh:	save	<nr,gp1,bfp>
+	MOVEM	nr,lastnr		;save entry number
+	CALL	getobj##		;get entry
+	 JRST	disno9			;error
+	MOVE	t,dirtex(bfp)		;get text part
+	MOVEM	t,savdtx##
+	SETZM	savdcn##		;clear count
+	CALL	distxt			;display text
+disno9:	return
+
+
+
+
+;+
+;QREARE		check if to add read rest command
+;-
+
+qreare:	SKIPE	savdtx##		;any half read entry ?
+	 skpret				;yes, add command
+	return
+
+
+
+;+
+;REREST		read the rest of the entry
+;accepts	SAVDTX	\
+;		SAVDCN	- entry
+;		SAVDBP	/
+;-
+
+rerest:	save	<str,nr>
+	SKIPG	nr,lastnr		;get entry number
+	 JRST	reres9			;no entry seen
+	print[	ASCIZ !...!]		;continuation mark
+	CALL	preol##			;new line
+	SETZ	gp2,			;whole entry
+	SETZM	firflg##		;not from beginning
+	CALL	dbpro##			;display it
+	CALL	discom			;print end line
+reres9:	MOVE	t,oldnex##		;dont clear next flag
+	MOVEM	t,nexflg##
+	return
+
+
+;+
+;SHDISP		short display an entry	;[TTQ.4]
+;accepts	NR/	number of entry
+;-
+
+shdisp::save	<gp1,bfp,nr,ch,curtxt##>
+	CALL	getobj##		;get object
+	 JRST	shdis9			;no entry
+	CAIE	gp1,dir			;entry ?
+	 JRST	shdis9			;no
+	SKIPG	0(bfp)			;entry deleted ?
+	 JRST	shdis9			;yes
+	CALL	preol##			;new line
+	CALL	splpoi##		;split pointer
+	CALL	prnum##			;print number
+	MOVE	gp1,objtim(bfp)		;get creation time
+	CALL	putbla##		;<KPJ.26> a space
+	CALL	pdate##			;print date
+	CALL	putbla##		;<KPJ.26> a space
+	MOVE	t,dirtex(bfp)		;get text part
+	MOVEM	t,curtxt##
+	MOVE	nr,objcre(bfp)		;get creator
+	CALL	prinam##		;print author name
+	CALL	subdis			;display subject
+shdis9:	return
+
+
+
+;+
+;SUBDIS		short display subject line	;[TTQ.4]
+;accepts	CURTXT/	text record
+;-
+
+subdis:	save	<nr,bfp,gp1,gp2,ch,dbbp##>
+	MOVE	nr,curtxt##		;get text
+	CALL	getobj##		;get text part
+	 JRST	subdi9			;text not found
+	MOVEI	t,texstr(bfp)		;<KPJ.17> point at ASCIZ start
+	HRLI	t,(POINT 7,)		;<KPJ.17> make byte pointer
+	MOVEM	t,dbbp##		;[KPJ.11]
+	MOVE	gp2,zzzubj##		;[KPJ.11] skip first characters
+	MOVEI	gp1,ztzubj##		;[KPJ.11] comparison pointer
+subdi1:	ILDB	ch,dbbp##		;get char
+	XORI	ch,"x"			;***FOO*** [KPJ.11] decrypt char
+	JUMPE	ch,subdi3		;ready ?
+	CAME	ch,0(gp1)		;[KPJ.11] equal?
+	 JRST	subdi3			;[KPJ.11] no
+	ADDI	gp1,1			;[KPJ.11] yes, increment pointer
+	SOJG	gp2,subdi1		;ready ?
+	JRST	subdi4			;[KPJ.11] yes
+subdi3:	MOVEI	t,texstr(bfp)		;<KPJ.17> point at ASCIZ start
+	HRLI	t,(POINT 7,)		;<KPJ.17> make byte pointer
+	MOVEM	t,dbbp##		;[KPJ.11]
+subdi4:	print[	ASCIZ !  !]		;two spaces
+	CALL	colyel##		;yellow colour
+	MOVE	gp2,crmarg##		;get current margin
+subdi2:	CAMG	gp2,linpos##		;outside margin ?
+	 JRST	subdi8			;yes
+	ILDB	ch,dbbp##		;get char
+	decrypt				;<KPJ.26!KPJ.11> decrypt character
+	JUMPE	ch,subdi8		;ready ?
+	CAIE	ch,.CHCRT		;CR = ready ?
+	 CAIN	ch,.CHLFD		;LF = ready ?
+	  JRST	subdi8
+	CALL	putch			;no, output character
+	JRST	subdi2
+
+subdi8:	CALL	colcya##		;cyan colour
+subdi9:	return
+
+	END
+..and no more

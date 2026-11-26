@@ -1,0 +1,313 @@
+;Oden::DSKG:DEAMON.MAC<62,7777,MAC> 1986-10-14 16:26:23, Edit by KPJ @ L89
+;11	Employee support under FTEMPL.
+;Oden::DSKD:DEAMON.MAC<62,7777,MAC> 1985-09-30 22:30:34, Edit by KPJ
+;10	Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:DEAMON.MAC[62,7777] 1985-02-04 17:02:42, Edit by KPJ @ L89
+;7	Save old flags when they are changed.
+;Oden::DSKD:DEAMON.MAC[62,7777] 1985-01-08 02:01:07, Edit by KPJ @ L89
+;6	Make logic sense flag a variable (LOGIC@CHATAB). Actually, it should
+;	live in the data base.
+;Oden::DSKD:DEAMON.MAC[62,7777] 1984-12-03 10:11:23, Edit by K.Jaakkola
+;5	Make SEFLOF and SEFLON understand logic sense flag.
+;Oden::DSKG:DEAMON.MAC[62,657] 1984-11-15 14:28:24, Edit by THOLERUS T
+;4	Splitted up UPDRDT in UPDRDT and UPDLSL
+;Oden::Dskd:Deamon.Mac[62,7777] 1984-10-22 16:10:46, Edit by K.Jaakkola
+;3	General code cleanup. Don't search UUOSYM on T20.
+;Oden::Dskd:Deamon.Mac[62,7777] 1984-09-12 12:30:34, Edit by K.Jaakkola
+;2	Moved SUBMEM routine to MEMBER module, since it is called there.
+;Oden::Dskd:Deamon.Mac[62,7777] 1984-05-14 16:23:50, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(deamon)
+deamon:!
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 16:23:49
+
+;	D A T A   A R E A
+
+	CODE
+
+;+
+;ACTPER		activate person
+;accepts	NR/	person number
+;-
+
+actper::save	<nr,bfp,gp1>
+	CALL	actact			;activate person
+	CALL	actloc			;activate local data base
+	CALL	updobj##		;get person
+	 Bug(hlt,<actper deamon>,<nr>)
+	MOVE	t,curdat##		;save last presence
+	MOVEM	t,perpre(bfp)
+	MOVE	t,selfpp##		;[SEE] save last unused PPN
+	MOVEM	t,perppn(bfp)
+	SKIPE	nr,perdeb(bfp)		;get organization
+	 CALL	actact			;activate it
+	return
+
+
+
+
+
+;+
+;ACTACT		activate active record
+;accepts	NR/	object number
+;returns	+1, with BFP/ active record
+;-
+
+actact::save	<nr,gp1>
+	JUMPLE	nr,actac9		;dont activate anonymous person
+	CALL	obtoac##		;get active file
+	CALL	updobj##		;get person area
+	 JRST	actac9			;no object found
+	MOVE	t,curdat##		;save creation date
+	MOVEM	t,objtim(bfp)
+actac9:	return
+
+
+
+
+
+;+
+;ACTLOC		activate local data base
+;accepts	NR/	object
+;-
+
+actloc:	save	<gp1,bfp,nr>
+	CALL	getobj##		;get person
+	 JRST	actlo9			;error
+	MOVE	nr,recloc+2(bfp)	;get first block
+actlo1:	CALL	actact			;activate block
+	CALL	getobj##		;get block
+	 JRST	actlo9			;end of data base
+	MOVE	nr,loclis+2(bfp)	;get next block
+	JRST	actlo1
+
+actlo9:	return
+
+
+
+
+
+;+
+;LASELE		set last seen letter
+;accepts	NR/	last seen link
+;-
+
+lasele::save	<nr,bfp,gp1,gp2>
+	MOVEM	nr,oldnr##		;save link
+	CALL	getobj##		;get link
+	 JRST	lasel9			;error ?
+	MOVE	gp2,lnklto+1(bfp)	;get link number
+	MOVE	nr,crenr##		;get self
+	CALL	updobj##		;get you
+	 Bug(hlt,<lasele deamon>,<crenr##>)
+	MOVE	t,oldnr##		;set last link
+	MOVEM	t,perlsl(bfp)
+	MOVEM	gp2,pernum(bfp)		;set letter number
+lasel9:	return
+
+
+
+
+
+;+
+;UPDRDT		update received date		[TTQ.4]
+;accepts	NXLELN/	link number
+;-
+
+updrdt::save	<nr,bfp,gp1,gp2>
+	MOVE	nr,nxleln##		;get last seen letter link
+	CALL	updobj##		;get link
+	 Bug(hlt,<updrdt deamon>,<nxleln##>)
+	MOVM	nr,lnkrec(bfp)		;get receiver
+	CALL	chkper##		;person ?
+	 JRST	updrd9			;no, error
+	CALL	gudate##		;get current date
+	SKIPN	lnkrdt(bfp)		;already received ?
+	 MOVEM	gp1,lnkrdt(bfp)		;save received time
+updrd9:	return
+
+
+
+;+
+;UPDLSL		updated last seen letter		[TTQ.4]
+;accepts	NXLELN/	link number
+;-
+
+updlsl::save	<nr,bfp,gp1,gp2>
+	MOVE	nr,nxleln##		;get last seen letter link
+	CALL	getobj##		;get link
+	 Bug(hlt,<updlsl-1 deamon>,<nxleln##>)
+	SKIPG	gp2,lnklto+1(bfp)	;get letter number
+	 JRST	updls9			;dont zeroize
+	MOVE	nr,crenr##		;get self
+	CALL	updobj##		;get self
+	 Bug(hlt,<updlsl-2 deamon>,<crenr##>)
+	CAMGE	gp2,pernum(bfp)		;greater number ?
+	 JRST	updls9			;no, error
+	MOVEM	gp2,pernum(bfp)		;save letter number
+	MOVE	t,nxleln##		;save last seen letter
+	MOVEM	t,perlsl(bfp)
+updls9:	return
+
+
+
+
+;+
+;CHANTY		change type of a object
+;accepts	NR/	object
+;		OBTYPE/	new object type
+;		SUPMEE/	super meeting
+;		FILNR/	archive file
+;-
+
+chanty::save	<bfp,gp1,gp2>
+	CALL	updobj##		;get it
+	 Bug(hlt,<chanty-1 deamon>,<nr>)
+	MOVE	gp2,obtype##		;set new objects flags
+	CAIE	gp1,mee			;conference?
+	 JRST	chant1			;no
+	CALL	actact			;activate it
+	MOVEM	gp2,numtyp(bfp)		;save new type
+	CALL	updobj##		;get conference again
+	 Bug(hlt,<chanty-2 deamon>,<nr>)
+	JRST	chant2
+
+chant1:	CAIE	gp1,per			;person ?
+	 JRST	chant3			;no
+chant2:	MOVE	t,supmee##		;save super meeting
+	MOVEM	t,recsup(bfp)
+	MOVE	t,filnr##		;save archive file
+	MOVEM	t,recfil(bfp)
+	JRST	chant4
+
+chant3:	CAIN	gp1,dir			;<KPJ.11> text ?
+	 JRST	chant4			;<KPJ.11> yes
+IFN	ftempl,<			;<KPJ.11>
+	CAIN	gp1,emp			;or employee ?
+>;ftempl
+chant4:	 MOVEM	gp2,objtyp(bfp)		;yes, set new object type
+chant9:	return
+
+
+
+
+
+;+
+;CHPAWO		change password
+;accepts	PASWOR/	new password
+;		NR/	person
+;-
+
+chpawo::save	<bfp,gp1>
+	CALL	updobj##		;get person
+	 Bug(hlt,<chpawo deamon>,<nr>)
+	MOVE	t,paswor##		;set new password
+	MOVEM	t,perpas(bfp)
+	return
+
+
+
+
+
+;+
+;SAMESS		save message to letter writers
+;accepts	ENTNR/	message
+;-
+
+samess::save	<bfp,gp1,nr>
+	MOVE	nr,crenr##		;get self
+	CALL	updobj##		;get you
+	 Bug(hlt,<samess deamon>,<crenr##>)
+	MOVE	t,entnr##		;save new message
+	MOVEM	t,permes(bfp)
+	return
+
+
+
+
+
+;+
+;SASYME		save system message
+;accepts	ENTNR/	message
+;-
+
+sasyme::MOVE	t,entnr##		;save new message
+	MOVEM	t,sysmes##
+	return
+
+
+
+
+
+;+
+;ZAPDB		zap data base
+;accepts	NR/	record number
+;		TXT/	element number
+;		GP2/	new value
+;-
+
+zapdb::	save	<bfp,gp1>
+	CALL	updobj##		;get record
+	 nop				;all must be zapped
+	ADD	bfp,txt			;get element
+	MOVEM	gp2,(bfp)		;set new value
+	return
+
+
+
+
+
+;+
+;SEFLON		set flag on
+;accepts	NR/	person
+;		GP2/	flag
+;		LOGIC/	logic sense flag bits:
+;			0: normal logic (0=off, 1=on)
+;			1: negative logic (0=on, 1=off)
+;-
+
+seflon::save	<bfp,gp1>
+	CALL	updobj##		; get person
+	 Bug(hlt,<seflon deamon>,<nr>)
+	MOVE	t,perpfl(bfp)		;[KPJ.7] get old flags
+	MOVEM	t,olpflg##		;[KPJ.7] save them
+	MOVE	t,logic##		;[KPJ.5!6] get logic sense flag
+	AND	t,gp2			;[KPJ.5] isolate interesting bit
+	CAIN	t,0			;[KPJ.5] normal logic?
+	 ORM	gp2,perpfl(bfp)		;[KPJ.5] yes, set flag on (bit=1)
+	CAIE	t,0			;[KPJ.5] reversed logic?
+	 ANDCAM	gp2,perpfl(bfp)		;[KPJ.5] yes, set flag on (bit=0)
+	return
+
+
+
+
+
+;+
+;SEFLOF		set flag off
+;accepts:	NR/	person
+;		GP2/	flag
+;		LOGIC/	logic sense flag bits:
+;			0: normal logic (0=off, 1=on)
+;			1: negative logic (0=on, 1=off)
+;-
+
+seflof::save	<bfp,gp1>
+	CALL	updobj##		; get person
+	 Bug(hlt,<seflof deamon>,<nr>)
+	MOVE	t,perpfl(bfp)		;[KPJ.7] get old flags
+	MOVEM	t,olpflg##		;[KPJ.7] save them
+	MOVE	t,logic##		;[KPJ.5!6] get logic sense flag
+	AND	t,gp2			;[KPJ.5] isolate interesting bit
+	CAIN	t,0			;[KPJ.5] normal logic?
+	 ANDCAM	gp2,perpfl(bfp)		;[KPJ.5] yes, set flag off (bit=0)
+	CAIE	t,0			;[KPJ.5] reversed logic?
+	 ORM	gp2,perpfl(bfp)		;[KPJ.5] yes, set flag off (bit=1)
+	return
+
+	END
+..and no more

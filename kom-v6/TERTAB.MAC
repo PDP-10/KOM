@@ -1,0 +1,408 @@
+;Oden::DSKG:TERTAB.MAC<62,7777,MAC> 1986-12-11 18:59:48, Edit by KPJ @ L89
+;15	PUTCH is macro.
+;Oden::DSKG:TERTAB.MAC<62,7777,MAC> 1986-10-29 15:12:58, Edit by KPJ @ L89
+;14	Use QZIF/FOAIF/RUNIF.
+;Oden::DSKG:TERTAB.MAC<62,7777,MAC> 1986-07-19 01:01:34, Edit by KPJ @ 1SKEDE
+;13	Fixed bug in TERMINAL MONITOR expansion and execution.
+;Oden::DSKG:TERTAB.MAC<62,7777,MAC> 1986-07-17 04:09:49, Edit by KPJ @ HIHQ
+;12	TERMINAL MONITOR terminal types are max 6 characters long.
+;	Clear input on error.
+;Oden::DSKG:TERTAB.MAC<62,7777,MAC> 1986-06-25 00:56:30, Edit by KPJ @ 1SKEDE
+;11	MOved texts to TEXTER. Enabled TERMINAL MONITOR command.
+;Oden::DSKG:TERTAB.MAC<62,7777,MAC> 1986-04-25 17:37:26, Edit by KPJ
+;10	Get rid of OPDEFed funny macros.
+;Oden::DSKD:TERTAB.MAC<62,7777,MAC> 1985-10-08 02:06:40, Edit by KPJ
+;7	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:TERTAB.MAC<62,7777,MAC> 1985-06-20 00:13:09, Edit by KPJ @ Nadja
+;6	Setting VIEWDATA terminal type implies a new page.
+;Oden::DSKD:TERTAB.MAC<62,7777,MAC> 1985-04-22 23:50:29, Edit by KPJ @ NADJA
+;5	Added VIEWDATA support.
+;Oden::DSKD:TERTAB.MAC[62,7777,MAC] 1985-03-01 18:25:47, Edit by KPJ @ L89
+;4	Swedish PTT "text telephone" under switch FTPHON. Fixed TRMOP.s.
+;Oden::DSKD:TERTAB.MAC[62,7777,MAC] 1985-02-26 11:30:20, Edit by KPJ @ L89
+;3	New command to set a monitor terminal type.
+;Oden::Dskd:Tertab.Mac[62,7777] 1984-09-05 11:56:27, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;Oden::DSK:TERTAB.NEW[1116,134] 1982-03-02 20:34:55, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(tertab)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-05 11:56:25
+
+;	D A T A   A R E A
+
+
+colflg::0				;colour flag
+IFN	ftview,<			;<KPJ.5> if VIEWDATA support
+lastco::BLOCK	1			;<KPJ.5> last colour
+>;ftview
+T10,<
+terinx:	BLOCK	1			;[KPJ.3] terminal type GETTAB index
+tertyp:	BLOCK	1			;<KPJ.13> terminal name in SIXBIT
+ternam:	BLOCK	2			;[KPJ.3]  terminal name in ASCII
+terfoo:	BLOCK	1			;[KPJ.3] counter when converting 6BIT
+>;T10
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;TERTAB		terminal type table
+
+tertab::zzzter##			;"What terminal type do you have?"
+	table	sn,terdis,zztedi## 	;(Set) terminal (type) display
+	table	sn,terpap,zztend##	;(Set) terminal (type) no display
+	table	sn,ternos,zztens##	;(Set) terminal (type) no scroll
+	table	sn,terscr,zztesc##	;(Set) terminal (type) scroll
+	table	sn,terid1,zzteid##	;(Set) terminal (type) ID100
+IFN	ftview,<			;<KPJ.5> if VIEWDATA support
+	table	sn,tervie,zztevi##	;(Set) terminal (type) VIEWDATA
+>;ftview
+T10,<	table	sn,termon,zztmon##>	;(Set) terminal (type) monitor
+	endtab
+
+
+
+;+
+terpap:	comhed	0,runarg##,termpa,cctepa##,ztndhl## ;(Set) terminal paper
+T10,<
+termon:	comhed	0,terpar,termo,cctedi##,ztmohl## ;(Set) terminal monitor
+>;T10
+terdis:	comhed	0,runarg##,termdi,cctedi##,ztdihl## ;(Set) terminal display
+ternos:	comhed	0,runarg##,termns,ccteno##,ztnshl## ;(Set) terminal no scroll
+terscr:	comhed	0,runarg##,termsc,cctesc##,ztschl## ;(Set) terminal scroll
+terid1:	comhed	0,runarg##,termid,ccteid##,ztidhl## ;(Set) terminal ID100
+IFN	ftview,<
+tervie:	comhed	0,runarg##,termvi,ccteid##,ztvihl## ;(Set) terminal VIEWDATA
+>;ftview
+;-
+
+
+
+
+
+;+
+; TERMPA  --  set terminal type no display
+;-
+
+termpa:	SETZM	colflg		; no colour
+	SETZM	scrfl##		; set scroll flag off
+	SETOM	papflg##	; set paper flag on
+	branch	setpgs##	; set page size
+
+
+
+
+
+
+
+;+
+T10,<				;[KPJ.3]
+;TERPAR		parse command "(Set) terminal (type) monitor"
+;-
+
+terpar:	save	<quest##,tp>
+	setmem	quest##,askmon		;ask for parameter
+	CALL	read##			;read a line
+	 JRST[	SETOM	errfl##		;abort on empty reply
+		JRST	terpa9]
+	CALL	matbeg##		;<KPJ.12> start match
+	CALL	terall			;<KPJ.12> compare to terminal table
+	MOVEI	t,terexp		;<KPJ.13> set expansion function
+	MOVEM	t,expfun##		;<KPJ.13> . . .
+	CALL	matend##		;<KPJ.12> end of match
+	 JRST[	CALL	preol##		;<KPJ.12> bad, new line
+		print	nosuch##	;+1 - no such terminal type
+		MOVE	str,chpt##	;     display name
+		CALL	prstr##		;<KPJ.12>	output name
+		JRST	terpa7]		;     fail
+	 JRST	terpa9			;+2 - matched a terminal type
+	CALL	teramb			;<KPJ.13> +3 - ambiguous, list them
+terpa7:	CALL	clear##			;<KPJ.12> error, clear input
+	SETOM	errfl##			;<KPJ.12> tough luck, kid
+terpa9:	return
+
+;+
+;TERAMB		display ambiguos terminal names
+;accepts	AGRVAL/	pointer to list
+;-
+
+teramb:	save	<consum##,tp>
+	CALL	tcbeg##			;output to terminal
+	CALL	preol##			;new line
+	print	ambtty##		;"Ambiguos terminal name:"
+	MOVE	tp,agrval		;get alternatives
+teram1:	MOVE	gp1,0(tp)		;get terminal name
+	CALL	preol##			;new line
+	CALL	prcin3##		;display name
+	SKIPE	tp,1(tp)		;step to next
+	 JRST	teram1			;go for next
+teram9:	CALL	tcend##			;end of terminal output
+	return
+
+;+
+;TEREXP		Expansion function for terminal type names
+;-
+
+terexp:save	<nr>
+	MOVE	gp1,@agrval##		;get SIXBIT terminal type
+	CALL	prcin3##		;output sixbit word
+	return
+
+
+
+;+
+;TERALL		name function for terminal names
+;-
+
+terall:	save	<tp>			;<KPJ.13>
+	MOVS	t,[.GTTNM]		;get start point
+	HRRI	t,.GTIDX
+	GETTAB	t,
+	 SETZ	t,			;***FOO***
+	HLRE	t,t
+	MOVEM	t,terinx
+teral1:	CALL	terfnd			;get next name
+	 JRST	teral9			;+1 no more names
+	MOVEI	str,ternam		;<KPJ.13> point at terminal type
+	PUSH	P,chpt			;<KPJ.13>
+	CALL	comp##			;+2 names, compare
+	 JRST	teral2			;<KPJ.12> no match, try next
+	CAMLE	nr,agrval##		;more alike?
+	 CALL	gtfima##		;yes, get first match
+	MOVE	nr,tertyp		;<KPJ.13> get terminal type
+	MOVEI	tp,agrval##		;<KPJ.13> get old valuess
+	CALL	addlis##		;<KPJ.13> add to list
+
+teral2:	AOS	terinx			;<KPJ.12> increment pointer
+	POP	P,chpt			;<KPJ.13>
+	JRST	teral1
+teral9:	return
+
+;+
+;TERFND		find next terminal type from table
+;		in a form understood by match routines
+;returns	+1 always, with STR/	pointer to text string
+;-
+
+terfnd:	HRLZ	t,terinx		;get index
+	HRRI	t,.GTTNM		;TTY name table
+	GETTAB	t,			;get the entry
+	 JRST	terfn9			;argh, might this be the end...?
+	MOVEM	t1,tertyp		;<KPJ.13> save SIXBIT name
+	MOVE	t3,[POINT 6,tertyp]		;where name is
+	MOVE	t4,[POINT 7,ternam]	;where to put name
+	MOVEI	t,6			;#characters in terminal type name
+terfn1:	MOVEM	t,terfoo
+	ILDB	t,t3			;get a SIXBIT character
+	JUMPE	t,terfn2		;done?
+	ADDI	t,"A"-'A'		;convert to ASCII
+	IDPB	t,t4			;put it there
+	MOVE	t,terfoo
+	SOJN	t,terfn1		;<KPJ.12> continue until done
+terfn2:	SETZ	t,.CHNUL		;make ASCIZ of it
+	IDPB	t,t4
+	skpret
+terfn9:	return
+>;T10
+
+;+
+T10,<
+;ASKMON		ask for terminal type
+;-
+
+askmon:	save	<str>
+	ifoff	hlpflg##,monhl1		;want help?
+	CALL	preol##			;yes
+	print	zhltmo##		;"One of the following:"
+	CALL	preol##
+	CALL	terlis			;list available terminal types
+monhl1:	CALL	preol2##
+	print	zaskmo##		;"Give TTY type:"
+	return	
+>;T10
+
+
+
+;+
+T10,<
+;TERLIS		List available monitor terminal types
+;-
+terlis:	MOVS	t,[.GTTNM]
+	HRRI	t,.GTIDX
+	GETTAB	t,
+	 SETZ	t,			;***FOO***
+	HLRE	t,t
+	MOVEM	t,terinx
+	SETZ	t4,			;nothing done yet
+terli1:	HRLZ	t,terinx		;get index
+	HRRI	t,.GTTNM		;TTY name table
+	GETTAB	t,			;get the entry
+	 JRST	terli9			;argh, might this be the end...?
+	MOVE	t2,t1			;save the name
+	MOVE	t3,[POINT 6,t2]		;get a pointer to it
+
+REPEAT	6,<				;terminal names are 6 chars
+	ILDB	ch,t3			;get a character
+	ADDI	ch,"@"-'@'		;convert from SIXBIT to ASCII
+	CALL	putch			;output the ASCII character
+>;End REPEAT 6
+	CALL	putbla##		;output space
+	ADDI	t4,1			;one type output
+	CAIL	t4,^D10			;written ten of them?
+	 JRST[	CALL	preol##		;yes, newline
+KL10N,<		SETZ	t4,>		;count down
+KL10,<		MOVEI	t4,0>		;count down
+		JRST	.+1]
+	AOS	terinx			;increment GETTAB index
+	JRST	terli1
+terli9:	CALL	preol##
+	return
+>;T10
+
+
+
+
+
+
+
+;+
+;TERMO		set terminal (from) monitor		[KPJ.3]
+;-
+T10,<
+termo:	MOVEI	t2,.TOTRM+.TOSET	;change terminal type
+	MOVE	t3,uxxtrm##		;this UDX
+	MOVE	t4,@agrval		;this type
+	MOVE	t,[3,,t2]		;len,,addr
+	TRMOP.	t,
+	 JRST[	print	ztermu##	;<KPJ.13> failed to set type, say so
+		MOVE	gp1,@agrval	;<KPJ.13> get type
+		CALL	prcin3##	;<KPJ.13> say what
+		JRST	termu9]		;<KPJ.13>
+	print	ztermy##		;<KPJ.13> "Terminal type is now "
+	MOVE	gp1,@agrval		;<KPJ.13> get type
+	CALL	prcin3##		;<KPJ.13> output it
+	CALL	chktty##		;OK, make up the terminal dependents
+termu9:	return
+>;T10
+
+;+
+; TERMDI  --  set terminal type display
+;-
+
+termdi:	SETZM	colflg		; no colour
+	SETOM	scrfl##		; set scroll flag on
+	SETZM	papflg##	; set paper flag off
+	branch	setpgs##	; set page size
+
+
+
+
+
+
+
+
+
+;+
+; TERMNS  --  set terminal no scroll
+;-
+
+termns:	SETZM	scrfl##		; set scroll flag off
+	return
+
+
+
+
+
+
+
+
+
+;+
+; TERMSC  --  set terminal scroll
+;-
+
+termsc:	SETOM	scrfl##		; set scroll flag on
+	return
+
+
+
+
+
+
+
+
+
+;+
+IFN	ftphon,<			;<KPJ.4> text phone support?
+; TEXTTE - Set terminal type TEXT TELEPHONE [BCQ]
+;-
+
+textte::SETZM	papflg##		;[BCQ] clear paper flag
+	SETOM	phone##			;[BCQ] set phone flag
+T10,<	MOVEI	t2,.TOSET+.TODEM	;[KPJ.4!BCQ] set no deferred echo
+	SETO	t3,			;[KPJ.4!BCQ] my own terminal
+	SETZ	t4,			;[KPJ.4!BCQ] NO defer
+	MOVE	t,[3,,t2]		;[KPJ.4]
+	TRMOP.	t,			;[BCQ] set it
+	 nop
+
+	MOVEI	t2,.TOSET+.TOLCP	;[KPJ.4!BCQ] no echo
+	SETO	t3,			;[KPJ.4] controlling terminal
+	SETO	t4,			;[KPJ.4!BCQ] we want NO ECHO
+	MOVE	t,[3,,t2]		;[KPJ.4]
+	TRMOP.	t,
+	 nop
+
+QZIF,<					;<KPJ.14> make LF not be echoed too...
+Bugfix	(ftbg02,<This is fixed in TOPS-10 V7.03>,<
+	MOVEI	t2,.TOSET+.TOQUI	;[KPJ.4!BCQ] QUIET
+	SETO	t3,			;[KPJ.4]
+	SETO	t4,			;[KPJ.4]
+	MOVE	t,[3,,t2]		;[KPJ.4!BCQ] setup to set TTY QUIET
+	TRMOP.	t,			;[BCQ] set it
+	 nop				;[BCQ] hrlzm...
+>)					;<KPJ.14>
+>;QZIF
+>;T10
+	branch	setpgs##		;[BCQ] and set page size
+>;ftphon
+
+
+
+;+
+; TERMID  --  set terminal type ID100
+;-
+
+termid::SETOM	colflg		; set colour flag
+	SETOM	scrfl##		; set scroll flag on
+	SETZM	papflg##	; set paper flag off
+	SETOM	ansflg##	; ansi terminal
+	branch	setpgs##	; set page size
+
+
+
+;+
+IFN	ftview,<		;<KPJ.5> if VIEWDATA support
+;
+;TERMVI		set terminal type VIEWDATA
+;-
+
+termvi::SETZM	scrfl##			; clear scroll flag
+	SETZM	papflg##		; clear paper flag
+	CALL	setpgs##		; set page size
+	SOS	maxlin##		;<KPJ.10> fix wrap problem
+	SETOM	viewfl##		;enable VIEWDATA flag
+	SETOM	colflg			;enable colours
+	MOVEI	ch,.CHCNQ		;"enable cursor"
+	CALL	tputc##
+	CALL	brkpag##		;start new page
+	return
+>;ftview
+
+	END
+..and no more

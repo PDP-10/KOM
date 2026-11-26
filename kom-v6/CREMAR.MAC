@@ -1,0 +1,249 @@
+;Oden::DSKD:CREMAR.MAC<62,7777,MAC> 1985-09-25 15:11:15, Edit by KPJ
+;5	Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:CREMAR.MAC[62,7777] 1985-01-09 20:52:23, Edit by KPJ @ GRAV
+;4	Reserve LH of DIRNMA for "number of lines in entry".
+;Freja::<Kom.6-Sources>Cremar.Mac.2 10-Dec-84 15:39:24,Editor:KPJ-Jaakkola
+;3	Misspelling.
+;Oden::DSKD:CREMAR.MAC[62,7777] 1984-12-01 07:24:35, Edit by KPJ @ NADJA
+;2	Brush up our code!
+;Oden::Dskd:Cremar.Mac[62,7777] 1984-05-14 16:01:49, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(cremar)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 16:01:33
+
+;	D A T A   A R E A
+
+
+marent::Z				;entry to mark
+marnr:	0				;mark number
+matype:	Z				;mark type
+prevcr:	Z				;previous person mark
+prevte:	Z				;previous entry mark
+
+	CODE
+
+;+
+;CREMAR		creates a new mark to an entry
+;accepts	CRENR/	marker
+;		MARENT/	marked entry
+;		MATYPE/	mark type
+;-
+
+cremar::SKIPN	marent			;entry given ?
+	 JRST	crema9			;no
+	CALL	allmar			;allocate mark number
+	CALL	makmar			;create a new mark
+crema9:	return
+
+
+
+;+
+;ALLMAR		allocate mark number
+;returns	MARNR/	number of new mark
+;-
+
+allmar:	save	<gp1,nr,bfp>
+	CALL	gudate##		;get current date
+allma1:	AOS	nr,lasmar##		;get first free mark
+	CALL	getobj##		;get mark
+	 JRST	allma8			;place found
+	SKIPLE	0(bfp)			;occupied ?
+	 JRST	allma1			;yes, try next
+allma8:	MOVEM	nr,marnr		;save mark number
+	CALL	delmar			;delete old mark
+	return
+
+
+
+
+
+;+
+;DELMAR		delete mark
+;accepts	NR/	number of mark
+;-
+
+delmar:	save	<gp1,bfp>
+	CALL	updobj##		;get mark area
+	 nop				;just get the place
+	SKIPG	0(bfp)			;old mark ?
+	 JRST	delma9			;no
+	SETZM	prevcr			;clear previous person mark
+	SETZM	prevte			;clear previous entry mark
+	CALL	remcrm			;remove person mark
+	CALL	remtem			;remove text mark
+delma9:	return
+
+
+
+
+
+;+
+;REMCRM		remove person mark
+;accepts	BFP/	mark
+;		MARNR/	mark number
+;		PREVCR/	previous person mark
+;-
+
+remcrm:	save	<bfp,gp1,nr>
+	MOVE	nr,marnr		;get mark
+	CALL	getobj##		;get it
+	 JRST	remcr9			;error
+	MOVM	nr,marcre(bfp)		;get creator
+	CALL	updobj##		;get person
+	 JRST	remcr9			;error
+	SOS	pernma(bfp)		;one less mark
+	MOVEI	bfp,permar(bfp)		;get mark pointer
+remcr2:	MOVE	nr,0(bfp)		;get mark
+	CAME	nr,marnr		;right mark ?
+	 JRST	remcr1			;no
+	MOVE	t,prevcr		;remove mark
+	MOVEM	t,0(bfp)
+	CALL	markwr##		;file written
+	JRST	remcr9
+
+remcr1:	CALL	getobj##		;get mark
+	 JRST	remcr9			;error
+	MOVEI	bfp,marpcr(bfp)		;get mark pointer
+	JRST	remcr2
+
+remcr9:	return
+
+
+
+
+
+;+
+;REMTEM		remove text mark
+;accepts	BFP/	mark
+;		MARNR/	mark number
+;		PREVIE/	previous entry mark
+;-
+
+remtem:	save	<bfp,gp1,nr>
+	MOVE	nr,marnr		;get mark
+	CALL	getobj##		;get it
+	 JRST	remcr9			;error
+	MOVE	nr,martex(bfp)		;get entry
+	CALL	updobj##		;get entry
+	 JRST	remte9			;error
+	HRRZ	t,dirnma(bfp)		;[KPJ.4] get number of marks
+	SUBI	t,1			;[KPJ.4] one less mark
+	HRRM	t,dirnma(bfp)		;[KPJ.4] put it back
+	MOVEI	bfp,dirmar(bfp)		;get mark pointer
+remte2:	MOVE	nr,0(bfp)		;get mark
+	CAME	nr,marnr		;right mark ?
+	 JRST	remte1			;no
+	MOVE	t,prevte		;remove mark
+	MOVEM	t,0(bfp)
+	CALL	markwr##		;file written
+	JRST	remte9
+
+remte1:	CALL	getobj##		;get mark
+	 JRST	remte9			;error
+	MOVEI	bfp,marpte(bfp)		;get mark pointer
+	JRST	remte2
+
+remte9:	return
+
+
+
+
+
+;+
+;MAKMAR		make a new mark
+;accepts	CRENR/	marker
+;		MARENT/	marked entry
+;		MATYPE/	mark type
+;		MARNR/	number of mark
+;-
+
+makmar:	save	<bfp,gp1,nr>
+	MOVE	nr,marnr		;get mark number
+	CALL	adcrma			;add person marks
+	CALL	adtema			;add entry marks
+	CALL	newrec##		;create new record
+	MOVE	t,matype		;save mark type
+	MOVEM	t,martyp(bfp)
+	MOVE	t,marent		;save marked entry
+	MOVEM	t,martex(bfp)
+	MOVE	t,prevcr		;save previous person mark
+	MOVEM	t,marpcr(bfp)
+	MOVE	t,prevte		;save previous to mark
+	MOVEM	t,marpte(bfp)
+	MOVE	t,crenr##		;save creator
+	MOVEM	t,marcre(bfp)
+	return
+
+
+
+;+
+;ADCRMA		add person mark
+;accepts	CRENR/	person
+;		MARNR/	mark number
+;returns	PREVCR/	previous person mark
+;-
+
+adcrma:	save	<nr,bfp,gp1>
+	MOVE	nr,crenr##		;get person
+	CALL	updobj##		;get it
+	 BUG(HLT,<adcrma cremar>,<crenr##>)
+	MOVE	t,permar(bfp)		;get previous mark
+	MOVEM	t,prevcr
+	MOVE	t,marnr			;save new last mark
+	MOVEM	t,permar(bfp)
+	AOS	pernma(bfp)		;one more mark
+	AOS	perncm(bfp)		;one more created mark
+	return
+
+
+
+
+
+;+
+;ADTEMA		add entry mark
+;accepts	MARENT/	marked entry
+;		MARNR/	mark number
+;returns	PREVTE/	previous entry mark
+;-
+
+adtema:	save	<nr,bfp,gp1>
+	MOVE	nr,marent		;get marked entry
+	CALL	updobj##		;get it
+	 BUG(HLT,<adtema cremar>,<marent>)
+	MOVE	t,dirmar(bfp)		;get previous mark
+	MOVEM	t,prevte
+	MOVE	t,marnr			;save new last mark
+	MOVEM	t,dirmar(bfp)
+	HRRZ	t,dirnma(bfp)		;[KPJ.4] get number of marks
+	ADDI	t,1			;[KPJ.4] one more mark
+	HRRM	t,dirnma(bfp)		;[KPJ.4] put it back
+	return
+
+
+
+
+
+;+
+;REMMAR		remove mark
+;accepts	NR/	mark
+;-
+
+remmar::save	<bfp,gp1>
+	CALL	updobj##		;get mark
+	 BUG(HLT,<remmar cremar>,<nr>)
+	CALL	delrec##		;delete record
+	MOVE	t,marpcr(bfp)		;save previous person mark
+	MOVEM	t,prevcr
+	MOVE	t,marpte(bfp)		;save previous entry mark
+	MOVEM	t,prevte
+	MOVEM	nr,marnr		;save mark number
+	CALL	remcrm			;remove person mark
+	CALL	remtem			;remove entry mark
+	return
+
+	END
+..and no more

@@ -1,0 +1,144 @@
+;Oden::DSKG:UPDLSE.MAC<62,7777,MAC> 1986-11-10 16:12:45, Edit by KPJ @ L89
+;7	Handle +2 return from ISLURP.
+;Oden::DSKG:UPDLSE.MAC<62,7777,MAC> 1986-10-30 08:52:06, Edit by KPJ @ L89
+;6	Use QZIF/FOAIF/RUNIF.  Delete "FOA time" update in UPTICO, since
+;	"FOA time" has been extinct for years.
+;Oden::DSKG:UPDLSE.MAC<62,7777,MAC> 1986-10-14 17:47:16, Edit by KPJ @ L89
+;5	Employee support under FTEMPL.
+;Oden::DSKG:UPDLSE.MAC<62,7777,MAC> 1986-04-25 14:58:21, Edit by KPJ @ L89
+;4	Get rid of OPDEFed funny macros.
+;Oden::DSKG:UPDLSE.MAC[62,7777,TTQ] 1986-02-25 12:35:13, Edit by THOLERUS T
+;3	Made UPMERE and UPMEME and UPCOPP global.
+;Oden::DSKD:UPDLSE.MAC<62,7777,MAC> 1985-10-01 01:44:04, Edit by KPJ
+;2	Introduced PROLOG macro.
+;Oden::Dskd:Updlse.Mac[62,7777] 1984-09-05 12:11:12, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(updlse)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-05 12:11:09
+
+;	D A T A   A R E A
+
+curmbr::0			; current member element
+
+	CODE
+
+
+;+
+; UPDLSE  --  update last seen entry count
+; gets last seen entry in CURMBR
+; gets counts in NRRED, SESRED, NRELNK, NRMLNK, NRPLNK, NRTLNK,
+; NRMEMB, SELFPG, SELFFL and SELFSY
+; gets old time in OLDTIM
+;-
+
+updlse::save	<nr,gp1,bfp>
+	MOVE	nr,selfnr##	; get yourself
+	CALL	updobj##	; input yourself
+	 JRST	updls9		; not defined
+	CALL	upcopp		; update counts
+	CALL	upmere		; update member register
+	CALL	upmeme		; update meeting register
+updls9:	return
+
+
+
+
+
+;+
+; UPCOPP  --  update counts
+; gets BFP pointing to object
+; gets counts in NRRED, SESRED, NRELNK, NRMLNK, NRPLNK, NRTLNK,
+; NRMEMB, SELFPG, SELFFL and SELFSY
+;-
+
+upcopp::save	<nr>			;<TTQ.3>
+	fromto	nrred##,pernre(bfp)	;save read entries
+	MOVE	nr,sesred##		;get read entries
+	ADDM	nr,redsum##		;increase total read count
+	SETZM	sesred##		;clear read count
+IFN	ftempl,<			;<KPJ.5>
+	MOVE	t,nrelnk##		;save links
+	MOVEM	t,pernle(bfp)		;. . .
+>;ftempl
+	fromto	nrmlnk##,pernlm(bfp)
+	fromto	nrplnk##,pernlp(bfp)
+	fromto	nrtlnk##,pernlt(bfp)
+	fromto	nrmemb##,permem(bfp)	;save memberships
+	fromto	selfpg##,perpgs(bfp)	;save page size
+	fromto	selffl##,perpfl(bfp)	;save own flags
+	fromto	selfsy##,persys(bfp)	;save last seen system message
+	CALL	uptico			;update time counts
+	return
+
+
+
+
+
+;+
+;UPTICO		update time counts
+;accepts	BFP/	pointing to object
+;		OLDTIM/	old time
+;-
+
+uptico:	save	<gp1>
+	CALL	timdif##		;get time difference
+	ADDM	gp1,persti(bfp)		;increase present time
+	ADDM	gp1,timsum##		;increase total time sum
+	return
+
+
+
+
+
+;+
+; UPMERE  --  update member register
+; gets person in NR
+;-
+
+upmere::save	<gp2,txt>		;<TTQ.3>
+	SKIPE	gp2,curmbr		;get current member element
+	 SKIPG	0(gp2)			;element deleted ?
+	  JRST	upmer3			;yes
+	fromto	curdat##,meltim(gp2)	;save last presence
+upmer3:	SKIPN	txt,mbrbeg##		;get start of member register
+	 JRST	upmer9			;not defined
+	MOVE	gp2,txt			;get start of register
+	CALL	endper##		;get end of register
+	CALL	oslurp##		;slurp out register
+upmer9:	return
+
+
+
+
+
+;+
+;UPMEME		update CONFERENCE member register
+;accepts	CURMBR/	current conference
+;-
+
+upmeme::save	<gp1,gp2,nr,txt>	;<TTQ.3>
+	SKIPN	nr,curmbr		;get current member element
+	 JRST	upmem9			;not present in any meeting
+	MOVE	t,melnum(nr)		;get number of seen entries
+	MOVEM	t,number##		;. . .
+	SKIPG	nr,melmee(nr)		;get meeting object
+	 JRST	upmem9			;error
+	MOVE	gp1,selfnr##		;get self
+	CALL	islurp##		;slurp in register
+	 JRST	upmem9			;<KPJ7> failed, give up
+	MOVEM	gp2,txt			;save start of register
+	CALL	addper##		;add person
+	MOVE	t,curdat##		;save creation date
+	MOVEM	t,mbrtim(gp2)		;. . .
+	MOVE	t,number##		;save last seen entry
+	MOVEM	t,mbrnum(gp2)		;. . .
+	CALL	endcon##		;get end of register
+	CALL	oslurp##		;slurp out new register
+upmem9:	return
+
+	END
+..and no more

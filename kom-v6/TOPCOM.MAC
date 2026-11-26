@@ -1,0 +1,642 @@
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1987-06-04 17:36:41, KPJ @ L89 <62,50>
+;27	Save away current command string pointer.
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1987-05-13 15:07:52, KPJ @ L89 <1,2>
+;26	ERRCOM and AMBCOM global, called from CHATAB. Make AMBCOM an error.
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1987-02-16 04:44:10, Edit by KPJ @ H.HOLE
+;25	"Invalid command" is an error.
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1986-12-11 19:01:43, Edit by KPJ @ L89
+;24	PUTCH is macro. Rewrote PRCOLI for efficiency.
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1986-12-11 13:28:51, Edit by KPJ @ L89
+;23	Optimized code.
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1986-11-11 05:15:50, Edit by KPJ @ H.HOLE
+;22	Handle +2 return from GETSTR.
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1986-06-24 15:12:31, Edit by KPJ @ L89
+;21	Moved texts to TEXTER. Better error messages. Use standard character
+;	names.
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1986-06-05 14:14:33, Edit by KPJ @ L89
+;20	Report present changes after each command line.
+;Oden::DSKG:TOPCOM.MAC<62,7777,MAC> 1986-04-25 16:42:37, Edit by KPJ @ L89
+;17	Get rid of OPDEFed funny macros.
+;Freja::Qs:<Kom.6-Sources>Topcom.Mac.5  7-Apr-86 19:04:30,Editor:KPJ-Jaakkola
+;16	Fix problem with echo of errorneous input.
+;Oden::DSKD:TOPCOM.MAC<62,7777,MAC> 1986-01-08 14:58:34, Edit by KPJ
+;15	Don't destroy type ahead when giving an empty reply.
+;Oden::DSKD:TOPCOM.MAC<62,7777,MAC> 1985-11-01 05:19:22, Edit by KPJ
+;14	Handle prompter nicely.
+;Oden::DSKD:TOPCOM.MAC<62,7777,MAC> 1985-10-08 02:13:48, Edit by KPJ
+;13	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:TOPCOM.MAC<62,7777,MAC> 1985-09-19 07:54:59, Edit by KPJ
+;12	Make edit#11 output only for type ahead.
+;Oden::DSKD:TOPCOM.MAC<62,7777,MAC> 1985-09-18 07:12:35, Edit by KPJ
+;11	Display the menu when we expand commands (even if type-ahead)
+;Oden::DSKD:TOPCOM.MAC<62,7777,MAC> 1985-08-22 22:37:10, Edit by KPJ @ DECgrupf
+;10	Handle CTRL/O suppression.
+;Oden::DSKD:TOPCOM.MAC<62,7777,MAC> 1985-07-26 01:12:28, Edit by KPJ @ ORANGE
+;7	GECOST deleted.
+;Oden::DSKD:TOPCOM.MAC<62,7777,MAC> 1985-05-08 13:13:54, Edit by KPJ @ L89
+;6	Changed error message for ambiguous command.
+;Oden::DSKD:TOPCOM.MAC[62,7777,MAC] 1985-03-08 21:01:48, Edit by KPJ @ NADJA
+;5	Error messages to terminal please.
+;Oden::DSKD:TOPCOM.MAC[62,7777] 1985-01-08 06:34:03, Edit by KPJ @ L89
+;4	Get rid of QREDIS call. Search MACTEN.
+;	Display both read and write accesses when REPORT DISK ACCESSES enabled.
+;Oden::DSKD:TOPCOM.MAC[62,7777] 1984-12-11 09:17:36, Edit by KPJ @ L89
+;3	Make CTRL/O work.
+;Oden::Dskd:Topcom.Mac[62,7777] 1984-09-05 12:00:57, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;Oden::DSK:TOPCOM.NEW[1116,134] 1982-03-02 20:52:07, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(topcom)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-05 12:00:53
+
+;	D A T A   A R E A
+
+
+savnum::0			; save area for number
+silflg::0			; silent flag
+topflg:	0			;<KPJ.12> Turn on, Tune in, Drop out
+slurj::	0			;<KPJ.12> pointer to name of last command
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+; TOPCOM  --  do a top level command
+; gets head menu in HDMENU
+; gets command string i CHPT
+;-
+
+topcom::save	<tp,silflg>
+	SETZM	silflg			;dont be silent
+	CALL	ospclr##		;<KPJ.10> get rid of CTRL/O condition
+	MOVE	tp,hdmenu##		; get head menu
+	SETZM	topflg			;<KPJ.12> start getting high
+	CALL	domenu			; get and do command
+	return
+
+
+;+
+; DOMENU  --  get and do a menu command
+; gets command table in TP
+;-
+
+domenu:	save	<quest##,nr,errfl##>
+domen1:	SETZM	errfl##			;clear error
+	setmem	quest##,prmenu		;menu question
+	SETZM	savnum			;clear number area
+	CALL	rdcomm			;get info
+	 JRST	domen7			;empty reply
+	CALL	getnum##		;any numeric argument ?
+	 JRST	domen2			;no
+	MOVEM	nr,savnum		;yes, save it for future use
+domen2:	CALL	getmen			;get menu
+	 JRST	domen1			;error
+domen6:	CALL	docomm			;do the command
+	CALL	getlet##		;more commands ?
+	 JRST	domen9			;no, ready
+	JRST	domen1			;yes, do it
+
+domen7:	CALL	gefico			;get first command
+	JRST	domen6
+
+domen9:	return
+
+
+
+
+
+;+
+; PRMENU  --  print a menu
+; gets command table in TP
+;-
+
+prmenu::save	<tp,str>
+	ifoff	hlpflg##,prmen2		;help wanted ?
+	CALL	qshmen			;yes, short menu ?
+	 JRST	prmen3			;yes
+	CALL	comhlp			;no, give command help
+prmen2:	CALL	qshmen			;short menu ?
+	 JRST	prmen7			;yes
+prmen3:	CALL	pcomma			;no, print all commands
+	JRST	prmen9
+
+prmen7:	CALL	dskacc			;report disk accesses
+	MOVE	t,linpos##		;<KPJ.14> get line position
+	SKIPN	papflg			;<KPJ.14> if not paper terminal...
+	 CAIL	t,irmarg-^D20		;<KPJ.14> screen, but enough space?
+	  TRNA				;<KPJ.14> no, break paper then...
+	   SETZM gtcrfl##		;<KPJ.14> yeah, no more pending GETCR
+	HLRZ	str,0(tp)		;<KPJ.7> get command string
+	CALL	prstr##			;print it
+	print[	ASCIZ !. !]		;dot at end
+	SETZM	hlpflg##		;clear help flag
+	CALL	prher			;print herald
+prmen9:	return
+
+
+
+
+
+;+
+; QSHMEN  --  check if short menu wanted
+; returns at call + 1 if short menu wanted
+; returns at call + 2 if full menu wanted
+;-
+
+qshmen::MOVE	t,selffl##	; get personal flags
+	Txnn	t,shopfl
+	 skpret			; full menu wanted
+	return
+
+
+
+
+
+;+
+; COMHLP  --  give command help
+;-
+
+comhlp:	save	<str>
+	print	zcohlp##	;"Give a unique abbreviation"
+	return
+
+
+
+
+
+;+
+; PCOMMA  --  print all commands
+; gets command table in TP
+;-
+
+pcomma::save	<str>
+	CALL	dskacc			;report disk accesses
+	MOVE	str,menuq##		;get menu question
+	CALL	prstr##			;output it
+	CALL	pmenu			;output menu
+	CALL	prher			;output prompt
+	return
+
+
+
+
+
+;+
+; DSKACC  --  report disk accesses
+;-
+
+dskacc:	save	<nr,gp1,sum##>
+	CALL	preol2##		; blank line
+	MOVE	t,selffl##		;[KPJ.4] get personal flags
+	Txnn	t,rdapfl		;[KPJ.4] REPORT DISK ACCESSES?
+	 JRST	dskac9			; no
+	SETZM	sum##			; clear sum
+	MOVEI	gp1,1			;[KPJ.5] get first file
+	print	repor1##		;"Read accesses:"
+dskac4:	MOVE	t,reaacc##(gp1)		;[KPJ.5] get #accesses
+	JUMPE	t,[			;[KPJ.5] not all zeroes
+		CAIGE	gp1,maxmet	;[KPJ.5] last file ?
+		 AOJA	gp1,dskac4	;[KPJ.5] get next file
+		JRST	dskac5]		;[KPJ.5] all zeroes
+	MOVEI	gp1,1			; get first file
+dskac1:	MOVE	nr,reaacc##(gp1)	; get file accesses
+	CALL	prnum##			; print it
+	ADDM	nr,sum##		; add to sum
+	SETZM	reaacc##(gp1)		; clear accesses
+	CALL	putbla##		; one blank
+	CAIGE	gp1,maxmet		; last file ?
+	 AOJA	gp1,dskac1		; get next file
+dskac5:	print[	ASCIZ != !]
+	MOVE	nr,sum##		; get sum
+	CALL	prnum##			; print it
+	CALL	preol##			; new line
+	SETZM	sum##			;[KPJ.4] clear sum
+	MOVEI	gp1,1			;[KPJ.5] get first file
+	print	repor2##		;[KPJ.4] "Write accesses:"
+dskac6:	MOVE	t,wriacc##(gp1)		;[KPJ.5] get #accesses
+	JUMPE	t,[			;[KPJ.5] not all zeroes
+		CAIGE	gp1,maxmet	;[KPJ.5] last file ?
+		 AOJA	gp1,dskac6	;[KPJ.5] get next file
+		JRST	dskac7]		;[KPJ.5] all zeroes
+	MOVEI	gp1,1			;[KPJ.4] get first file
+dskac2:	MOVE	nr,wriacc##(gp1)	;[KPJ.4] get file write accesses
+	CALL	prnum##			;[KPJ.4] print it
+	ADDM	nr,sum##		;[KPJ.4] add to sum
+	SETZM	wriacc##(gp1)		;[KPJ.4] clear accesses
+	CALL	putbla##		;[KPJ.4] one space
+	CAIGE	gp1,maxmet		;[KPJ.4] last file ?
+	 AOJA	gp1,dskac2		;[KPJ.4] get next file
+dskac7:	print[	ASCIZ != !]		;[KPJ.4]
+	MOVE	nr,sum##		;[KPJ.4] get sum
+	CALL	prnum##			;[KPJ.4] print it
+	CALL	preol##			;[KPJ.4] new line
+dskac9:	return
+
+
+;+
+; PMENU  --  print menu
+; gets command table in TP
+;-
+
+pmenu:	save	<str,tp,acrfl##>
+	SETOM	acrfl##			; ACR in a menu
+	CALL	fircom##		; get first command
+	 JRST	pmenu9			; end of table
+pmenu1:	HLRZ	str,0(tp)		;<KPJ.7> get command string
+	CALL	prstr##			; print command
+	CALL	necoel##		; get next table element
+	CALL	fircom##		; get first command
+	 JRST	pmenu9			; end of table
+	print[	ASCIZ !, !]		; print comma
+	ifoff	intflg##,pmenu1		; print next command
+pmenu9:	print[	ASCIZ !. !]		;dot at end
+	return
+
+
+;+
+; PRHER  --  print herald
+;-
+
+prher::	save	<nr>
+	SETZM	intflg##	; clear interrupt
+	ifoff	papflg##,prher1	; prints on paper ?
+	CALL	preol##		; yes, blank line
+	JRST	prher8
+
+prher1:	MOVE	nr,linpos##	; check line position
+	CALL	qshmen		; short menu ?
+	 JRST	prher2		; yes
+	CAIL	nr,6		; enough room ?
+	 CALL	preol##		; no, new line
+	JRST	prher8
+
+prher2:	CAIL	nr,irmarg-^D20	; enough room ?
+	 CALL	preol##		; no, new line
+prher8:	branch	prorhe		; print organizer herald
+
+
+
+
+
+;+
+;PRORHE		output prompter
+;accepts	ORGFLG/	organizer flag
+;-
+
+prorhe:	save	<nr,str>
+	CALL	chkadm			;administrator ?
+	 TRNA				;no
+	  JRST[	print[	ASCIZ !=*= !]	;yes, USAF prompter
+		JRST	prorh9]
+	SKIPGE	orgflg##		;organizer ?
+	 JRST[	print[	ASCIZ != !]	;yes, print organizer prompt
+		JRST	prorh9]
+	print[	ASCIZ !- !]		;print normal prompt
+prorh9:	SETZM	gtcrfl##		;<KPJ.14> no more pending stuff
+	return
+
+
+
+
+
+;+
+;CHKORG		check if "organizer", meaning one of:
+;		(i)	object is "self" (might have been CHANGE ID)
+;		(ii)	we are in administrator mode
+;		(iii)	we are organizer of object
+;		(iv)	organizer is a conference, and our *real* identity
+;			is member of it (check fails for the CHANGE ID)
+
+;accepts	NR/	object number
+;		CRENR/	number of "self"
+;		MBRBEG/	your locals (not CHANGE IDs)
+;returns	+1 if not
+;		+2 if organizer
+;-
+
+
+chkorg::save	<gp1,gp2,bfp,nr>
+	CAMN	nr,crenr##	;is object# us?
+	 JRST	chkor8		;yes, success +2 return
+	CALL	chkadm		;no, are we in  administrator mode ?
+	 TRNA			;<KPJ.23> no, continue testing
+	  JRST	chkor8		;yes, success +2 return
+	CALL	getobj##	;<KPJ.23> get the object
+	 JRST	chkor9		;couldn't, not organizer
+	MOVE	nr,objcre(bfp)	;OK, get organizer
+	CAMN	nr,crenr##	;is it us?
+	 JRST	chkor8		;yes, success +2 return
+	CALL	chkmee##	;no, is it a conference?
+	 JRST	chkor9		;no, +1 return
+	CALL	qismbr##	;yes, it's a conference. are we a member of it?
+chkor8:	 skpret			;yes, success +2 return
+chkor9:	return
+
+
+
+
+
+;+
+;CHKADM		check if we are in administrator mode
+;returns	+1 if not
+;		+2 if administrator
+;-
+
+chkadm::MOVE	t,cursta##	;get current status
+	CAIN	t,sa		;in administrator mode ?
+	 skpret			;yes, +2 return
+	return
+
+
+
+
+
+;+
+;RDCOMM		read a command
+;accepts	CHPT/	character pointer
+;returns	+1	if an empty reply was given
+;		+2	if info got
+;-
+
+rdcomm::save	<str,bp>
+	CALL	getlet##		;info got ?
+	 TRNA
+	  JRST[	CALL	qexpan##	;<KPJ.11> expanders ON?
+		 JRST	rdcom8		;<KPJ.11> no, forget it
+		SKIPN	topflg		;<KPJ.12> sure, but are we real high?
+		 JRST	rdcom8		;<KPJ.12> yeah! need no menus..
+		MOVE	t,quest##	;<KPJ.11> nope, gimme one of those
+		CAIN	t,prmenu	;<KPJ.12> you call this a menu?
+		 CALL	0(t)		;<KPJ.11> sigh, throw up on terminal
+		JRST	rdcom8]		;<KPJ.11> and exit
+	CALL	repcha##		;<KPJ.20> What's up, Doc?
+	CALL	getstr##		;no, read one line
+	 JRST	rdcom9			;<KPJ.22> failed, give up
+	SETOM	topflg			;<KPJ.12> getting higher and higher
+	CALL	mkbp##			;make byte pointer
+	MOVEM	bp,chpt##		;save pointer
+	CALL	getlet##		;empty reply ?
+	 TRNA				;yes
+rdcom8:	  skpret			;no, info got
+rdcom9:	return				;<KPJ.22>
+
+
+
+
+
+;+
+; GETMEN  --  get menu
+; returns at call + 1 if some error
+; returns at call + 2 if command got
+;-
+
+getmen:	save	<tp,str>
+	MOVE	tp,alltab##+1		;get all commands
+	CALL	commat##		;look for a match
+	 JRST	getme8			;command not recognized
+	 JRST	getme6			;ready
+	CALL	ambcom			;ambiguous command
+	JRST	getme9			;get command again
+
+getme8:	MOVEI	str,znotre##		;<KPJ.25> "?Not a command: "
+	CALL	errcom			;command error
+	CALL	tcbeg##			;<KPJ.26> output to terminal
+	CALL	preol##			;<KPJ.26> new line
+	print	znotr1##		;<KPJ.26> "Try "
+	print	zzlico##		;<KPJ.26> "List commands"
+	print	znotr2##		;<KPJ.26> " to list them."
+	CALL	tcend##			;<KPJ.26> back from terminal
+	JRST	getme9
+
+getme6:	MOVE	t,agrval##		;<KPJ.27> get matchbox
+	HLRZ	t,0(t)			;<KPJ.27> get pointer to ASCIZ
+	MOVEM	t,slurj			;<KPJ.27> save name string pointer
+	skpret				;command got
+getme9:	return
+
+
+
+
+
+;+
+; AMBCOM  --  ambiguous command
+; returns TP pointing to the ambiguous commands
+;-
+
+ambcom::save	<str,tp,consum##>	;<KPJ.26>
+	MOVEI	str,zambco##		;<KPj.26> "?Ambiguous command"
+	CALL	errmsg##		;<KPJ.26> . . .
+	CALL	tcbeg##			;output to terminal
+	CALL	preol##			;new line
+	MOVE	tp,agrval##		;get command table
+	CALL	pmenu			;print all commands
+	CALL	clear##			;error, clear input
+	branch	tcend##			;end of terminal output
+
+
+
+
+
+;+
+;ERRCOM		command error
+;accepts	STR/	error message
+;		CHPT/	command line
+;-
+
+errcom::save	<str,consum##>
+	CALL	errmsg##		;<KPJ.25> . . .
+	CALL	tcbeg##			;output to terminal
+	CALL	prcoli			;no, print command line
+	MOVEI	ch,.CHQUO		;<KPJ.21> output quote
+	CALL	putch			;<KPJ.21>
+	CALL	clear##			;<KPJ.16> error, clear input
+	rstreg				;<KPJ.26>
+	CALLRET	tcend##			;end of terminal output
+
+
+
+
+;+
+;PRCOLI		output command line
+;accepts	CHPT/	byte pointer pointing at line
+;-
+
+prcoli::MOVE	str,chpt##		;get command line byte pointer
+	CALL	prstr##			;output it
+	return
+
+
+
+
+
+;+
+; GEFICO  --  get first command
+;-
+
+gefico:	save	<tp>
+	CALL	fircom##		;get first command
+	 nop				;no command got
+	MOVEM	tp,agrval##		;save first command as value
+	return
+
+
+
+
+
+;+
+; DOCOMM  --  do a command
+; gets wanted command in AGRVAL
+;-
+
+docomm:	save	<tp,errfl##>
+	SETZM	errfl##		; clear error
+	SKIPN	tp,agrval	; get command
+	 JRST	docom9		; no command got
+	HRRZ	tp,0(tp)	; get command head
+	SKIPN	0(tp)		; sub command ?
+	 JRST	docom2		; no
+	CALL	subcom		; get and do sub command
+	JRST	docom9		; ready
+
+docom2:	CALL	argcom		; get command argument
+	CALL	endarg		; end of argument
+	 JRST	docom9		; wrong argument
+	CALL	execom		; execute command
+docom9:	return
+
+
+
+
+
+;+
+; SUBCOM  --  get and do sub command
+;-
+
+subcom:	save	<ch,menuq##,tp>
+	CALL	getlet##	; skip blanks
+	 JRST	subco5		; end of line
+	CALL	getsho##	; get current char
+	ifneq	";",subco4	; semicolon ?
+	CALL	nexsho##	; yes, skip it
+subco5:	CALL	endcom		; end of command
+subco4:	fromto	0(tp),menuq##	; get menu question
+	CALL	necoel##	; get sub table
+	CALL	dosuco		; do sub command
+	return
+
+
+
+
+
+;+
+; DOSUCO  --  do sub command
+; gets sub table in TP
+;-
+
+dosuco::save	<hlpflg##>
+	CALL	qshmen		; short menu ?
+	 SETOM	hlpflg##	; yes, make it long
+	CALL	domenu		; get and do command
+	return
+
+
+
+
+
+;+
+; ENDCOM  --  end of command argument
+;-
+
+endcom:	save	<consum##>
+	CALL	tcbeg##		; terminal output
+	ifon	errfl##,endco9	; error ?
+	SKIPE	linpos##	; line empty ?
+	 CALL	preol##		; no, new line
+endco9:	branch	tcend##		; end of terminal output
+
+
+
+
+
+;+
+; ARGCOM  --  get command argument
+; gets pointer to command head in TP
+; returns ERRFL on if some error ocurred
+;-
+
+argcom::save	<ch,produc##>
+	SETZM	hlpflg##		;clear help flag
+	SETZM	pwrflg##		;clear promter written flag
+	CALL	skblan##		;skip blanks
+	CALL	gshort##		;get current char
+	ifneq	"?",argco2		;help wanted ?
+	ifoff	silflg,argco1		;silent
+	SETOM	errfl##			;stop command
+	JRST	argco9
+
+argco1:	SETOM	hlpflg##		;set help flag on
+	setmem	produc##,askque##	;prompter producer
+	CALL	clear##			;clear input
+	CALL	endcom			;new line
+argco2:	MOVE	t,codarg(tp)		;get argument code
+	CALL	0(t)			;execute it
+	SETZM	hlpflg##		;help given
+argco9:	branch	endcom			;end of command
+
+
+
+
+
+;+
+; ENDARG  --  end of argument
+; gets CHPT pointing to end of command
+; returns at call + 1 if command error
+; returns at call + 2 if ok to execute command
+;-
+
+endarg:	save	<str,ch,consum##>	;<KPJ.11>
+	MOVEI	t,tercon##		;<KPJ.11> get the teminal consumer
+	MOVEM	t,consum##		;<KPJ.11> make it the standard consumer
+	CALL	getlet##		;skip blanks
+	 JRST	endar1			;empty line
+	CALL	getsho##		;get current char
+	CAIN	ch,.CHSEM		;<KPJ.21> semicolon?
+	 JRST	endar7			;<KPJ.21>
+	MOVEI	str,zunarg##		;"?Expected end of command but found "
+	CALL	errmsg##		;<KPJ.26>
+	CALL	prcoli			;output unknown argument
+	MOVEI	ch,.CHQUO		;<KPJ.21> output quote
+	CALL	putch			;<KPJ.21>
+endar6:	CALL	clear##			;error, clear input
+	SETZM	errfl##			;clear error
+	JRST	endar9			;skip command
+
+endar1:	ifon	errfl##,endar6		;any error ?
+	JRST	endar8			;end of line
+
+endar7:	CALL	nexsho##		;skip semicolon
+	ifon	errfl##,endar6		;any error ?
+endar8:	skpret				;execute command
+endar9:	return
+
+
+
+
+
+;+
+; EXECOM  --  execute command
+; gets pointer to command head in TP
+;-
+
+execom::AOS	@codcnt(tp)	; one more command executed
+	MOVE	t,codcom(tp)	; get command code
+	CALL	0(t)		; execute it
+	return
+
+	END
+..and no more

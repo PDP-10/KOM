@@ -1,0 +1,86 @@
+;Oden::DSKG:CREEMP.MAC<62,7777,MAC> 1986-10-14 16:16:36, Edit by KPJ @ L89
+;5	Employee support under FTEMPL.
+;Oden::DSKG:CREEMP.MAC<62,7777,MAC> 1986-02-14 19:01:39, Edit by KPJ
+;4	Sanitized code.
+;Oden::DSKD:CREEMP.MAC<62,7777,MAC> 1985-09-25 13:28:11, Edit by KPJ
+;3	Introduced PROLOG macro.
+;Oden::DSKD:CREEMP.MAC[62,7777] 1984-12-01 06:59:35, Edit by KPJ @ NADJA
+;2	Brush up your code! get rid of funny macros.
+;Oden::Dskd:Creemp.Mac[62,7777] 1984-05-14 15:56:40, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(creemp)
+IFE	ftempl,<		;<KPJ.5>
+creemp::			;<KPJ.5> need an entry point
+>;ftempl
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 15:56:16
+
+;	D A T A   A R E A
+
+orgnr::	Z			;organisation number (MEE)
+IFN	ftempl,<		;<KPJ.5>
+sectnr::Z			;section number
+>;ftempl
+locpri::Z			;local printer
+	CODE
+
+
+;+
+IFN	ftempl,<		;<KPJ.5>
+;CREEMP		create an employee
+;accepts	NAMPTR/	name
+;		ORGNR/	organisation
+;		LOCPRI/	local printer
+;		SECTNR/	section number
+;		PASWOR/	password
+;returns	ERRFL/	<>0 if data base full
+;-
+
+creemp::save	<nr>
+	CALL	allemp			;allocate employee number
+	SKIPGE	errfl##			;error ?
+	 JRST	creem9			;yes
+	MOVEM	nr,empnr##		;no, save employee number
+	CALL	makemp			;create an employee object
+	CALL	crenam##		;make a name record
+creem9:	return
+>;ftempl
+
+
+;+
+IFN	ftempl,<			;<KPJ.5>
+;ALLEMP		allocate employee number
+;returns	NR/	number
+;-
+
+allemp:	AOS	nr,lasemp##		;get first free record
+	return
+>;ftempl
+
+;+
+IFN	ftempl,<			;<KPJ.5>
+;MAKEMP		make an employee
+;accepts	ORGNR/	organisation
+;		LOCPRI/	local printer
+;		SECTNR/	section number
+;		PASWOR/	password
+;-
+
+makemp:	save	<bfp,gp1>
+	CALL	creobj##		;create object
+	MOVE	t,orgnr			;save organisation
+	MOVEM	t,emporg(bfp)
+	MOVE	t,sectnr		;save section number
+	MOVEM	t,empid(bfp)
+	MOVE	t,paswor##		;save encrypted password
+	MOVEM	t,emppas(bfp)
+	MOVE	t,locpri		;save local printer
+	MOVEM	t,emppri(bfp)
+	return
+>;ftempl
+
+	END
+..and no more

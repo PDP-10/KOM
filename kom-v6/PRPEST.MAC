@@ -1,0 +1,630 @@
+;Oden::DSKG:PRPEST.MAC<62,7777,MAC> 1987-09-09 11:07:40, KPJ @ L89 <10,50>
+;22	"PPN:"/"UserID:" moved to TEXTER.
+;Oden::DSKG:PRPEST.MAC<62,7777,MAC> 1986-12-11 18:49:28, Edit by KPJ @ L89
+;21	PUTCH is a macro.
+;Oden::DSKG:PRPEST.MAC<62,7777,MAC> 1986-11-10 16:11:32, Edit by KPJ @ L89
+;20	Handle +2 return from ISLURP.
+;Oden::DSKG:PRPEST.MAC<62,7777,MAC> 1986-07-31 17:28:22, Edit by KPJ @ L89
+;17	Show deleted conferences in STATUS.
+;Oden::DSKG:PRPEST.MAC<62,7777,MAC> 1986-06-16 12:10:49, Edit by KPJ @ L89
+;16	Moved texts to TEXTER. Made address/phone output better.
+;Oden::DSKG:PRPEST.MAC<62,7777,MAC> 1986-05-26 19:57:57, Edit by KPJ @ SEMESTer
+;15	Display membership list if any allocated.
+;Oden::DSKG:PRPEST.MAC<62,7777,MAC> 1986-03-05 17:38:45, Edit by KPJ @ L89
+;14	SUBJECT type conferences under FTSUBJ conditional.
+;Freja::QS:<KOM.6-SOURCES>PRPEST.MAC.4 16-Nov-85 23:12:53,Editor:KPJ-JAAKKOLA
+;13	Rewrote TOPS-20 user name output routine, which was CPU-dependent and
+;	totally obscure. One less piece of junk-code.
+;Oden::DSKD:PRPEST.MAC<62,7777,MAC> 1985-10-22 03:22:57, Edit by KPJ
+;12	Make personal flags somewhat more readable on VIEWDATAs
+;Oden::DSKD:PRPEST.MAC<62,7777,MAC> 1985-10-04 22:42:05, Edit by KPJ @ ORANGE
+;11	PRINT and STRING macros rehacked. Introduced PROLOG macro.
+;	Give correct address and phone information.
+;	Always display number of conferences.
+;	PPMEMB eliminated.
+;Oden::DSKD:PRPEST.MAC<62,7777,MAC> 1985-07-26 01:23:36, Edit by KPJ @ ORANGE
+;10	Deleted GECOST references.
+;Oden::DSKD:PRPEST.MAC<62,7777,MAC> 1985-05-02 14:25:49, Edit by KPJ @ L89
+;7	Allow organizer full access to objects.
+;Oden::DSKD:PRPEST.MAC<62,7777,MAC> 1985-04-03 16:27:15, Edit by KPJ @ L89
+;6	PRIPPN call to PROCT6 changed to .NOUT general number printer.
+;Oden::DSKD:PRPEST.MAC<62,7777,MAC> 1985-03-12 04:12:23, Edit by KPJ @ NADJA
+;5	Include object type in STATUS listing too.
+;Oden::DSKD:PRPEST.MAC[62,7777] 1985-01-08 02:03:09, Edit by KPJ @ L89
+;4	Make logic sense flag a variable (LOGIC@CHATAB). Really, it should
+;	live in the data base.
+;Oden::DSKD:PRPEST.MAC[62,7777] 1984-12-05 05:35:02, Edit by KPJ @ NADJA
+;3	Let LMARG do its work.
+;Oden::Dskd:Prpest.Mac[62,7777] 1984-09-04 06:23:32, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;Oden::DSK:PRPEST.NEW[1116,134] 1982-03-02 19:54:59, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(prpest)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 06:23:29
+
+;	D A T A   A R E A
+
+
+pubflg:	BLOCK	1			;public person flag
+T20,<
+usrnam:	BLOCK	^D40/5			;<KPJ.13> user name store here
+>;T20
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+; PRPEST  --  print person status
+; gets object number in NR
+;-
+
+prpest::save	<bfp,gp1>
+	CALL	getobj##		;get object
+	 JRST	prpes9			;error
+	CAIE	gp1,per			;person ?
+	 JRST	prpes9			;no
+	SKIPN	limit##			;any limit ?
+	 SKIPE	limobj##		;or any limit object ?
+	  TRNA				;yes
+	   JRST[CALL	preol##		;no, output open person information
+		CALL	probty##	;<KPJ.5> show type
+		CALL	preol##
+		CALL	praddr		;print address
+		CALL	prtele		;print telephone
+		CALL	prorga		;print organisation if any
+		CALL	prppn		;print ppn
+		CALL	prtab##
+		CALL	prlapr		;print last presence
+		JRST	.+1]
+	CALL	qprote			;protected (and we not organizer/adm)?
+	 JRST	prpes9			;yes, skip the rest
+	CALL	chkorg##		;<KPJ.7> organizer/administrator ?
+	 CAMN	nr,crenr##		;<KPJ.11> no, self ?
+	  JRST	prpes4			;<KPJ.11> yes, public
+	CALL	chkpub##		;<KPJ.11> no, public person ?
+	 TDZA	t,t			;<KPJ.11> clear public flag
+prpes4:	  SETO	t,			;<KPJ.11> set public flag
+	MOVEM	t,pubflg		;<KPJ.11> save public flag
+	SKIPN	limit##			;any limit ?
+	 SKIPE	limobj##		;any limit object ?
+	  TRNA
+	   JRST[CALL	prtab##		;no
+		CALL	prnuse		;output number of sessions
+		CALL	prtab##
+		CALL	prunse		;output number of unseen letters
+		SKIPGE	intflg##	;interrupt ?
+		 JRST	prpes9		;<KPJ.11> yes
+		CALL	prtab##
+		CALL	prnrme		;output number of conferences
+		JRST	.+1]
+	SKIPE	recloc(bfp)		;<KPJ.15!KPJ.11> no, any LOCAL ?
+	 CALL	reglis			;yes, list member register
+	SKIPGE	pubflg			;public person ?
+	 CALL	ppstat			;yes, print personal statistics info
+prpes9:	return
+
+
+
+;+
+; PRADDR  --  print address
+; gets person in BFP
+;-
+
+praddr::save	<str,nr,bfp,gp1>
+	print	zaddre##		;<KPJ.11> "Address: "
+	SKIPN	nr,peradr(bfp)		;<KPJ.11> get address
+	 JRST[	print	znone##		;<KPJ.11> "(none)"
+		CALL	preol##		;<KPJ.16>
+		JRST	pradd9]		;<KPJ.11>
+	 CALL	chkdir##		;entry ?
+	  JRST[	print	zsatan##	;<KPJ.11> no, "(internal error)"
+		CALL	preol##		;<KPJ.16>
+		JRST	pradd9]		;<KPJ.11> give up
+	CALL	prinoh##		;yes, print address
+pradd9:	return
+
+
+
+
+
+;+
+; PRTELE  --  print telephone
+; gets person in BFP
+;-
+
+prtele::save	<str,nr,bfp,gp1>
+	print	ztelep##		;<KPJ.11> "Phone: "
+	SKIPN	nr,pertel(bfp)		;<KPJ.11> get telephone
+	 JRST[	print	znone##		;<KPJ.11> "(none)"
+		CALL	preol##		;<KPJ.16>
+		JRST	prtel9]		;<KPJ.11>
+	 CALL	chkdir##		;<KPJ.16> entry ?
+	  JRST[	print	zsatan##	;<KPJ.16> no, "(internal error)"
+		CALL	preol##		;<KPJ.16>
+		JRST	prtel9]		;<KPJ.16> give up
+	CALL	prinoh##		;print number
+prtel9:	return
+
+
+
+
+
+
+;+
+; PRORGA  --  Print organisation
+; gets person record in BFP
+;-
+
+prorga:	save	<nr,str>
+	SKIPN	nr,perdeb(bfp)		;<KPJ.11> get organisation
+	 JRST	prorg9			;no org
+	print	ztorga##		;"Organisation"
+	print	zcolon			;": "
+	SKIPG	nr,perdeb(bfp)		;<KPJ.11> negative?
+	 JRST[	print	zsatan##	;<KPJ.11> yes, inconsistency
+		JRST	prorg8]		;<KPJ.11> give up
+	CALL	prinam##		;print its name
+prorg8:	CALL	prtab##			;tab
+prorg9:	return
+
+zcolon::ASCIZ	!: !
+
+
+
+
+
+;+
+; PRPPN  --  print ppn
+; gets person in BFP
+;-
+
+prppn:	save	<gp1,str,ch>
+	MOVE	gp1,perppn(bfp)		;get accounting word
+	print	usrppn##		;<KPJ.22> "PPN:"/"User ID:"
+T10,<	CALL	prippn>			;<KPJ.22> output PPN
+T20,<	CALL	priusr>			;<KPJ.22> output userid
+	return
+
+
+;+
+;PRIPPN		output PPN	(presumably only on Tops-10)
+;accepts	GP1/	PPN
+;-
+
+prippn::save	<ch,bp,nr>			;<KPJ.6>
+	MOVEI	1,.PRIOUT			;standard output
+	HLRZ	2,gp1				;get project#
+	MOVEI	3,<FLD(8,NO%RDX)>		;octal
+	CALL	.nout##				;output it
+	 nop					;***FOO*** too bad
+	MOVEI	ch,","				;get comma
+	CALL	putch				;output it
+	MOVEI	1,.PRIOUT			;standard output
+	HRRZ	2,gp1				;get programmer#
+	MOVEI	3,<FLD(8,NO%RDX)>		;octal, 6 digits
+	CALL	.nout##				;output it
+	 nop					;***FOO*** too bad
+	return
+
+;+
+T20,<
+;PRIUSR		print TOPS-20 user name		<KPJ.13>
+;accepts	GP1/	directory#
+;-
+
+priusr::HRROI	1,usrnam		;<KPJ.13> where to store name
+	MOVSI	2,(5B2)			;make a user number
+	HRR	2,gp1			;get actual number
+	DIRST%				;convert user number to string
+	 ERJMP[	SETZM	usrnam		;<KPJ.13> null string if error
+		JRST	.+1]
+	print	usrnam			;<KPJ.13> output it
+	return
+>;T20
+
+
+
+
+;+
+; PRLAPR  --  print last presence
+; gets person record in BFP
+;-
+
+prlapr:	save	<gp1,str>
+	print	zilpre##		;"Last present"
+	print	zcolon			;": "
+	MOVE	gp1,perpre(bfp)		;get last presence
+	CALL	pdate##			;output time
+	return
+
+
+
+
+
+;+
+; QPROTE  --  check if protected object
+; gets object in NR
+; returns at call + 1 if protected and not administrator
+; returns at call + 2 if not protected or administrator
+;-
+
+qprote::CALL	chkadm##		;administrator ?
+	 TRNA				;no
+	  JRST	qprot8			;yes, nothing is protected then...
+	CALL	chkorg##		;<KPJ.7> organizer?
+	 TRNA				;<KPJ.7> no
+	  JRST	qprot8			;<KPJ.7> yes, not very protected
+	CALL	chprot##		;protected ?
+	 TRNA				;yes
+qprot8:	  skpret			;no
+qprot9:	return
+
+
+
+;+
+; PRNUSE  --  print number of sessions
+; gets person in BFP
+;-
+
+prnuse:	save	<nr,str>
+	print	zinuse##		;"Number of sessions: "
+	MOVE	nr,pernpr(bfp)		;get number of sessions
+	CALL	prcnum			;output it
+	return
+
+
+
+
+
+;+
+; PRCNUM  --  print coloured number
+; gets number in NR
+;-
+
+prcnum::CALL	colmag##		;magenta colour
+	CALL	prnum##			;print number
+	branch	colcya##		;cyan colour
+
+
+
+
+
+;+
+; PRUNSE  --  print number of unseen letters
+; gets person record in BFP
+;-
+
+prunse:	save	<nr,str>
+	print	ziunle##		;"Unseen letters: "
+	MOVE	nr,objlto+1(bfp)	;get total number of letters
+	SUB	nr,pernum(bfp)		;get number of unseen letters
+	CALL	prcnum			;output it
+	return
+
+
+
+
+
+;+
+; PRNRME  --  print number of conferences
+; gets person record in BFP
+;-
+
+prnrme:	save	<str,nr>
+	print	zinume##		;"Number of conferences: "
+	MOVE	nr,permem(bfp)		;get number of conferences
+	CALL	prcnum			;output it
+	return
+
+
+;+
+;REGLIS		list member register
+;accepts	NR/	person
+;-
+
+reglis:	save	<gp2,tabste##>
+	MOVEI	t,8			;set tab step
+	MOVEM	t,tabste##
+	CALL	reghed			;print heading
+	CALL	preol##			;new line
+	CALL	islurp##		;slurp in register
+	 JRST	regli9			;<KPJ.20> failed, give up
+regli3:	SKIPN	0(gp2)			;end of register ?
+	 JRST	regli9			;yes
+	CALL	limeel			;list register element
+	ADDI	gp2,melsiz		;get next element
+	SKIPL	intflg##		;interrupt ?
+	 JRST	regli3			;no, continue with next
+regli9:	return
+
+
+
+
+
+;+
+; REGHED  --  heading for member list
+; gets person in BFP
+;-
+
+reghed:	save	<str>
+	CALL	preol2##
+	CALL	prname##		;output name of person
+	print	zimeme##		;" is member of these conferences:"
+	CALL	preol##
+	print	zilpre##		;"Last present"
+	CALL	prtab##
+	print	ziunse##		;"Unseen"
+	CALL	prtab##
+	print	ziname##		;"Name"
+	print	zhdtyp##		;type
+	return
+
+
+
+
+;+
+; LIMEEL  --  list register element
+; gets GP2 pointing to element
+; gets limit in LIMIT and LIMOBJ
+;-
+
+limeel:	save	<gp1,bfp,nr,acrfl##>
+	SETZM	acrfl##			;no ACR
+	SKIPE	nr,limobj##		;any limit object ?
+	 CAMN	nr,melmee(gp2)		;yes, wanted conference ?
+	  TRNA
+	   JRST	limee9			;no, skip it
+	CALL	getuns##		;get number of unseen entries
+	CAMGE	nr,limit##		;enough ?
+	 JRST	limee9			;no, skip it
+	MOVE	nr,melmee(gp2)		;get conference
+	CALL	getobj##		;get it
+	 JRST[	MOVE	nr,melmee(gp2)	;<KPJ.17> conference deleted
+		CALL	preol##		;<KPJ.17> new line
+		CALL	prtab##		;<KPJ.17>
+		CALL	prtab##		;<KPJ.17>
+		CALL	prtab##		;<KPJ.17>
+		CALL	prname##	;<KPJ.17> output conference name
+		JRST	limee9]		;<KPJ.17>
+	SKIPGE	gp1,meltim(gp2)		;get last present
+	 SKIPGE	pubflg			;public ?
+	  TRNA				;yes
+	   JRST	limee9			;no
+	CALL	preol##			;new line
+	CALL	pdate##			;print last presence
+	CALL	prtab##
+	CALL	getuns##		;get number of unseen entries
+	CALL	prnum6##		;print it
+	CALL	prtab##
+	MOVE	nr,melmee(gp2)		;get conference
+IFN	ftsubj,<			;<KPJ.14>
+	SETZM	subflg##		;always print type
+>;ftsubj
+	PUSH	P,lmarg##		;<KPJ.4> save old setting
+	MOVE	t,linpos##		;<KPJ.3> tab stop...
+	MOVEM	t,lmarg##		;<KPJ.3> ...for long lines
+	CALL	prnaty##		;print its name and type
+	POP	P,lmarg##		;<KPJ.4> restore old settings
+limee9:	return
+
+
+
+
+
+;+
+; PPSTAT  --  print personal statistics info
+; gets person in BFP and NR
+;-
+
+ppstat:	ifon	intflg##,ppsta9		;interrupt ?
+	SKIPE	limobj##		;any limit object ?
+	 JRST	ppsta9			;yes, skip it
+	CALL	preol2##		;blank line
+	CALL	prprti			;output accumulated time
+	CALL	prtab##
+	CALL	prcrte			;output created texts
+	CALL	prtab##
+	CALL	prcrea			;output created links and conferences
+	CALL	prtab##
+	CALL	prnrre			;output number of read entries
+	CALL	prtab##
+	CALL	prpasi			;output page size
+	CALL	prtab##
+	CALL	prnrma			;output number of marked entries
+	CALL	prlogg			;output login PPN
+	CALL	prpefl			;output personal flags
+ppsta9:	return
+
+
+
+
+
+;+
+; PRPRTI  --  print present time
+; gets person in BFP
+;-
+
+prprti:	save	<gp1,str>
+	print	ziprti##		;"Time present: "
+	MOVE	gp1,persti(bfp)		;get present time
+	CALL	acctim##		;output accumulated time
+	return
+
+
+
+
+;+
+; PRCRTE  --  print created texts
+; gets person in BFP
+;-
+
+prcrte:	save	<nr,str>
+	print	zicrte##		;"Texts created: "
+	MOVE	nr,pertby+1(bfp)	;get number of texts
+	CALL	prcnum			;output it
+	CALL	prtab##
+	print	zicrtl##		;"Text lines created: "
+	MOVE	nr,pernte(bfp)		;get number of text words
+	CALL	prcnum			;output it
+	return
+
+
+
+
+
+;+
+; PRCREA  --  print created links and names
+; gets person in BFP
+;-
+
+prcrea:	save	<nr,str>
+	print	zicrme##		;"Conferences created: "
+	MOVE	nr,pernme(bfp)		;get number of created conferences
+	CALL	prcnum			;output it
+	CALL	prtab##
+	print	zicrlm##		;"Conference links created: "
+	MOVE	nr,pernlm(bfp)		;get number of created conference links
+	CALL	prcnum			;output it
+	CALL	prtab##
+	print	zicrlp##		;"Person links: "
+	MOVE	nr,pernlp(bfp)		;get number of created person links
+	CALL	prcnum			;output it
+	CALL	prtab##
+	print	zicrlt##		;"Text links: "
+	MOVE	nr,pernlt(bfp)		;get number of created text links
+	CALL	prcnum			;output it
+	return
+
+
+
+;+
+; PRNRRE  --  print number of read entries
+; gets person in BFP
+;-
+
+prnrre:	save	<nr,str>
+	print	znrred##		;"Notices read: "
+	MOVE	nr,pernre(bfp)		;get number of read notices
+	CALL	prcnum			;output it
+	return
+
+
+
+;+
+; PRPASI  --  print page size
+; gets person in BFP
+;-
+
+prpasi:	save	<nr,str>
+	print	zidisi##		;"Display size: "
+	HLRZ	nr,perpgs(bfp)		;get CRT size
+	CALL	prcnum			;output it
+	CALL	prtab##
+	print	zipasi##		;"Paper size: "
+	HRRZ	nr,perpgs(bfp)		;get paper size
+	CALL	prcnum			;output it
+	return
+
+
+;+
+; PRNRMA  --  print number of marked entries
+; gets person record in BFP
+;_
+
+prnrma:	save	<nr,str>
+	print	zimark##		;"Marked entries: "
+	MOVE	nr,pernma(bfp)		;get number of marked entries
+	CALL	prcnum			;output it
+	return
+
+
+
+
+
+;+
+; PRLOGG  --  print logging in PPN
+; gets person in BFP
+;-
+
+prlogg:	save	<gp1,str,ch>
+	SKIPN	gp1,perdpp(bfp)		;get PPN
+	 JRST	prlog9			;no PPN
+	CALL	prtab##
+T10,<	print[	ASCIZ !PPN: !]
+	CALL	prippn			;output PPN
+>;T10
+T20,<	print[	ASCIZ !User Id: !]
+	CALL	priusr			;output userid
+>;T20
+prlog9:	return
+
+
+
+
+
+;+
+; PRPEFL  --  print personal flags
+; gets person in BFP and NR
+;-
+
+prpefl:	save	<tp,str,selffl##,tabstep##>
+	MOVEI	t,^D40			;set new tab step
+	MOVEM	t,tabste##
+	MOVE	tp,exptab##		;get flag table
+	MOVE	t,perpfl(bfp)		;get personal flags
+	MOVEM	t,selffl##
+prpef1:	CALL	fircom##		;get table element
+	 JRST	prpef9			;end of table
+	HLRZ	str,0(tp)		;<KPJ.10> get flag name
+	CALL	preol##			;new line
+	CALL	prstr##			;print flag
+	MOVEI	str,zon##		;"On"
+	CALL	qflaon			;flag on ?
+	 MOVEI	str,zoff##		;"Off"
+IFN	ftview,<			;<KPJ.12> if VIEWDATA support
+	SKIPGE	viewfl##		;<KPJ.12> VIEWDATA?
+	 CALL	colmag			;<KPJ.12> right, use magenta here
+	SKIPL	viewfl##		;<KPJ.12> not VIEWDATA, use tab
+>;ftview
+	 CALL	prtab##			;tab
+	CALL	prstr##			;output flag value
+IFN	ftview,<			;<KPJ.12> if VIEWDATA support
+	SKIPGE	viewfl##		;<KPJ.12> a VIEWDATA?
+	 CALL	colcya##		;<KPJ.12> yeah, restore to cyan
+>;ftview
+	CALL	necoel##		;get next flag
+	ifoff	intflg##,prpef1		;interrupt ?
+prpef9:	return
+
+
+
+
+
+;+
+; QFLAON  --  check if flag on
+; gets table element in TP
+; gets flags in SELFFL
+; returns at call + 1 if flag off
+; returns at call + 2 if flag on
+;-
+
+qflaon::save	<gp1,gp2>		;[KPJ.3]
+	MOVE	gp1,0(tp)		;[KPJ.3] get flag pointer
+	MOVE	gp2,1(gp1)		;[KPJ.3] get flag
+	MOVE	gp1,selffl##		;[KPJ.3] get flags
+	MOVE	t,logic##		;[KPJ.3] get logic sense flag
+	AND	t,gp2			;[KPJ.3] isolate interesting bit
+	CAIN	t,0			;[KPJ.3] normal logic?
+	 SKIPA	t,[TDNE	gp1,gp2]	;[KPJ.3] yes, test for oneness
+	  MOVE	t,[TDNN	gp1,gp2]	;[KPJ.3] no, test for zeroty
+	XCT	t			;[KPJ.3] well, flag on?
+	 skpret				;yes (whatever that means)
+	return
+
+	END
+..and no more  

@@ -1,0 +1,159 @@
+;Oden::DSKD:RDNEXT.MAC<62,7777,MAC> 1985-10-08 00:17:50, Edit by K P J
+;3	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:RDNEXT.MAC<62,7777,MAC> 1985-07-07 20:54:26, Edit by KPJ @ ORANGE
+;2	Sanitized code. Moved texts to TEXTER module.
+;Oden::Dskd:Rdnext.Mac[62,7777] 1984-04-10 13:59:19, Edit by T Tholerus
+;1	<1016> extra argument to (READ) ALL NEWS command
+
+	SEARCH	kommac
+	PROLOG	(rdnext)
+
+;   Copyright (C) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-05-23 06:57:47
+
+;	D A T A   A R E A
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+rdnext::comhed	qrdnex,runarg##,readnx,ccneen##,znenhl## ;read next entry
+alnews::comhed	0,aallne,allnew,ccalne##,zalnhl##	 ;<TTQ.1> read all news
+;-
+
+
+
+
+;+
+; QRDNEX  --  check if to include next entry command
+;-
+
+qrdnex:	SKIPE	nxennr##	; if any news
+	 skpret			;  then do this command
+	return
+
+
+
+
+
+;+
+; READNX  --  read next entry
+;-
+
+readnx::save	<nr>
+	SKIPN	nxennr##	; any unseen entry ?
+	 JRST	readn8		; no
+	MOVE	nr,nxenln##	; get last seen link
+	CALL	setlse		; set last seen entry
+	MOVE	nr,nxennr##	; get entry
+	CALL	direob##	; display received text
+	CALL	chknew##	; check news
+	SKIPN	nxennr##	; more entries ?
+readn8:	 CALL	sayall		; no, say you have seen them all
+	return
+
+
+
+
+
+;+
+; SETLSE  --  set last seen entry
+; gets last seen link in NR
+;-
+
+setlse::save	<bfp,gp1,gp2>
+	SKIPE	conf##		; present ?
+	 JRST	setls1		; yes
+	CALL	updbeg##	; start update
+	CALL	lasele##	; set last seen letter
+	CALL	updend##	; end of update
+	JRST	setls9
+
+setls1:	MOVE	gp2,curmbr##	; get current register element
+	MOVEM	nr,mellnk(gp2)		;save it
+	SETZM	melnum(gp2)		;clear last seen number
+	CALL	getobj##		;get link
+	 JRST	setls9			;start from beginning
+	MOVE	t,lnklto+1(bfp)		;save last seen number
+	MOVEM	t,melnum(gp2)
+setls9:	return
+
+
+
+
+
+;+
+; SAYALL  --  say you have seen all entries
+;-
+
+sayall::save	<nr,gp2,str>
+	SETZM	intflg##	; clear interrupt
+	CALL	preol2##	; blank line
+	SKIPE	nr,conf##	; meeting defined ?
+	 JRST	sayal1		; yes
+	print	znotpr##		;"You are not present in any conf"
+	JRST	sayal9
+
+sayal1:	print	zseen1##
+	MOVE	gp2,curmbr##	; get current element
+	MOVE	nr,melnum(gp2)	; get last seen number
+	CALL	prnum##		; print it
+	print	zseen2##	; say entries
+	print	zin##	; say in
+	MOVE	nr,conf##	; get current meeting
+	CALL	prname##	; print its name
+sayal9:	return
+
+
+;+
+; AALLNE  --  argument to all news	;<TTQ.1>
+; returns argument in NUMBER
+;-
+
+aallne:	save	<nr,namfun##>
+	MOVEI	t,joinam##		;conference name
+	MOVEM	t,namfun##
+	CALL	gtmana##		; any argument ?
+	 SETZ	nr,			; no
+	MOVEM	nr,number##		; save it
+	return
+
+
+
+
+
+;+
+; ALLNEW  --  show all news	<TTQ.1>
+; gets argument in NUMBER
+;-
+
+allnew:	save	<nr>
+	CALL	delcom##		; delayed command ?
+	 JRST	allne9			; yes, skip it
+	SETZM	intflg##		; clear interrupt
+	SKIPG	nr,number##		;<TTQ.1> restricted ?
+	 JRST	allne1			;<TTQ.1> no, get all
+	CALL	join##			;<TTQ.1> join conference
+allne0:	CALL	preol##			;<TTQ.1> blank line
+	SKIPN	nxennr##		;<TTQ.1> any entry ?
+	 JRST	allne9			;<TTQ.1> no, ready
+	CALL	readnx			;<TTQ.1> get it
+	SKIPGE	intflg##
+	 JRST	allne9			;<TTQ.1> interrupt ?
+	CALL	chknew##		;<TTQ.1> more news ?
+	JRST	allne0
+
+allne1:	CALL	rdnews##		; read news
+	SKIPGE	intflg##		; check if interrupt wanted
+	 JRST	allne9
+	CALL	chknew##		; check for other news
+	CALL	preol##			; blank line
+	SKIPGE	intflg##		; check if interrupt wanted
+	 JRST	allne9
+	CALL	anynew##		; check if there are more news
+	 JRST	allne1			; yes, get them
+allne9:	return
+
+	END
+..and no more

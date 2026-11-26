@@ -1,0 +1,288 @@
+;Oden::DSKG:RDOBJ.MAC<62,7777,MAC> 1987-01-03 22:18:02, Edit by KPJ @ H.HOLE
+;5	Moved data areas to IMPURE.
+;Oden::DSKD:RDOBJ.MAC<62,7777,MAC> 1985-10-08 00:24:12, Edit by KPJ
+;4	Introduced PROLOG macro.
+;Oden::DSKD:RDOBJ.MAC<62,7777,MAC> 1985-08-06 14:49:19, Edit by KPJ @ DECGR
+;3	Symbol handling only used by COMPUT code. Put inside FTCOMP feature
+;	switch.
+;Oden::DSKD:RDOBJ.MAC<62,7777,MAC> 1985-07-07 21:15:55, Edit by KPJ @ ORANGE
+;2	Sanitized code. Moved texts to TEXTER module.
+;Oden::Dskd:Rdobj.Mac[62,7777] 1984-09-04 09:54:51, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(rdobj)
+	CODE
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 09:54:48
+
+
+;+
+IFE	ftcomp,<rdobj::!>
+IFN	ftcomp,<
+;RDOBJ		get next object
+;accepts	BP/	priority
+;returns	NR/	number
+;		SEM/	new semantics
+;		TYP/	    -- "" --
+;		VAL/	symbol
+;-
+
+rdobj::	save	<ch>
+KL10,<	MOVEI	val,0>			;clear value
+KL10N,<	SETZ	val,>			;clear value
+	SKIPE	savtxt##		;<KPJ.5> symbol got ?
+	 JRST	rdobj2			;yes
+rdobj0:	CALL	gshort##		;get character
+	CALL	qblank			;blank ?
+	 JRST	rdobj1			;yes, get next
+	JUMPE	ch,rdobj3		;end of line ?
+	CAIN	ch,"."			;decimal point ?
+	 JRST	rdobj4
+	CALL	qdigit##		;no, digit ?
+	 JRST	rdobj2			;no, test for symbol
+
+rdobj4:	CALL	genumb			;yes, get number
+	JRST	rdobj9
+
+rdobj3:	CALL	rdcomm##		;get next line
+	 JRST	rdobj8			;error
+	JRST	rdobj0
+
+rdobj1:	CALL	nexsho##		;get next character
+	JRST	rdobj0
+
+rdobj2:	CALL	getsym			;get symbol
+	JRST	rdobj9
+
+rdobj8:	MOVE	t,produc##		;get producer
+	CAIE	t,terpro##		;from terminal ?
+	 JRST	rdobj3			;no, get next line
+	MOVEI	sem,send##		;return end symbol
+rdobj9:	MOVE	typ,sem			;get type
+	return
+>;ftcomp
+
+
+
+
+;+
+; QBLANK  --  check if blank char
+; gets char in CH
+; returns at call + 1 if blank
+; returns at call + 2 otherwise
+;-
+
+qblank::save	<ch>
+	CALL	convc##		; convert char
+	CAIE	ch,chabla	; blank ?
+	 skpret			; no
+	return
+
+
+;+
+IFN	ftcomp,<
+;GENUMB		get number
+;returns	VAL/	value
+;		SEM/	semantics
+;-
+
+genumb:	CAIE	rp,montab##		;binary symbol ?
+	 JRST	genum1			;no
+	MOVEI	sem,bsymb##		;yes, get it
+	JRST	genum9
+
+genum1:	CALL	getflo##		;get positive number in VAL
+	MOVEI	sem,intege##		;number got
+genum9:	return
+>;ftcomp
+
+
+;+
+IFN	ftcomp,<
+;GETSYM		get symbol
+;accepts	CH/	first character
+;returns	SEM/	semantics
+;		VAL/	value
+;-
+
+getsym:	save	<txt>
+	SKIPN	txt,savtxt##		;<KPJ.5> symbol got ?
+	 JRST	getsy0			;no
+	SETZM	savtxt##		;<KPJ.5> yes, clear area
+	MOVE	t,savtx2##		;<KPJ.5> get last part
+	MOVEM	t,txt2##		;<KPJ.5>
+	JRST	getsy2
+
+getsy0:	CALL	qalpha			;letter ?
+	 JRST	getsy1			;no
+	CALL	getalp			;yes, get alphanumeric symbol
+	JRST	getsy2
+
+getsy1:	CALL	getspe			;get special symbol
+getsy2:	CALL	getsem			;get semantics
+	return
+>;ftcomp
+
+
+
+;+
+; QALPHA  --  check if char is alphanumeric
+; gets unnormalized char in CH
+; returns at call + 1 if not alphanumeric
+; returns at call + 2 if alphanumeric
+;-
+
+qalpha::HLRZ	t,chrtab##(ch)	; get char type
+	ANDI	t,ctyalf	; alphanumeric ?
+	SKIPE	t
+	 skpret			; yes
+	return
+
+
+
+
+
+;+
+IFN	ftcomp,<
+;GETALP		get alphanumeric symbol
+;accepts	CH/	first character
+;returns	TXT/	symbol
+;		TXT2/	symbol
+;-
+
+getalp:	save	<ch,bp,nr>
+	MOVE	bp,[POINT 6,txt]	;get byte pointer
+KL10,<	MOVEI	txt,0>			;clear text
+KL10N,<	SETZ	txt,>			;clear text
+	SETZM	txt2##			;<KPJ.5> clear last part
+getal2:	MOVEI	nr,6			;at most six chars
+getal1:	SOJL	nr,getal3		;more chars ?
+	CALL	convc##			;convert character
+	IDPB	ch,bp			;save character
+	CALL	nexsho##		;get next character
+	CALL	gshort##		;get character
+	CALL	qalpha			;alphanumeric ?
+	 JRST	getal9			;no, ready
+	JRST	getal1
+
+getal3:	MOVE	bp,[POINT 6,txt2##]	;<KPJ.5> get last part
+	JRST	getal2
+
+getal9:	return
+>;ftcomp
+
+
+
+;+
+IFN	ftcomp,<
+;GETSPE		get special symbol
+;accepts	CH/	first character
+;returns	TXT/	symbol
+;-
+
+getspe:	save	<ch,bp,nr>
+	MOVE	bp,[POINT 6,txt]	;get byte pointer
+	SETZ	txt,			;clear text
+	CALL	qstick			;sticky char ?
+	 JRST	getsp8			;no, ready
+	MOVEI	nr,6			;at most six chars
+getsp1:	SOJL	nr,getsp2		;more chars ?
+	CALL	convc##			;convert char
+	IDPB	ch,bp			;save char
+getsp2:	CALL	nexsho##		;get next char
+	CALL	gshort##		;get char
+	CALL	qstick			;sticky char ?
+	 JRST	getsp9			;no, ready
+	JRST	getsp1			;yes, continue
+
+getsp8:	CALL	convc##			;convert char
+	IDPB	ch,bp			;save char
+	CALL	nexsho##		;get next char
+getsp9:	return
+>;ftcomp
+
+
+
+;+
+IFN	ftcomp,<
+; QSTICK  --  check if sticky char
+; gets char in CH
+; returns at call + 1 if not sticky
+; returns at call + 2 if sticky
+;-
+
+qstick:	HLRZ	t,chrtab##(ch)	; get char type
+	CAIN	t,ctysti	; sticky char ?
+	 skpret			; yes
+	return
+>;ftcomp
+
+
+
+;+
+IFN	ftcomp,<
+;GETSEM		get semantics
+;accepts	RP/	priority
+;		TXT/	symbol
+;returns	SEM/	semantics
+;-
+
+getsem:	MOVEI	sem,montab##		;get monary semantics
+	CAIN	rp,montab##		;high priority ?
+	 MOVEI	sem,bintab##		;yes, get binary semantics
+getse1:	CAMN	txt,semnam(sem)		;right symbol got ?
+	 JRST	getse9			;yes
+	CAIL	sem,send##		;more table elements ?
+	 JRST	getse3			;no, get symbol
+	ADDI	sem,semsiz		;get next table element
+	JRST	getse1
+
+getse3:	CALL	gesymb			;get symbol
+getse9:	return
+>;ftcomp
+
+
+
+;+
+IFN	ftcomp,<
+;GESYMB		get symbol in symbol table
+;accepts	TXT/	symbol
+;returns	VAL/	value
+;		SEM/	semantics
+;-
+
+gesymb:	save	<cp>
+	MOVEI	cp,symtab##		;<KPJ.5> get symbol table
+gesym1:	CAME	txt,symnam(cp)		;right symbol got ?
+	 JRST	gesym5			;no
+	MOVE	t,txt2##		;<KPJ.5> get last part
+	CAMN	t,symnam+1(cp)		;right ?
+	 JRST	gesym2			;yes ready
+gesym5:	SKIPE	symnam(cp)		;end of symbols ?
+	 JRST	gesym3			;no, get next
+gesym4:	MOVEM	txt,symnam(cp)		;yes, put symbol in table
+	MOVE	t,txt2##		;<KPJ.5> put rest of symbol
+	MOVEM	t,symnam+1(cp)
+gesym2:	MOVEM	cp,val			;save symbol pointer
+	MOVEI	sem,symbol##		;get semantics
+	CAIE	rp,montab##		;binary symbol ?
+	 JRST	gesym9			;no
+	MOVEI	sem,bsymb##		;yes
+	MOVEM	txt,savtxt##		;<KPJ.5> save next symbol
+	MOVE	t,txt2##		;<KPJ.5> save last part
+	MOVEM	t,savtx2##		;<KPJ.5>
+	JRST	gesym9
+
+gesym3:	ADDI	cp,symsiz		;get next element
+	CAIGE	cp,symend##		;<KPJ.5> end of table ?
+	 JRST	gesym1			;no, get next
+	MOVEI	cp,symtab		;<KPJ.5> yes, get start of table
+	JRST	gesym4			;overwrite first symbol
+
+gesym9:	return
+>;ftcomp
+
+	END
+..and no more

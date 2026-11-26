@@ -1,0 +1,907 @@
+;Freja::Qs:<Kom.6.Macro>Tercon.Mac.25 880215-1031,KPJ-Jaakkola
+;44	Define NRMCOC.
+;Freja::Qs:<Kom.6.Macro>Tercon.Mac.22 871123-1646,KPJ-Jaakkola
+;43	Corrected calls to OUTNRM and OUTALL.
+;Freja::Qs:<Kom.6.Macro>Tercon.Mac.17 870715-1710,KPJ-Jaakkola
+;42	Don't use IMAGE MODE.  Use CCOC words, what is what we meant anyway.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1987-04-30 13:05:08, KPJ @ DK <62,50>
+;41	Introduce stop code in CHPRIN when input is invalid.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1987-04-16 14:10:12, KPJ @ L89 <62,50>
+;40	Network bug flag is not QZ specific any more.
+;Freja::Qs:<Kom.6.Macro>Tercon.Mac.12 870308-0751,KPJ-Jaakkola
+;37	Edit#36 should output to the terminal directly.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1987-01-02 12:33:00, Edit by KPJ @ H.HOLE
+;36	Output form feed as "^L" when page size is 0.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-12-11 17:11:24, Edit by KPJ @ L89
+;35	Delete PUTCH, which is now a macro.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-11-11 04:51:45, Edit by KPJ @ H.HOLE
+;34	Handle +2 return from STBEG and GETSTR.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-10-29 15:08:58, Edit by KPJ @ L89
+;33	Use QZIF/FOAIF/RUNIF.
+;Tor::Ps:<KPJ.KOM>TERCON.MAC.4  2-Oct-86 16:04:12, Edit by KPJ
+;32	Display ID100 and VIEWDATA control codes in image mode on TOPS-20.
+;Tor::Ps:<KPJ.KOM>TERCON.MAC.3  2-Oct-86 15:43:50, Edit by KPJ
+;31	Make ESC during "(Press return)" less distasteful, by making a CR
+;	before outputting the prompter. Text-phones can't do a stray CR,
+;	so we let it be as-is.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-09-08 02:22:37, Edit by KPJ @ H.HOLE
+;30	Fixed minor bug introduced in edit#20.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-08-28 23:42:13, Edit by KPJ @ 1SKEDE
+;27	Handle text phone end-of-screen, as well as FF output.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-06-25 01:08:05, Edit by KPJ @ 1SKEDE
+;26	Move texts to TEXTER. Get rid of hardwired program names.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-05-23 17:32:36, Edit by KPJ @ SEMESTer
+;25	Ignore TMP:-generated command terminal output.
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-04-28 20:52:30, Edit by KPJ @ ORANGE
+;24	Handle TABs correctly (pointed out by SEE a few years ago).
+;Oden::DSKG:TERCON.MAC<62,7777,MAC> 1986-04-25 13:12:52, Edit by KPJ @ L89
+;23	Get rid of OPDEFed funny macros. Use standard character names.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1986-01-28 08:38:39, Edit by KPJ
+;22	Problem: CTRL/O destroys output to non-terminals.
+;	Diagnosis: CTRL/O sets INTFLG, which is used for other stuff as well.
+;	Action:	Make CTRL/O stop output only to TTY.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-11-28 05:49:23, Edit by KPJ
+;21	Moved BEL handling into the terminal consumer code, where it belongs.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-11-01 05:12:40, Edit by KPJ
+;20	Implemented "pending GETCR" flag.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-10-22 04:12:34, Edit by KPJ
+;17	Handle VIEWDATA colours better.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-10-22 00:07:09, Edit by KPJ
+;16	Restore VIEWDATA colour after "(Press return)".
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-10-21 22:35:21, Edit by KPJ
+;15	Don't flash with red.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-10-17 18:42:30, Edit by KPJ
+;14	Match {|} with aoa in QZ English version.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-10-16 12:44:03, Edit by KPJ
+;13	Don't hang for input when having ENQ interlock.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-10-08 02:03:25, Edit by KPJ
+;12	New format of PRINT and STRING macros. Get rid of KPJHAT variable.
+;	Use standard character names. Less useless macros.
+;Freja::QS:<KOM.6-SOURCES>TERCON.MAC.3 25-Aug-85 00:45:57,Editor:KPJ-JAAKKOLA
+;11	Edit#10 for TOPS-20 too...
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-08-22 23:37:31, Edit by KPJ @ DECgrupf
+;10	Make CTRL/O make automagic space-return.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-07-26 xx:xx:xx, Edit by KPJ @ ORANGE
+;7	Prepared GETCR and GETCHR for "string" zero word deletion.
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-05-30 16:47:54, Edit by KPJ @ Ljuster|
+;6	Fix VC404P and VC414P to work (misused AC).
+;Oden::DSKD:TERCON.MAC<62,7777,MAC> 1985-04-23 08:40:07, Edit by KPJ @ L89
+;5	VIEWDATA colour hacking.
+;Oden::DSKD:TERCON.MAC[62,7777,MAC] 1985-03-01 18:14:51, Edit by KPJ @ L89
+;4	Swedish PTT "text telephone" under switch FTPHON.
+;Oden::DSKD:TERCON.MAC[62,7777] 1985-01-16 01:03:27, Edit by KPJ @ GRAV
+;3	Use standard names for characters.
+;Freja::Qs:<Kom.6-Sources>Tercon.Mac.3  5-Oct-84 16:56:34,Editor:KPJ-Jaakkola
+;2	INCLFC was not written for TOPS-20. Obviously somebody forgot it.
+;Oden::Dskd:Tercon.Mac[62,7777] 1984-03-30 14:35:57, Edit by T Tholerus
+;1	[1015] Interrupt handling
+
+	SEARCH	kommac
+	PROLOG	(tercon)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-23 07:19:08
+
+;	D A T A   A R E A
+
+nrmcoc::BLOCK	2		;<KPJ.44>
+tmpflg::BLOCK	1		;<KPJ.25> TMP:-flag:
+				;<KPJ.25> =0:	not TMP: created output killed
+				;<KPJ.25> #0:	TMP: created output killed
+gtcrfl::0			;<KPJ.20> pending GETCR
+pndcol::0			;<KPJ.17> pending colour
+;netcnt:0			;<KPJ.33!BCQ> network bug Linefeed counter
+acrfl::	0			; flag for acr on output
+;consum::tercon			; current char consumer
+hlpflg::0			; help flag
+intflg::0			; interrupt flag
+lfcnt::	0			; line feed count
+linpos::0			; line position
+lmarg::	0			; inner left margin
+maxlin::^D20			; number of lines in a page
+oldcon::tercon			; old consumer
+pagcnt:	0			; page count
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;TCEND		stop terminal output
+;-
+
+tcend::	JRST	toutpu##	; output terminal buffer
+
+;+
+;TCBEG		start terminal output
+;-
+
+tcbeg::	fromto	consum,oldcon	; save old consumer
+	setmem	consum,tercon	; output on terminal
+	SETZM	intflg		; clear interrupt
+	return
+
+;+
+;TERCON		consume chars and put it in the terminal buffer.
+;		replaces first blank after inner right margin by CRLF
+;		changes control characters to corresponding ^-form
+;-
+
+tercon::ifon	intflg,terco9		;[1015] interrupt ?
+	SKIPE	tmpflg			;<KPJ.25> TMPCOR input?
+	 JRST	terco9			;<KPJ.25> yes, ignore output
+	SKIPE	gtcrfl			;<KPJ.20> pending GETCR?
+	 JRST[	CALL	brkpag		;<KPJ.30!KPJ.20> yes, break page
+		SKIPN	intflg		;<KPJ.30> interrupted?
+		 JRST	.+1		;<KPJ.30> no
+		JRST	terco9]		;<KPJ.30> yes, exit
+IFN	ftview,<			;<KPJ.17> if VIEWDATA support
+	SKIPGE	viewfl##		;<KPJ.17> if VIEWDATA
+	 JRST[	SKIPN	pndcol		;<KPJ.17> any pending colour?
+		 JRST	.+1		;<KPJ.17> nope, skip this
+		MOVE	t,pndcol	;<KPJ.17> get pending character
+		MOVEM	t,lastco##	;<KPJ.17>
+		SETZM	pndcol		;<KPJ.17> stop pending
+	 	PUSH	P,ch		;<KPJ.17> yeah, need an AC
+terco0:		AOS	linpos		;<KPJ.17> increment position
+		MOVE	t,linpos	;get line position
+		CAMLE	t,crmarg##	;outside right margin ?
+		 JRST[	CALL	getlma	;yes, get new left marg
+			JRST	terco0]	;retry operation
+T20,<		CALL	toutpu		;<KPJ.32> force out terminal buffer
+		CALL	outall		;<KPJ.42> set "image mode" (sort of)
+>;T20
+		MOVEI	ch,.CHESC	;<KPJ.17> start with ESC
+		CALL	tput##		;<KPJ.17> output to terminal
+		MOVE	ch,lastco##	;<KPJ.17> get the colour
+		CALL	tput##		;<KPJ.17> make it exist
+T20,<		CALL	toutpu		;<KPJ.32> force out terminal buffer
+		CALL	outnrm		;<KPJ.42> restore "normal mode"
+>;T20
+		POP	P,ch		;<KPJ.17> restore AC
+		JRST	.+1]		;<KPJ.17> ho hum
+>;ftview
+	CALL	inclpo		; increase line position
+	SETZM	lffl##		; [NIL] off lffl
+	CALL	chprin		; get number of signs
+	 JRST	terco2		; two signs
+	 JRST	terco1		; one sign
+	CALL	tputun		; unprintable
+	JRST	terco9		; get next char
+
+terco1:	CALL	tputon		; put char in buffer
+	JRST	terco9		; get next char
+
+terco2:	CALL	tputcc		; put control char in buffer
+terco9:	return
+
+
+
+
+
+;+
+T20,<
+;OUTNRM		set "normal mode" (sort of)
+;accepts	NRMCOC/	"normal" CCOC words
+;		NRMWID/	"normal" terminal width
+;returns	+1 always, with "normal mode"
+;-
+
+outnrm::MOVEI	1,.PRIOUT		;<KPJ.42> restore old line width
+	MOVEI	2,.MOSLW		;<KPJ.42> . . .
+	MOVE	3,nrmwid##		;<KPJ.43> . . .
+	MTOPR%				;<KPJ.42> . . .
+	MOVEI	1,.PRIOUT		;<KPJ.42> restore CCOC words
+	MOVE	2,nrmcoc+0		;<KPJ.43> . . .
+	MOVE	3,nrmcoc+1		;<KPJ.43> . . .
+	SFCOC%				;<KPJ.42> . . .
+	return				;<KPJ.43> return to caller
+>;T20
+
+
+;+
+T20,<
+;OUTALL		set "image mode" (sort of)
+;returns	+1 always, with "image mode" (sort of)
+;		NRMCOC/	"normal" CCOC word
+;		NRMWID/	"normal" terminal width
+;-
+
+outall::MOVEI	1,.PRIOUT		;<KPJ.42> send all stuff
+	RFCOC%				;<KPJ.42>
+	MOVEM	2,nrmcoc+0		;<KPJ.42> but first save old CCOC words
+	MOVEM	3,nrmcoc+1		;<KPJ.42> . . .
+	MOVE	2,[^O<525252,,525252>]	;<KPJ.42> SEND everything
+	MOVE	3,2			;<KPJ.42> . . .
+	SFCOC%				;<KPJ.42> . . .
+	MOVEI	1,.PRIOUT		;<KPJ.42> save line width too
+	MOVEI	2,.MORLW		;<KPJ.42> . . .
+	MTOPR%				;<KPJ.42> . . .
+	MOVEM	3,nrmwid##		;<KPJ.43> . . .
+	MOVEI	1,.PRIOUT		;<KPJ.42> make it infinite
+	MOVEI	2,.MOSLW		;<KPJ.42> . . .
+	MOVEI	3,0			;<KPJ.42> . . .
+	MTOPR%				;<KPJ.42> . . .
+	return				;<KPJ.43> return to reality
+>;T20
+
+
+
+
+;+
+;INCLPO		increase line position			[KPJ.3]
+;accepts	LINPOS/	old line position
+;returns	LINPOS/	new line position
+;-
+
+inclpo::CALL	chprin			; get number of signs
+	 JRST	inclp1			;+1 two signs
+	 JRST	inclp2			;+2 one sign
+	 JRST	inclp3			;+3 unknown size
+inclp1:	AOS	linpos
+inclp2:	AOS	linpos
+	JRST	inclp9
+inclp3:	CAIN	ch,.CHCRT		;[KPJ.3] carriage return ?
+	 SETZM	linpos			;[KPJ.3] yes, clear line position
+	CAIN	ch,.CHTAB		;[KPJ.3] tab ?
+	 CALL[	MOVE	t,linpos	;get line position
+		ADDI	t,8		;increase 8
+		ANDI	t,777770	;clear last three bits
+		MOVEM	t,linpos	;new line posiion
+		RET]
+inclp9:	return
+
+;+
+;CHPRIN		get number of signs a character will output as
+;accepts	CH/	ASCII character
+;returns	+1 if outputs as two signs (^ and letter)
+;		+2 if outputs as one sign
+;		+3 if "unprintable"
+;		(generates stop code CHPRIN TERCON if invalid)
+;-
+
+chprin:	MOVE	t,consum		;<KPJ.21> get consumer
+	CAIN	t,tercon		;<KPJ.21> beloved terminal consumer?
+	 CAIE	ch,.CHBEL		;<KPJ.21> and noisy character?
+	  TRNA				;<KPJ.21> nope, go ahead
+	   JRST[MOVE	t,selffl##	;<KPJ.21> yes, now then...
+		Txnn	t,belpfl	;<KPJ.21> door bell enabled?
+		 JRST	.+1		;<KPJ.21> yes, standard handling
+		MOVEI	t,ctyctl	;<KPJ.21> no, ^G wanted
+		JRST	chpri1]		;<KPJ.21>
+	CAIL	t,.CHNUL		;<KPJ.41> invalid character?
+	 CAILE	t,.CHDEL		;<KPJ.41> . . .
+	  TRNA				;<KPJ.41> valid
+	   BUG(HLT,<chprin tercon>,<ch>);<KPJ.41> invalid, die
+	HLRZ	t,chrtab(ch)		;get character type
+	ANDI	t,ctyctl+ctyunp		;get print type
+chpri1:	CAIN	t,ctyctl		;print as ^X ?
+	 JRST	chpri9			;yes
+	CAIN	t,ctyunp		;unprintable ?
+	 skpret				;yes
+	skpret				;one sign char
+chpri9:	return
+
+
+
+
+
+;+
+;CHRTAB		character table
+; for every char you get char type in left halfword
+; and normalized char in right halfword
+
+chrtab::XWD	ctyunp,0	; null char
+REPEAT	6,<XWD	ctyctl,chabla>	; ^A - ^F
+	XWD	ctyunp,chabla	; ^G
+	XWD	ctyctl,chabla	; ^H
+	XWD	ctyunp,chabla	; tab
+	XWD	ctyunp,chabla	; line feed
+	XWD	ctyctl,chabla	; ^K
+	XWD	ctyunp,chabla	; form feed
+	XWD	ctyunp,chabla	; cr
+REPEAT	37-15,<	ctyctl,,chabla>	; ^N - ^_
+	XWD	0,chabla		; space
+	XWD	ctyspe,.-chrtab-40	; !
+	XWD	ctyspe,.-chrtab-40	; "
+	XWD	ctyspe,.-chrtab-40	; #
+	XWD	ctyspe,.-chrtab-40	; $
+REPEAT	")"-"%"+1,<ctyspe,,.-chrtab-40>	; % - )
+	XWD	ctysti,.-chrtab-40	; *
+	XWD	ctyspe,.-chrtab-40	; +
+	XWD	ctyspe,.-chrtab-40	; ,
+	XWD	ctyspe,.-chrtab-40	; -
+	XWD	ctyspe,.-chrtab-40	; .
+	XWD	ctyspe,.-chrtab-40	; /
+REPEAT	"9"-"0"+1,<ctydig,,.-chrtab-40>	; 0 - 9
+	XWD	ctysti,.-chrtab-40	; :
+	XWD	ctyspe,.-chrtab-40	; ;
+	XWD	ctyspe,.-chrtab-40	; left angle
+	XWD	ctysti,.-chrtab-40	; =
+	XWD	ctyspe,.-chrtab-40	; right angle
+	XWD	ctyspe,.-chrtab-40	; ?
+	XWD	ctyspe,.-chrtab-40	; @
+REPEAT	"Z"-"A"+1,<ctylet,,.-chrtab-40>	; A - Z
+
+IFE	FTLAN-.swe,<			; swedish
+	XWD	ctylet,.-chrtab-40	; [
+	XWD	ctylet,.-chrtab-40	; \
+	XWD	ctylet,.-chrtab-40	; ]
+>;FTLAN-.swe
+IFE	FTLAN-.nor,<			; norwegian
+	XWD	ctylet,.-chrtab-40	; [
+	XWD	ctylet,.-chrtab-40	; \
+	XWD	ctylet,.-chrtab-40	; ]
+>
+IFE	FTLAN-.eng,<			; english
+NQZIF,<	XWD	ctyspe,.-chrtab-40	; [	<KPJ.33!KPJ.14> outside QZ
+	XWD	ctyspe,.-chrtab-40	; \
+	XWD	ctyspe,.-chrtab-40	; ]
+>;NQZIF
+QZIF,<	XWD	ctylet,"A"-40		; [	<KPJ.33!KPJ.14> local QZ hack
+	XWD	ctylet,"O"-40		; \
+	XWD	ctylet,"A"-40		; ]
+>;QZIF
+>;English language
+IFE	FTLAN-.ger,<			; german
+	XWD	ctylet,.-chrtab-40	; [
+	XWD	ctylet,.-chrtab-40	; \
+	XWD	ctylet,.-chrtab-40	; ]
+>
+IFE	FTLAN-.fre,<			; french
+	XWD	ctyspe,.-chrtab-40	; [
+	XWD	ctyspe,.-chrtab-40	; \
+	XWD	ctyspe,.-chrtab-40	; ]
+>
+	XWD	ctyspe,.-chrtab-40	; ^
+	XWD	ctyspe,.-chrtab-40	; _
+	XWD	ctyspe,.-chrtab-100	; `
+REPEAT	"z"-"a"+1,<
+	XWD	ctylet,.-chrtab-100	; a - z
+>;End REPEAT
+
+IFE	FTLAN-.swe,<			; swedish
+	XWD	ctylet,.-chrtab-100	; {
+	XWD	ctylet,.-chrtab-100	; |
+	XWD	ctylet,.-chrtab-100	; }
+>;swedish language
+IFE	FTLAN-.nor,<			; norwegian
+	XWD	ctylet,.-chrtab-100	; {
+	XWD	ctylet,.-chrtab-100	; |
+	XWD	ctylet,.-chrtab-100	; }
+>
+IFE	FTLAN-.ger,<			; german
+	XWD	ctylet,.-chrtab-100	; {
+	XWD	ctylet,.-chrtab-100	; |
+	XWD	ctylet,.-chrtab-100	; }
+>
+IFE	FTLAN-.eng,<			; english
+QZIF,<	XWD	ctylet,"A"-40		; {	<KPJ.33!KPJ.14> if QZ
+	XWD	ctylet,"O"-40		; |
+	XWD	ctylet,"A"-40		; }
+>;QZIF
+NQZIF,<	XWD	ctyspe,.-chrtab-100	; {	<KPJ.33!KPJ.14> if not QZ
+	XWD	ctyspe,.-chrtab-100	; |
+	XWD	ctyspe,.-chrtab-100	; }
+>;NQZIF
+>
+IFE	FTLAN-.fre,<			; french
+	XWD	ctyspe,.-chrtab-100	; {
+	XWD	ctyspe,.-chrtab-100	; |
+	XWD	ctyspe,.-chrtab-100	; }
+>
+	XWD	ctyspe,.-chrtab-100	; ~
+	XWD	ctyunp,chabla		; rubout
+;-
+
+
+
+
+;+
+;TPUTUN		put an unprintable character in the terminal buffer
+;accepts	CH/	char
+;-
+
+tputun:	CAIN	ch,.CHLFD	;[KPJ.3] line feed ?
+	 JRST	tputlf		;[KPJ.3] yes
+	CAIN	ch,.CHFFD	;[KPJ.3] form feed ?
+	 JRST	tputff		;[KPJ.3] yes
+	CAIN	ch,.CHTAB	;[KPJ.3] tab ?
+	 JRST	tputta		;[KPJ.3] yes
+	branch	tput##		; no, put char in buffer
+
+
+
+
+
+;+
+;TPUTLF		put a line feed in the terminal buffer
+;-
+
+tputlf:	SETOM	lffl##		; [NIL] set lffl
+	CALL	tput##		; put char in buffer
+	CALL	inclfc		; increase line feed count
+	return
+
+
+
+
+
+;+
+;INCLFC		increase line feed count
+;		check if necessary to break page
+;-
+
+inclfc::AOS	t,lfcnt			; increase line feed count
+	ADDI	t,1
+	CAMN	t,maxlin		; page full ?
+	 JRST[	SETOM	gtcrfl		;<KPJ.20> almost, set pending flag
+		JRST	inclf9]		;[BCQ] and return
+	MOVE	t,selffl##		;<KPJ.33!BCQ> get my flags
+	Txne	t,netpfl		;[BCQ] network bug flag set?
+	 JRST[				;[KPJ.2] yes, sleep awhile
+T10,<		MOVE	t,[HB.RWJ+^D2000] ;[BCQ] 2000ms
+		HIBER	t,		;[BCQ] go to sleep for 2 seconds
+		 nop
+>;T10
+T20,<		MOVEI	1,^D2000	;[KPJ.2] sleep 2000ms
+		DISMS%
+>;T20
+		JRST	.+1]
+IFN	ftview,<			;<KPJ.5> if VIEWDATA support
+	SKIPGE	viewfl##		;<KPJ.5> if VIEWDATA
+	 JRST[	MOVE	t,lastco##	;<KPJ.16!KPJ.5> make pending character
+		MOVEM	t,pndcol	;<KPJ.16>
+		JRST	.+1]
+>;ftview
+
+inclf9:	return
+
+
+
+
+
+;+
+;BRKPAG		break page
+;-
+
+brkpag::save	<consum>
+	SETZM	gtcrfl			;<KPJ.20> no more pending GETCR
+	SETZM	lfcnt		; clear line feed count
+	CALL	tcbeg		; output on terminal
+	ifon	scrfl##,brkpa1	; scrolls ?
+	CALL	tputff		; no, get a new page
+	JRST	brkpa9
+
+brkpa1:	CALL	getcr		; get cr from terminal
+brkpa9:	CALL	tcend		; restore old consumer
+	return
+
+
+
+
+
+;+
+;TPUTFF		put a form feed in terminal buffer
+;-
+
+tputff:	save	<ch>
+	SKIPN	maxlin			;<KPJ.36> page length 0?
+	 JRST[	MOVEI	ch,"^"		;<KPJ.36> yes, output as "^L"
+		CALL	tput##		;<KPJ.37!KPJ.36> . . .
+		MOVEI	ch,"L"		;<KPJ.36> . . .
+		CALL	tput##		;<KPJ.37!KPJ.36> . . .
+		JRST	tputf9]		;<KPJ.36> and exit
+	SKIPL	papflg##		;display terminal ?
+	 CALL	getcr			;yes, get CR from terminal
+	SETZM	lfcnt			;yes, clear line feed count
+	CALL	erascr			;erase screen
+IFN	ftphon,<			;<KPJ.27> if text phone support..
+	SKIPE	phone##			;<KPJ.27> phone?
+	 JRST	tputf9			;<KPJ.27> yes, we are done
+>;ftphon
+	MOVEI	ch,.CHCRT		;get carriage return
+	CALL	tput##			;output CR as filler
+	CALL	tput##
+	CALL	tput##
+	SKIPL	papflg##		;prints on paper ?
+	 JRST	tputf9			;no
+	CALL	prhead			;yes, print heading
+tputf9:	return
+
+
+
+
+
+;+
+;ERASCR		erase screen
+;
+;	This may give problems on some screens. (. What, me worry? .)
+
+erascr::save	<ch>
+IFN	ftphon,<			;<KPJ.27> if text phoen support...
+	SKIPE	phone##			;<KPJ.27> phone?
+	 JRST[	CALL	tcolor##	;<KPJ.27> yes, let's paint it
+		TRN[			;<KPJ.27> output 13 CRs to it
+REPEAT	2,<		BYTE (7) .CHCRT,.CHCRT,.CHCRT,.CHCRT,.CHCRT>
+			BYTE (7) .CHCRT,.CHCRT,.CHCRT,.CHNUL]
+		JRST	erasc9]		;<KPJ.27>
+>;ftphon
+	SKIPGE	ansflg##		;ANSI terminal?
+	 JRST[	CALL	tcolor##	;yes, clear ANSI-wise
+		TRN[	BYTE (7).CHESC,.CHOBR,"H",.CHESC,.CHOBR,"J",.CHNUL]
+		JRST	erasc9]		;return
+
+	CALL	vc404p			;VC404?
+	 CALL	tcolor##		;yes, give it a CTRL/X
+	TRN[	BYTE (7) .CHCNX,.CHNUL]
+
+	CALL	vc414p			;VC414?
+	 CALL	tcolor##		;yes, give it ESC CTRL/\
+	TRN[	BYTE (7) .CHESC,.CHCBS,.CHNUL]
+
+T20,<	CALL	toutpu			; force out terminal buffer
+	CALL	outall			;<KPJ.43> set "image mode"
+>;T20
+	MOVEI	ch,.CHFFD		;<KPJ.3> output form feed
+	CALL	tput##			;<KPJ.3>
+T20,<	CALL	toutpu			; force out terminal buffer
+	CALL	outnrm			;<KPJ.43!KPJ.42> restore "normal mode"
+>;T20
+
+erasc9:	SETZM	linpos		; [SEE] we're in leftmost column now
+	return
+;-
+
+
+
+;+
+;VC404P		test if Volker Craig VC404
+;returns	+1 is VC404
+;		+2 if not VC404
+;-
+
+vc404p:
+T10,<	MOVE	t,[3,,t2]		;len,,arglst
+	MOVEI	t2,.TOTRM		;get SIXBIT terminal type
+	SETO	t3,			;self
+	TRMOP.	t,			;get the data
+	 SETZ	t,			;***FOO*** failed, simulate TTY
+	CAME	t,[SIXBIT !vc404!]	;is it a VC404?
+>;T10
+T20,<	MOVEI	1,.CTTRM		;controlling terminal
+	GTTYP%				;get terminal type
+	CAIE	2,.vc404		;VC404?
+>;T20
+	 skpret				;no, +2 return
+	return
+
+
+;+
+;VC414P		test if Volker Craig VC414
+;returns	+1 is VC414
+;		+2 if not VC414
+;-
+
+vc414p:
+T10,<	MOVE	t,[3,,t2]		;len,,arglst
+	MOVEI	t2,.TOTRM		;get SIXBIT terminal type
+	SETO	t3,			;self
+	TRMOP.	t,			;get the data
+	 SETZ	t,			;***FOO*** failed, simulate TTY
+	CAME	t,[SIXBIT !vc414!]	;is it a VC414?
+>;T10
+T20,<	MOVEI	1,.CTTRM		;controlling terminal
+	GTTYP%				;get terminal type
+	CAIE	2,.vc414		;VC414?
+>;T20
+	 skpret				;no, +2 return
+	return
+
+	
+
+;+
+;PRHEAD		print page heading
+;-
+
+prhead::save	<nr,str>
+	print	zdbnam##		;<KPJ.26> display system name
+	print	zheadi##		;"-- Page "
+	AOS	nr,pagcnt		;increase page count
+	CALL	prnum##			;print page number
+	print[	ASCIZ !   ---   !]
+	MOVE	nr,conf##		;get current conference
+	CALL	prname##		;print its name
+	SETZM	lfcnt			;clear line feed count
+	CALL	preol##		; new line
+	SETZM	lfcnt		; clear line feed count
+	return
+
+
+
+
+
+
+;+
+; GETCR  --  get a carriage return from the terminal
+;-
+
+getcr:	save	<ch,quest##,str,produc##>
+T10,<	MOVE	t1,[2,,[EXP .TOOSU,-1]]	;<KPJ.10> CTRL/O setting of my TTY
+	TRMOP.	t1,			;<KPJ.10> state-of-the-world-p
+	 SETZ	t1,			;<KPJ.10> ***FOO*** shouldn't happen
+	JUMPN	t1,getcr8		;<KPJ.10> CTRL/O on = automagic spaceCR
+					;<KPJ.22>
+>;T10
+T20,<	MOVEI	1,.CTTRM		;<KPJ.11> where we get ^O's from
+	RFMOD%				;<KPJ.11> get JFN mode word for it
+	TLNE	2,(TT%OSP)		;<KPJ.11> ^O lately?
+	 JRST	getcr8			;<KPJ.11> yep, space man returns
+>;T20
+	SKIPGE	havenq##		;<KPJ.13> we have ENQ?
+	 JRST	getcr9			;<KPJ.13> yes, cannot wait for lusers..
+	MOVEI	t,askret		;ask for return
+	MOVEM	t,quest##		;. . .
+	CALL	ospclr##
+	CALL	echoff##		;set echo off
+	CALL	tpbeg##			;get input from terminal
+IFN	ftview,<
+	PUSH	P,lastco##		;<KPJ.16> save old colour code
+	CALL	colred			;<KPJ.5> red
+	POP	P,lastco##		;<KPJ.16> restore old colour code
+>;ftview
+IFN	ftphon,<			;<KPJ.27> if text phone support...
+	SKIPE	phone##			;<KPJ.27> phone?
+	 SETOM	pasflg##		;<KPJ.27> yes, simulate no echo
+>;ftphon
+	CALL	getstr			;get string
+	 JRST[	CALL	echon##		;<KPJ.34> failed, restre echo
+		JRST	getcr9]		;<KPJ.34> and give up
+	MOVE	ch,lastch##		;get end character
+IFN	ftphon,<			;<KPJ.27> if text phone support...
+	SETZM	pasflg##		;<KPJ.27> end of no echo
+>;ftphon
+	CAIN	ch,.CHFFD		;[KPJ.3] form feed ?
+	 JRST[	CALL	erascr		;yes, erase screen
+		JRST	getcr1]
+	 CALL	erline			;no, erase line
+getcr1:
+IFN	ftview,<			;<KPJ.16> if VIEWDATA support
+	SKIPGE	colflg##		;<KPJ.16> any colours?
+	 JRST[	SKIPL	viewfl##	;<KPJ.16> if VIEWDATA
+		 JRST	.+1		;<KPJ.16> no
+	 	MOVE	t,lastco##	;<KPJ.17> get last colour
+		MOVEM	t,pndcol	;<KPJ.17> make it the pending colour
+		JRST	.+1]		;<KPJ.16> ho hum
+>;ftview
+	CALL	echon##			; set echo on
+	CALL	chcmd			; command ?
+	 TRNA				; no
+	  TRNA				; yes, interrupt
+	   SKIPE t,-1(str)		;line empty
+getcr8:	    SETOM intflg		;no, other char, set interrupt flag
+getcr9:	return			;<KPJ.13>
+
+
+
+
+
+;+
+; ASKRET  --  ask for return
+;-
+
+askret:	save	<str,ch>
+	MOVEI	ch,.CHCRT		;<KPJ.31> get a CR
+IFN	ftphon,<			;<KPJ.31> text phone support?
+	SKIPN	phone##			;<KPJ.31> yes, avoid CRLF if such
+>;ftphon
+	 CALL	putch			;<KPJ.31> get us to left margin
+	print	zretur##		;"(Press return)"
+	return
+
+
+
+
+;+
+;GETSTR		get string
+;returns	+1 failure
+;		+2 success, with STR/	string
+;-
+
+getstr::save	<consum,ch,strbeg##,strbp##>
+getst1:	CALL	stbeg##				;start string
+	 JRST	getst9				;<KPJ.34> failed, give up
+	CALL	@produc##			;get it
+	CALL	stend##				;ready
+	MOVE	t,produc##			;get producer
+	CAIE	t,terpro##			;terminal input ?
+	 JRST	getst8				;no, ready
+	MOVE	t,0(str)			;get number of chars
+	CAIE	t,1				;just one ?
+	 JRST	getst8				;no, ready
+	LDB	ch,[POINT 7,1(str),6]		;get this character
+	CAIN	ch,"?"				;help wanted ?
+	 JRST[	SETOM	hlpflg			;yes
+		JRST	getst1]			;give it
+getst8:	ADDI	str,1				;<KPJ.34>
+	skpret					;<KPJ.34> +2 return for success
+getst9:	return					;<KPJ.34>
+
+
+
+
+
+;+
+; ERLINE  --  erase current line
+;-
+
+erline:	save	<str>
+IFN	ftphon,<			;<KPJ.27> if text phone support...
+	SKIPE	phone##			;<KPJ.27> phone?
+	 JRST	erlin9			;<KPJ.27> yes, cannot erase line
+>;ftphon
+	MOVEI	ch,.CHCRT		;CR
+	CALL	putch
+	print[				;<KPJ.27> 5*5+3 = 28 spaces
+REPEAT	5,<	BYTE (7) .CHSPC,.CHSPC,.CHSPC,.CHSPC,.CHSPC>
+		BYTE (7) .CHSPC,.CHSPC,.CHSPC,.CHNUL]
+	MOVEI	ch,.CHCRT		;CR
+	CALL	putch
+IFN	ftphon,<			;<KPJ.27> if text phone support...
+erlin9:					;<KPJ.27>
+>;ftphon
+	return
+
+
+
+
+
+;+
+; CHCMD  --  check if command
+; do command if really a command
+; gets command line in STR
+; returns at call + 1 if not a command
+; returns at call + 2 if command done
+;-
+
+chcmd:	save	<tp,bp,chpt##>
+	CALL	mkbp##		; make byte pointer
+	MOVEM	bp,chpt##	; save it
+	CALL	parscm##	; NIL is it a command?
+	 JRST	chcmd9		; NIL no, return
+	CALL	execcm##	; NIL execute it
+	skpret			; NIL ok, skipreturn
+chcmd9:	return			; NIL
+
+
+
+
+
+;+
+; TPUTTA  --  put a tab in the terminal buffer
+;-
+
+tputta:	SKIPE	acrfl			; check if to test
+	 JRST[	MOVE	t,linpos	;<KPJ.24> get current position
+		SUBI	t,1		;<KPJ.24> zero offset
+		IDIVI	t,8		;<KPJ.24> get last tab stop
+		ADDI	t,1		;<KPJ.24> go to next tab stop
+		IMULI	t,8		;<KPJ.24> compute its position
+		CAIG	t,irmarg	;<KPJ.24> beyond margin?
+		 JRST[	CALL	preol##	;<KPJ.24> yes, break
+			JRST	tputt9]	;<KPJ.24> and exit
+		JRST	.+1]		;<KPJ.24> else continue
+	CALL	tputc			;put tab in buffer
+tputt9:	return
+
+
+
+
+
+;+
+;TPUTC		put a character in terminal buffer.
+;		check if there is room in the line.
+;accepts:	CH/	character
+;		LINPOS/	line position
+;-
+tputc::	MOVE	t,linpos	; get line position
+	CAMLE	t,crmarg##	; outside right margin ?
+	 JRST	tputc1		; yes
+	CALL	tput##		; no, put char in buffer
+	JRST	tputc9
+
+tputc1:	CALL	getlma		; get new left margin
+	CAIN	ch,.CHSPC	;[KPJ.3] dont put space
+	 JRST	tputc9		;[KPJ.3]
+	CALL	putch		; put char in buffer
+tputc9:	return
+
+
+
+
+
+;+
+; GETLMA  --  get left margin
+; gets margin value in LMARG
+;-
+
+getlma::save	<nr,ch>
+	ifon	intflg,getlm9	;[1015] interrupt ?
+	MOVE	nr,lmarg	; get inner left margin
+	MOVEI	ch,.CHSPC	;[KPJ.3] get space
+	CAMGE	nr,linpos	; margin reached ?
+	 CALL	preol##		; yes, get new line
+	SUB	nr,linpos	; get difference
+getlm1:	SOJL	nr,getlm9	; margin reached ?
+	CALL	putch		; no, print blank
+	JRST	getlm1
+
+getlm9:	return
+
+
+
+
+
+;+
+; TPUTON  --  put a one sign char in the terminal buffer
+;-
+
+tputon::CAIE	ch,.CHSPC		;[KPJ.3] space ?
+	 JRST	tputo8			;no
+	MOVE	t,linpos		;get line position
+IFN	ftphon,<			;<KPJ.4> text phone support?
+	SKIPE	phone##			;[BCQ] is this a text phone?
+	 JRST	tputo1			;[BCQ] yes, check the lusing terminal
+>;ftphon
+	SKIPE	acrfl			;check if to test
+	 CAIG	t,irmarg
+	  JRST	tputo8
+	CALL	preol##			;new line
+IFN	ftphon,<			;<KPJ.4> text phone support?
+	JRST	tputo9			;ready
+tputo1:	CAIG	t,opgsz4		;[KPJ.4!BCQ] automagic newline now?
+	 JRST	tputo8			;[BCQ] no, so just print the character
+	CALL	tputc			;[BCQ] put char in buffer
+	SETZM	linpos			;[BCQ] remember we're in column 0 now
+	CALL	inclfc			;[BCQ] increment linefeed count
+	JRST	tputo9			;[BCQ] and return
+>;ftphon
+tputo8:	CALL	tputc			;put char in buffer
+tputo9:	return
+
+
+
+
+
+;+
+; TPUTCC  --  put a control character in the terminal buffer
+;-
+
+tputcc:	save	<ch>
+	ifon	colflg##,tputc8	; colour ?
+	save	ch
+	MOVEI	ch,"^"		; get ^-sign
+	CALL	tputc		; put it in buffer
+	restore	ch		; restore old char
+	ADDI	ch,"@"		; make it a letter
+tputc8:	CALL	tputc		; put it in buffer
+	return
+
+
+
+;+
+IFN	ftview,<			;<KPJ.5> if VIEWDATA support
+;COLRED		start RED (flashy)
+;-
+colred:	SKIPGE	colflg##		;any colours?
+	 JRST[	SKIPL	viewfl##	;<KPJ.5> if VIEWDATA
+		 JRST	.+1
+		MOVEI	t,"A"		;<KPJ.16> "red"
+		MOVEM	t,pndcol	;<KPJ.16> make next message in red
+		JRST	.+1]		;return
+	return
+>;ftview
+
+	END
+
+..and no more

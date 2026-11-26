@@ -1,0 +1,543 @@
+;Oden::DSKG:PRIREC.MAC<62,7777,MAC> 1986-12-11 18:47:12, Edit by KPJ @ L89
+;26	PUTCH is macro.
+;Oden::DSKG:PRIREC.MAC<62,7777,MAC> 1986-09-16 14:46:07, Edit by KPJ @ H.HOLE
+;25	Display text number without parentheses.
+;Oden::DSKG:PRIREC.MAC<62,7777,MAC> 1986-07-21 16:42:38, Edit by KPJ @ L89
+;24	Handle error from GTFLGS.
+;Oden::DSKG:PRIREC.MAC<62,7777,MAC> 1986-06-13 18:57:21, Edit by KPJ @ L89
+;23	Moved texts to TEXTER. Documented disgusting code.
+;Oden::DSKG:PRIREC.MAC<62,7777,MAC> 1986-02-13 19:30:18, Edit by KPJ
+;22	PTY mode inside FTPTYM conditional.
+;Oden::DSKD:PRIREC.MAC<62,7777,MAC> 1985-10-17 15:45:59, Edit by KPJ
+;21	SENDER: is written if not same as previous (the first one is the
+;	author by default).
+;Oden::DSKD:PRIREC.MAC<62,7777,MAC> 1985-10-08 12:38:45, Edit by KPJ
+;20	Fixed typo in code.
+;Oden::DSKD:PRIREC.MAC<62,7777,MAC> 1985-10-04 22:32:50, Edit by KPJ @ ORANGE
+;17	Introduced PROLOG macro.
+;Oden::DSKD:PRIREC.MAC<62,7777,MAC> 1985-08-12 23:37:32, Edit by KPJ @ DECGR
+;16	Implement personal flag "MARKS (ARE) SECRET".
+;Oden::DSKD:PRIREC.MAC<62,7777,MAC> 1985-03-13 23:46:20, Edit by KPJ @ AIDA
+;15	Treat all markers as public when we are in administrator mode.
+;Oden::DSKD:PRIREC.MAC[62,7777] 1985-01-07 21:32:42, Edit by KPJ @ L89
+;14	Got rid of QCHEAD reference. Use TX?? macros.
+;Oden::DSKD:PRIREC.MAC[62,7777] 1984-12-11 00:43:24, Edit by KPJ @ NADJA
+;13	Fix tabulation margin problem (saving old value).
+;Oden::DSKD:PRIREC.MAC[62,7777] 1984-12-05 04:56:27, Edit by KPJ @ NADJA
+;12	Make complete headings less tabified...
+;Oden::DSKD:PRIREC.MAC[62,7777] 1984-11-27 04:45:34, Edit by KPJ @ NADJA
+;11	Make markers obey "SWITCH OFF COMPLETE HEADINGS", by packing the
+;	stuff, when flag off. Same with "-- Received: " information.
+;	PRLNLI not referenced in any other module, made local.
+;	Rewrote PRSEND somewhat to obey COMPLETE HEADINGS.
+;Oden::DSKD:PRIREC.MAC[62,7777,TTQ] 1984-11-23 08:46:47, Edit by THOLERUS T
+;10	Counted down unseen letters when letter read by REVIEW.
+;Oden::DSKD:PRIREC.MAC[62,7777,TTQ] 1984-11-19 13:11:17, Edit by THOLERUS T
+;7	Marked seen letters.  Added CHKRDT.
+;Oden::DSKD:PRIREC.MAC[62,7777] 1984-11-12 18:23:53, Edit by K.JAAKKOLA
+;6	Sum up secretive markers like "Marked by 7 other users.".
+;Oden::DSKD:PRIREC.MAC[62,7777] 1984-10-09 08:03:19, Edit by K.JAAKKOLA
+;5	General code cleanup.
+;Oden::Dskd:Prirec.Mac[62,7777] 1984-10-02 12:22:53, Edit by K.Jaakkola
+;4	Call it "(protected name)" so nobody thinks it is some military
+;	secrets we are discussing... (FOO!)
+;Oden::Dskd:Prirec.Mac[62,7777] 1984-09-25 11:31:36, Edit by K.Jaakkola
+;3	Say "(secret name)" when entry marked by a closed or protected person,
+;	who is not the person asking. Don't search UUOSYM on TOPS-20.
+;	Search MONSYM,MACSYM instead.
+;Oden::Dskd:Prirec.Mac[62,7777] 1984-09-10 10:59:42, Edit by K.Jaakkola
+;2	Show SENDER: always if not same as author, to not confuse users.
+;	Deleted PREVSE (previous sender) hacking altogether,
+;Oden::Dskd:Prirec.Mac[62,7777] 1984-09-04 05:25:15, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(prirec)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 05:25:10
+
+;	D A T A   A R E A
+
+
+nrrecs:	0			; number of receivers
+nrcoms:	0			; number of comments
+preflg:	0			; present flag
+prevti:	BLOCK	1		;<KPJ.21> previous SEND time
+prevse:	BLOCK	1		;<KPJ.21> previous SENDER:
+rectyp:	BLOCK	1		;[KPJ.11] last written type
+nrmark:	BLOCK	1		;[KPJ.5] number of secretive markers on entry
+nrmurk:	BLOCK	1		;[KPJ.5] number of public markers on entry
+nrmerk:	BLOCK	1		;[KPJ.11] flag to output "Marked by":
+				;0=do output
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;PRIREC		print receivers
+;accepts	NR/	object number
+;		GP2/	number of lines to show
+;-
+prirec::save	<gp1,bfp,nr,lmarg##>	;[KPJ.13]
+	SETZM	nrrecs			;clear number of receivers
+	SETZM	nrcoms			;clear number of comments
+	SETZM	preflg			;clear present flag
+	SKIPG	recflg##		;with receivers ?
+	 JUMPE	gp2,prire9		;no, any text ?
+	CALL	getobj##		;get entry
+	 Bug(hlt,<PRIREC prirec>,<nr>)
+	MOVE	nr,objlfr+2(bfp)	;get first receiver
+	SETZM	rectyp			;[KPJ.11] no type so far
+	MOVE	t,authnr##		;<KPJ.21> get author
+	MOVEM	t,prevse		;<KPJ.21> that's the SENDER: by default
+	MOVE	t,objtim(bfp)		;<KPJ.21> creation time is default
+	MOVEM	t,prevti		;<KPJ.21> for send time
+prire1:	CALL	getobj##		; get link
+	 TRNA				; no more receivers
+	  JRST[	CALL	prinre		; print receiver
+		MOVE	nr,lnklfr+2(bfp) ; get next receiver
+		JRST	prire1]
+prire9:	return
+
+
+
+
+
+;+
+; PRINRE  --  print receiver
+; gets link object in BFP
+; gets author in AUTHNR
+;-
+
+prinre:	save	<str,nr,gp1>
+	SKIPG	(bfp)			;link deleted ?
+	 JRST	prinr9			;yes
+	CALL	chkrdt			;[TTQ.7] check if letter
+	MOVE	nr,lnkrec(bfp)		;get receiver
+	CAMN	nr,conf##		;current conference ?
+	 SETOM	preflg			;yes, present
+	CAMN	nr,authnr##		;author as receiver ?
+	 CAME	nr,crenr##		;and self also same ?
+	  TRNA				;no
+	   JRST	prinr9			;yes, skip it
+	MOVE	gp1,lnktyp(bfp)		;get link type
+	CALL	precli			;print receiver line
+	CALL	pknoli			; print info copy line
+	CALL	pexcli			; print single copy line
+	CALL	pcomli			; print comment line
+prinr9:	return
+
+;+
+;CHKRDT		check if letter		;[TTQ.7]
+;accepts	NR/	link number
+;		BFP/	link object
+;		GP2/	number of lines to show
+;-
+
+chkrdt:	save	<nxleln##>
+	JUMPG	gp2,chkrd9		; whole letter shown ?
+	SKIPE	lnkrdt(bfp)		; received ?
+	 JRST	chkrd9			; yes
+	MOVE	t,lnkrec(bfp)		; get receiver
+	CAME	t,crenr##		; letter to self ?
+	 JRST	chkrd9			; no
+	MOVEM	nr,nxleln##		; save link number
+	CALL	updbeg##		; start update
+	CALL	updrdt##		; update received date
+	CALL	updend##		; end of update
+	SOS	nrlett##		;[TTQ.10] one less letter
+chkrd9:	return
+
+
+
+;+
+; PRECLI  --  print receiver line
+; gets link type in GP1
+; gets link in BFP
+;-
+
+precli:	save	<str>
+	CAIE	gp1,typrec	; receiver ?
+	 JRST	precl9		; no
+	MOVEI	str,zzlrec##	; say receiver
+	AOS	nrrecs		; one more receiver
+	SKIPLE	recflg##	; with receivers ?
+	 CALL	prlnli		; print link line
+precl9:	return
+
+
+
+
+
+;+
+; PRLNLI  --  print link line
+; gets link object in BFP
+; gets link name in STR
+; gets receiver in NR
+;-
+
+prlnli:	MOVE	t,selffl##		;get our personal flags
+	Txnn	t,hedpfl		;short headings?
+	 JRST	prlnl2			;no, make heading
+	CAMN	str,rectyp		;same procedure as every year, James?
+	 JRST[	PUSH	P,str		;yes, miss Sofie!
+		print[	ASCIZ !, !]
+		POP	P,str
+		JRST	prlnl1]
+	MOVEM	str,rectyp		;no, white wine to the fish!
+prlnl2:	CALL	preol##			; new line
+	ifon	nohflg##,prlnl1		; any heading ?
+	CALL	prstr##			; say it
+	MOVE	t,linpos##		;[KPJ.12] remember position
+	MOVEM	t,lmarg##		;[KPJ.12] for long lines
+prlnl1:	CALL	prinam			; print receiver
+	CALL	plnknr			; print link number
+	CALL	prrecd			; print receive
+	branch	prsend			; print sender
+
+
+
+
+
+;+
+;PRINAM		output name or entry information
+;		(e.g. "Foo Bar" or "4711 by Foo Bar")
+;accepts	NR/	object number
+;-
+
+prinam::CALL	chkdir##		;entry ?
+	 TRNA				;no
+	  JRST[	PUSH	P,nr		;<KPJ.25> save away things we need
+		PUSH	P,gp1		;<KPJ.25> . . .
+		CALL	splpoi##	;<KPJ.25> get entry number
+		CALL	prnum##		;<KPJ.25> output entry number
+		POP	P,gp1		;<KPJ.25> restore them things
+		POP	P,nr		;<KPJ.25> . . .
+		CALL	pautnr		;output author number
+		JRST	prina9]
+	CALL	prname##		;no, output name
+prina9:	return
+
+
+
+
+
+;+
+; PAUTNR  --  print author number and name
+; gets text object in NR
+;-
+
+pautnr:	save	<nr,str,gp1,bfp>
+	ifon	intflg##,pautn9	; interrupt ?
+	CALL	getobj##	; get entry
+	 JRST	pautn9		; anonymous
+	SKIPG	(bfp)		; entry deleted ?
+	 JRST	pautn9		; yes
+	SKIPN	nr,objcre(bfp)	; get creator
+	 JRST	pautn9		; not defined
+	print	zby1##		;" by "
+	CALL	prinam		; print author name
+pautn9:	return
+
+
+
+
+;+
+; PLNKNR  --  print link number
+; gets link object in BFP
+;-
+
+plnknr:	save	<ch,nr>
+	ifon	intflg##,plnkn9		;interrupt ?
+	SKIPG	recflg##		;all receivers wanted ?
+	 JRST	plnkn9			;no, skip link number
+IFN	ftptym,<			;<KPJ.22>
+	SKIPGE	ptyflg##		;PTY mode ?
+	 JRST	plnkn9			;yes
+>;ftptym
+	MOVE	t,selffl##		;[KPJ.14] get personal flags
+	Txnn	t,hedpfl		;[KPJ.11,14] short headings?
+	 CALL[	CALL	putbla##	;[KPJ.14] output it
+		MOVEI	ch,.CHLBR	;[KPJ.14] get left broket
+		CALL	putch		;[KPJ.14] output it
+		MOVE	nr,lnklto+1(bfp);get link number
+		CALL	prnum##		;print it
+		MOVEI	ch,.CHRBR	;[KPJ.14] get right broket
+		CALLRET	putch]		;[KPJ.14] output it, and return
+plnkn9:	return
+
+
+
+
+
+;+
+; PRRECD  --  print if received
+; gets link object in BFP
+;-
+
+prrecd:	save	<gp1,str>
+	SKIPLE	gp1,lnkrdt(bfp)			; received ?
+	 CALL[	MOVE	t,selffl##		;[KPJ.14] get personal flags
+		Txnn	t,hedpfl		;[KPJ.14] short headings?
+		 JRST[	print	zreced##	;[KPJ.11] "-- Received: "
+			JRST	pdate##]	; print received time
+		RET]				;or nothing
+	return
+
+
+
+
+
+;+
+; PRSEND  --  print sender
+; gets author in AUTHNR
+; gets link object in BFP
+;-
+
+prsend:	save	<str,nr,gp1>
+	MOVE	nr,lnkcre(bfp)		; get sender
+IFN	ftptym,<			;<KPJ.22>
+	SKIPGE	ptyflg##		; always print in PTY mode
+	 JRST	prsen1
+>;ftptym
+	CAMN	nr,prevse		;<KPJ.21>  same as previous SENDER: ?
+	 JRST	prsen2			;<KPJ.21> yes, don't output name
+	MOVE	t,selffl##		;[KPJ.14] get personal flags
+	Txne	t,hedpfl		;[KPJ.14] short headings?
+	 JRST	prsen9			;[KPJ.11] yes, don't output
+IFN	ftptym,<			;<KPJ.22>
+prsen1:>
+	CALL	preol##			; new line
+	print	zsende##		;" Sender: "
+	CALL	prname##		; print name
+
+;The "time"s stored in KOM are in UDT format. The RH contains fraction of day.
+;This code checks if the difference between two daytimes is max 267 oct units.
+;That is approximately 1 minute.
+
+;@BEGIN(HATE)
+;This makes us test for equality, ignoring differences less than 1 minute.
+;The code is Torgny Tholerus style altogether: no comments at all. Yeach!
+;It doesn't work, of course. It happens to be incorrect, as usual.
+;		/KPJ 1986-06-13 18:56:59
+;@END(HATE)
+
+prsen2:	MOVE	t,lnktim(bfp)		;<KPJ.21> get creation time
+	SUB	t,prevti		;<KPJ.21> subtract previous
+	MOVM	t,t			;<KPJ.21> get abs
+	CAIGE	t,^O267			;<KPJ.21> enough?
+	 JRST	prsen9			;<KPJ.21> no, don't print
+	CAMN	nr,prevse		;<KPJ.21> written any SENDER: ?
+	 CALL	preol##			;<KPJ.21> no, make new line
+	MOVE	gp1,lnktim(bfp)		;<KPJ.21>
+	MOVEM	gp1,prevti		;<KPJ.21> yes, save as new previous
+	print	zsent##			;" -- Sent: "
+	CALL	pdate##			;output daytime
+prsen9:	MOVEM	nr,prevse		;<KPJ.21> remember the SENDER:
+	return
+
+
+
+;+
+; PKNOLI  --  print info copy line
+; gets link type in GP1
+; gets link in BFP
+;-
+
+pknoli:	save	<str>
+	CAIE	gp1,typkno	; receiver ?
+	 JRST	pknol9		; no
+	MOVEI	str,zzlkno##	; say info copy
+	AOS	nrrecs		; one more receiver
+	SKIPLE	recflg##	; with receivers ?
+	 CALL	prlnli		; print link line
+pknol9:	return
+
+
+
+
+
+;+
+; PEXCLI  --  print single copy line
+; gets link type in GP1
+; gets link in BFP
+;-
+
+pexcli:	save	<str>
+	CAIE	gp1,typexc	; receiver ?
+	 JRST	pexcl9		; no
+	MOVEI	str,zzlexc##	; say single copy
+	AOS	nrrecs		; one more receiver
+	SKIPLE	recflg##	; with receivers ?
+	 CALL	prlnli		; print link line
+pexcl9:	return
+
+
+
+
+
+;+
+; PCOMLI  --  print comment line
+; gets link type in GP1
+; gets link in BFP
+;-
+
+pcomli:	save	<str>
+	CAIE	gp1,typcom		; comment ?
+	 JRST	pcoml9			; no
+	MOVEI	str,zzlcom##		; say comment
+	AOS	nrcoms			; one more comment
+	ifon	nohflg##,pcoml9		; any heading ?
+	SKIPE	recflg##		; receivers ?
+	 CALL[	SETZM	rectyp		;[KPJ.11] better make a new line here
+		JRST	prlnli]		; print link line
+pcoml9:	return
+
+
+
+
+
+;+
+;MORREC		check if to print more receivers
+;accepts	NR/	entry number
+;		RECFLG/	receiver flag
+;		NRRECS/	number of receivers
+;		NRCOMS/	number of comments
+;		PREFLG/	present flag (ON if current conference is receiver)
+;		GP2/	number of lines to show
+;-
+
+morrec::save	<recflg##>
+	ifon	nohflg##,morre9		;without heading?
+	JUMPE	gp2,morre9		;any text ?
+	CALL	prmark			;print markers
+	SKIPE	recflg##		;some receivers
+	 JRST	morre9			;no
+	SKIPGE	preflg			;current conference is receiver?
+	 JRST	morre1			;yes
+	MOVEI	t,1			;no, output all receivers
+	MOVEM	t,recflg##
+morre2:	CALL	prirec			;print them
+	JRST	morre9
+
+morre1:	SOSG	nrrecs			;more than one receiver ?
+	 JRST	morre3			;no
+	print	zmorec##		;"(more receivers)"
+morre3:	SKIPG	nrcoms			;any comment ?
+	 JRST	morre9			;no
+	SETOM	recflg##		;yes, print them but no receivers
+	CALL	prirec			;print them
+morre9:	return
+
+
+
+
+
+
+;+
+;PRMARK  --  print markers		[KPJ.11]: rewritten
+; gets object number in NR
+;-
+
+prmark:	save	<nr,bfp,gp1,str>
+	ifon	intflg##,prmar9		; interrupt ?
+IFN	ftptym,<			;<KPJ.22>
+	SKIPGE	ptyflg##		; inhibit in PTY mode
+	 JRST	prmar9
+>;ftptym
+	SKIPG	recflg##		; with receivers ?
+	 JRST	prmar9			; no
+	CALL	getobj##		; get it
+	 Bug(hlt,<prmark prirec>,<nr>)
+	SKIPN	nr,dirmar(bfp)		; get last mark
+	 JRST	prmar9			; no mark
+	SETZM	nrmurk			;[KPJ.6] clear number of public markers
+	SETZM	nrmark			;[KPJ.6] clear number of secret markers
+	SETZM	nrmerk			;[KPJ.11] have we written heading?
+prmar1:	CALL	getobj##		; get mark
+	 JRST	prmar8			; no more marks
+	MOVE	nr,marcre(bfp)		; get marker
+	CALL	chkadm##		;<KPJ.15> administrator mode on?
+	 TRNA				;<KPJ.15> no
+	  JRST	prmar3			;<KPJ.15> yes, treat mark as public
+	CAMN	nr,crenr##		;<KPJ.16> self?
+	 JRST	prmar3			;<KPJ.16> yes, treat as public
+	PUSH	P,gp1			;<KPJ.16>
+	CALL	gtflgs			;<KPJ.16> get personal flags for luser
+	 JRST[	POP	P,gp1		;<KPJ.24>
+		JRST	prmar3]		;<KPJ.24> failed, assume no-secretive
+	MOVE	t,gp1			;<KPJ.16> shuffle
+	POP	P,gp1			;<KPJ.16>
+	Txne	t,mrxpfl		;<KPJ.16> marks (are) sectret ?
+	 JRST	prmar3			;<KPJ.16> no
+	AOS	nrmark			;someone secretive...
+	JRST	prmar2			;...go for next mark
+
+prmar3:	AOS	nrmurk			;one more public...
+	MOVE	t,selffl##		;get our personal flags
+	Txnn	t,hedpfl		;short headings?
+	 JRST	prmar4			;no, give a complete heading
+	SKIPE	nrmerk			;yes, have written heading yet?
+	 JRST[	print[	ASCIZ !, !]	;yes append a comma...
+		JRST	prmar5]		;yes, don't do it again
+prmar4:	CALL	preol##			;here to make a complete heading:
+	print	zmarby##		;"Marked by"...
+	print[	ASCIZ !: !]		;...and a colon
+	AOS	nrmerk			;remember we wrote that stuff...
+prmar5:	CALL	prname##		;output the name
+
+prmar2:	SKIPE	nr,marpte(bfp)		; get previous mark
+	 JRST	prmar1			; more marks
+
+prmar8:	SKIPE	nrmark				;any secretive markers around?
+	 JRST[	MOVE	t,selffl##		;[KPJ.14] yes,get pers.flags
+		Txne	t,hedpfl		;[KPJ.14] short headings?
+		 CALL[	SKIPN	nrmerk		;<KPJ.23> written heading?
+			 RET			;<KPJ.23> go and write one
+			print	zzzand##	;<KPJ.23> " and "
+			AOS	0(P)		;<KPJ.23>
+			RET]
+		 CALL[	CALL	preol##		;new line
+			print	zmarby##	;output heading
+			CALLRET	putbla]		;and a space
+		PUSH	P,nr			;[KPJ.6] don't clobber this
+		MOVE	nr,nrmark		;[KPJ.6] get #secretives
+		CAIE	nr,1			;[KPJ.6] just one luser?
+		 CALL[	CALL	prnum##		;[KPJ.6] no, output number
+			MOVE	nr,nrmurk	;[KPJ.6] get number of publics
+			MOVEI	str,zot##	;<KPJ.23> " other"
+			CAIE	nr,0		;[KPJ.6] any public?
+			 CALL	prstr##		;<KPJ.23>
+			print	zdunn3##	;[KPJ.6] " users"
+			AOS	(P)		;[KPJ.6] skip over other one
+			RET]			;[KPJ.6]
+		 CALL[	print	zdunn2##	;[KPJ.6] "somebody"
+			MOVE	nr,nrmurk	;[KPJ.6] get number of publics
+			MOVEI	str,zyx##	;<KPJ.23> " else"
+			CAIE	nr,0		;[KPJ.6] was it alone?
+			 CALL	prstr##		;<KPJ.23> no
+			RET]
+		MOVEI	ch,"."			;[KPJ.6] end of sentence
+		CALL	putch
+		POP	P,nr			;[KPJ.6] get back number
+		JRST	.+1]			;[KPJ.6] back to work
+prmar9:	return
+
+;-----------------------------------
+;GTFLGS		get personal flags		<KPJ.16>
+;accepts	NR/	person number
+;returns	+1 on error
+;		+2, with GP1/	personal flags
+
+gtflgs:	save	<bfp>
+	CALL	getobj##		;get user object
+	 TRNA				;<KPJ.24> error
+	  JRST[	MOVE	gp1,perpfl(bfp)
+		skpret			;<KPJ.24>
+		JRST	.+1]		;<KPJ.24>
+	return
+
+	END
+..and no more

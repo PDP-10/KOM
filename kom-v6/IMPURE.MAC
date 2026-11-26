@@ -1,0 +1,342 @@
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1987-01-03 21:51:55, Edit by KPJ @ H.HOLE
+;10	Moved data areas from ADDLIS.
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1986-12-19 16:27:06, Edit by KPJ @ L89
+;7	Use correct return address to return from GETXX/RUNXX.
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1986-12-17 17:12:29, Edit by KPJ @ L89
+;6	PSITTY renamed PSIOUT for consistency.
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1986-12-17 12:57:16, Edit by KPJ @ L89
+;5	Optimized away some of the RUN code by merging it with the GETSEG code.
+;	Moved JOBDAT locations here.
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1986-12-14 16:17:42, Edit by KPJ @ LOUD
+;4	Moved CONSUM here from TERCON. Moved rest of MONITO lowseg here.
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1986-12-11 20:19:57, Edit by KPJ @ L89
+;3	Removed .JBINT use. Added PSIFAK and PSIMAC.
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1986-12-08 16:49:04, Edit by KPJ @ L89
+;2	Added .JBINT ^C intercept code.
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1986-11-21 04:31:44, Edit by KPJ @ H.HOLE
+;1	Moved rest of MONITO low segment here. Deleted TIMLCK, REIFLG, ENQTIM
+;	SELFJB and INPFLG, since never used.
+;Oden::DSKG:IMPURE.MAC<62,7777,MAC> 1986-11-20 08:56:08, Edit by KPJ @ L89
+;0	Started implementation: moved part of MONITO low segment here.
+
+	SEARCH	kommac
+	PROLOG	(impure)
+
+;Copyright (c) QZ Computing Centre, 1986-11-20 08:55:15
+
+;	D A T A   A R E A  (JOBDAT)
+
+T10,<	LOC	.JBVER		;only used by system VERSION command
+	EXP	versio##	;version for original high segment...
+	LOC	.JBREN		;we change this when we get a new high segment
+	EXP	reent##		;original REENTER address
+;	LOC	.JB41		;UUO handler for our job (none yet)
+
+;	LOC	.JBINT		;error handler (none yet)
+>;T10
+
+	RELOC	0		;here starts the LOW segment
+impure::
+
+;	D A T A   A R E A  (program)
+
+
+T10,<
+opntty::.IOASC+UU.AIO+UU.PHS	;.OPMOD	flags and I/O status (stored here)
+	SIXBIT	!tty!		;.OPDEV	device
+	ottbuf,,ittbuf		;.OPBUF	buffer addresses
+>;T10
+
+ottbuf::BLOCK	1		;.BFADR	TTY output buffer control block
+	BLOCK	1		;.BFPTR	TTY output buffer ring byte pointer
+	BLOCK	1		;.BFCTR	TTY output buffer ring byte count
+ttobuf::BLOCK	noftto*<<^D80/5>+3>
+
+ittbuf::BLOCK	1		;.BFADR	TTY input buffer control block
+	BLOCK	1		;.BFPTR	TTY input buffer ring byte pointer
+	BLOCK	1		;.BFCTR	TTY input buffer ring byte count
+ttibuf::BLOCK	noftti*<<^D80/5>+3>
+
+T20,<
+jfnsit::BLOCK	filmax/5+1		;PRCIN3 JFNS% buffer
+rtybuf::BLOCK	noftto*<<^D80/5>+3>	;^R-buffer
+rtypnt::BLOCK	1			;byte pointer to ^R-buffer
+
+txtarg::EXP	txarln			;number of following in argblock
+	EXP	RD%JFN			;we're reading from JFNs
+	XWD	.PRIIN,.PRIOUT		;these JFNs actually
+	POINT	7,ttibuf		;pointer to buffer
+	EXP	noftto*<<^D80/5>+3>*5-1	;length of buffer
+	POINT	7,ttibuf		;pointer to beginning of dest. buffer
+	POINT	7,rtybuf		;prompt
+	EXP	txtbrk			;pointer to break mask
+txarln==.-txtarg-1
+
+txtbrk::EXP	1B7!1B8!1B10!1B11!1B12!1B26!1B27 ; ^G, ^H, LF, ^K, ^L, ^Z, ESC
+	BLOCK	1			;[BDQ] don't break on blank initially
+	EXP	0
+	EXP	0
+
+oldmod::BLOCK	1			;old JFN mode word
+oldcoc::BLOCK	2			;<BDQ> old CCOC words
+oldtiw::BLOCK	1			;<BDQ> old terminal interrupt word
+execfh::EXP	0			;<BDQ> fork handle for EXEC subfork
+batchf::EXP	0			;<BDQ> -1 if running as batch job
+>;T20
+T10,<
+uxxtrm::BLOCK	1			;UDX for controlling terminal
+noenqp::BLOCK	1			;no ENQ quota
+noenqq::BLOCK	1			;ENQ timeout message output (ZMKENQ)
+
+				;Arguments to PISYS.:
+psivec::			;Start of PSI vector
+DEFINE	psimac	(foo)<
+EXP <[	SKIPE	psifak
+	 DEBRK.
+	JRST	@qqq'foo]>,0,0,0>
+		
+psiout::psimac	out		;Output done interrupt routine
+psidat::psimac	dat		;detach/attach service routine
+psistp::psimac	stp		;Ctrl-C service routine
+psitle::psimac	tle		;Time limit trap routine
+psicji::psimac	cji		;Trap, but very selective
+psipty::psimac	pty		;Used by PTYKOM
+psique::psimac	que		;Trap for ENQ. resource available
+	psilen==.-psivec	;length of PSI vector
+	LIT			;literals from PSIMAC macro
+	PURGE	psimac		;get rid of the macro
+trpvec:
+qqqout::trpout##		;Output done interrupt routine
+				;(QQQOUT is changed in PTYKOM)
+qqqdat::trpdat##		;detach/attach service routine
+qqqstp::trpstp##		;Ctrl-C service routine
+qqqtle::trptle##		;Time limit trap routine
+qqqcji::trpcji##		;Trap, but very selective
+qqqpty::trppty##		;Used by PTYKOM
+qqqque::trpque##		;Trap for ENQ. resource available
+	trplen==.-trpvec	;length of trap list
+IFN	<<trplen*4>-psilen>,<
+IF1,<	PRINTX	? PSIVEC and TRPVEC lengths mis-match>
+	>
+psifak::BLOCK	1		;<KPJ.3> #0: ignore PSI 
+>;T10
+T20,<
+lev1pc::BLOCK	1			;level 1 PC
+lev2pc::BLOCK	1			;level 2 PC
+lev3pc::BLOCK	1			;level 3 PC
+>;T20
+
+T10,<
+enqwat::BLOCK	1			;#0	waiting for ENQ.
+>;T10
+havenq::BLOCK	1			;#0	have ENQueued resource
+stpflg::EXP	0			;QUIT flag for ^Cs
+					; = 0: no ^C done yet
+T20,<					;<TEQ> ENQ/DEQ block
+enqblk::1,,enqlen			;.ENQLN	#locks,,length of argblk
+	0				;.ENQID	request identifier
+	BLOCK	1			;.ENQLV	flags,,JFN
+	EXP	5B2+0			;.ENQUC	5B2 + 33-bit user code
+	0				;.ENQRS	0,,group#
+enqlen==.-enqblk			;[TEQ]
+>;T20
+
+ansflg::0				;#0	terminal is an ANSI terminal
+crmarg::ormarg				;current right margin
+IFN	ftphon,<			;text phone support?
+phone::					;<BCQ> text telephone flag
+>;ftphon
+	0
+pasflg::0			;password flag:
+				;=0	not reading a password
+				;=1	reading password, already prompted
+				;=-1	reading password, output prompter too
+T10,<
+oldpsz::0			;T10:	TTY LENGTH nnn
+				;T20:	TERMINAL HEIGH nnn
+>;T10
+oldpag::0			;T10:	TTY PAGE nnn
+				;T20:  TERMINAL END-OF-PAGE
+curdat::0			;current date (from GUDATE)
+T10,<
+echflg::-1			;echo flag:
+				;=0	TTY NO ECHO
+				;=-1	TTY ECHO
+>;T10
+papflg::0			;print on paper flag:
+				;=-1	paper printer
+				;=0	display terminal
+scrfl::	0			;scroll flag
+				;=-1	scrolls
+				;=0	does not scroll
+IFN	ftview,<		;if VIEWDATA supported
+viewfl::			;set if VIEWDATA terminal
+>;ftview
+	BLOCK	1
+selfpp::0			;T10: own PPN
+				;T20: own user#
+T10,<
+trmlct::BLOCK	1		;TTY LC / TTY NO LC
+detflg::0			;detached-p:
+				;=0	not detached
+				;=-1	detached
+micflg::0			;MIC-session-p
+				;=0	no
+				;=-1	yes
+trmcr::	0			;TTY ACR nnn (=0 in no ACR)	
+trmnfc::0			;TTY CRLF / TTY NO CRLF:
+				;=1	NO CRLF
+oldpc::	0			;holds old PC when detached
+samnes::BLOCK	1
+>;T10
+sema::	0			;semaphore for DETACH trap
+T20,<
+REPEAT 0,<			;(disabled for now)
+abortf::0			;semaphore for ^G trap
+>;REPEAT 0
+>;T20
+
+T10,<
+runstk:	BLOCK	1		;<KPJ.7> return address for GETXX/RUNXX call
+corerr::BLOCK	1		;CORE. error at GETSEG/RUN. code (-1 = error)
+acblk::	BLOCK	^O20		;AC save area (during RUN./GETSEG)
+				;GETSEG block for this high segment:
+xmyslf::BLOCK	1		;+0	device;	=-1: unknown
+	BLOCK	1		;+1	file name
+	BLOCK	1		;+2	extension
+	0			;+3	(always zero)
+	0,,xmypth		;+4	PATH pointer
+	0			;+5	core assignment
+xmypth::0			;+0	PATH block for RUN/GETSEG
+	0			;+1	. . . .
+	BLOCK	1		;+2	. . . . PPN
+	BLOCK	5		;+3	. . . . SFD list
+xmyend::0			;+n+1	. . . . end of SFD list
+xerror::BLOCK	1		;RUN/GETSEG error code
+				;RUN/GETSEG block:
+runblk::BLOCK	1		;+0	device
+	BLOCK	1		;+1	file name
+	BLOCK	1		;+2	extension
+	0			;+3	(always zero)
+	0,,xpath		;+4	PATH pointer
+	0			;+5	core argument
+xpath::	0			;+0	PATH block for RUN/GETSEG
+	0			;+1	. . . .
+	BLOCK	1		;+2	. . . . PPN
+	BLOCK	5		;+3	. . . . SFD list
+xptend::0			;+n+1	. . . . end of SFD list
+;-----------------------------------
+;GETXX		routine to do low level GETSEG logic
+;accepts	GP1/	pointer to new high segment
+
+;We get rid of our original high segment, and try to load in a new high segment
+;which the original high segment wanted us to load in.  If we succeed, we jump
+;to it (this routine does notm below). If we fail, we try to load in the old
+;original high segment (routine GOBACK does this).
+
+getxx::	MOVEM	P,runstk		;<KPJ.7> save away return address
+	SETZM	corerr			;no error yet
+	MOVSI	t,1			;kill old high segment
+	CORE	t,			;. . .
+	 SETOM	corerr			;ignore error, but remember it
+	GETSEG	gp1,			;get new high segment
+	 JRST	goback			;failed, try to return
+
+;Now we would like to return to our new high segment, which is now in memory.
+;Unfortunately, we don't know the address of the high segment restore routine.
+;We cannot look into the high segment (.JBHSA is the word), because the
+;high segment may be concealed (e.g. when execute-only).  So... we must first
+;find out the lowest address of the high segment (GETTAB .GTUPM has it), and
+;then use the convention that a program *has* to have a special format for the
+;entry vector, which *must* be the first thing in high segment.  We cannot
+;check that address (concealed, remember?), but has to blindly JRST there.
+
+;SEGRET will then initialize the various JOBDAT variables we must have set up,
+;restores ACs, sets up a new stack and returns back to (the *new* high
+;segment's) top loop. Whew!
+
+        MOVE	t,[-2,,.GTUPM]		;ourselves
+	GETTAB	t,			;get high segment start
+	 JRST	goback			;failed, try to return
+	HLRZ	t,t			;get origin
+	JUMPE	t,goback		;no high segment
+	JRST	.JBHDA+3(t)		;JRST to SEGRET (hopefully)
+
+;GETSEG failed to load in the new high segment.  Try to load back our original
+;high segment, and return to it if successful.  Else, die a horrible death.
+
+goback:	MOVEM	gp1,xerror		;save GETSEG error code
+	MOVE	t,xmyslf+0		;error return possible?
+	CAMN	t,[-1]			;no error return allowed?
+	 JRST	xxargh			;no, horrible death
+	MOVEI	1,xmyslf		;get our original file spec
+	GETSEG	1,			;try to get back our hiseg
+	 JRST	xxargh			;couldn't, go and die
+	MOVE	P,runstk		;<KPJ.7> get stack pointer
+	RET				;and RETURN to high segment
+;-----------------------------------
+;RUNXX		run another program
+
+;We come here to RUN a new program. This must be done from the low segment, or
+;we well crash, if the RUN UUO does not succeed.  We try to load back our old
+;high segment if RUN UUO fails (the low segment is not zapped, if the RUN UUO
+;fails).
+
+runxx::	MOVEM	P,runstk		;<KPJ.7> save away return address
+	SETZM	corerr			;no error yet
+	MOVSI	t,1
+	CORE	t,			;throw away the high segment
+	 SETOM	corerr			;remember CORE failed
+
+;We now have no high segment, so we should not try to refer to it.  The address
+;in GP1 is pointing to the low segment, or else...
+
+	HLRZ	t,gp1			;copy flags and offset
+	TLZ	gp1,UU.PHY		;get rid of flags
+	ANDI	t,UU.PHY		;extract flags
+	OR	t,[RUN gp1,]		;add the instruction
+	XCT	t			;do it
+	 nop				;manual says this is error return
+	JRST	goback			;try to get back to original high seg.
+
+;We are lost.  Both our original high segment and our new program are lost.
+;Die a horrible death, but first tell our user what happened.
+
+xxargh:	OUTSTR[	ASCIZ !?
+? ***ERROR*** Cannot call program - returning to monitor.!]
+					;no silent death, please
+	CLRBFI				;forget input
+	EXIT	0,			;R.I.P.
+	LIT			;put literals here
+>;T10
+
+consum::tercon##		; current char consumer
+
+lisare::BLOCK	2*sizcel	;area for list cells
+lisend::			;end of list area
+lisfre::lisare			;free pointer to list area
+
+IFN	ftcomp,<
+savtxt::0			; save area for TXT
+savtx2::0			; save area for TXT2
+txt2::	0			; second part of symbol
+
+symtab::
+REPEAT	maxsym,<EXP nothin##,0,0,0>	; symbol table
+symend::
+>;ftcomp
+
+fifree::celbeg				;first free structure
+ans::	BLOCK	stasiz			;answer
+savarg::0				;save area for argument
+savsta::0				;save area for start of argument
+savtyp::0				;save area for type
+empsta::EXP	nothin##,0,0,empsta	;the empty stack
+;-----------------------------------
+	PHASE	^O200K			;cell area
+celbeg::BLOCK	zelsiz			;<SEE> start of cell area...
+celend::				;<SEE> ...and end of it
+	DEPHASE
+
+	END
+..and no more

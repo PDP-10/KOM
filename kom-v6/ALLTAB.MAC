@@ -1,0 +1,348 @@
+;Freja::Qs:<Kom.6.Macro>Alltab.Mac.21 880204-1607,KPJ-Jaakkola
+;33	Put edit#32 under FTCOUR switch.
+;Freja::Qs:<Kom.6.Macro>Alltab.Mac.18 871123-0950,KPJ-Jaakkola
+;32	Get rid of en/dis-couragement commands.
+;Oden::DSKZ:ALLTAB.MAC<62,7777,MAC> 1988-01-27 00:31:13, KPJ @ H.HOLE <10,50>
+;31	Eliminate TOUCH,TJTID,REPRINT, German COM, Norwegian COM and Speak
+;	Norwegian.
+;Oden::DSKZ:ALLTAB.MAC<62,7777,MAC> 1987-09-29 13:51:58, KPJ @ L89 <1,2>
+;30	LIST ALL COMMENTS adm.only command.
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1987-05-13 16:37:31, KPJ @ L89 <10,50>
+;;27	Add command (JOIN) MAILBOX
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1987-05-06 19:30:49, KPJ @ H.HOLE <10,50>
+;26	Move CHATAB here and call it TJATAB.
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1987-03-27 14:24:06, KPJ @ L89 <1,2>
+;25	Add LIST ORGANIZERS
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1986-10-29 13:10:01, Edit by KPJ @ L89
+;24	Use QZIF
+;Qzeta::DSKA:ALLTAB.MAC<5,16,MAC> 1986-10-27 15:19:19, Edit by KPJ @ L89
+;23	TJTID, CALAMI and TOUCH are QZ specific.
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1986-10-14 15:44:27, Edit by KPJ @ L89
+;22	LOAD EMPLOYEES under FTEMPL.
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1986-07-22 13:14:30, Edit by KPJ @ QZKTH
+;21	Moved RUNTAB here from RUNTAB module.
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1986-07-22 10:30:50, Edit by KPJ @ L89
+;20	Moved ENTTAB and OENTAB here from WRIENT module.
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1986-06-24 14:08:26, Edit by KPJ @ L89
+;17	Added GET DISCOURAGEMENT.
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1986-06-08 05:17:18, Edit by KPJ @ 1SKEDE
+;16	Make ANSWER a menu.
+;Oden:.DSKG:ALLTAB.MAC<62,7777,MAC> 1986-06-05 15:55:47, Edit by KPJ @ L89
+;15	Anonymity under FTANON.
+;Oden::DSKG:ALLTAB.MAC<62,7777,MAC> 1986-02-14 18:07:46, Edit by KPJ
+;14	CREATE USER and CREATE CONFERENCE optionally privileged operations.
+;Oden::DSKD:ALLTAB.MAC<62,7777,MAC> 1985-10-01 01:22:09, Edit by KPJ
+;13	Introduced PROLOG macro.
+;Oden::DSKD:ALLTAB.MAC<62,7777,MAC> 1985-08-05 18:55:55, Edit by KPJ @ DECGR
+;12	COMPUTE command put under FTCOMP feature switch.
+;Oden::DSKD:ALLTAB.MAC<62,7777,MAC> 1985-06-19 22:38:38, Edit by KPJ @ Nadja
+;11	Moved EDIT command table (TXTTAB) here from EDIT module.
+;Oden::DSKD:ALLTAB.MAC<62,7777,MAC> 1985-05-06 13:14:23, Edit by KPJ @ L89
+;10	Added READ (FROM) PERSONAL COMPUTER.
+;Oden::DSKD:ALLTAB.MAC[62,7777] 1984-11-22 12:18:49, Edit by THOLERUS T
+;7	Added LIST LETTERS command.
+;Oden::DSKD:ALLTAB.MAC[62,7777] 1984-11-19 13:54:07, Edit by K.JAAKKOLA
+;6	Moved all texts to TEXTER.MAC
+;Oden::DSKD:ALLTAB.MAC[62,7777] 1984-11-12 19:26:37, Edit by K.JAAKKOLA
+;5	Added LOGOUT and fixed READ FILE/L[S FIL problem.
+;Oden::DSKD:ALLTAB.MAC[62,7777] 1984-08-06 13:52:24, Edit by THOLERUS T
+;4	Added VERIFY NAME command [TTQ.4]
+;Oden::Dskd:Alltab.Mac[62,7777] 1984-05-11 16:29:39, Edit by KPJ Jaakkola
+;3	Various changes in the Norwegian menus. Updated copyright notice
+;Oden::Dskd:Alltab.Mac[62,7777] 1984-04-26 10:59:20, Editor: KPJ Jaakkola
+;2	Changed "EDITERA" to "REDIGERA" in Swedish menu.
+;Oden::Dsk:Alltab.New[1116,134] 1982-03-02 21:00:38, Editor: Lars Enderin
+;1	Inserted ENTRY
+
+	SEARCH	kommac
+	PROLOG	(alltab)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-11 16:31:04
+
+;	D A T A   A R E A
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;ALLTAB		table of all commands
+
+alltab::zmenu##				;[KPJ.6]
+	table	sn,liscom##,zzlico##	;List commands
+	table	sn,reatab,zzreme##	;Menu (for) reading
+	table	sn,writab,zzwrme##	;Menu (for) writing
+	table	0,leatab,zzleco##	;Menu (to) leave COM
+	table	sn,listab,zzliin##	;Menu (to get) information
+	table	sn,orgtab,zzorme##	;Menu (to) organize conferences
+	table	sn,memtab,zzchme##	;Menu (to) change membership
+	table	sn,tjatab,zzchap##	;Menu (to) change parameters <KPJ.26>
+	table	sn,txttab,zzedte##	;Menu (to) edit the text
+	table	0,elstab,zzgoth##	;Menu (for) something else
+	table	sn,other##,zzothe##	;Other
+	endtab
+
+;+
+;TJATAB		Table for change commands	<KPJ.26>
+
+tjatab:	zzzcha##			;What do you want to change?
+	table	sn,chaadr##,zzchad##	;Change address
+	table	sn,chatel##,zzchte##	;Change telephone number
+	table	sn,chapre##,zzchpr##	;Write presentation
+	table	sn,tertab##,zzsete##	;Set terminal (type)
+	table	sn,chapgs##,zzpage##	;Terminal page size
+	table	sn,normod##,zzusno##	;Use normal mode
+IFN	ftptym,<
+	table	sn,ptymod##,zzupty##	;Use PTY mode
+>;ftptym
+	table	sn,admmod##,zzuadm##	;Use administrator mode
+	table	sn,zeton##,zzseon##	;Switch on (personal flag)
+	table	sn,zetoff##,zzseof##	;Switch off (personal flag)
+	table	sn,chanam##,zzchna##	;Change name (of)
+	table	sn,chapas##,zzpass##	;Change (own) password
+	table	sn,chatyp##,zzchty##	;Change type (of conference)
+	table	sn,chaorg##,zzchor##	;Change organizer
+	table	sa,prmobj##,zzprmo##	;(Make) permanent
+	endtab
+;+
+;TXTTAB		table for entry handling
+
+txttab::zmenu##				;<KPJ.11>
+	table	sn,rlinry##,zzwfin##	;Finish writing
+	table	sn,rlinrl##,txreml##	;Erase (line above)
+	table	sn,remwor##,txword##	;(Remove last) word
+	table	sn,jumpup##,zzup##	;Up
+	table	sn,jumpdw##,zzdown##	;Down
+	table	sn,srched##,zzsear##	;Find
+	table	sn,sbshed##,txsubs##	;Replace
+	table	sn,enttab,zzprte##	;Menu (to) process the text
+					;((including editor calls))
+	endtab
+;-----------------------------------
+;ENTTAB		table for text writing
+
+enttab::zwhate##			;"What to do with the text?"
+	table	sn,rlincw##,zzwcon##	;Continue (writing)
+	table	sn,addent##,zzente##	;Enter (it)
+	table	sn,addent##,zzsend##	;Send (it in)
+	table	sn,rlinwr##,zztype##	;(Re-)type (the text)
+	table	sn,rlinwr##,zzdtyp##	;T (Re-type the text)
+	table	sn,deleen##,zzwdel##	;Cancel (it)
+	table	sn,oentab,zzowri##	;(Other) write commands
+					;((including editor calls))
+	endtab
+;-----------------------------------
+;OENTAB		table for other text commands
+
+oentab:	zwhate##			;"What o do with the text?"
+	table	sn,addrec##,zzlrec##	;Receiver:
+	table	sn,knorec##,zzlkno##	;For information:
+	table	sn,extcop##,zzlexc##	;Single copy:
+	table	sn,addcom##,zzlcom##	;Comment on:
+	table	sn,mkfile##,zzsave##	;Save (on file)
+	table	sn,delay##,zzdely##	;Delayed (command)
+RUNIF,<					;<KPJ.24>
+T20,<	table	sn,calema##,zzemax##	;(Use) editor EMACS
+	table	sn,caledi##,zzeded##	;(Use) editor EDITOR:
+>;T20
+T10,<
+QZIF,<	table	sn,calami##,zzamis##>	;(Use) editor AMIS
+>;T10
+	table	sn,caledi##,zzeded##	;(Use) editor EDIT
+	table	sn,caltec##,zqedte##	;(Use) editor TECO
+T10,<	table	sn,calsed##,zzedse##	;(Use) editor SED
+	table	sn,calsos##,zzedso##	;(Use) editor SOS
+>;T10
+T20,<	table	sn,calltv##,zzedtv##	;(Use) editor TV
+	table	sn,caledt##,zzedt##	;(Use) editor EDT
+>;T20
+	table	sn,calvid##,zzedvi##	;(Use) editor VIDED
+	table	sn,calker##,zzkerm##	;Call KERMIT
+>;RUNIF
+	endtab
+
+
+;-----------------------------------
+;REATAB		Table for read commands
+
+reatab:	zzzrea##			;What do you want to read?
+	table	sn,nexlet##,zzcrnl##	;(Read) next letter
+	table	sn,nexcom##,zzcrnc##	;(Read) next comment
+	table	sn,rdnext##,zzcrne##	;(Read) next notice
+	table	sn,gonext##,zzcjnm##	;(Join) next conference
+	table	sn,review##,zzcrev##	;Review (entries)
+	table	sn,revnex##,zzrene##	;Review next (entry)
+	table	sn,lislet##,zzlile##	;[TTQ.7] List letters
+	table	sn,nexmar##,zznema##	;(Read) next marked
+	table	sn,waitx##,zzwait##	;Wait (for) news
+	table	sn,skicom##,zzskco##	;Skip (all) comments
+	table	sn,scanen##,zzscan##	;Scan (entries)
+	table	sn,reares##,zzrere##	;Read (the) rest
+	table	sn,onlyre##,zzconl##	;Only (read last)
+	table	sn,alnews##,zzalne##	;(Read) all news
+	table	sn,typfil##,zzrefi##	;Read file
+QZIF,<	table	sn,typfil##,zzfire##>	;<KPJ.5> *** BEWARE! UGLY HACK ***
+	endtab
+;-----------------------------------
+;ANSWER		Table for answer commands
+
+answer:	zmenu##
+	table	sn,mkansw##,zzcans##	;Personal (answer)
+	table	sn,mkcomm##,zzccom##	;Comment (on entry)
+	endtab
+;-----------------------------------
+;WRITAB		Table for write commands
+
+writab:	zzzwri##			;What do you want to write?
+	table	sn,writee##,zzcent##	;(Write new) notice
+	table	sn,mklett##,zzclet##	;(Send a) letter (to)
+	table	sn,mkcomm##,zzccom##	;Comment (on entry)
+	table	sn,mkansw##,zzcans##	;Personal (answer)
+	table	sn,answer,zzlans##	;(Menu to) answer (comnmands)
+	table	sn,mkmess##,zzmess##	;Note (to letter) writers
+	table	sn,infile##,zzsubm##	;Submit file
+	table	sn,xonxof##,zzxoff##	;Read (from) personal computer <KPJ.10>
+	table	sn,reouen##,zzroen##	;(Reassign) output (to) entry
+IFN	ftanon,<		;<KPJ.15>
+	table	sn,anonym##,zzanon##	;Become anonymous
+>;ftanon
+	table	sa,mksyme##,zzsyme##	;System message
+	endtab
+;-----------------------------------
+;LEATAB		Table for leave commands
+
+leatab:	zzzlea##			;How do you want to leave ?
+	table	0,quit##,zzquit##	;Quit
+RUNIF,<	table	sn,ryntab,zzcapr##>	;Call program
+	table	sn,restar##,zzbena##	;Begin (with new) name
+	table	sn,auslog##,zzlogo##	;[KPJ.5] Logout
+	endtab
+;-----------------------------------
+;RYNTAB		table for CALL commands
+
+RUNIF,<
+ryntab:	zzzrun##			;"What program do you want to run?"
+T10,<	table	sn,newcom##,zcanew##	;Call new KOM
+	table	sn,oldcom##,zcaold##	;Call old KOM
+
+	table	sn,komcom##,zcakom##	;Call Swedish KOM
+REPEAT	0,<				;<KPJ.31> eliminate this
+	table	sn,norcom##,zcanor##	;Call Norwegian KOM
+>;END REPEAT 0
+	table	sn,engcom##,zcaeng##	;Call English KOM
+					;etc...
+	table	sn,talswe##,ztaswe##	;Speak Swedish
+REPEAT	0,<				;<KPJ.31> eliminate this
+	table	sn,talnor##,ztanor##	;Speak Norwegian
+>;END REPEAT 0
+	table	sn,taleng##,ztaeng##	;Speak English
+					;etc...
+>;T10
+	table	sn,runprg##,zrunp##	;<KPJ.16> Run (program)
+T10,<	table	sn,calmon##,zcamon##>	;Make a PTY subjob
+T20,<	table	sn,puzhit##,zpush##>	;Push
+QZIF,<					;<KPJ.24>
+T10,<
+REPEAT	0,<				;<KPJ.31> eliminate this
+	table	sn,gercom##,zcager##	;Call German KOM
+>;END REPEAT 0
+IFN	ftqom,<
+	table	sn,qomcom##,zcaqom##	;<KPJ.13> Call QOM
+>;ftqom
+>;T10
+REPEAT	0,<				;<KPJ.31> eliminate these
+IFE	ftlan-.swe,<
+	table	sn,touch##,zcatyp##	;Anropa maskinskrivningskurs
+T10,<	table	sn,tjtid##,zcatjt##	;Anropa tj{nstetill{gg		}}
+FOAIF,<	table	sn,reprin##,zcarpr##>	;Anropa FOA-skrivare
+>;T10
+>;ftlan=.swe
+>;END REPEAT 0
+>;QZIF
+	endtab
+>;RUNIF
+;-----------------------------------
+;LISTAB		Table for list commands
+
+listab:	zzzlis##			;What do you want to list?
+	table	sn,objsta##,zzstat##	;Status (of)
+	table	sn,lispre##,zzwhpr##	;Who (is present)
+	table	sn,liswhe##,zzwher##	;Where (am) I
+	table	sn,lishlp##,zzlihe##	;List (all) help texts
+	table	sn,prnews##,zzline##	;List (all) news
+	table	sn,vernam##,zzvena##	;<TTQ.4> Verify name
+	table	sn,lismee##,zzlime##	;List conferences
+	table	sn,lisorg##,zzlior##	;<KPJ.25> List organizers
+	table	sn,lisper##,zzlipe##	;List users
+	table	sn,lisadr##,zzliad##	;List addresses
+	table	sn,lissta##,zzlist##	;List statistics
+	table	sn,sysinf##,zzsyin##	;System information
+	table	sa,liscms##,zlicms##	;<KPJ.30> List comments
+	endtab
+;-----------------------------------
+;MEMTAB		Table for changing membership relations
+
+memtab:	zmenu##				;[KPJ.6]
+	table	sn,joinmt##,zzjoin##	;Join (conference)
+	table	sn,joislf##,zzjois##	;(Join) mailbox
+	table	sn,withdr##,zzwidr##	;Withdraw (from)
+	table	sn,member##,zzlmbr##	;(Become) member (of)
+	table	sn,exclud##,zzexcl##	;Exclude member
+	table	sn,prior##,zzprio##	;Give priority (to)
+	endtab
+;-----------------------------------
+;ORGTAB		Table for organize commands
+
+orgtab:	zzzorg##			;What do you want to organize?
+IFE	ftconf,<			;<KPJ.14>
+	table	sn,creatm##,zzcrme##	;	  Create conference
+>;ftconf=0
+IFN	ftconf,<			;<KPJ.14>
+	table	sa,creatm##,zzcrme##	;<KPJ.14> Create conference
+>;ftconf
+IFE	ftuser,<			;<KPJ.14>
+	table	sn,creatp##,zzcrpe##	;	  Create user
+> IFN	ftuser,<			;<KPJ.14>
+	table	sa,creatp##,zzcrpe##	;<KPJ.14> Create user
+>;ftuser
+	table	sn,oerase##,zzerob##	;Erase object
+	table	sn,recrea##,zzorcr##	;Recreate object
+	table	sa,cident##,zzchid##	;Change identity (to)
+	table	sa,orgmar##,zzorma##	;Organization mark
+IFN	ftempl,<			;<KPJ.22>
+	table	sa,loaemp##,zzloem##	;Load employees
+>;ftempl
+	table	sa,genera##,zzgedb##	;Generate new data base
+	table	sa,givppn##,zzgipp##	;Give PPN (to)
+	table	sa,defspe##,zzdesp##	;Define special meetings
+	table	sa,zapobj##,zzzaob##	;Zap (object)
+	table	sa,dump##,zzdump##	;Dump (file)
+	endtab
+;-----------------------------------
+;ELSTAB		Table for OTHER commands
+
+elstab:	zmenu##				;[KPJ.6]
+	table	sn,reptim##,zzdati##	;(Get) daytime
+	table	0,help##,zzhelp##	;Help
+	table	sn,mark##,zzmark##	;Mark (the notice)
+	table	sn,unmark##,zzunma##	;Unmark (notice)
+	table	sn,add##,zzadd##	;Add
+	table	sn,subtra##,zzsubt##	;Subtract
+	table	sn,movent##,zzmoen##	;Move (entry)
+IFN	ftcour,<			;<KPJ.33!KPJ.32> only if humour
+	table	sn,uppmun##,zzupmu##	;Get encouragement
+	table	sn,nermun##,zznrmu##	;Get discouragement
+>;ftcour
+IFN	ftcomp,<			;<KPJ.12>
+	table	sn,comput##,zcompu##	;Compute expression
+>;ftcomp
+	table	sn,reaout##,zzreao##	;(Reassign) output (to) file
+	table	sn,reoupr##,zzropr##	;(Reassign) output (to) printer
+	table	sn,arcent##,zzarch##	;Print entries
+	table	sn,delfil##,zzdefi##	;Delete file
+	table	sn,auslog##,zzlogo##	;[KPJ.5] Logout
+	endtab
+
+	END
+..and no more

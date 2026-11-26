@@ -1,0 +1,1066 @@
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1987-06-17 12:47:41, KPJ @ L89 <10,50>
+;64	Change calls to PRCINM to call PRCINN instead, so the called editors
+;	will fire up the high segment program, to which the user has changed
+;	to using the SPEAK <language> commands. (Sigh, this *is* hairy.)
+;Freja::Qs:<Kom.6.Macro>Calvid.Mac.12 870124-0333,KPJ-Jaakkola
+;63	RSCEND did not do +2 return for success.
+;Freja::Qs:<Kom.6.Macro>Calvid.Mac.9 870116-0306,KPJ-Jaakkola
+;62	CALLD9 label forgotten. TMPEDI, BAKTMP and BAKFLG are T10 only.
+;	EDTTMP ,TVTMP, and EMATMP not to defined in terms of EDITMP.
+;Oden::DSKG:CALVID.MAC[62,7777,MAC] 1987-01-08 08:25:34, Edit by KPJ @ H.HOLE
+;61	SED doesn't understand a full file specification on the /PROG:
+;	switch (it only takes a SIXBIT argument "foo", and then starts
+;	SYS:FOO.EXE at exit).
+;Oden::DSKG:CALVID.MAC[62,7777,MAC] 1987-01-07 12:42:00, Edit by KPJ @ L89
+;60	SED does not understand "<prot>" and not /RUN-switch as advertised
+;	by University of Oregon.
+;Oden::DSKG:CALVID.MAC[62,7777,MAC] 1987-01-07 08:59:08, Edit by KPJ @ H.HOLE
+;57	Add /CHAR:nn switch for AMIS.
+;Oden::DSKG:CALVID.MAC[62,7777,MAC] 1987-01-07 08:34:40, Edit by KPJ @ H.HOLE
+;56	TECO requires <prot>[p,pn,sfd,...] instead of [p,pn,sfd,...]<prot>
+;Oden::DSKG:CALVID.MAC[62,7777,MAC] 1987-01-07 06:40:00, Edit by KPJ @ H.HOLE
+;55	Create temporary edit file with <477> protection on T10.
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1987-01-02 04:09:54, Edit by KPJ @ H.HOLE
+;54	RSCEND, TMCEND and TMPEND returns +1 on failure, +2 on success.
+;	Stop code RSCEND CALVID eliminated.
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1986-12-28 03:28:05, Edit by KPJ @ H.HOLE
+;53	Changed TMPFLG to TMPEDI, since TMPFLG is already in use in module
+;	TERCON, and linker gets confused. Also, made TMPEDI global (used from
+;	KOMWRI@MONTMP).
+;Oden::DSKG:CALVID.MAC[62,7777,MAC] 1986-12-23 18:08:20, Edit by KPJ @ ORANGE
+;52	Merged COMTMP with KOMWRI, moved to MONTMP. Made BAKFLG, BAKTMP and
+;	PREDFI global.  Flag EDITP so flag when edit call.
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1986-12-17 15:51:24, Edit by KPJ @ L89
+;51	Call GRRBLK before calling RUNX-10.  Use LEAVE2 to do updating.
+;	Output a TMP:LME when calling an editor, if program-to-run set.
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1986-12-11 17:48:16, Edit by KPJ @ L89
+;50	PUTCH is a macro. ZEFINA defined for QOM.
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1986-10-29 13:25:08, Edit by KPJ @ L89
+;47	Use QZIF/FOAIF/RUNIF
+;Qzeta::DSKA:CALVID.MAC<5,16,MAC> 1986-10-27 13:00:34, Edit by KPJ @ LOUD
+;46	AMIS support is QZ specific.
+;Freja::Qs:<Kom.6.Macro>Calvid.Mac.9 860811-1749,KPJ-Jaakkola
+;45	TECTMP is for T20, too.
+;Freja::Qs:<Kom.6.Macro>Calvid.Mac.3 860714-2238,KPJ-Jaakkola
+;44	EDT and TV call routines bug eliminated. RSCEND confused consumer and
+;	producer.
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1986-07-14 16:37:55, Edit by KPJ @ L89
+;43	Added SED editor (T10)
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1986-06-26 22:46:00, Edit by KPJ @ L89
+;42	Moved RUN blocks here from SITE. Fixed TECO-20 call. Add EMACS, EDT
+;	and TV editors for TOPS-20.
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1986-06-24 12:59:46, Edit by KPJ @ L89
+;41	Moved texts to TEXTER.
+;Oden::DSKG:CALVID.MAC<62,7777,MAC> 1986-05-23 16:37:33, Edit by KPJ @ SEMESTer
+;40	Delete TMP:-files after EDIT calls.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1986-02-10 17:43:01, Edit by KPJ
+;37	SOS needs PPN on file spec, or gets confused.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1986-02-10 17:07:37, Edit by KPJ
+;36	Deleted edit#33, since AMIS is now fixed to handle longer lines.
+;Freja::QS:<KOM.6-SOURCES>CALVID.MAC.7 18-Nov-85 10:03:22, Edit by KPJ-JAAKKOLA
+;35	Handle skip return from MYNAME.
+;Oden::DSKD:CALVID.MAC[62,7777,MAC] 1985-10-31 01:45:53, Edit by KPJ
+;34	Start AMIS in /runoffset:1
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-10-31 00:59:09, Edit by KPJ
+;33	Put AMIS 40 character problem under FTBG01 bug flag.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-10-18 08:58:40, Edit by KPJ
+;32	Delete .BAK created by some Tops-10 editors.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-10-08 02:46:52, Edit by KPJ
+;31	Fixed typos in code.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-09-25 07:02:02, Edit by KPJ
+;30	Introduced PROLOG macro, and corrected documentation of OPEDFI.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-09-06 08:57:15, Edit by KPJ
+;27	Got rid of KPJHAT variable.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-09-05 09:45:23, Edit by KPJ
+;26	Handle file errors gracefully.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-06-27 08:24:53, Edit by KPJ @ L89
+;25	Use CMDCHR for command character.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-06-20 03:05:28, Edit by KPJ @ GR\N
+;24	TMPEND localized.
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-06-14 14:32:59, Edit by KPJ @ L89
+;23	Fixed UCD reported bug with silent KOM after editing (same bug as
+;	on T10 when memory could not be allocated during TMPCOR buffer
+;	allocaton).
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-06-11 19:01:42, Edit by KPJ @ L89
+;22	TMPBEG localized, and changed to return +1 failure on T10, +2 for
+;	success on T10. Returns +1 on T20 always.
+;	Editor commands hacked to handle TMPCOR crashes (edit #20 revisited)
+;Oden::DSKD:CALVID.MAC<62,7777,MAC> 1985-04-28 05:46:20, Edit by KPJ @ AIDA
+;21	Fixed bug which made EDIT commands crash. Try sidestep AMIS problem
+;	(AMIS cannot handle TMPCOR lines longer than 40 characters)
+;Freja::Ps:<KOM.6-SOURCES>CALVID.MAC.2 18-Apr-85 19:26:15,Editor:KPJ-JAAKKOLA
+;20	Fixed TOPS-20 bug which made KOM-20 quiet up after calling an editor.
+;Oden::DSKD:CALVID.MAC[62,7777] 1985-01-30 12:43:21, Edit by KPJ @ L89
+;17	Get rid of QACR calls.
+;Oden::DSKD:CALVID.MAC[62,7777] 1985-01-25 13:09:14, Edit by KPJ @ L89
+;16	Make TMP:COM (et al.) file contains commands.
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-12-12 18:52:25, Edit by KPJ @ L89
+;15	Implement EDIFLG, used to signal "editor mode", which makes the
+;	entry saved on file to be mark 'machine oriented' (it uses object
+;	numbers instead of names to make less name matching). This flag is
+;	used by PRRELI@WRIENT, and reset by OUTFIL@FILCON after the call to
+;	PRRELI@WRIENT.
+;Freja::<Kom.6-Sources>Calvid.Mac.2 10-Dec-84 15:53:35,Editor:KPJ-Jaakkola
+;14	PPNFLG should not be seen on T20.
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-12-03 16:30:40, Edit by KPJ @ L89
+;13	Write the entry text on a file of form "nnnxxx.TMP" instead of
+;	"nnnnn.xxx" (e.g. 042KOM.TMP instead of 2234.KOM), since that is the
+;	DIGITAL standard syntax.
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-12-03 11:29:18, Edit by KPJ @ L89
+;12	Use default path for SOS temporary file.
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-11-29 14:54:14, Edit by K.JAAKKOLA
+;11	Write temporary file in logged-in directory (T20)/home directory (T10)
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-11-29 12:40:13, Edit by K.JAAKKOLA
+;10	Sigh. AMIS and SOS have not implemented /RUNOFFSET: switch.
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-11-29 01:59:24, Edit by KPJ @ NADJA
+;7	Fix AMIS modes.
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-11-19 16:19:01, Edit by K.JAAKKOLA
+;6	Moved all language dependent texts to TEXTER.MAC
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-11-12 14:04:07, Edit by K.JAAKKOLA
+;5	Make temporary file name extension depend on data base.
+;Oden::DSKD:CALVID.MAC[62,7777] 1984-10-02 16:11:36, Edit by K.JAAKKOLA
+;4	Make KOM set various editor modes. Put COMTMP under T10 conditional.
+;Oden::Dskd:Calvid.Mac[62,7777] 1984-09-28 01:24:45, Edit by K.Jaakkola
+;3	Make EDIT EDIT work on Tops-10. (Hack by J.Eriksson)
+;Oden::Dskd:Calvid.Mac[62,7777] 1984-08-28 03:12:37, Edit by K.Jaakkola
+;2	Added AMIS as editor (FTQZ)
+;Oden::Dskd:Calvid.Mac[62,7777] 1984-06-05 10:41:46, Edit by KPJ Jaakkola
+;1	Changed /MR:76 to /MR:66 when calling VIDrED from COM
+;	Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(calvid)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-06-05 10:42:51
+
+;	D A T A   A R E A
+
+
+T10,<
+editp::	BLOCK	1		;<KPJ.52> -1: this is an editor call
+tmpedi::BLOCK	1		;<KPJ.40> name of TMP:-file to kill
+baktmp::BLOCK	1		;<KPJ.52!KPJ.32> -1 if .BAK wanted for .TMP
+bakflg::BLOCK	1		;<KPJ.52!KPJ.32> -1 if to kill .BAK file too
+>;T10
+ediflg::BLOCK	1		;[KPJ.15] editor mode flag
+	edilen==^D80*2		;shd be enough
+editbp:	BLOCK	1		;byte pointer
+edicnt:	BLOCK	1		;character counter
+
+editxt::BLOCK	1		;pointer to text or zero
+edibuf:	BLOCK	edilen/5	;ASCIZ buffer
+	0			;end of ASCIZ
+
+T10,<
+proflg:	0			;0 = can have <nnn> tpe protection code?
+ppnflg:	BLOCK	1		;allow [,] as home PPN ?
+>;T10
+T20,<
+tmpbuf:	BLOCK	<^D39*2+6+2>/5
+rscbuf:	BLOCK	<rscsiz==^D80*2>/5
+rsccnt:	BLOCK	1
+rscbp:	BLOCK	1
+>;T20
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;	S Y N T A X   T A B L E S
+
+RUNIF,<
+T10,<
+caledi::comhed	0,vidarg,called,cccaed##,zcedhl##	;(Use) editor EDIT
+>;T10
+T20,<
+caledi::comhed	0,vidarg,called,cccaed##,zcedhl##	;(Use) editor EDITOR:
+calema::comhed	0,vidarg,calmax,cccamo##,zcamax##	;(Use) editor EMACS
+>;T20
+caltec::comhed	0,vidarg,callte,cccate##,zctehl##	;(Use) editor TECO
+T10,<
+QZIF,<
+calami::comhed	0,vidarg,callam,ccothe##,zcamhl##	;(Use) editor AMIS
+>;QZIF
+calsed::comhed	0,vidarg,callse,cccate##,zcsehl##	;(Use) editor SED
+calsos::comhed	0,sosarg,callso,cccaso##,zcsohl##	;(Use) editor SOS
+>;T10
+T20,<
+calltv::comhed	0,vidarg,caltv,cccamo##,zcttv##		;(Use) editor TV
+caledt::comhed	0,vidarg,calldt,cccamo##,zctedt##	;(Use) editor EDT
+>;T20
+calvid::comhed	0,vidarg,callvi,cccavi##,zcvihl##	;(Use) editor VIDED
+calker::comhed	0,vidarg,callke,ccothe##,zckehl##	;call KERMIT
+
+
+
+;TMPBEG		start of RSCAN% or TMPCOR output
+;Tops-10:	T/	TMPCOR name,	+1 failure, +2 success
+;TOPS-20:				+1 always
+
+tmpbeg::				;<KPJ.22>
+T10,<	MOVEM	t,tmcnam##		;save TMPCOR name
+	CALL	tmcbeg##		;start TMPCOR output
+	 TRNA				;<KPJ.22> couldn't, +1 return
+	  skpret			;<KPJ.22> success,  +2 return
+>;T10
+T20,<	MOVE	t,[POINT 7,rscbuf]	;initialize byte pointer
+	MOVEM	t,rscbp
+	MOVEI	t,rscsiz		;initialize byte count
+	MOVEM	t,rsccnt		;. . .
+	MOVEI	t,rsccon		;output to rescan buffer
+	MOVEM	t,consum##		;. . .
+>;T20
+	return
+
+
+
+;+
+;TMPEND		end of RSCAN% or TMPCOR output
+;returns	+1 failure
+;		+2 success
+;-
+
+T10,<	tmpend==tmcend##>		;<KPJ.54!KPJ.24> end of TMPCOR output
+T20,<	tmpend==rscend>			;<KPJ.54!KPJ.24> end of RSCAN% output
+
+
+
+
+;+
+;VIDARG		argument to VIDrED call	(used by many other editor calls)
+;-
+
+vidarg:	save	<chpt##,produc##,silflg##>
+	CALL	delcom##		;delayed command ?
+	 JRST	vidar9			;yes, dont do it
+	SKIPGE	hlpflg##		;help wanted ?
+	 JRST	vidar8			;yes
+T10,<	SETZM	ppnflg>			;[KPJ.12,KPJ.14] echo PPN
+	MOVEI	t,predfi		;set producer
+	MOVEM	t,produc##
+	SETZM	silflg##		;don't be silent
+	CALL	read##			;get file name
+	 SETOM	errfl##			;error
+	CALL	gofnam##		;get output file
+	SKIPL	errfl##			;skip on error
+	 CALL	oofile##		;open output file
+	TRNA
+vidar8:	 CALL	noarg##			; no argument
+vidar9:	return
+
+
+
+
+
+;+
+;CALLKE		call KERMIT
+;-
+
+callke:	save	<gp1,silflg##>
+	SETZM	editxt			;KERMIT has no editor modes
+	SETOM	ediflg			;set editor mode on
+	CALL	outfil##		;save the entry on file
+	CALL	kertmp			;write KERMIT temp.file
+	 JRST	callk9			;<KPJ.54!KPJ.22> failed, give up
+T10,<	SETZM	bakflg			;<KPJ.32> don't delete .BAK file
+	MOVE	t,tmcnam##		;<KPJ.40> get name of file to kill
+	MOVEM	t,tmpedi		;<KPJ.40>
+	SETOM	editp			;<KPJ.52> not really an editor...
+	CALL	komwri##		;<KPJ.52> write TMPCOR for us
+	 nop				;<KPJ.22> failed, no disaster...
+	SETZM	ppnflg			;[KPJ.14] [,] will not do here
+	MOVEI	gp1,[EXP 'sys   ','kermit','exe   ',0,0,0]
+					;run KERMIT
+	CALL	grrblk##		;<KPJ.51> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.51> can't, tell user
+		JRST	callk9]		;<KPJ.51> give up
+>;T10
+	CALL	leave2##		;<KPJ.51> leave KOM system
+T10,<	CALL	runx##
+>;T10
+T20,<	MOVEI	gp1,[ASCIZ !sys:kermit.exe!] ;run KERMIT as a subfork
+	CALL	runfrk##
+	 JRST	callk1			;[BDQ] some error occurred
+	SETOM	silflg##		;[BDQ] shut up
+	CALL	opedfi			;[BDQ] open edit file for input
+	 JRST	callk9			;<KPJ.26> failed to open it
+	SETZM	entnr##			;[BDQ] clear entry
+	CALL	leawri##		;[BDQ] leave writing mode
+	CALL	submit##		;[BDQ] submit file
+callk1:	SETOM	silflg##		;[BDQ] shut up again
+	CALL	opedfi			;[BDQ] open file again
+	 TRNA				;<KPJ.26> failed
+	  CALL	delefi##		;[BDQ] and delete it
+>;T20
+callk9:	return
+
+
+
+;+
+;CALLVI		(Use) editor VIDED
+;-
+
+callvi:	save	<gp1,silflg##>
+	SETZM	editxt			;[KPJ.4] VIDrED has no editor modes
+	SETOM	ediflg			;[KPJ.15] set editor mode on
+	CALL	outfil##		;save the entry on file
+	CALL	vidtmp			;write VIDrED temp.file
+	 JRST	callv9			;<KPJ.54!KPJ.22> failed, give up
+T10,<	SETZM	bakflg			;<KPJ.32> don't delete .BAK file
+	MOVE	t,tmcnam##		;<KPJ.40> get name of file to kill
+	MOVEM	t,tmpedi		;<KPJ.40>
+	SETOM	editp			;<KPJ.52> not really an editor..
+	CALL	komwri##		;<KPJ.52> write TMPCOR for us
+	 nop				;<KPJ.22> failed, no disaster...
+	SETZM	ppnflg			;[KPJ.14] [,] will not do here
+	MOVEI	gp1,[EXP 'sys   ','vided ','exe   ',0,0,0]
+	CALL	grrblk##		;<KPJ.51> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.51> can't, tell user
+		JRST	callv9]		;<KPJ.51>
+>;T10
+	CALL	leave2##		;<KPJ.51> leave program
+T10,<	CALL	runx##>			;<KPJ.51> run VIDrED
+T20,<	MOVEI	gp1,[ASCIZ !sys:vided.exe!] ;run VIDrED in a subfork
+	CALL	runfrk##
+	 JRST	callv1			;[BDQ] some error occurred
+	SETOM	silflg##		;[BDQ] shut up
+	CALL	opedfi			;[BDQ] open edit file for input
+	 JRST	callv9			;<KPJ.26> failed
+	SETZM	entnr##			;[BDQ] clear entry
+	CALL	leawri##		;[BDQ] leave writing mode
+	CALL	submit##		;[BDQ] submit file
+callv1:	SETOM	silflg##		;[BDQ] shut up again
+	CALL	opedfi			;[BDQ] open file again
+	 TRNA				;<KPJ.26> failed
+	  CALL	delefi##		;[BDQ] and delete it
+>;T20
+callv9:	return
+
+
+
+
+;+
+;MODBEG		start mode output [KPJ.4]
+;returns	+1 always, with
+;		EDITBP, EDICNT, and CONSUM initialized to mode buffer output
+;-
+
+modbeg:	MOVE	t,[POINT 7,edibuf]	;byte pointer
+	MOVEM	t,editbp		;initialize it
+	MOVEI	t,edilen		;byte count
+	MOVEM	t,edicnt		;initialize it
+	MOVEI	t,[			;edit mode consumer:
+		CAIN	ch,.CHNUL	;[Consumer] NUL?
+		 RET			;[Consumer] Yes, ignore
+		SOSLE	edicnt		;[Consumer] No, space left in buffer?
+		 IDPB	ch,editbp	;[Consumer] Yes, output char
+		RET]			;[Consumer] Return to caller
+	MOVEM	t,consum##		;make us output to buffer
+	return
+
+
+
+;+
+;MODEND		end mode output [KPJ.4]
+;-
+
+modend:	MOVEI	t,edibuf		;[KPJ.4] ASCIZ
+	MOVEM	t,editxt		;[KPJ.4]
+	MOVEI	t,tercon##		;<KPJ.20> restore consumer
+	MOVEM	t,consum##		;<KPJ.20>
+	return
+
+
+;+
+T10,<				;Tops-10 only
+QZIF,<					;<KPJ.47>
+; CALLAM	call editor AMIS
+;-
+callam:	save	<gp1,silflg##>
+	CALL	modbeg			;[KPJ.4] start mode output
+	print	zami01##		;[KPJ.4] -*- to start it
+	print	zami02##		;[KPJ.4] we are editing texts, right?
+	CALL	putbla##		;[KPJ.7] make an extra space here
+	print	zslurj##		;[KPJ.4] say what language mode
+	MOVE	t,selffl##		;[KPJ.17] get personal flags
+	Txne	t,acrpfl		;[KPJ.17] ACR on?
+	 JRST[	CALL	putbla##	;[KPJ.7]
+		print	zami03##	;[KPJ.4] yes, Fill Mode, too
+		JRST	.+1]		;[KPJ.4] back to main line
+	print	zami01##		;[KPJ.4] -*- to end it
+	CALL	modend			;[KPJ.4] end mode output
+	SETOM	ediflg			;[KPJ.15] set editor mode on
+	CALL	outfil##		;save the entry on file
+	SETOM	bakflg			;<KPJ.32> delete .BAK too
+	CALL	amitmp			;write TMPCOR for AMIS
+	 JRST	calla9			;<KPJ.22> failed, fatal
+	MOVE	t,tmcnam##		;<KPJ.40> get name of file to kill
+	MOVEM	t,tmpedi		;<KPJ.40>
+	SETOM	editp			;<KPJ.52> editor call
+	CALL	komwri##		;<KPJ.52> write TMPCOR for us
+	 nop				;<KPJ.22> failed, not fatal, though
+	MOVE	gp1,[1,,[EXP 'sys   ','amis  ','exe   ',0,0,0]]
+	CALL	grrblk##		;<KPJ.51> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.51> can't, tell user
+		JRST	calla9]		;<KPJ.51> give up
+	CALL	leave2##		;<KPJ.51> leave program
+	CALL	runx##			;farewell...
+calla9:	return
+>;QZIF
+>;T10
+
+
+
+
+;+
+;KERTMP		T10: write TMPCOR for KERMIT
+;		T20: write rescan buffer for KERMIT
+;returns	+1 failed
+;		+2 success
+;-
+
+kertmp:	save	<consum##,str>
+T10,<	MOVSI	t,'ker'>		;TMPCOR name
+	CALL	tmpbeg			;start output
+T10,<	 JRST[	print	zzkerz##	;"core exhausted"
+		JRST	kertm9]		;bye
+>;T10
+	print	zker01##		;"Kermit "
+	CALL	predfi			;output edit file name
+	print	zker02##		;standard KERMIT commands
+T10,<	CALL	preol##			;CRLF
+	print[	ASCIZ !run !]		;RUN
+	CALL	prcinn##		;<KPJ.64> write name of program
+					;<KPJ.64> or segment (if different)
+	print[	ASCIZ !/runoffset:0!]
+>;T10
+T20,<	CALL	preol##>		;end with CRLF
+	CALL	tmpend			;end of output
+	 TRNA				;<KPJ.54> failed, +1 return
+	  skpret			;<KPJ.54> +2 return
+T10,<
+kertm9:
+>;T10
+	return
+
+
+
+;+
+;VIDTMP		T10: write TMPCOR for VIDrED
+;		T20: write rescan buffer for VIDrED
+;returns	+1 failed
+;		+2 success
+;-
+
+vidtmp:	save	<consum##,str>
+T10,<	MOVSI	t,'eds'>		;TMPCOR name
+	CALL	tmpbeg			;start output
+T10,<	 JRST[	print	zzediz##	;<KPJ.22> "core exhausted"
+		JRST	vidtm9]		;<KPJ.22> bye
+>;T10
+	print	zvid01##		;"Vided "
+	CALL	predfi			;output edit file name
+	print	zvid02##		;standard VIDrED switches
+T10,<	print[	ASCIZ !/runoffset:0/run:!]
+	CALL	prcinn##		;<KPJ.64!SEE> write program name
+					;<KPJ.64> or segment (if different)
+>;T10
+T20,<	CALL	preol##>		;end with CRLF
+	CALL	tmpend			;end of output
+	 TRNA				;<KPJ.54> failed, +1 return
+	  skpret			;<KPJ.54!KPJ.22> +2 return
+T10,<
+vidtm9:					;<KPJ.22>
+>;T10
+	return
+
+
+;+
+T10,<					;Tops-10 only
+QZIF,<					;<KPJ.47>
+
+;AMITMP		write TMPCOR for AMIS (Tops-10 only)
+;returns:	+1 failure
+;		+2 success
+;-
+
+amitmp:	save	<consum##,str>
+	MOVSI	t,'eds'			;TMPCOR name
+	CALL	tmpbeg			;start output
+	 JRST[	print	zzediz##	;<KPJ.22> "no more core"
+		JRST	amitm9]		;<KPJ.22> fail
+
+	print[	ASCIZ !amis !]		;<KPJ.32> "amis "
+	CALL	predfi			;print edit file name
+	print[	ASCIZ !/char:!]		;<KPJ.57> /CHAR:nn switch
+	MOVEI	t,.PRIOUT		;<KPJ.57>
+	MOVE	t2,filcnt##		;<KPJ.57> length of file (chars)
+	MOVEI	t3,^D10			;<KPJ.57>
+	CALL	.nout##			;<KPJ.57> output length as decimal#
+	 JRST[	print[	ASCIZ !0!]	;<KPJ.57> safe default
+		JRST	.+1]		;<KPJ.57>
+	print[	ASCIZ !/run:!]		;[KPJ.10] no /RUNOFFSET: here
+	CALL	prcinn##		;<KPJ.64!SEE> write program name
+					;<KPJ.64> or segment (if different)
+	CALL	tmpend			;end of output
+	 TRNA				;<KPJ.54> failed, +1 return
+	  skpret			;<KPJ.54!KPJ.22> success
+amitm9:	return
+>;QZIF
+>;T10
+
+
+
+;+
+;PREDFI		print edit file name
+;accepts	BAKTMP/	-1 if should use .BAK extension
+;			 0 if should use .TMP extension
+;		PROFLG/	-1 if cannot have <477>
+;			 0 if can have <477>
+;	T20:	.TMP only
+;T10:		ALL:jjjKOM.TMP[ppn]
+;T20:		PS:<myself>KOM-TMPCOR.TMP
+;-
+
+predfi::save	<str,nr,gp1>
+T20,<	CALL	myname##		;get my user name as "PS:<myself>"
+	 JRST	predf9			;<KPJ.35>
+	SETZ	2,.CHNUL
+	IDPB	2,1			;make ASCIZ
+	HRROI	1,tmpbuf		;where to put name
+	HRROI	2,namstr##		;where it is now
+	SETZ	3,.CHNUL		;end on NUL
+	SOUT%				;wham!
+	 ERJMP	.+1
+	SETZ	1,.CHNUL		;make ASCIZ
+	IDPB	1,2
+	print	tmpbuf			;output the directory before filename
+>;T20
+T10,<	PJOB	nr,>			;[KPJ.13] get job number
+T20,<	GJINF%				;[KPJ.13] get job number
+	MOVE	nr,3
+>;T20
+	CALL	pr3num##		;[KPJ.13] print 3-digit job number
+	print	zefina			;append data base name
+T10,<	SKIPE	baktmp			;<KPJ.32> .BAK extension wanted?
+	 JRST[	print[	ASCIZ !.bak!]	;<KPJ.32> yes, output it
+		SETZM	baktmp		;<KPJ.32> reset to default
+		JRST	predf1]		;<KPJ.32>
+>;T10
+	print[	ASCIZ !.tmp!]		;[KPJ.13] append a nice extension
+T10,<
+predf1:	CALL	pmydir			;[KPJ.11] append my [PPN] to it
+	SKIPE	proflg			;<KPJ.60> can have protection?
+	 JRST	predf9			;<KPJ.60> no, not supported
+	print[	ASCIZ !<477>!]		;<KPJ.55> enough paranoia?
+>;T10
+T20,<	print[	ASCIZ !;p770202!]>	;[KPJ.13] skip paranoia
+predf9:	return
+
+zefina:	IFE	ftdb-0,<ASCIZ	!kom!>
+	IFE	ftdb-1,<ASCIZ	!com!>
+	IFE	ftdb-2,<ASCIZ	!ger!> ;German
+	IFE	ftdb-3,<ASCIZ	!nor!> ;Norwegian
+	..foo==3
+T10,<
+QZIF,<	IFE	ftdb-4,<ASCIZ	!qom!>
+	..foo=4
+>;QZIF
+>;T10
+	IFG	ftdb-..foo,<
+		PRINTX	? ZEFINA is data base dependent - not defined>
+	PURGE	..foo
+;+
+T10,<
+;PMYDIR		output home directory name		[KPJ.12]
+;accepts	PPNFLG/	= 0:	[ppn] is written
+;			<0:	[,] is written
+;			>0:	nothing is written (use default path)
+
+pmydir:	MOVE	t,ppnflg		;get flag
+	JUMPG	t,pmydi9		;<KPJ.56> positive, output nothing
+	MOVEI	ch,.CHOBR		;start PPN
+	CALL	putch			;<KPJ.50>
+	MOVE	gp1,selfpp##		;my PPN
+	SKIPE	ppnflg			;<KPJ.56> zero?
+	 JRST[	MOVEI	ch,","		;<KPJ.56> output comma
+		CALL	putch		;<KPJ.56> . . .
+		JRST	pmydi1]		;<KPJ.56>
+	CALL	prippn##		;output PPN
+pmydi1:	MOVEI	ch,.CHCBR		;end PPN
+	CALL	putch			;<KPJ.50>
+pmydi9:	return
+>;T10
+;-
+
+;+
+T10,<
+;SOSARG		argument to SOS call
+;-
+
+sosarg:	save	<chpt##,produc##,silflg##>
+	CALL	delcom##		;delayed command ?
+	 JRST	sosar9			;yes, dont do it
+	SKIPGE	hlpflg##		;help wanted ?
+	 JRST	sosar8			;yes
+	MOVEI	t,1			;[KPJ.12] no path
+	MOVE	t,ppnflg		;[KPJ.12]
+	MOVEI	t,predfi		;<KPJ.31> set producer
+	MOVEM	t,produc##
+	SETZM	silflg##		;don't be silent
+	CALL	read##			;get file name
+	 SETOM	errfl##			;error
+	CALL	gofnam##		;get output file
+	SKIPL	errfl##			;<KPJ.31> skip on error
+	 CALL	oofile##		;open output file
+	TRNA
+sosar8:	 CALL	noarg##			; no argument
+sosar9:	return
+>;T10
+
+
+
+;+
+T10,<
+;CALLSE		call editor SED		(Tops-10 only)
+;-
+callse:	save	<gp1,str,silflg##>
+	SETZM	editxt			;SED has no editor modes
+	SETZM	ppnflg			;give'm a PPN
+	SETOM	ediflg			;this calls itself an editor
+	CALL	outfil##		;save the entry on file
+	SETZM	bakflg			;don't delete .BAK file
+	CALL	sedtmp			;write TMPCOR for SED
+	 JRST	callz9			;failed, fatal
+	MOVE	t,tmcnam##		;get name of file to kill
+	MOVEM	t,tmpedi
+	SETOM	editp			;<KPJ.52> editor call
+	CALL	komwri##		;<KPJ.52> write TMPCOR for us
+	 nop				;failed, too bad
+	MOVE	gp1,[1,,[EXP 'sys   ','sed   ','exe   ',0,0,0]]
+	CALL	grrblk##		;<KPJ.51> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.51> can't, tell user
+		JRST	callz9]		;<KPJ.51> give up
+	CALL	leave2##		;<KPJ.51> leave program
+	CALL	runx##			;run SED
+callz9:	return
+>;T10
+
+
+;+
+T10,<
+;CALLSO		call editor SOS		(Tops-10 only)
+;-
+
+callso:	save	<gp1,str,silflg##>
+	SETZM	editxt			;[KPJ.4] SOS has no editor modes
+	SETZM	ppnflg			;<KPJ.37> give'm a PPN
+	SETOM	ediflg			;[KPJ.15] this calls itself an editor
+	CALL	outfil##		;save the entry on file
+	SETZM	bakflg			;<KPJ.32> don't delete .BAK file
+	CALL	sostmp			;write TMPCOR for SOS
+	 JRST	calls9			;<KPJ.22> failed, give up
+	MOVE	t,tmcnam##		;<KPJ.40> get name of file to kill
+	MOVEM	t,tmpedi		;<KPJ.40>
+	SETOM	editp			;<KPJ.52> editor call
+	CALL	komwri##		;<KPJ.52> write TMPCOR for us
+	 nop				;<KPJ.22> failed, too bad
+	print	zfingc##		;"use G command"
+	CALL	preol2##		;blank line
+	MOVE	gp1,[1,,[EXP 'sys   ','sos   ','exe   ',0,0,0]]
+	CALL	grrblk##		;<KPJ.51> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.51> can't, tell user
+		JRST	calls9]		;<KPJ.51> give up
+	CALL	leave2##		;<KPJ.51> leave program
+	CALL	runx##			;run SOS
+calls9:	return
+>;T10
+
+
+
+;+
+T10,<
+;SEDTMP		write TMPCOR for SED (Tops-10 only)
+;returns	+1 failed
+;		+2 success
+;-
+
+sedtmp:	save	<consum##,str>
+	MOVSI	t,'sed'			;TMPCOR name
+	CALL	tmpbeg			;start output
+	 JRST[	print	zzediz##	;"no more core"
+		JRST	sedtm9]		;fail
+	SETOM	proflg			;<KPJ.60> no protection code, please
+	CALL	predfi			;print edit file name
+	SETZM	proflg			;<KPJ.60> protection allowed again
+	print[	ASCIZ !/goto:100/prog:!];<KPJ.60> at EOF, run us afterwards
+;@Begin(***FOO***)
+;	SED does not accept a full file specification as the argument of
+;	the /PROG: switch.  This will probably not work at all times,
+;	since it expects us to have a SYS:name.EXE on our system.
+;	SED is a rather losing program.
+
+	MOVE	gp1,xmyslf##+1		;<KPJ.61> get segment file name
+	CALL	prcin3##		;<KPJ.61> output SIXBIT name
+;@End(***FOO***)
+	CALL	preol##			;<KPJ.60> end of line
+	CALL	tmpend			;end of output
+	 TRNA				;<KPJ.54> failed, +1 return
+	  skpret			;<KPJ.54> success, +2 return
+sedtm9:	return
+>;T10
+
+;+
+T10,<
+;SOSTMP		write TMPCOR for SOS (Tops-10 only)
+;returns	+1 failed
+;		+2 success
+;-
+
+sostmp:	save	<consum##,str>
+	MOVSI	t,'edt'			;TMPCOR name
+	CALL	tmpbeg			;start output
+	 JRST[	print	zzediz##	;<KPJ.22> "no more core"
+		JRST	sostm9]		;<KPJ.22> fail
+
+	CALL	putbla##		;one blank
+	CALL	predfi			;print edit file name
+	print	zsos02##		;SOS standard switches
+	print[	ASCIZ !/run:!]		;[KPJ.10] /RU[N][:prognam]
+	CALL	prcinn##		;<KPJ.64!SEE> write program name
+					;<KPJ.64> or segment (if different)
+	CALL	preol2##		;new line
+	CALL	tmpend			;end of output
+	 $Skipa				;<KPJ.54> failed, +1 return
+	  skpret			;<KPJ.54!KPJ.22> success, +2 return
+sostm9:	return
+>;T10
+
+
+;+
+;CALLTE		(Use) editor TECO
+;-
+
+callte:	save	<gp1,str,silflg##>
+	SETZM	editxt			;[KPJ.4] TECO has no editor modes
+	SETOM	ediflg			;[KPJ.15] we are calling an editor
+	CALL	outfil##		;save the entry on file
+	CALL	tectmp			;write temp.file for TECO
+	 JRST	callt9			;<KPJ.54!KPJ.22> failed, give up
+T10,<	SETZM	bakflg			;<KPJ.32> don't delete .BAK file
+	MOVE	t,tmcnam##		;<KPJ.40> get name of file to kill
+	MOVEM	t,tmpedi		;<KPJ.40>
+	SETOM	editp			;<KPJ.52> editor call
+	CALL	komwri##		;<KPJ.52> write TMPCOR for us
+	 nop				;<KPJ.22> failed, too ba
+	MOVE	gp1,[1,,[EXP 'sys   ','teco  ','exe',0,0,0]]
+	CALL	grrblk##		;<KPJ.51> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.51> can't, tell user
+		JRST	callt9]		;<KPJ.51> give up
+>;T10
+	CALL	leave2##		;<KPJ.51> leave program
+T10,<	CALL	runx##>
+T20,<	MOVEI	gp1,<0,,[ASCIZ !sys:teco.exe!]>	;run TECO in a subfork
+	CALL	runfrk##
+	 JRST	callt1			;some error occurred
+	SETOM	silflg##		;shut up
+	CALL	opedfi			;open edit file for input
+	 JRST	callt9			;failed
+	SETZM	entnr##			;clear entry
+	CALL	leawri##		;leave writing mode
+	CALL	submit##		;submit file
+callt1:	SETOM	silflg##		;shut up again
+	CALL	opedfi			;open file again
+	 TRNA				;failed
+	  CALL	delefi##		;and delete it
+>;T20
+callt9:	return
+
+;+
+T20,<
+;CALEDT		(Use) editor EDT	(TOPS-20 only)
+;-
+calldt:	save	<gp1,silflg##>
+	SETZM	editxt			;<KPJ.43> no editor modes
+	SETOM	ediflg			;we may be calling an editor
+	CALL	outfil##		;save the entry on file
+	CALL	edttmp			;<KPJ.54> write temp.file for editor
+	 JRST	calld9			;<KPJ.54> failed, give up
+	CALL	updbeg##		;start update
+	CALL	updlse##		;update last seen count
+	CALL	updend##		;end of update
+	CALL	deque##			;dequeue all requests
+	CALL	toutpu##		;output old text
+	MOVEI	gp1,[ASCIZ !sys:edt.exe!] ;run EDT in a subfork
+	CALL	runfrk##
+	 TRNA
+	  JRST[	SETOM	silflg##	;shut up
+		CALL	opedfi		;open edit file for input
+		SETZM	silflg##	;no more secrets
+		SETZM	entnr##		;clear entry
+		CALL	leawri##	;leave writing mode
+		CALL	submit##	;submit file
+		JRST	.+1]
+	SETOM	silflg##		;shut up again
+	CALL	opedfi			;open file again
+	CALL	delefi##		;and delete it
+	SETZM	silflg##		;no more secrets
+calld9:	return				;<KPJ.62>
+>;T20
+
+;+
+T20,<
+;CALTV		(Use) editor TV		(TOPS-20 only)
+;-
+caltv:	save	<gp1,silflg##>		;<KPJ.43>
+	SETZM	editxt			;<KPJ.43> no editor modes
+	SETOM	ediflg			;we may be calling an editor
+	CALL	outfil##		;save the entry on file
+	CALL	tvtmp			;<KPJ.54> write temp.file for TV
+	 JRST	caltv9			;<KPJ.54> failed, give up
+	CALL	updbeg##		;start update
+	CALL	updlse##		;update last seen count
+	CALL	updend##		;end of update
+	CALL	deque##			;dequeue all requests
+	CALL	toutpu##		;output old text
+	MOVEI	gp1,[ASCIZ !sys:tv.exe!];run TV in a subfork
+	CALL	runfrk##
+	 TRNA
+	  JRST[	SETOM	silflg##	;shut up
+		CALL	opedfi		;open edit file for input
+		SETZM	silflg##	;no more secrets
+		SETZM	entnr##		;clear entry
+		CALL	leawri##	;leave writing mode
+		CALL	submit##	;submit file
+		JRST	.+1]
+	SETOM	silflg##		;shut up again
+	CALL	opedfi			;open file again
+	CALL	delefi##		;and delete it
+	SETZM	silflg##		;no more secrets
+caltv9:	return
+>;T20
+
+;+
+;TECTMP		T10: write TMPCOR for TECO
+;		T20: write RSCAN% for TECO
+;returns	+1 failed
+;		+2 success
+;-
+
+tectmp:	save	<consum##,str>
+T10,<	MOVSI	t,'edt'>		;<KPJ.45> TMPCOR name
+	CALL	tmpbeg			;start output
+T10,<	 JRST[	print	zzediz##	;<KPJ.54> failed, tell user
+		JRST	tectm9]		;<KPJ.54>
+>;T10
+T20,<	print[	ASCIZ !teco !]>		;<KPJ.45> program name
+T10,<
+Bugfix	(ftbg03,<TECO has been changed lately>,<
+	print[	ASCIZ !S!]		;<KPJ.56> be compatible
+>,<	print[	ASCIZ !teco !]		;<KPJ.45> program name
+>)
+	SETZM	ppnflg>			;<KPJ.45> get us a PPN
+	CALL	predfi			;print edit file name
+T10,<	print[	ASCIZ !/inplace$ed!]	;<KPJ.45> RUN switch
+	CALL	prcinn##		;<KPJ.64!KPJ.45!SEE> write program name
+					;<KPJ.64> or segment (if different)
+>;T10
+	CALL	preol##			;new line
+	CALL	tmpend			;end of TMPCOR output
+	 $Skipa				;<KPJ.54> failed, +1 return
+	  skpret			;<KPJ.54!KPJ.45!KPJ.22> success, +2
+tectm9:	return
+
+
+;+
+T20,<
+;CALMAX		(Use) editor EMACS	(TOPS-20 only)
+;-
+
+calmax:	save	<gp1,silflg##>
+	CALL	modbeg			;start mode output
+	print	zami01##		;EMACS -*- to start it
+	print	zami02##		;"Text" we are editing, right?
+	print	zami01##		;-*- to end it
+	CALL	modend			;end mode output
+	SETOM	ediflg			;we may be calling an editor
+	CALL	outfil##		;save the entry on file
+	CALL	ematmp			;<KPJ.54> write temp.file for EMACS
+	 JRST	calma9			;<KPJ.54> failed, give up
+	CALL	updbeg##		;start update
+	CALL	updlse##		;update last seen count
+	CALL	updend##		;end of update
+	CALL	deque##			;dequeue all requests
+	CALL	toutpu##		;output old text
+	MOVEI	gp1,[ASCIZ !sys:emacs.exe!] ;run EMACS in a subfork
+	CALL	runfrk##
+	 TRNA
+	  JRST[	SETOM	silflg##	;shut up
+		CALL	opedfi		;open edit file for input
+		SETZM	silflg##	;no more secrets
+		SETZM	entnr##		;clear entry
+		CALL	leawri##	;leave writing mode
+		CALL	submit##	;submit file
+		JRST	.+1]
+	SETOM	silflg##		;shut up again
+	CALL	opedfi			;open file again
+	CALL	delefi##		;and delete it
+	SETZM	silflg##		;no more secrets
+calma9:	return
+>;T20
+
+;+
+;CALLED		call editor EDIT
+;-
+
+called:	save	<gp1,silflg##>
+	CALL	modbeg			;[KPJ.4] start mode output
+	print	zami01##		;[KPJ.4] EMACS -*- to start it
+	print	zami02##		;[KPJ.4] "Text" we are editing, right?
+T10,<	CALL	putbla##		;[KPJ.7] extra space here
+	print	zslurj##		;[KPJ.4] that language
+	MOVE	t,selffl##		;[KPJ.17] get personal flags
+	Txne	t,acrpfl		;[KPJ.17] ACR on?
+	 JRST[	print	zami03##	;[KPJ.4] yes, " Fill" too
+		JRST	.+1]		;[KPJ.4] back to main line
+>;T10
+	print	zami01##		;[KPJ.4] -*- to end it
+	CALL	modend			;[KPJ.4] end mode output
+	SETOM	ediflg			;[KPJ.15] we may be calling an editor
+	CALL	outfil##		;save the entry on file
+	CALL	editmp			;write temp.file for editor
+	 JRST	calle9			;<KPJ.54!KPJ.22> failed, give up
+T10,<	SETZM	bakflg			;<KPJ.32> don't delete .BAK file
+	MOVE	t,tmcnam##		;<KPJ.40> get name of file to kill
+	MOVEM	t,tmpedi		;<KPJ.40>
+	SETOM	editp			;<KPJ.52> editor call
+	CALL	komwri##		;<KPJ.52> write TMPCOR for us
+	 nop				;<KPJ.22> failed, too bad
+	SETZM	ppnflg			;[,] will not do, spell it out
+	MOVE	gp1,[1,,[EXP 'sys   ','edit  ','exe   ',0,0,0]]
+	CALL	grrblk##		;<KPJ.51> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.51> can't, tell user
+		JRST	calle9]		;<KPJ.51> give up
+>;T10
+	CALL	leave2##		;<KPJ.51> leave program
+T10,<	CALL	runx##>			;run EDIT
+T20,<	MOVEI	gp1,[ASCIZ !editor:!]	;run EDITOR: in a subfork
+	CALL	runfrk##
+	 JRST	calle1			;[BDQ] some error occurred
+	SETOM	silflg##		;[BDQ] shut up
+	CALL	opedfi			;[BDQ] open edit file for input
+	SETZM	silflg##		;<KPJ.20> no more secrets
+	SETZM	entnr##			;[BDQ] clear entry
+	CALL	leawri##		;[BDQ] leave writing mode
+	CALL	submit##		;[BDQ] submit file
+calle1:	SETOM	silflg##		;[BDQ] shut up again
+	CALL	opedfi			;[BDQ] open file again
+	CALL	delefi##		;[BDQ] and delete it
+>;T20
+calle9:	SETZM	silflg##		;<KPJ.20> no more secrets
+	return
+
+
+
+
+
+T20,<
+;+
+;OPEDFI		open edit file for input
+;returns	+1 failure
+;		+2 success
+;-
+opedfi:	save	<chpt##,produc##>
+	MOVEI	t,predfi
+	MOVEM	t,produc##
+	PUSH	P,silflg##
+	SETZM	silflg##
+	CALL	read##
+	 SETOM	errfl##
+	POP	P,silflg##
+	CALL	opinfi##
+	SKIPGE	errfl##
+	 skpret				;<KPJ.26> error (+2) return
+opedf9:	return
+>;T20
+
+
+
+
+;+
+;EDITMP		T10: write TMPCOR for EDIT
+;		T20: write RSCAN% for EDITOR:
+;returns	+1 failed
+;		+2 success
+;-
+
+T20,<
+edttmp:					;EDT can use same
+tvtmp:					;TV can use same
+ematmp:					;EMACS can use same
+>;T20
+
+editmp:	save	<consum##,str>
+T10,<	MOVSI	t,'eds'>		;name of TMPCOR
+	CALL	tmpbeg			;start output
+T10,<	 JRST[	print	zzediz##	;<KPJ.54> cannot contact editor
+		JRST	editm9]		;<KPJ.54!KPJ.22> failed, give up
+>;T10
+	print[	ASCIZ !edit !]
+	CALL	predfi			;print edit file name
+T10,<	print[	ASCIZ !/run:!]
+	CALL	prcinn##		;<KPJ.64!SEE> write program name
+					;<KPJ.64> or segment (if different)
+>;T10
+	CALL	preol##			; new line
+	CALL	tmpend			;end of output
+	 $Skipa				;<KPJ.54> failed, +1 return
+	  skpret			;<KPJ.54!KPJ.22> success, +2 return
+T10,<
+editm9:
+>;T10
+	return
+>;RUNIF
+
+
+
+;+
+;RSCBEG		start rescan buffer output
+;-
+
+
+;+
+T20,<
+;RSCCON		rescan buffer output consumer
+;accepts	CH/	character
+;-
+
+rsccon:	JUMPE	ch,rscc09		;ignore NUL character
+	SOSLE	rsccnt			;space left in buffer?
+	 IDPB	ch,rscbp		;output character
+rscc09:	return
+
+
+
+;+
+;RSCEND		end of rescan buffer ouput
+;returns	+1 failure
+;		+2 success
+;-
+
+rscend:	HRROI	1,rscbuf
+	RSCAN%
+	 ERJMP[	MOVEI	str,zresca##	;<KPJ.54> "RSCAN% failed"
+		CALL	.jserr##	;<KPJ.54> append JSYS error
+		CALL	errmsg##	;<KPJ.54> display error message
+		JRST	rscen9]		;<KPJ.54> failed, +1 return
+	MOVEI	1,tercon##		;<KPJ.43!KPJ.20> restore consumer
+	MOVEM	1,consum##		;<KPJ.20>
+	skpret				;<KPJ.63> success, +2 return
+rscen9:	return				;<KJ.54>
+>;T20
+
+	END
+..and no more

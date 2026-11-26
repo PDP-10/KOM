@@ -1,0 +1,94 @@
+;Oden::DSKG:GETCHR.MAC<62,7777,MAC> 1986-03-05 16:17:51, Edit by KPJ @ L89
+;5	Minor optimization.
+;Oden::DSKD:GETCHR.MAC<62,7777,MAC> 1985-10-01 01:49:19, Edit by KPJ
+;4	Introduced PROLOG macro.
+;Oden::DSKD:GETCHR.MAC<62,7777,MAC> 1985-03-21 11:50:43, Edit by KPJ @ L89
+;3	Fixed bug introduced in edit#2, which made "foobar" not match.
+;Oden::DSKD:GETCHR.MAC<62,7777,MAC> 1985-03-12 13:20:18, Edit by KPJ @ L89
+;2	Sanitized code. Use standard names for characters.
+;Oden::Dskd:Getchr.Mac[62,7777] 1984-08-31 06:15:03, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(getchr)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-31 06:14:59
+
+;	D A T A   A R E A
+
+
+savbp::	Z				;save area for byte pointer
+
+	CODE
+
+;+
+;GETCHR		get character from string; 0 byte means end-of-string.
+;		skips parentheses recursively.
+;accepts	BP/	pointing to ASCIZ string
+;returns	CH/	ASCII character
+;		BP/	updated byte pointer
+;		SAVBP/	original byte pointer (before last byte)
+;-
+
+getchr::
+getch1:	CALL	gechar			;get character in CH
+getch4:	CAIN	ch,.CHLPR		;<KPJ.2> left parenthesis ?
+	 JRST[	CALL	getrpa		;<KPJ.5> yes, get right parenthesis
+		JRST	getch4]		;<KPJ.5> get char again
+	CAIN	ch,.CHRPR		;<KPJ.2> right parenthesis ?
+	 JRST	getch1			;<KPJ.2> yes
+	return
+
+
+;+
+;GECHAR		get a character from a string; 0 byte means end-of-string.
+;accepts	BP/	byte pointer
+;returns	CH/	byte from string
+;		BP/	updated byte pointer
+;-
+
+gechar::MOVEM	bp,savbp	;save old byte pointer
+	ILDB	ch,bp		;get byte
+	CAIN	ch,.CHNUL	;<KPJ.2> end of line ?
+	 MOVE	bp,savbp	;<KPJ.2> yes, restore old byte pointer
+	return
+
+
+;+
+;GETRPA		get right parenthesis from string
+;returns	CH/	next character
+;-
+
+getrpa:
+getrp1:	CALL	gechar			;get next character
+getrp2:	JUMPE	ch,getrp9		;end of ASCIZ
+	CAIE	ch,.CHRPR		;<KPJ.2> right parenthesis got?
+	 JRST[	CAIE	ch,.CHLPR	;<KPJ.5!KPJ.2> no, another left paren?
+		 JRST	getrp1		;no, get next character
+		CALL	getrpa		;yes, get right parenthesis (recursive)
+		JRST	getrp2]
+	CALL	gechar			;<KPJ.5> get next character
+getrp9:	return
+
+
+
+
+
+;+
+;GSCHAR		get character, but ignore parentheses
+;accepts	BP/	byte pointer
+;returns	CH/	character
+;-
+
+gschar::
+gscha1:	CALL	gechar		; get character
+	CAIE	ch,.CHLPR	;<KPJ.2> left parens ?
+	 CAIN	ch,.CHRPR	;<KPJ.2> no, right parens?
+	  JRST	gscha1		;<KPJ.2> yes, some parens, ignore it
+	CAIN	ch,.CHQUO	;<KPJ.3!KPJ.2> quote ? ("string mark" (c) TTQ)
+	 SETZ	ch,.CHNUL	;<KPJ.2> yes, end of string
+	return
+
+	END
+..and no more

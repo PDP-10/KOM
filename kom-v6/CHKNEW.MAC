@@ -1,0 +1,647 @@
+;Oden::DSKG:CHKNEW.MAC[62,7777,MAC] 1987-01-26 10:30:12, Edit by KPJ @ DK
+;13	Minor optimization.
+;Oden::DSKG:CHKNEW.MAC<62,7777,MAC> 1986-07-22 14:12:00, Edit by KPJ @ QZKTH
+;12	Enabled text-not-shown logic, and added test for self.
+;Oden::DSKG:CHKNEW.MAC<62,7777,MAC> 1986-07-22 14:05:07, Edit by KPJ @ QZKTH
+;11	Moved texts to TEXTER.
+;Oden::DSKG:CHKNEW.MAC<62,7777,MAC> 1986-02-13 19:18:57, Edit by KPJ
+;10	PTY mode inside FTPTYM conditional.
+;Oden::DSKD:CHKNEW.MAC<62,7777,MAC> 1986-01-14 03:17:21, Edit by KPJ
+;7	Handle deleted objects.
+;Oden::DSKD:CHKNEW.MAC[62,7777,MAC] 1986-01-13 01:10:03, Edit by KPJ
+;6	Say why a text is not shown.
+;Oden::DSKD:CHKNEW.MAC<62,7777,MAC> 1985-10-16 12:11:07, Edit by KPJ
+;5	Display news control when Reporting Disk Accesses.
+;Oden::DSKD:CHKNEW.MAC<62,7777,MAC> 1985-09-25 07:30:25, Edit by KPJ
+;4	Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:CHKNEW.MAC[62,7777,TTQ] 1984-11-23 08:45:06, Edit by THOLERUS T
+;3	Correct count of unread letters.
+;Oden::DSKD:CHKNEW.MAC[62,7777] 1984-11-21 15:40:41, Edit by K.JAAKKOLA
+;2	Search correct universals on T10 and T20. 
+;	Included TTQs later hack (.REQUI for "LIST LETTERS" command):
+;	;DSKD:CHKNEW.MAC[62,7777,TTQ] 1984-11-20 14:23:29, Edit by THOLERUS T
+;	;2	Corrected bug in UPLASE
+;Oden::Dskd:Chknew.Mac[62,7777] 1984-05-14 14:01:26, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(chknew)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 14:01:14
+
+;	D A T A   A R E A
+
+lalink:	0			;last seen link
+laseli:	0			;old last seen link
+nrdele::0			;number of deleted entries
+nrlett::0			;number of unseen letters
+nrseen::0			;number of already seen entries
+nrsubt::0			;number of subtracted entries
+nxconr::0			;number of next unseen comment
+nxcoln::0			;next unseen comment link
+nxennr::0			;number of next unseen entry
+nxenln::0			;next unseen entry link
+nxlenr::0			;number of next unseen letter
+nxleln::0			;next unseen letter link
+nxmenr::0			;number of next meeting
+nxoenr::0			;number of next unseen entry in next meeting
+nxoeln::0			;next unseen entry in next meeting link
+wantre:	Z			;wanted receiver
+
+;	P R O G R A M    C O D E
+
+	CODE
+
+;+
+;CHKNEW		check for news
+;accepts	NXLENR \
+;		NXENNR - known news
+;		NXOENR /
+;-
+
+chknew::SKIPGE	delflg##		;delayed command ?
+	 JRST	chkne9			;yes, no news check
+	CALL	clebuf##		;clear all buffers
+	MOVE	t,selffl##		;<KPJ.5> our flags
+	Txne	t,rdapfl		;<KPJ.5> report disk accesses?
+	 JRST[	PUSH	P,consum##	;<KPJ.5> yes
+		PUSH	P,str		;<KPJ.5>
+		MOVEI	t,tercon##	;<KPJ.5>
+		MOVEM	t,consum##	;<KPJ.5>
+		CALL	preol##		;<KPJ.5>
+		print[	ASCIZ !$---- Start news control !]
+		CALL	preol##		;<KPJ.5>
+		POP	P,str		;<KPJ.5>
+		POP	P,consum##	;<KPJ.5>
+		JRST	.+1]		;<KPJ.5> ho hum
+	SKIPN	nxlenr			;any unseen letter known ?
+	 CALL	chlett			;check for new letters
+	SKIPN	nxennr			;next entry known ?
+	 CALL	chentr			;check for new entries
+	SKIPN	nxconr			;next comment known ?
+	 CALL	chcomm			;check for new comments
+	SKIPN	nxoenr			;known next meeting ?
+	 CALL	chmeet			;check for new meetings
+	MOVE	t,selffl##		;<KPJ.5> our flags
+	Txne	t,rdapfl		;<KPJ.5> report disk accesses?
+	 JRST[	PUSH	P,consum##	;<KPJ.5> yes
+		PUSH	P,str		;<KPJ.5>
+		MOVEI	t,tercon##	;<KPJ.5>
+		MOVEM	t,consum##	;<KPJ.5>
+		CALL	preol##		;<KPJ.5>
+		print[	ASCIZ !$--- End news control!]
+		CALL	preol##		;<KPJ.5>
+		POP	P,str		;<KPJ.5>
+		POP	P,consum##	;<KPJ.5>
+		JRST	.+1]		;<KPJ.5> ho hum
+chkne9:	return
+
+
+
+
+
+;+
+;CHLETT		check for new letters
+;returns	NXLENR/	next unseen letter
+;		NXLELN/	next unseen letter
+;-
+
+chlett:	save	<nr,bfp,gp1,gp2> 	;[TTQ.3]
+	SETZM	nrlett			;[TTQ.3] clear number of letters
+	MOVE	nr,crenr##		;get self
+	CALL	getobj##		;get self
+	 JRST	chlet9			;not defined
+	MOVE	gp2,objlto+1(bfp)	;[TTQ.3] get total number of letters
+	SUB	gp2,pernum(bfp)		;[TTQ.3] get number of unseen letters
+	JUMPE	gp2,chlet9		;[TTQ.3] any news ?
+	MOVE	nr,perlsl(bfp)		;[TTQ.3] get last seen letter link
+	PUSH	P,nr			;[TTQ.3] save it
+	CALL	getobj##		;[TTQ.3] get it
+	 JRST	chlet2			;[TTQ.3] no letters seen
+chlet1:	MOVE	nr,lnklto+2(bfp)	;[TTQ.3] get next letter link
+	CALL	getobj##		;[TTQ.3] get it
+	 JRST	chlet2			;[TTQ.3] end of letters
+	SKIPG	0(bfp)			;[TTQ.3] link deleted ?
+	 JRST	chlet1			;[TTQ.3] yes, skip it
+	SKIPN	lnkrdt(bfp)		;[TTQ.3] received ?
+	 AOS	nrlett			;[TTQ.3] one more unread letter
+	JRST	chlet1
+
+chlet2:	POP	P,nr			;[TTQ.3] get last seen letter link
+	MOVE	gp2,crenr##		;[TTQ.3] get last seen letter link
+	CALL	geneen			;get next entry
+	MOVEM	gp2,nxlenr		;save next letter number
+	MOVEM	nr,nxleln		;save next letter link
+chlet9:	return
+
+
+
+
+
+
+;+
+;GENEEN		get next entry
+;accepts	NR/	last seen link
+;		GP2/	receiver
+;returns	NR/	next entry link
+;		GP2/	next entry number
+;-
+
+geneen:	save	<bfp,gp1>
+	MOVEM	gp2,wantre		;save wanted receiver
+	JUMPE	nr,genee7		;no letter seen ?
+	CALL	qrigre			;right receiver?
+	 JRST	genee7			;no, link removed
+	MOVE	nr,lnklto+2(bfp)	;get next letter
+genee2:	CALL	fineli			;find next link
+	JRST	genee9
+
+genee7:	MOVE	nr,wantre		;get receiver
+	CALL	getobj##		;get receiver
+	 JRST	genee8			;error
+	SKIPE	nr,objlto+2(bfp)	;get first letter
+	 JRST	genee2
+	CALL	nofile			;no first letter
+genee8:	SETZ	gp2,			;clear next letter number
+genee9:	MOVE	nr,lalink		;get last link
+	return
+
+
+
+
+
+;+
+;QRIGRE		check if right receiver
+; accepts	WANTRE/	wanted receiver
+;		NR/	link
+;returns	BFP/	link
+;		+1 if wrong
+;		+2 if right
+;-
+
+qrigre:	save	<gp2,gp1>
+	MOVE	gp2,wantre		;get wanted receiver
+	CALL	getobj##		;get link
+	 JRST	qrigr9			;error
+	CAMN	gp2,lnkrec(bfp)		;right ?
+	 JRST	qrigr8			;yes
+	ADD	gp2,lnkrec(bfp)		;check anonymous
+	SKIPN	gp2			;right ?
+qrigr8:	 skpret				;yes
+qrigr9:	return				;wrong
+
+
+
+
+
+;+
+;FINELI		find next link
+;accepts	NR/	next link
+;returns	LALINK/	next link
+;		GP2/	next entry
+;-
+
+fineli:	save	<nr,bfp,gp1>
+finel1:	MOVEM	nr,lalink		;save last link
+	JUMPE	nr,finel8		;any next letter ?
+	CALL	qrigre			;right receiver ?
+	 JRST	finel6			;no, link overwritten
+	CALL	qunsee			;letter unseen ?
+	 JRST	finel9			;yes, ready
+	CALL	uplase			;update last seen entry
+	MOVE	nr,lnklto+2(bfp)	;get next letter
+	JRST	finel1
+
+finel6:	CALL	seneli			;search for next link
+	TRNA
+finel8:	 SETZ	gp2,			;no next letter
+finel9:	return
+
+
+
+
+
+;+
+;QUNSEE		check if unseen entry
+;accepts	BFP/	link
+;		LALINK/	last link
+;returns	+1 if entry unseen
+;		+2 if not unseen
+;		GP2/	next letter
+;-
+
+qunsee:	save	<nr,bfp,gp1>
+	SKIPG	0(bfp)			;link deleted ?
+	 JRST[	CALL	sayp		;<KPJ.6> say sumthing?
+		 JRST	qunse4		;<KPJ.6> nope, shut up
+		PUSH	P,nr		;<KPJ.6>
+		CALL	preol##		;<KPJ.6>
+		MOVM	nr,0(bfp)	;<KPJ.7!KPJ.6> get object#
+		CALL	probnr##	;<KPJ.6> output object#
+		print	zqsee1##	;<KPJ.6> " not available"
+		POP	P,nr		;<KPJ.6>
+		JRST	qunse4]		;<KPJ.6> yes, get next
+	MOVE	nr,lnkobj(bfp)		;get next letter
+	MOVEM	nr,gp2			;save next letter number
+	CALL	getobj##		;get next letter
+	 JRST[	CALL	sayp		;<KPJ.6> say sumthing?
+		 JRST	qunse5		;<KPJ.6> no, shut up
+		PUSH	P,nr		;<KPJ.6>
+		CALL	preol##		;<KPJ.6>
+		MOVM	nr,gp2		;<KPJ.7!KPJ.6> get object#
+		CALL	probnr##	;<KPJ.6> "Text NNNN"
+		print	zqsee2##	;<KPJ.6> " does not exist"
+		POP	P,nr		;<KPJ.6>
+		JRST	qunse5]		;<KPJ.6> error
+	SKIPG	t,0(bfp)		;<KPJ.12> letter deleted ?
+	 JRST[	CALL	sayp		;<KPJ.6> yes, say sumthing?
+		 JRST	qunse5		;<KPJ.6> no, shut up
+		PUSH	P,nr		;<KPJ.6>
+		CALL	preol##		;<KPJ.6>
+		MOVM	nr,0(bfp)	;<KPJ.7!KPJ.6> get object#
+		CALL	probnr##	;<KPJ.6> "Text NNNN"
+		print	zqsee3##	;<KPJ.6> " deleted"
+		POP	P,nr		;<KPJ.6>
+		JRST	qunse5]		;<KPJ.6> yes
+	CAMN	t,selfnr##		;<KPJ.12> c'est moi?
+	 JRST[	CALL	sayp		;<KPJ.12> jawohl, say sumthing?
+		 JRST	qunse7		;<KPJ.12> njet, shutup
+		PUSH	P,nr		;<KPJ.12>
+		CALL	preol##		;<KPJ.12>
+		MOVM	nr,0(bfp)	;<KPJ.12> get entry#
+		CALL	probnr##	;<KPJ.12> barf out entry#
+		print	zqsee0##	;<KPJ.12> " is written by yourself."
+		POP	P,nr		;<KPJ.12>
+		JRST	qunse7]		;<KPJ.12> seen
+	CALL	qseen			;entry seen ?
+	 JRST[	CALL	sayp		;<KPJ.6> say sumthing?
+		 JRST	qunse7		;<KPJ.6> no, shut up
+		PUSH	P,nr		;<KPJ.6>
+		CALL	preol##		;<KPJ.6>
+		MOVM	nr,0(bfp)	;<KPJ.7!KPJ.6> get object#
+		CALL	probnr##	;<KPj.6> "Text NNN"
+		print	zqsee4##	;<KPJ.6> " already seen"
+		POP	P,nr		;<KPJ.6>
+		JRST	qunse7]		;<KPJ.6> yes
+	MOVE	nr,objlfr+2(bfp)	;get first receiver
+qunse1:	CALL	getobj##		;get link
+	 JRST	qunse9			;no more receivers
+	CALL	qlnpas			;link passed ?
+	 JRST[	CALL	sayp		;<KPJ.6> say sumthing?
+		 JRST	qunse7		;<KPJ.6> no, shut up
+		PUSH	P,nr		;<KPJ.6>
+		CALL	preol##		;<KPJ.6>
+		MOVM	nr,gp2		;<KPJ.7!KPJ.6> get object#
+		CALL	probnr##	;<KPJ.6> "Text NNNN"
+		print	zqsee5##	;<KPJ.6> " passed"
+		POP	P,nr		;<KPJ.6>
+		JRST	qunse7]		;<KPJ.6> yes, letter seen
+	MOVE	nr,lnklfr+2(bfp)	;get next receiver
+	JRST	qunse1			;check next receiver
+
+qunse4:	AOS	nrsubt			;subtracted entry
+	JRST	qunse8
+
+qunse5:	AOS	nrdele			;deleted entry
+	JRST	qunse8
+
+qunse7:	AOS	nrseen			;entry already seen
+qunse8:	skpret				;seen letter
+qunse9:	return
+
+;+
+;SAYP		test if to say something about skipped texts	<KPJ.6>
+;returns	+1 if not
+;		+2 if are to say
+;-
+
+sayp:	MOVE	t,selffl##		;get personal flags
+	Txne	t,whypfl		;want to see this?
+	 skpret				;yes
+	return
+
+
+;+
+;QSEEN		check if entry seen
+;accepts	GP2/	entry
+;		SEELIS/	list of seen entries
+;returns	+1 if entry seen
+;		+2 if not seen
+;-
+
+qseen:	save	<gp1>
+IFN	ftptym,<			;<KPJ.10>
+	SKIPGE	ptyflg##		;PTY mode ?
+	 JRST	qseen8			;yes, always unseen
+>;ftptym
+	MOVEI	gp1,seelis##		;get start of list
+qseen1:	CAMN	gp2,0(gp1)		;same entry
+	 JRST	qseen9			;yes, entry seen
+	ADDI	gp1,1			;get next entry
+	CAIGE	gp1,seeend##		;end of list ?
+	 JRST	qseen1			;no
+IFN	ftptym,<			;<KPJ.10>
+qseen8:
+>;ftptym
+	skpret				;entry unseen
+qseen9:	return
+
+
+
+
+
+;+
+;QLNPAS		check if link passed
+;accepts	BFP/	link
+;returns	+1 if link passed
+;		+2 if link not passed
+;-
+
+qlnpas:	save	<nr,gp2,gp1>
+	SKIPG	0(bfp)			;receiver deleted ?
+	 JRST	qlnpa8			;yes, not passed
+	MOVM	nr,lnkrec(bfp)		;get receiver
+	CAME	nr,crenr##		;letter ?
+	 JRST	qlnpa3			;no
+	SKIPN	lnkrdt(bfp)		;letter received ?
+	 JRST	qlnpa8			;no
+	JRST	qlnpa9			;yes
+
+qlnpa3:
+IFN	ftptym,<			;<KPJ.10>
+	SKIPGE	ptyflg##		;PTY mode ?
+	 JRST	qlnpa8			;yes, never passed
+>;ftptym
+	CALL	qismbr##		;member ?
+	 TRNA				;yes
+	  JRST	qlnpa8			;no, get next receiver
+	MOVE	gp1,lnklto+1(bfp)	;get link number
+	CAMLE	gp1,melnum(gp2)		;entry seen ?
+qlnpa8:	 skpret				;no, link not passed
+qlnpa9:	return
+
+
+
+
+
+;+
+;UPLASE		update last seen entry
+;accepts	LALINK/	last seen link
+;returns	BFP/	link object
+;		GP1/	link object
+;-
+
+uplase:	save	<nr,gp2>
+	MOVE	nr,lalink		;get last seen link
+	CALL	getobj##		;get last seen link
+	 Bug(hlt,<uplase-1 chknew>,<lalink>)
+	MOVM	nr,lnkrec(bfp)		;get receiver
+	CALL	qismbr##		;get member element
+	 JRST	uplas5			;member
+	CAME	nr,crenr##		;letter to self ?
+	 JRST	uplas9			;no
+	MOVE	t,lalink		;get last seen link
+	MOVEM	t,nxleln
+	SKIPGE	reaflg##		;read only access ?
+	 JRST	uplas9			;yes
+	CALL	updbeg##		;[TTQ.2] start update
+	CALL	updrdt##		;[TTQ.2] update received date
+	CALL	updlsl##		;[TTQ.2] update last seen letter
+	CALL	updend##		;[TTQ.2] end of update
+	MOVE	nr,lalink		;get last seen link again
+	CALL	getobj##		;restore last seen link
+	 Bug(hlt,<uplase-2 chknew>,<lalink>)
+	JRST	uplas9			;get next link
+
+uplas5:	MOVE	t,lalink		;save last seen link
+	MOVEM	t,mellnk(gp2)
+	MOVE	t,lnklto+1(bfp)		;save last seen number
+	MOVEM	t,melnum(gp2)
+uplas9:	return
+
+
+
+
+
+;+
+;SENELI		search for next link
+;accepts	NR/	last seen link
+;		WANTRE/	receiver
+;returns	GP2/	next entry
+;		LALINK/	next link
+;-
+
+seneli:	save	<nr,bfp,gp1>
+	MOVEM	nr,laseli		;save last seen link
+	MOVEM	nr,lalink		;save last link
+	MOVE	nr,wantre		;get receiver
+	SETZ	gp2,			;no next entry
+	CALL	getobj##		;get receiver
+	 JRST	senel9			;error
+	MOVE	nr,objlto(bfp)		;get last letter
+senel1:	CAMGE	nr,laseli		;link created later ?
+	 JRST	senel9			;no, error
+	CALL	qrigre			;get link
+	 JRST	senel9			;no last link
+	MOVE	gp2,lnkobj(bfp)		;get entry
+	MOVEM	nr,lalink		;save last link
+	MOVE	nr,lnklto(bfp)		;get previous link
+	JRST	senel1
+
+senel9:	return
+
+
+
+
+
+;+
+;NOFILE		no first letter
+;accepts	WANTRE/	receiver
+;		BFP/	receiver object
+;-
+
+nofile:	save	<gp2,nr>
+	MOVE	nr,wantre		;get receiver
+	CALL	qismbr##		;get member element
+KL10,<	 TRNA>				;<KPJ.13> member
+KL10N,<	 SKIPA>				;<KPJ.13> member
+	  JRST	nofil9			;not member
+	MOVE	t,objlto(bfp)		;<KPJ.13> set last link
+	MOVEM	t,mellnk(gp2)
+	MOVE	t,objlto+1(bfp)		;set last seen number
+	MOVEM	t,melnum(gp2)
+nofil9:	return
+
+
+
+
+
+;+
+;CHENTR		check for new entries
+;returns	NXENNR/	next unseen entry
+;		NXENLN/	next unseen entry
+;-
+
+chentr:	save	<nr,gp2>
+	MOVE	nr,curmbr##		;get register element
+	MOVE	nr,mellnk(nr)		;get last seen link
+	SKIPN	gp2,conf##		;get current meeting
+	 JRST	chent9			;not defined
+	CALL	geneen			;get next entry
+	MOVEM	nr,nxenln		;save next entry link
+	MOVEM	gp2,nxennr		;save next entry number
+chent9:	return
+
+
+
+
+
+;+
+;CHCOMM		check for new comments
+;-
+
+chcomm::save	<nr,gp2>
+	MOVE	nr,nxcoln		;get last seen link
+chcom1:	SKIPN	gp2,cursub##		;get current sub meeting
+	 JRST	chcom9			;not defined
+	CALL	geneen			;get next comment
+	JUMPE	gp2,chcom7		;end of comments ?
+	CALL	qwarea			;wanted to read ?
+	 JRST	chcom1			;no, get next
+	MOVEM	nr,nxcoln		;save next comment link
+	TRNA
+chcom7:	 SETZM	cursub##		;clear current sub meeting
+chcom8:	MOVEM	gp2,nxconr		;save next comment number
+chcom9:	return
+
+
+
+
+
+;+
+;QWAREA		check if you want to read an entry
+;accepts	GP2/	entry
+;returns	+1 if not wanted
+;		+2 if wanted
+;-
+
+qwarea:	save	<bfp,gp1,nr>
+	MOVE	nr,gp2			;get entry
+	CALL	getobj##		;get entry
+	 JRST	qware9			;error
+	MOVE	nr,objlfr+2(bfp)	;get first receiver
+qware1:	CALL	getobj##		;get link
+	 JRST	qware9			;no more, not right
+	CAME	gp2,lnkobj(bfp)		;right link ?
+	 JRST	qware9			;no, not right
+	SKIPG	0(bfp)			;link deleted ?
+	 JRST	qware2			;yes, get next
+	MOVE	nr,lnkrec(bfp)		;get receiver
+	CAMN	nr,crenr##		;letter ?
+	 JRST	qware8			;yes, right
+	CALL	qmembe##		;member ?
+	 JRST	qware8			;yes, right
+qware2:	MOVE	nr,lnklfr+2(bfp)	;get next receiver
+	JRST	qware1
+
+qware8:	skpret				;you have the right
+qware9:	return
+
+
+
+
+
+
+;+
+;CHMEET		check for new conferences
+;returns	NXMENR/	next conference
+;		NXOENR/	first unseen entry in next conference
+;		NXOELN/	first unseen entry in next conference
+;-
+
+chmeet:	save	<gp2,nr,gp1,bfp>
+	SKIPE	gp2,curmbr##		;get current conference
+	 JRST	chmee1			;present
+	SKIPN	gp2,mbrbeg##		;get member register
+	 JRST	chmee8			;not defined
+	JRST	chmee2
+
+chmee1:	ADDI	gp2,melsiz		;get next record
+chmee2:	SKIPE	0(gp2)			;end of register ?
+	 JRST	chmee3			;no
+	SKIPN	conf##			;present ?
+	 JRST	chmee8			;no, ready
+	MOVE	gp2,mbrbeg##		;get start
+chmee3:	MOVE	nr,melmee(gp2)		;get conference
+	CAMN	nr,conf##		;current conference ?
+	 JRST	chmee8			;yes, ready
+	CALL	chkmee##		;conference ?
+	 JRST	chmee1			;no
+	CALL	obtoac##		;get number file
+	CALL	getobj##		;get number record
+	 JRST	chmee7			;error, removed conference
+	CALL	geneme			;get next conference
+	 JRST	chmee1			;no news, get next
+	JRST	chmee9
+
+chmee7:	SKIPG	0(gp2)			;active conference ?
+	 JRST	chmee6			;no
+	SOSGE	nrmemb##		;one less membership
+	 SETZM	nrmemb##		;error
+chmee6:	CALL	sqowli			;squeese own member list
+	JRST	chmee2			;check next
+
+chmee8:	SETZM	nxmenr			;no next conference
+	SETZM	nxoenr			;no next entry
+	SETZM	nxoeln			;no next entry
+chmee9:	return
+
+
+
+
+
+;+
+;GENEME		get next conference
+;accepts	GP2/	member element
+;		BFP/	number record
+;returns	+1 if no news
+;		+2 if next meeting got
+;-
+
+geneme:	save	<nr,gp2>
+	MOVE	t,melnum(gp2)		;get number of seen entries
+	CAML	t,numnum(bfp)		;any news ?
+	 JRST	genem9			;no, get next
+	SKIPG	0(gp2)			;element deleted ?
+	 JRST	genem9			;yes, get next
+	MOVE	nr,mellnk(gp2)		;get last seen entry link
+	MOVE	gp2,melmee(gp2)		;get meeting
+	MOVEM	gp2,nxmenr		;save next meeting
+	CALL	geneen			;get next unseen entry
+ 	JUMPE	nr,genem9		;any unseen entry got ?
+ 	MOVEM	nr,nxoeln		;save next entry link
+	MOVEM	gp2,nxoenr		;save next entry number
+	skpret				;next meeting got
+genem9:	return
+
+
+
+
+
+;+
+;SQOWLI		squeese own member list
+;accepts	GP2/	member list
+;-
+
+sqowli::save	<nr,gp2>
+	HRLI	gp2,melsiz(gp2)		;move one element
+	MOVE	t,mbrend##		;get end or register
+	BLT	gp2,-melsiz-1(t)	;squeese
+	MOVE	nr,conf##		;get current meeting
+	CALL	qismbr##		;get member element
+	 MOVEM	gp2,curmbr##		;set current member element
+	return
+
+	END
+..and no more

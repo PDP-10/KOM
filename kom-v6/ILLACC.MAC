@@ -1,0 +1,1378 @@
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Illacc.Mac.83 870415-1536,KPJ-Jaakkola
+;26	Skip using F%IOPN to handle data base ("Invalid simultaneous access")
+;	and no fiddling with DSK: any more.
+;Oden::DSKG:ILLACC.MAC<62,7777,ILLACC> 1987-04-14 15:31:36,KPJ @ DK <1,2>
+;25	Single brokets are hard to output with $TEXT.
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Illacc.Mac.73 870414-1352,KPJ-Jaakkola
+;24	GLXLIB differs on Bottoms-10 and Twenex.  Make HELP command work
+;	on both systems.  Make "L" an abbreviation for LIST command.
+;	Handle invisible commands in HELP command.  Must close old data
+;	base before trying to open next, or You could get the old "Invalid
+;	simultaneous access" (Bottoms-10 never detects these things).
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Illacc.Mac.50 870413-1453,KPJ-Jaakkola
+;23	Defeat "invalid simultaneous access" problem.  Defeat also MACRO
+;	refusal to PURGE away Bottoms-10 UUO definitions and KL10 instructions.
+;	Add code to use KOM:GLXLIB.EXE, which is patched to use thawed mode
+;	on the data base (or everybody will get "Invalid simultaneous access"
+;	when You're using ILLACC to peek into the data base).  
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Illacc.Mac.40 870407-1501,KPJ-Jaakkola
+;22	Don't allow open a log file if one is open, or You get "?Invalid
+;	simultaneous access".  Give reasonable error message when help file
+;	missing.
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Illacc.Mac.33 870407-1212,KPJ-Jaakkola
+;21	Terminal number have no node numbers on Twenex. Skip "Total of
+;	1 entries" brain damage.  "FIND USER" on Twenex for "FIND PPN".
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Illacc.Mac.30 870406-2023,KPJ-Jaakkola
+;20	Handle T20 file name, too.
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Illacc.Mac.27 870406-1815,KPJ-Jaakkola
+;17	No T10 instructions on T20.
+;Oden::DSKG:ILLACC.MAC<62,7777,ILLACC> 1987-04-06 16:23:40, KPJ @ ORANGE <1,2>
+;16	If block in ERRLOG file is larger than our buffer, don't overwrite us.
+;Oden::DSKG:ILLACC.MAC<62,7777,ILLACC> 1987-04-06 16:13:43, KPJ @ ORANGE <1,2>
+;15	T1 used when S1 intended.
+;Freja::Ps:<KPJ-Jaakkola.Rls.Src>Illacc.Mac.23 870406-1316,KPJ-Jaakkola
+;14	Subcommand ALL in FIND command can be abbreviated A.
+;Oden::DSKG:ILLACC.MAC<62,7777,ILLACC> 1987-04-05 05:18:34, KPJ @ H.HOLE <1,2>
+;13	Teach ILLACC that object numbers are *not* half words...
+;	Soup up object number handling somewhat.
+;Oden::DSKG:ILLACC.MAC<62,7777,ILLACC> 1987-04-05 02:50:30, KPJ @ H.HOLE <1,2>
+;12	Teach ILLACC about T20 file name lengths.
+;Oden::DSKG:ILLACC.MAC<62,7777,ILLACC> 1987-04-02 23:39:05, KPJ @ L89 <1,2>
+;11	Make this work on Twenex.
+;Oden::DSKG:ILLACC.MAC[62,7777,ILLACC] 1986-12-15 20:31:05, Edit by B.CARLSSON
+;10	Fix bug in PERLOP that made ILLACC print deleted persons.
+;Oden::DSKG:ILLACC.MAC<62,7777,ILLACC> 1986-05-03 10:36:44, Edit: KPJ @ ENSKEDE
+;7	Converted this to list ERRLOG records.
+;DSKD:ILLACC.MAC[62,7777,ILLACC] 1985-12-30 10:44:42, Edit by B.CARLSSON
+;6.	Person-number field in List-command now is 5 digits wide..
+;Oden::DSKD:ILLACC.MAC[62,7777,ILLACC] 1984-10-23 20:07:53, Edit by B.CARLSSON
+;5.	Fixed various bugs.
+;Oden::DSKD:ILLACC.MAC[10,6104,SNEAKY] 1984-10-12 22:22:57, Edit by B.CARLSSON
+;4.	Implemented "List" command.
+;Oden::DSKD:ILLACC.MAC[10,6104,SNEAKY] 1984-10-12 21:41:21, Edit by B.CARLSSON
+;3.	Implemented Who Command. Fancy isn't it?
+;Oden::DSKD:ILLACC.MAC[10,6104,MACRO] 1984-07-11 16:41:43, Edit by B.Carlsson
+;2.	Fixed some bugs in Translate command, and added some extra
+;	fancy commands.
+;Oden::DSKD:ILLACC.MAC[10,6104,MACRO] 1983-04-20 13:52:09, Edit by B.Carlsson
+;1	Coding started.
+
+	SEARCH	illsys			;what system are we?
+DEFINE	T10<IFE	<ftos-0>>		;Bottoms-10
+DEFINE	T20<IFE	<ftos-1>>		;Twenex
+IF1,<
+				;MACRO wont PURGE opcodes:
+DEFINE	terror	(foo)<PRINTX	?ILLACC: Attempt to use FOO opcode>
+DEFINE	DMOVE	(foo,bar)<terror <DMOVE>>
+DEFINE	DMOVEM	(foo,bar)<terror <DMOVEM>>
+T20,<					;Get rid of Bottoms-10 instructions:
+DEFINE	LIGHTS	(foo,bar)<terror LIGHTS>
+DEFINE	RESET	(foo,bar)<terror RESET>
+DEFINE	DDTIN	(foo,bar)<terror DDTIN>
+DEFINE	SETDDT	(foo,bar)<terror SETDDT>
+DEFINE	DDTOUT	(foo,bar)<terror DDTOUT>
+DEFINE	DEVCHR	(foo,bar)<terror DEVCHR>
+DEFINE	DDTGT	(foo,bar)<terror DDTGT>
+DEFINE	GETCHR	(foo,bar)<terror GETCHR>
+DEFINE	DDTRL	(foo,bar)<terror DDTRL>
+DEFINE	WAIT	(foo,bar)<terror WAIT>
+DEFINE	CORE	(foo,bar)<terror CORE>
+DEFINE	EXIT	(foo,bar)<terror EXIT>
+DEFINE	UTPCLR	(foo,bar)<terror UTPCLR>
+DEFINE	DATE	(foo,bar)<terror DATE>
+DEFINE	LOGIN	(foo,bar)<terror LOGIN>
+DEFINE	APRENB	(foo,bar)<terror APRENB>
+DEFINE	LOGOUT	(foo,bar)<terror LOGOUT>
+DEFINE	SWITCH	(foo,bar)<terror SWITCH>
+DEFINE	REASSI	(foo,bar)<terror REASSI>
+DEFINE	TIMER	(foo,bar)<terror TIMER>
+DEFINE	MSTIME	(foo,bar)<terror MSTIME>
+DEFINE	GETPPN	(foo,bar)<terror GETPPN>
+DEFINE	TRPSET	(foo,bar)<terror TRPSET>
+DEFINE	TRPJEN	(foo,bar)<terror TRPJEN>
+DEFINE	RUNTIM	(foo,bar)<terror RUNTIM>
+DEFINE	PJOB	(foo,bar)<terror PJOB>
+DEFINE	SLEEP	(foo,bar)<terror SLEEP>
+DEFINE	SETPOV	(foo,bar)<terror SETPOV>
+DEFINE	PEEK	(foo,bar)<terror PEEK>
+DEFINE	GETLIN	(foo,bar)<terror GETLIN>
+DEFINE	RUN	(foo,bar)<terror RUN>
+DEFINE	SETUWP	(foo,bar)<terror SETUWP>
+DEFINE	REMAP	(foo,bar)<terror REMAP>
+DEFINE	GETSEG	(foo,bar)<terror GETSEG>
+DEFINE	GETTAB	(foo,bar)<terror GETTAB>
+DEFINE	SPY	(foo,bar)<terror SPY>
+DEFINE	SETNAM	(foo,bar)<terror SETNAM>
+DEFINE	TMPCOR	(foo,bar)<terror TMPCOR>
+DEFINE	DSKCHR	(foo,bar)<terror DSKCHR>
+DEFINE	SYSSTR	(foo,bar)<terror SYSSTR>
+DEFINE	JOBSTR	(foo,bar)<terror JOBSTR>
+DEFINE	STRUUO	(foo,bar)<terror STRUUO>
+DEFINE	SYSPHY	(foo,bar)<terror SYSPHY>
+DEFINE	FRECHN	(foo,bar)<terror FRECHN>
+DEFINE	DEVTYP	(foo,bar)<terror DEVTYP>
+DEFINE	DEVSTS	(foo,bar)<terror DEVSTS>
+DEFINE	DEVPPN	(foo,bar)<terror DEVPPN>
+DEFINE	SEEK	(foo,bar)<terror SEEK>
+DEFINE	RTTRP	(foo,bar)<terror RTTRP>
+DEFINE	LOCK	(foo,bar)<terror LOCK>
+DEFINE	JOBSTS	(foo,bar)<terror JOBSTS>
+DEFINE	LOCATE	(foo,bar)<terror LOCATE>
+DEFINE	WHERE	(foo,bar)<terror WHERE>
+DEFINE	DEVNAM	(foo,bar)<terror DEVNAM>
+DEFINE	CTLJOB	(foo,bar)<terror CTLJOB>
+DEFINE	GOBSTR	(foo,bar)<terror GOBSTR>
+DEFINE	HPQ	(foo,bar)<terror HPQ>
+DEFINE	HIBER	(foo,bar)<terror HIBER>
+DEFINE	WAKE	(foo,bar)<terror WAKE>
+DEFINE	CHGPPN	(foo,bar)<terror CHGPPN>
+DEFINE	SETUUO	(foo,bar)<terror SETUUO>
+DEFINE	DEVGEN	(foo,bar)<terror DEVGEN>
+DEFINE	OTHUSR	(foo,bar)<terror OTHUSR>
+DEFINE	CHKACC	(foo,bar)<terror CHKACC>
+DEFINE	DEVSIZ	(foo,bar)<terror DEVSIZ>
+DEFINE	DAEMON	(foo,bar)<terror DAEMON>
+DEFINE	JOBPEK	(foo,bar)<terror JOBPEK>
+DEFINE	ATTACH	(foo,bar)<terror ATTACH>
+DEFINE	DAEFIN	(foo,bar)<terror DAEFIN>
+DEFINE	FRCUUO	(foo,bar)<terror FRCUUO>
+DEFINE	DEVLNM	(foo,bar)<terror DEVLNM>
+DEFINE	PATH.	(foo,bar)<terror PATH.>
+DEFINE	METER.	(foo,bar)<terror METER.>
+DEFINE	MTCHR.	(foo,bar)<terror MTCHR.>
+DEFINE	JBSET.	(foo,bar)<terror JBSET.>
+DEFINE	POKE.	(foo,bar)<terror POKE.>
+DEFINE	TRMNO.	(foo,bar)<terror TRMNO.>
+DEFINE	TRMOP.	(foo,bar)<terror TRMOP.>
+DEFINE	RESDV.	(foo,bar)<terror RESDV.>
+DEFINE	UNLOK.	(foo,bar)<terror UNLOK.>
+DEFINE	DISK.	(foo,bar)<terror DISK.>
+DEFINE	DVRST.	(foo,bar)<terror DVRST.>
+DEFINE	DVURS.	(foo,bar)<terror DVURS.>
+DEFINE	XTTSK.	(foo,bar)<terror XTTSK.>
+DEFINE	CAL11.	(foo,bar)<terror CAL11.>
+DEFINE	MTAID.	(foo,bar)<terror MTAID.>
+DEFINE	IONDX.	(foo,bar)<terror IONDX.>
+DEFINE	CNECT.	(foo,bar)<terror CNECT.>
+DEFINE	MVHDR.	(foo,bar)<terror MVHDR.>
+DEFINE	ERLST.	(foo,bar)<terror ERLST.>
+DEFINE	SENSE.	(foo,bar)<terror SENSE.>
+DEFINE	CLRST.	(foo,bar)<terror CLRST.>
+DEFINE	PIINI.	(foo,bar)<terror PIINI.>
+DEFINE	PISYS.	(foo,bar)<terror PISYS.>
+DEFINE	DEBRK.	(foo,bar)<terror DEBRK.>
+DEFINE	PISAV.	(foo,bar)<terror PISAV.>
+DEFINE	PIRST.	(foo,bar)<terror PIRST.>
+DEFINE	IPCFR.	(foo,bar)<terror IPCFR.>
+DEFINE	IPCFS.	(foo,bar)<terror IPCFS.>
+DEFINE	IPCFQ.	(foo,bar)<terror IPCFQ.>
+DEFINE	PAGE.	(foo,bar)<terror PAGE.>
+DEFINE	SUSET.	(foo,bar)<terror SUSET.>
+DEFINE	COMPT.	(foo,bar)<terror COMPT.>
+DEFINE	SCHED.	(foo,bar)<terror SCHED.>
+DEFINE	ENQ.	(foo,bar)<terror ENQ.>
+DEFINE	DEQ.	(foo,bar)<terror DEQ.>
+DEFINE	ENQC.	(foo,bar)<terror ENQC.>
+DEFINE	TAPOP.	(foo,bar)<terror TAPOP.>
+DEFINE	FILOP.	(foo,bar)<terror FILOP.>
+DEFINE	CAL78.	(foo,bar)<terror CAL78.>
+DEFINE	NODE.	(foo,bar)<terror NODE.>
+DEFINE	ERRPT.	(foo,bar)<terror ERRPT.>
+DEFINE	ALLOC.	(foo,bar)<terror ALLOC.>
+DEFINE	PERF.	(foo,bar)<terror PERF.>
+DEFINE	INCHRW	(foo,bar)<terror INCHRW>
+DEFINE	OUTCHR	(foo,bar)<terror OUTCHR>
+DEFINE	INCHRS	(foo,bar)<terror INCHRS>
+DEFINE	OUTSTR	(foo,bar)<terror OUTSTR>
+DEFINE	INCHWL	(foo,bar)<terror INCHWL>
+DEFINE	INCHSL	(foo,bar)<terror INCHSL>
+DEFINE	GETLCH	(foo,bar)<terror GETLCH>
+DEFINE	SETLCH	(foo,bar)<terror SETLCH>
+DEFINE	RESCAN	(foo,bar)<terror RESCAN>
+DEFINE	CLRBFI	(foo,bar)<terror CLRBFI>
+DEFINE	CLRBFO	(foo,bar)<terror CLRBFO>
+DEFINE	SKPINC	(foo,bar)<terror SKPINC>
+DEFINE	SKPINL	(foo,bar)<terror SKPINL>
+DEFINE	IONEOU	(foo,bar)<terror IONEOU>
+DEFINE	MTWAT.	(foo,bar)<terror MTWAT.>
+DEFINE	MTREW.	(foo,bar)<terror MTREW.>
+DEFINE	MTEOF.	(foo,bar)<terror MTEOF.>
+DEFINE	MTSKR.	(foo,bar)<terror MTSKR.>
+DEFINE	MTBSR.	(foo,bar)<terror MTBSR.>
+DEFINE	MTEOT.	(foo,bar)<terror MTEOT.>
+DEFINE	MTUNL.	(foo,bar)<terror MTUNL.>
+DEFINE	MTBLK.	(foo,bar)<terror MTBLK.>
+DEFINE	MTSKF.	(foo,bar)<terror MTSKF.>
+DEFINE	MTBSF.	(foo,bar)<terror MTBSF.>
+DEFINE	MTDEC.	(foo,bar)<terror MTDEC.>
+DEFINE	MTIND.	(foo,bar)<terror MTIND.>
+>;T20
+>;IF1
+
+TITLE	IllAcc	-	To read illegal access attempts for KOM
+SUBTTL	KPJ Jaakkola QZ, 1986-05-03 11:00:08
+;SUBTTL	Bj|rn Carlsson,	1983-04-20 13:52:09
+
+	SEARCH	GLXMAC,	ORNMAC,	JOBDAT,	DBSMAC
+
+	PROLOG	IllAcc
+
+	.TEXT	"/segment:low komdbh"
+	.TEXT	"/symseg:low/locals"
+
+	PARSET
+	
+	ILLEDT==:10
+	
+	ILLWHO==5		;who last hacked
+	ILLMIN==0		;minor version number
+	ILLVER==1		;major version number
+
+	LOC	.JBVER
+	EXP	VRSN.(ILL)
+	RELOC
+
+;External references
+	EXT	<PARSER,P$HELP,P$NPRO,P$STAK>	;from OPRPAR
+
+	.TEXT	"/segment:low rel:oprpar" 	;pickup OPRPAR
+
+	XP	TCP,.A16	;TAKE Command Push Down List pointer
+	XP	CHK,.A15	;check code accumulator
+	XP	TXT,.A14	;TEXT pointer
+
+	ND	TAKSIZ,^D20
+	ND	PDLEN,200
+	Nd	entsiz,^O200	;<KPJ.16> entry buffer size
+T10,<	Nd	fillen,9>	;<KPJ.20!KPJ.7> program name (SIXBIT)
+T20,<	Nd	fillen,^O20>	;<KPJ.20!KPJ.12> program name (ASCIZ)
+
+;Offsets into an entry
+	PHASE	0
+.ENTIM:! BLOCK	1		;Creation daytime (T10: UDT, t20: GTAD%)
+.ENNLN:! BLOCK	1		;<KPJ.10> Node_line (T10) / TTY# (T20)
+.ENJOB:! BLOCK	1		;Job#
+.ENLOG:! BLOCK	1		;Login time for the job
+.ENPPN:! BLOCK	1		;<KPJ.10> PPN (T10) / user number (T20)
+.ENPRG:!BLOCK	fillen		;<KPJ.20!KPJ.12!KPJ.7> program name
+.ENPER:! BLOCK	1		;object# tried
+.ENSIZ:!			;Size of an entry
+	DEPHASE
+
+;Check flags
+	ND	.CHNAM,1	;check name
+	ND	.CHPER,2	;check person
+	ND	.CHPPN,3	;check for ppn
+	ND	.CHTRM,4	;check for terminal
+
+	SUBTTL	Data storage
+
+T20,<
+ps:	BLOCK	^D39/5+1	;primary structure name stored here
+userid:	BLOCK	^D39/5+1	;user name stored here
+>;T20
+entlen:	BLOCK	1			;<KPJ.7>
+enttyp:	BLOCK	1			;<KPJ.7>
+
+ILLIB:	$BUILD	IB.SZ
+	  $SET	IB.PRG,,%%.MOD
+	  $SET	IB.OUT,,T%TTY
+	  $SET	IB.FLG,IT.OCT,1
+	$EOB
+
+PARBLK:	$BUILD	PAR.SZ
+	  $SET	PAR.TB,,ILLINI
+	  $SET	PAR.PM,,PROMPT
+	$EOB
+
+PROMPT:	ASCIZ	!ILLACC>!
+
+ILLFOB:	$BUILD	FOB.MZ
+	  $SET	FOB.FD,,0
+	  $SET	FOB.CW,FB.BSZ,^D36
+	$EOB
+
+LOGFOB:	$BUILD	FOB.MZ
+	  $SET	FOB.FD,,0
+	  $SET	FOB.CW,FB.BSZ,7
+	$EOB
+
+DATFOB:	$BUILD	FOB.SZ
+	  $SET	FOB.CW,FB.BSZ,^D36
+	$EOB
+
+T10,<
+INIBLK:	SIXBIT	!KOM!		;default device for database
+	SIXBIT	!KOM!		;default name
+	EXP	0,0		;extension and PPN
+>;T10
+	$DATA	LOWBEG,0	;start of zeroable lowseg
+	$Data	slask		;scratch used in ALLCMD
+T20,<	$DATA	DATIFN>		;holds IFN of data base
+	$DATA	TAKIFN		;holds IFN of the TAKE file
+	$DATA	TAKBLK,TAKSIZ	;TAKE IFN stack
+	$DATA	LOGIFN		;holds IFN of logfile
+	$DATA	ILLIFN		;holds IFN of KOM:ILLACC.KOM
+	$DATA	OLDPAG		;holds old parser page number
+	$DATA	ENTBLK,entsiz	;<KPJ.16> holds an entry
+T20,<
+fnord:	BLOCK	fillen		;<KPJ.20> program name stored here
+	BYTE (7) .CHNUL		;<KPJ.20> make ASCIZ
+>;T20
+	$DATA	ENTCNT		;entry counter
+	$DATA	LOWLIM		;holds lower limit (BETWEEN command)
+	$DATA	PNUMBR		;holds person number
+	$DATA	PPN		;holds PPN when checking
+	$DATA	TRM		;holds terminal when checking
+	$DATA	LSTNAM		;holds name of linked list retries
+	$DATA	PDBLK,PDLEN	;stack space
+	$DATA	PERBLK,PERSIZ	;person record storage
+	$DATA	PRELST		;holds handle of present list
+	$DATA	PERMAX		;max number of persons in this database
+	$DATA	PPNTYP		;type wanted in List command
+	$DATA	DATOPN		;[005] true if we have a database open
+	$DATA	hlpkey			;HELP keyword parsed
+	$DATA	LOWEND,0	;end of zeroable lowseg
+
+	SUBTTL	PARSER tree
+
+ILLINI:	$INIT	ILLI10
+ILLI10:	$KEYDSP	ILLI20
+ILLI20:	$STAB
+T10,<	  DSPTAB ,ZAPXIT,<>,CM%INV>		;Make Bottoms-10 users happy
+	  DSPTAB CLSPDB,CLSCMD,<Close>
+	  DSPTAB DATPDB,DATCMD,<Database>
+	  DSPTAB EXIPDB,XITCMD,<Exit>
+	  DSPTAB FNDPDB,FNDCMD,<Find>
+	  DSPTAB HLPPDB,REPARS,<Help>
+	  DSPTAB INFPDB,INFCMD,<Information>
+	  [CM%FW!CM%INV!CM%ABR			;<KPJ.24> L = List
+	   ASCIZ !l!],,[[ASCIZ !List!],,[lstcmd,,lstpdb]]
+	  DSPTAB LSTPDB,LSTCMD,<List>
+	  DSPTAB LOGPDB,LOGCMD,<Log>
+	  Dsptab exipdb,xitcmd,<Quit>,CM%INV	;<KPJ.10> Quit
+	  DSPTAB STSPDB,STSCMD,<Status>
+	  DSPTAB TAKPDB,TAKCMD,<Take>
+	  DSPTAB TRAPDB,TRACMD,<Translate>
+	  DSPTAB USEPDB,USECMD,<Use>
+	  DSPTAB WHOPDB,WHOCMD,<Who>
+	$ETAB
+	
+CFMPDB:	$CRLF
+
+;CLOSE command definition
+CLSPDB:	$NOISE	CFMPDB,<the log file>
+
+;DATABASE command definition
+DATPDB:	$NOISE	DATP10,<is>
+DATP10:	$IFILE	CFMPDB,<database for use by TRANSLATE/STATUS command>
+
+;EXIT command definition
+T10,<
+EXIPDB:	$NOISE	CFMPDB,<to monitor>
+>;T10
+T20,<
+exipdb:	$Noise	cfmpdb,<to superior>
+>;T20
+
+;FIND command definition
+FNDPDB:	$KEYDSP	FNDP10
+FNDP10:	$STAB
+	  [CM%FW!CM%INV!CM%ABR		;<KPJ.14> "a" means "all"
+	   ASCIZ !a!],,[[ASCIZ !all!],,[allcmd,,allpdb]]
+	  DSPTAB BETPDB,BETCMD,<after>
+	  DSPTAB ALLPDB,ALLCMD,<all>
+	  DSPTAB NAMPDB,NAMCMD,<name>
+	  DSPTAB PERPDB,PERCMD,<PERSON>
+T10,<	  DSPTAB PPNPDB,PPNCMD,<PPN>>
+	  DSPTAB SEQPDB,SEQCMD,<sequence>
+	  DSPTAB TERPDB,TERCMD,<terminal>
+T20,<	  Dsptab ppnpdb,ppncmd,<user>>
+	$ETAB
+
+ALLPDB:	$NOISE	CFMPDB,<password entries>
+
+BETPDB:	$NOISE	BETP10,<date and time>
+BETP10:	$TAD	FNDPDB
+
+NAMPDB:	$QUOTE	CFMPDB,<quoted name of person>
+
+PERPDB:	$NOISE	PERP10,<number>
+PERP10:	$NUMBER	CFMPDB,^D10,<PERSON number>
+
+PPNPDB:	$USER	CFMPDB
+
+SEQPDB:	$NOISE	SEQP09,<with at least>
+SEQP09:	$NUMBER	SEQP20,^D10,<smallest number of retries in sequence>
+SEQP20:	$NOISE	CFMPDB,<retries>
+
+TERPDB:
+T10,<	$NOISE	TERP10,<node>
+TERP10:	$NUMBER	TERP20,8,<node name or number of terminal>
+TERP20:
+>;T10
+	$NOISE	TERP30,<line number>
+TERP30:	$NUMBER	CFMPDB,8,<line number of terminal>
+
+HLPPDB:	$NOISE	HLPP10,<with>
+HLPP10:	$KEY	HLPP20,ILLI20,<$ALTERNATE HLPP30,$ACTION hidkey>
+HLPP20:	$CRLF	$ACTION	HLPCMD
+HLPP30:	$CRLF	$ACTION	HLPALL
+
+HLPFD:
+T10,<	$BUILD	FDMSIZ
+	  $SET	.FDLEN,FD.LEN,FDMSIZ
+	  $SET	.FDSTR,,<SIXBIT !KOM!>
+	  $SET	.FDNAM,,<SIXBIT !ERRLOG!>
+	  $SET	.FDEXT,,<SIXBIT !HLP!>
+	$EOB
+>;T10
+T20,<	5,,0				;length of some kind
+	ASCIZ	!Kom:Errlog.Hlp!
+>;T20
+
+hidkey:	MOVE	t1,1(s2)		;<KPJ.24> get last parsed stuff
+	HLRZ	s2,0(t1)		;<KPJ.24> . . .
+	MOVE	t1,0(s2)		;<KPJ.24> what kind is it?
+	CAMN	t1,[CM%FW!CM%INV]	;<KPJ.24> is it invisible?
+	 ADDI	s2,1			;<KPJ.24> yes, point at next
+	MOVEM	s2,hlpkey		;<KPJ.24> save for later use
+	$RETT				;<KPJ.24> success
+
+HLPCMD:	HRRO	s2,hlpkey		;<KPJ.24> get parse HELP keyword
+	MOVEI	S1,HLPFD		;get FD of helpfile
+	$CALL	P$HELP			;give him all the help wanted
+	$CALL	P$NPRO			;don't process this command
+	$RETT				;return TRUE
+
+HLPALL:	MOVEI	s1,hlpfd	;<KPJ.22> help file FD
+	$Text	outctr,<This program reads the ^F/(s1)/ file to find out about commands.>
+	$Text	outctr,<For more help, try the HELP command with a parameter.>
+	$RET
+
+;INFORMATION command definition
+INFPDB:	$NOISE	INFP10,<about>
+INFP10:	$KEY	CFMPDB,INFP20,<$ALTERNATE CFMPDB, $DEFAULT <everything>>
+INFP20:	$STAB
+	  KEYTAB INFILL,<entry-file>
+	  KEYTAB INFALL,<everything>
+	  KEYTAB INFDAT,<used-database>
+	$ETAB
+
+;LIST command definition
+LSTPDB:
+T10,<	$NOISE	LSTP10,<PPN>
+LSTP10:	$NUMBER	LSTP30,8,<octal project-number>,$ALTERNATE LSTP20
+LSTP20:	$TOKEN	LSTP30,<*>
+LSTP30:	$COMMA	LSTP40
+LSTP40:	$NUMBER	LSTP60,8,<octal programmer-number>,$ALTERNATE LSTP50
+LSTP50:	$TOKEN	LSTP60,<*>
+LSTP60:
+>;T10
+T20,<	$NOISE	lstp10,<user>
+lstp10:	$USER	lstp30,$ALTERNATE lstp20
+lstp20:	$TOKEN	lstp30,<*>
+lstp30:
+>;T20
+T10,<	$SWITCH	CFMPDB,LSTP70,<$DEFAULT </last-run-PPN>,$ALTERNATE CFMPDB>>
+T20,<	$SWITCH	cfmpdb,lstp70,<$DEFAULT </last-run-user>,$ALTERNATE cfmpdb>>
+LSTP70:	$STAB
+T10,<	  KEYTAB PERDPP,<debiting-PPN>>
+T20,<	  KEYTAB perdpp,<debiting-user>>
+T10,<	  KEYTAB PERPPN,<last-run-PPN>>
+T20,<	  KEYTAB perppn,<last-run-user>>
+	$ETAB
+
+;LOG command definition
+LOGPDB:	$NOISE	LOGP10,<on file>
+LOGP10:	$OFILE	CFMPDB,<file to log on>,$DEFAULT <Dsk:IllAcc.Log>
+
+;STATUS command definition
+STSPDB:	$NOISE	STSP10,<of>
+STSP10:	$KEY	STSP30,STSP20,$DEFAULT <person>
+STSP20:	$STAB
+	  KEYTAB STSPER,<person>
+	$ETAB
+STSP30:	$NUMBER	CFMPDB,^D10,<object number>
+
+;TAKE command definition
+TAKPDB:	$NOISE	TAKP10,<commands from>
+TAKP10:	$IFILE	CFMPDB,<file to take commands from>
+
+;TRANSLATE command definition
+TRAPDB:	$NOISE	TRAP10,<person number>
+TRAP10:	$NUMBER	CFMPDB,^D10,<person number to be translated>
+
+;USE command definition
+USEPDB:	$NOISE	USEP10,<file>
+USEP10:	$IFILE	CFMPDB,<file with ERRLOG data>
+
+;WHO Command Definition
+WHOPDB:	$NOISE	CFMPDB,<is currently present>
+
+	SUBTTL	Main program
+
+
+evec:
+T10,<	PORTAL	illacc>		;<KPJ.23> in case KL concealed
+T20,<	JRST	illacc		;<KPJ.23> START address
+	JRST	illacc		;<KPJ.23> REENTER address
+>;T20
+	evclen==.-illacc	;<KPJ.23> entry vector length
+illacc:
+T10,<	RESET>			;I/O
+T20,<	RESET%>			;the world
+	SETZM	LOWBEG		;clear first word in lowseg
+	MOVE	S1,[XWD LOWBEG,LOWBEG+1] ;prepare to clear all
+	BLT	S1,LOWEND-1	;wipe it out
+	MOVE	P,[IOWD PDLEN,PDBLK] ;get a stack
+T20,<	HRROI	1,ps		;<KPJ.23> put structure name here
+	MOVE	2,[^O<600000,,540000>] ;<KPJ.23> primary structure
+	DEVST%			;<KPJ.23> get name of it
+	 $FATAL	<ILLACC:  Can't find name of primary structure>
+>;T20
+	MOVEI	S1,IB.SZ	;size of IB
+	MOVEI	S2,ILLIB	;IB
+	$CALL	I%INIT		;get initialized
+	SETZB	S1,S2		;can't use 20x PSI
+	$CALL	P$INIT		;initialize the parser
+	SETZM	OLDPAG		;no old page
+	SETZM	PARBLK+PAR.SR	;clear old stuff
+	MOVEI	TCP,TAKBLK-1	;setup TAKE command stack
+	$TEXT	,<Welcome to ILLACC, version ^V/.JBVER/>
+;	JRST	REPARS
+
+	SUBTTL	REPARS Main parsing loop
+
+REPARS:	MOVE	P,[IOWD PDLEN,PDBLK] ;reset stack
+	SETZM	LOWLIM		;and lower
+	SKIPE	S1,OLDPAG	;any old parser page?
+	 $CALL	M%RPAG		;yes, release it
+	MOVEI	S1,PAR.SZ	;size of parser block
+	MOVEI	S2,PARBLK	;address of parser block
+	$CALL	PARSER		;parse a command
+	JUMPT	PARSOK		;all ok?
+	MOVE	T2,PRT.FL(S2)	;no,get flags word
+	TXNN	T2,P.ENDT	;end of TAKE file?
+	 JRST	PARERR		;no some other error
+	$TEXT	,<^M^J(End of TAKE file)>
+	SETZM	OLDPAG
+	CAIL	TCP,TAKBLK	;last IFN popped?
+	 JRST	REPA10		;no, setup a old one
+	SETZM	TAKIFN		;not in a TAKE file anymore
+	JRST	REPARS		;back for more
+REPA10:	POP	TCP,S1		;pop an old IFN
+	MOVEM	S1,TAKIFN	;and save as current
+	$CALL	P$STAK		;tell OPRPAR about it
+	JRST	REPARS		;and parse the rest
+
+PARERR:	$TEXT	,<^M^J? ^T/@PRT.EM(S2)/>
+	SETZM	OLDPAG		;no new parser page created
+	JRST	REPARS
+
+PARSOK:	MOVE	T1,PRT.CM(S2)	;get address of data page
+	MOVEM	T1,OLDPAG	;save page number
+	MOVE	S1,COM.PB(T1)	;setup for retrieving of parsed data
+	ADDI	S1,(T1)
+	$CALL	P$SETU
+	$CALL	P$KEYW		;get command typed
+	$CALL	(S1)		;dispatch on command
+	JRST	REPARS		;and back for more
+
+	SUBTTL	ERROR routine
+
+ERROR:	$TEXT	,<^M^J? ^E/[-1]/> ;print latest error
+	JRST	REPARS		;and back to parsing loop
+
+	SUBTTL	OUTCTR Routine to print a character
+
+OUTCTR:	$SAVE	<S1,S2>		;we'll need some workspace
+	$CALL	K%BOUT		;give byte to terminal
+	SKIPN	S2,LOGIFN	;do we have a logfile?
+	 $RET			;no, so return
+	EXCH	S1,S2		;yes, prepare to print on it
+	$CALL	F%OBYT		;print byte on logfile
+	$RET			;and return from here
+
+	SUBTTL	PRTENT Routine to print an entry
+
+PRTHED:
+T10,<	$TEXT	OUTCTR,<      Created       Job   PPN   Node Line    Login-time      Object  Program>
+>;T10
+T20,<	$Text	outctr,<      Created       Job   User   Terminal    Login time      Object  Program>
+>;T20
+	$TEXT	OUTCTR,<>
+	$RET
+
+
+
+PRTENT:
+T10,<	$TEXT	OUTCTR,<^H20L/ENTBLK+.ENTIM/^D4L/ENTBLK+.ENJOB/^PL/ENTBLK+.ENPPN/	^OR/ENTBLK+.ENNLN,LHMASK/_^OL/ENTBLK+.ENNLN,RHMASK/ ^H20L/ENTBLK+.ENLOG/ ^A>
+>;T10
+T20,<	$TEXT	OUTCTR,<^H20L/ENTBLK+.ENTIM/^D4L/ENTBLK+.ENJOB/^PL/ENTBLK+.ENPPN/	TTY^OL/ENTBLK+.ENNLN,RHMASK/: ^H20L/ENTBLK+.ENLOG/^A>
+>;T20
+	MOVE	s1,entblk+.enper	;<KPJ.13> get object# or flag
+	CAMN	s1,[-1]			;<KPJ.13> -1 = unknown name
+	 JRST[	$TEXT	outctr,< (invalid name)^A>
+		JRST	prten1]		;<KPJ.13>
+	CAMN	s1,[-2]			;<KPJ.13> -2 = ambiguous name
+	 JRST[	$TEXT	outctr,< (ambiguous name)^A>
+		JRST	prten1]			;<KPJ.13>
+	LDB	s1,[POINT 9,entblk+.enper,8]	;<KPJ.13>  get "file number"
+	CAILE	s1,^D19				;<KPJ.13> valid file# ?
+	 JRST[	HLRZ	s1,entblk+.enper	;<KPJ.13> no, output as numbers
+		CAIE	s1,0			;<KPJ.13> LH = 0?
+		 $TEXT	outctr,<^D7L/entblk+.enper,lhmask/,^A>
+		$TEXT	outctr,<^D7L/entblk+.enper,rhmask/^A>
+		JRST	prten1]			;<KPJ.13>
+	$TEXT	outctr,<^D2/S1/.^A>	;<KPJ.13> output file#
+	MOVE	s1,entblk+.enper	;<KPJ.13> get object#
+	MOVEM	s1,slask		;<KPJ.13> . . .
+	MOVEI	s1,0			;<KPJ.13> zero out file#
+	MOVE	s2,[POINT 9,slask,8]	;<KPJ.13> . . .
+	DPB	s1,s2			;<KPJ.13> . . .
+	$TEXT	outctr,<^D6L/slask/ ^A>	;<KPJ.13> output record#
+prten1:					;<KPJ.13> ho hum
+T10,<	$TEXT	outctr,<^W/entblk+.ENPRG/:^W/entblk+.ENPRG+1/.^W/entblk+.ENPRG+2/^A>
+	MOVEI	s1,^O74			;open broket
+	PUSHJ	P,outctr		;output it
+	$TEXT	outctr,<^OL/entblk+.ENPRG+3,lhmask/,^OL/entblk+.ENPRG+3,rhmask/^A>
+	MOVEI	s1,.ENPRG+4
+	MOVEI	s2,5
+prtlup:	SKIPN	entblk(s1)
+	 JRST	prtend
+	$TEXT	outctr,<,^W/entblk(s1)/^A>
+	AOS	s1
+	SOJN	s2,prtlup		
+prtend:	MOVEI	s1,^O76			;closing broket
+	PUSHJ	P,outctr		;output it
+>;T10
+T20,<	MOVE	1,[POINT 36,fnord]		;<KPJ.20> target
+	MOVE	2,[POINT 36,entblk+.enprg]	;<KPJ.20> source
+	MOVNI	3,fillen			;<KPJ.20> size of buffer
+	SOUT%					;<KPJ.20> copy
+	$Text	outctr,<^T/fnord/^A>
+>;T20
+	$Text	outctr,<>	;<KPJ.20> end of line
+	$RET			;return from here
+
+	SUBTTL	GETENT Routine get a entry from file
+
+GETENT:	$SAVE	<S1,S2,T1>	;will be clobberd
+gete01:	MOVEI	t1,0		;<KPJ.15> use as index
+	MOVE	S1,ILLIFN	;get IFN of file
+	$CALL	F%IBYT		;<KPJ.7> get length word
+	JUMPF	gete77		;<KPJ.7> error - EOF probably
+	HRRZM	s2,enttyp	;<KPJ.7> save entry type
+	HLRZM	s2,entlen	;<KPJ.7> save entry length
+GETE10:	$CALL	F%IBYT		;get a byte from file
+	JUMPF	GETE77		;end of file (I hope!)
+	CAIG	t1,entsiz	;<KPJ.16> space left in buffer?
+	 MOVEM	S2,ENTBLK(T1)	;save in entry block
+	CAMGE	t1,entlen	;<KPJ.7> last item picked up?
+	 AOJA	T1,GETE10	;get the next item
+	CAILE	t1,entsiz	;<KPJ.15> buffer overflowed?
+	 JRST[	$Warn	<GETENT: Entry larger than internal buffer>
+		JRST	.+1]	;<KPJ.15>
+	MOVE	s1,enttyp	;<KPJ.15!KPJ.7> get entry type
+	CAIE	s1,1		;<KPJ.15!KPJ.7> PASSWORD entry?
+	 JRST	gete01		;<KPJ.7> no, get next entry
+	$RETT			;return from here
+GETE77:	TXNN	S1,EREOF$	;was it end of file?
+	 JRST	ERROR		;no, some other error
+	$RETF			;yes, so return FALSE
+
+	SUBTTL	CHKTIM Routine to check limits
+
+CHKTIM:	$SAVE	S1		;we'll need some workspace
+	MOVE	S1,ENTBLK+.ENTIM ;get entry creation time
+	CAMGE	S1,LOWLIM	;created before lower limit?
+	 $RETF			;yes, so return false
+	$RETT			;otherwise it fits! so return TRUE
+
+	SUBTTL	FIND command
+
+FNDCMD:	SKIPN	ILLIFN		;did we succeed to get IFN for KOM:ERRLOG.ymm?
+	 JRST[	$WARN	<FIND: No data file>
+		JRST	REPARS]
+	$CALL	P$KEYW		;get keyword typed
+	$CALL	0(S1)		;dispatch on command
+	$RET			;and return from here
+
+	SUBTTL	FIND ALL command
+
+ALLCMD:	$TEXT	OUTCTR,<FIND ALL command listing>
+	SETZ	CHK,		;clear checkings
+	JRST	CHECK		;and do the work
+
+	SUBTTL	CHECK routine to check PPN, number and terminal
+
+CHECK:	MOVE	S1,ILLIFN	;IFN of datafile
+	SETZ	S2,		;byte to position to
+	$CALL	F%POS		;position to beginning of file
+	JUMPF	ERROR		;failed?!
+	SETZ	T1,		;clear counter
+	$CALL	PRTHED		;print table header
+CHEC10:	$CALL	GETENT		;get a entry
+	JUMPF	CHEC20		;last one taken
+	$CALL	CHEITM		;do the checking
+	JUMPF	CHEC10		;failed, pickup next item
+	$CALL	CHKTIM		;do BETWEEN checkings
+	JUMPF	CHEC10		;failed, pick next
+T20,<	PUSH	P,t1>		;<KPJ.21> save counter
+	$CALL	PRTENT		;and write the entry
+T20,<	POP	P,t1>		;<KPJ.21> restore counter
+	AOJA	T1,CHEC10	;pickup next item
+CHEC20:	CAIE	t1,1		;<KPJ.21> one entry only?
+	 $TEXT	OUTCTR,<Total of ^D/T1/ entries.>
+	$RET			;return!
+
+CHEITM:	$SAVE	S1
+	CAIN	CHK,.CHPER	;check person number
+	 JRST[	HRRZ	S1,ENTBLK+.ENPER ;get person number
+		CAME	S1,PNUMBR ;same number?
+		 $RETF		;no, so return FALSE
+		$RETT]		;yes, so return TRUE
+	CAIN	CHK,.CHPPN	;PPN checking?
+	 JRST[	MOVE	S1,ENTBLK+.ENPPN ;get luser PPN (T10) or userid (T20)
+		CAME	S1,PPN	;same?
+		 $RETF
+		$RETT]
+	CAIE	CHK,.CHTRM	;check for terminals?
+	 $RETT			;no, return TRUE
+	MOVE	S1,ENTBLK+.ENNLN ;get node and line number (T10) or TTY# (T20)
+	CAME	S1,TRM		;same terminal?
+	 $RETF			;no!
+	$RETT			;yes, so return!
+
+	SUBTTL	FIND AFTER command
+
+BETCMD:	$CALL	P$TIME		;get lower limit
+	MOVEM	S1,LOWLIM	;save as lower limit
+	$TEXT	OUTCTR,<AFTER ^H/S1/ ^A>
+	$CALL	P$KEYW		;get next modifier
+	$CALL	0(S1)		;dispatch on it
+	$RET			;and return from here
+
+	SUBTTL	FIND NAME command
+
+NAMCMD:	$TEXT	,<No implemented yet!>
+	$RET
+
+	SUBTTL	FIND PERSON command
+
+PERCMD:	$CALL	P$NUM		;get number from parsed data
+	MOVEM	S1,PNUMBR	;save person number
+	MOVEI	CHK,.CHPER	;flag to check number
+	$TEXT	OUTCTR,<FIND PERSON ^D/S1/>
+	JRST	CHECK		;do the work
+
+	SUBTTL	FIND PPN (T10) and FIND USER (T20) commands
+
+PPNCMD:	$CALL	P$USER		;get PPN (T10) or userid (T20)
+	MOVEM	S1,PPN		;and save it away
+	MOVEI	CHK,.CHPPN	;flag for PPN check
+T10,<	$TEXT	OUTCTR,<FIND PPN ^P/S1/>>
+T20,<	$Text	outctr,<FIND USER ^P/s1/>>
+	JRST	CHECK		;and do the checking
+	SUBTTL	FIND SEQUENCE command
+
+SEQCMD:	STKVAR	<SEQLIM>	;holds number of entries in sequence
+	$CALL	P$NUM		;get number of retries on same node and line#
+	MOVEM	S1,SEQLIM	;save limit
+	$TEXT	OUTCTR,<FIND SEQUENCE (with at least) ^D/S1/ (retries)>
+	SKIPN	S1,ILLIFN	;any datafile open?
+	 JRST[	$WARN	<FIND: No datafile is open>
+		JRST	REPARS]
+	SETZ	S2,		;first position in file
+	$CALL	F%POS		;position to it
+	JUMPF	ERROR
+	SETZ	T1,		;clear counter
+	$CALL	PRTHED		;printout header
+	$CALL	L%CLST		;create a linked list
+	MOVEM	S1,LSTNAM	;save name of it
+SEQC10:	$CALL	GETENT		;get entry from file
+	JUMPF	SEQC99		;last item found
+SEQC15:	$CALL	CHKTIM		;check time
+	JUMPF	SEQC10		;get next if not in range
+	MOVE	T2,ENTBLK+.ENNLN ;get node/line number
+	$CALL	ADDENT		;add entry to linked list
+SEQC20:	$CALL	GETENT		;get the next entry from file
+	JUMPF	SEQC99		;last entry found
+	$CALL	CHKTIM		;check time of entry
+	JUMPF	SEQC77		;not in range, so check if we got enough
+	MOVE	T3,ENTBLK+.ENNLN ;get node and line number
+	CAME	T3,T2		;same?
+	 JRST	SEQC77		;no, so check if we got something
+	$CALL	ADDENT		;yes, so add to list
+	AOJA	T1,SEQC20	;increment counter
+SEQC77:	ADDI	T1,1		;remeber we started from zero
+	CAML	T1,SEQLIM	;got enough?
+	 $CALL	SEQPRT		;yes, so print items
+	SETZ	T1,		;clear counter
+	$CALL	FLUSH		;flush the list
+	JRST	SEQC15		;and try again
+SEQC99:	ADDI	T1,1		;we started from zero
+	CAML	T1,SEQLIM	;above limit?
+	 $CALL	SEQPRT		;yes, so print sequence
+	$CALL	FLUSH		;flush the list
+	$RETT			;and return from here
+
+ADDENT:	$SAVE	<S1,S2>
+	MOVE	S1,LSTNAM	;get list name
+	MOVEI	S2,.ENSIZ	;get size of an entry
+	$CALL	L%CENT		;create an entry
+	JUMPF	ERROR		;failed??
+	HRLI	S1,ENTBLK	;source
+	HRR	S1,S2		;destination
+	BLT	S1,.ENSIZ-1(S2)	;move the entry block
+	$RET			;and return from here
+
+FLUSH:	$SAVE	<S1,S2>
+	MOVE	S1,LSTNAM	;get list name
+	$CALL	L%DLST		;and delete the whole list
+	$CALL	L%CLST		;and recreate the list
+	MOVEM	S1,LSTNAM	;save the list name
+	$RET			;and return from here
+
+SEQPRT:	$SAVE	<S1,S2>		;need some workspace
+	MOVE	S1,LSTNAM	;get list name
+	$CALL	L%FIRST		;position to the first entry
+	JUMPF	.RETF		;return of failure
+SEQP10:	HRL	S1,S2		;source
+	HRRI	S1,ENTBLK	;destionation
+	BLT	S1,ENTBLK+.ENSIZ-1 ;transfer the whole block to entry
+	$CALL	PRTENT		;and print the entry out
+	MOVE	S1,LSTNAM	;get list name
+	$CALL	L%NEXT		;position to the next entry
+	JUMPT	SEQP10		;all ok?
+	$TEXT	OUTCTR,<^D/T1/ entries in sequence.>
+	$RET			;and return
+
+	SUBTTL	FIND TERMINAL command
+
+TERCMD:
+T10,<	$CALL	P$NUM		;get node number
+	HRLZM	S1,TRM		;save it away
+>;T10
+T20,<	SETZM	trm>		;<KPJ.21> no node number
+	$CALL	P$NUM		;and get line number
+	HRRM	S1,TRM		;save away
+	MOVEI	CHK,.CHTRM	;flag for terminal checkings
+T10,<	$TEXT	OUTCTR,<FIND TERMINAL ^O/TRM,LHMASK/_TTY^O/TRM,RHMASK/>>
+T20,<	$Text	outctr,<FIND TERMINAL TTY^O/TRM,RHMASK/>>
+	JRST	CHECK		;do all the work
+	
+
+	SUBTTL	EXIT command
+
+ZAPXIT:	$TEXT	,<>		;crlf
+XITCMD:	SKIPE	S1,LOGIFN	;any logfile?
+	 $CALL	EXICLS		;yes, close it!
+	SKIPE	DATOPN		;[005] have a database open?
+	 $CALL	D$EXIT##	;Close the database
+	$HALT			;stop us
+	JRST	REPARS		;back again
+
+EXICLS:	SETO	S2,		;setup to get the real FD
+	$CALL	F%FD		;get it!
+	$TEXT	,<Closing open log file ^F/(S1)/>
+	MOVE	S1,LOGIFN	;get IFN of logfile
+	$CALL	F%REL		;and close it
+	JUMPF	ERROR		;shouldn't fail!
+	SETZM	LOGIFN		;have no logfile any more
+	$RET			;and return from here
+
+	SUBTTL	INFORMATION command
+
+INFCMD:	$CALL	P$KEYW		;try to get a keyword
+	JUMPF	INFALL		;default is "ALL"
+	JRST	(S1)		;dispatch
+
+INFALL:	$CALL	INFILL
+	$CALL	INFDAT
+	SKIPN	S1,LOGIFN	;any logfile?
+	 $RET			;no, so leave
+	SETO	S2,		;yes, we want the FD
+	$CALL	F%FD		;so get it
+	$TEXT	OUTCTR,<Log file is ^F/(S1)/>
+	$RET
+
+INFILL:	SKIPN	S1,ILLIFN	;any file open?
+	 JRST[	$TEXT	OUTCTR,<No entry file selected.>
+		$RET]
+	SETO	S2,		;want real FD
+	$CALL	F%FD		;so get it
+	$TEXT	OUTCTR,<Reading entries from file ^F/(S1)/>
+	$RET
+
+INFDAT:
+T10,<	$TEXT	OUTCTR,<Database is ^W/INIBLK/:^W/INIBLK+1/.^W/INIBLK+2/^A>
+	SKIPN	S1,INIBLK+3	;any PPN?
+	 JRST[	$TEXT	OUTCTR,<> ;no, so leave
+		$RET]
+	$TEXT	OUTCTR,<^P/S1/>
+>;T10
+T20,<	SKIPN	S1,DATOPN
+	 JRST[	$TEXT	outctr,<No data base open>
+		$RET]
+	SETO	S2,			;want real FD
+	$CALL	F%FD			;get it
+	$TEXT	OUTCTR,<Database is ^F/(S1)/>
+>;T20
+	$RET
+
+	SUBTTL	LIST command
+
+LSTCMD:	SKIPE	DATOPN		;[005] have a database open?
+	 JRST	LSTC00		;[005]  yeah, so go on
+	$WARN	<List: No database is currently open.> ;[005]
+	$RETF			;[005] fail
+LSTC00:
+T10,<	$CALL	P$NUM		;[005] try to parse a number
+	JUMPF[	$CALL	P$TOK	;get the token
+		SETO	S1,	;get a wild project
+		JRST	.+1]	;and go on
+	HRLZM	S1,PPN		;save the PPN
+	$CALL	P$COMMA		;catch the comma
+	$CALL	P$NUM		;try to parse programmer number
+	JUMPF[	$CALL	P$TOK	;get the token
+		SETO	S1,	;and get a wild programmer
+		JRST	.+1]	;go on
+	HRRM	S1,PPN		;save the ppn
+>;T10
+T20,<	$CALL	P$USER		;try get a user
+	MOVEM	s1,ppn		;save her
+>;T20
+	$CALL	P$SWIT		;parse a switch
+	SKIPT			;ok?
+	 MOVEI	S1,PERPPN	; no, so get default
+	JUMPF[	$CALL	P$TOK	;get the token
+		SETO	s1,	;get a wild userid
+		JRST	.+1]	;and go on
+	MOVEM	S1,PPNTYP	;save away
+	
+;*
+;* Now get the Meta record for persons, and find out how many persons
+;* there is in the database
+;*
+
+	MOVX	S1,RECPTR(MET,PER) ;we want the meta record for persons
+	$CALL	D$GTER##	;so get it
+	SKIPN	S1		;was it there?
+	 $FATAL	<List: No Meta record for persons?>
+	MOVE	S1,METMAX(S1)	;get max number of records
+	MOVEM	S1,PERMAX	;save away
+T10,<	$TEXT	OUTCTR,<Number   L-PPN     D-PPN ^A>>
+T20,<	$TEXT	OUTCTR,<Number   L-user    D-user^A>>
+	$TEXT	outctr,<     Last Present	    Name>
+	$TEXT	OUTCTR,<--------------------------------------------------------->
+	MOVEI	P1,1		;start at person 1
+
+;*
+;* Start to search each person from person 1 and upwards
+;*
+
+PERLOP:	HRRZ	S1,P1		;get the record number
+	TLO	S1,PNA_9	;<BCQ.10> insert record type (Person Name)
+	$CALL	D$GETR##	;get the record
+	SKIPG	0(S1)		;<BCQ.10> this record exists?
+	 JRST	PERNXT		;<BCQ.10> no, so why bother?
+	HRRZ	S1,P1		;<BCQ.10> yes, get record number again.
+	TLO	S1,PER_9	;<BCQ.10> record-type = person.
+	$CALL	D$GETR##	;<BCQ.10> Pickup the master-record.
+	MOVE	P4,S1		;save pointer
+	SKIPG	0(P4)		;<BCQ.10> is this record deleted/not created?
+	 JRST	PERNXT		;<BCQ.10>  deleted, or never created, ignore.
+	MOVE	S1,PERPPN(P4)	;get the last run PPN
+	$CALL	GETDEB		;and the debiting PPN
+	MOVE	P2,S1		;save the PPNs
+	MOVE	P3,S2		;. . .
+	MOVE	S2,PPNTYP	;get the type wanted
+	CAIE	S2,PERPPN	;last run PPN?
+	 MOVE	S1,P3		; no, get debiting
+	$CALL	PPNCMP		;compare PPNs (S1 and PPN)
+	MOVE	s1,p2		;restore the PPNs
+	MOVE	s2,p3		;. . .
+	SKIPF			;did it match?
+	 $CALL	OUTENT		; yes, so output
+PERNXT:	CAMGE	P1,PERMAX	;done?
+	 AOJA	P1,PERLOP	; no, get next record
+	$RET			;ok, return
+
+;*
+;* GETDEB Routine to get debiting PPN /user
+;*
+
+GETDEB:	$SAVE	<S1>		;will be clobberd
+	MOVE	S2,PERDPP(P4)	;anything in the person record?
+	JUMPN	S2,.POPJ	;yes, so return that
+	MOVE	S1,PERDEB(P4)	;no, so get the organization
+	JUMPE	S1,.POPJ	;none there, return zero
+	TLO	S1,MEE_9	;build a record pointer
+	$CALL	D$GTER##	;get an exact reocrd
+	JUMPE	S1,.POPJ	;if anything there?
+	MOVE	S2,MEEDEB(S1)	;get the PPN/userid
+	$RET			;and return it
+
+;*
+;* OUTENT - Routine to output an entry
+;*
+
+OUTENT:	$SAVE	<T1>
+T10,<	$TEXT	OUTCTR,< ^D5/0(P4),RP%REC/  ^O4R /S1,LHMASK/,^O4L /S1,RHMASK/ ^O4R /S2,LHMASK/,^O4L /S2,RHMASK/ ^H20/PERPRE(P4)/ ^T/RECSTR(P4)/>
+>;T10
+T20,<	$TEXT	OUTCTR,< ^D5/0(P4),RP%REC/  ^A>
+	JUMPE	s1,[
+		$TEXT	outctr,<(undefined) ^A>
+		JRST	outen1]
+	HLRZ	t1,s1			;get LH(userid)
+	CAIE	t1,(5B2)		;a real userid?
+	 JRST[	CAIN	t1,4		;old format <4,n> ?
+		 JRST[	PUSH	P,1
+			PUSH	P,2
+			PUSH	P,3
+			MOVE	2,s1	;"PPN"
+			HRROI	1,userid ;put user ID here
+			HRROI	3,ps	;primary structure
+			PPNST%		;convert it
+			ERJMP[	POP	P,3
+				POP	P,2
+				POP	P,1
+				JRST	outen3]	;failed, show PPN
+			POP	P,3
+			POP	P,2
+			POP	P,1
+			$TEXT	outctr,<^T/userid/^A>
+			JRST	outen1]
+outen3:		$TEXT	outctr,<^O6/S1,LHMASK/,^O6L/S1,RHMASK/ ^A>
+		JRST	outen1]
+	$TEXT	outctr,<^PL/S1/ ^A>
+outen1:	JUMPE	s2,[
+		$TEXT	outctr,< - ^A>
+		JRST	outen2]
+	HLRZ	t1,s2			;get LH(userid)
+	CAIE	t1,(5B2)		;real userid?
+	 JRST[	CAIN	t1,4		;no, old format <4,n> ?
+		 JRST[	PUSH	P,1
+			PUSH	P,2
+			PUSH	P,3
+IFN	<s2-2>,<	MOVE	2,s2>
+			HRROI	1,userid
+			HRROI	3,ps
+			PPNST%
+			ERJMP[	POP	P,3
+				POP	P,2
+				POP	P,1
+				JRST	outen4]
+			$TEXT	outctr,<^T/userid/ ^A>
+			POP	P,3
+			POP	P,2
+			POP	P,1
+			JRST	outen2]
+outen4:		$TEXT	outctr,<^O6/S2,LHMASK/,,^O6L/S2,RHMASK/ ^A>
+		JRST	outen2]
+	$TEXT	outctr,<^PL/S2/ ^A>
+outen2:	$TEXT	outctr,<^H20/PERPRE(P4)/ ^T/RECSTR(P4)/>
+>;T20
+	$RET
+
+
+;PPNCMP - Routine to compare PPNs (T10) or userids (T20)
+;accepts	S1/	actual value
+;		PPN/	wild card value
+;		PPNTYP/	type of search
+
+PPNCMP:
+T10,<	$CALL	CMPPRJ		;compare project
+	$RETIF			;pass failures
+	$CALL	CMPPRG		;and programmer
+>;T10
+T20,<	$CALL	cmpusr>		;compare user IDs
+	$RETIF			;pass failures
+	$RETT			;they match
+T20,<
+
+;CMPUSR		Compare two user IDs (S1 and PPN)
+
+cmpusr:	$SAVE	<S1,T1>
+	MOVE	t1,ppntyp	;get search type ("*" = -1)
+	CAMN	t1,[-1]		;wild user from Borneo?
+	 $RETT			;yes, always successful
+	MOVE	t1,ppn		;get actual user#
+	CAMN	t1,s1		;same user?
+	 $RETT			;yes, success
+	$RETF			;no, fail
+>;T20
+T10,<
+CMPPRJ:	$SAVE	<S1,T1>
+	HLRZ	T1,PPN		;get project
+	CAIN	T1,777777	;wild?
+	 $RETT			; yes, return ok
+	HLRZS	S1		;and this
+	CAME	S1,T1		;same?
+	 $RETF			; no fail
+	$RETT			;ok
+	
+CMPPRG:	$SAVE	<S1,T1>
+	HRRZ	T1,PPN		;get prog
+	CAIN	T1,777777	;test for wild
+	 $RETT			; wild -- return ok
+	HRRZS	S1		;keep prog
+	CAME	S1,T1		;same?
+	 $RETF			; no, fail
+	$RETT			;ok
+>;T10
+	SUBTTL	LOG command
+
+LOGCMD:	SKIPE	logifn		;<KPJ.22> have a log file?
+	 JRST[	$Warn	<LOG: Log file already open.>
+		JRST	repars]	;<KPJ.22>
+	$CALL	P$OFIL		;get FD of file to log on
+	HRRZM	S1,LOGFOB+FOB.FD ;store FD in FOB
+	MOVEI	S1,FOB.MZ	;size of fob
+	MOVEI	S2,LOGFOB	;and address of FOB
+	$CALL	F%AOPN		;open logfile in append mode
+	JUMPF	ERROR		;failed?
+	MOVEM	S1,LOGIFN	;save IFN gotten
+	SETO	S2,		;flag to get the real FD
+	$CALL	F%FD		;and get it
+	$TEXT	OUTCTR,<***** Logging started at ^H/[-1]/ to file ^F/(S1)/ *****>
+	$RET			;and return from here
+
+	SUBTTL	STATUS command
+
+STSCMD:	SKIPE	DATOPN		;[005] we have a database open?
+	 JRST	STSC00		;[005] yeah, ok
+	$WARN	<Status: No database is currently open.> ;[005]
+	$RETF			;[005] fail
+STSC00:	$CALL	P$KEYW		;[005] get the keyword
+	MOVE	T1,S1		;get the dispatch address
+	$CALL	P$NUM		;get the number of the object
+	JRST	(T1)		;and dispatch
+
+;STATUS PERSON command
+STSPER:	MOVEM	S1,PNUMBR	;save the number
+	TLO	S1,PER_9	;Insert file number
+	$CALL	D$GTER##	;get the object
+	JUMPE	S1,[
+		$WARN	<STATUS: No such person>
+		$RET]
+	MOVE	P1,S1		;save the address
+	HRLZ	T1,S1		;source
+	HRRI	T1,PERBLK	;destination
+	BLT	T1,PERSIZ+PERBLK-1 ;move the record in safe place
+	$TEXT	OUTCTR,<Status of ^T/RECSTR(P1)/ (PERSON ^D/PNUMBR/)>
+	$TEXT	OUTCTR,<Created at ^H/OBJTIM+PERBLK/^A>
+	SKIPN	S1,OBJCRE+PERBLK ;any creator?
+	 JRST	STSPE1
+	$CALL	D$GTER##	;get the creator
+	SKIPE	S1		;no creator?
+	 $TEXT	OUTCTR,<, by ^T/RECSTR(S1)/^A>
+STSPE1:	$TEXT	OUTCTR,<>
+	$TEXT	OUTCTR,<Member in ^D/PERMEM+PERBLK/ conferences.>
+	$TEXT	OUTCTR,<Last present in KOM/COM at ^H/PERPRE+PERBLK/>
+	$TEXT	OUTCTR,<Page size: ^D/PERPGS+PERBLK,LHMASK/,^D/PERPGS+PERBLK,RHMASK/>
+T10,<	$TEXT	OUTCTR,<Personal ppn ^P/PERPPN+PERBLK/>>
+T20,<	$TEXT	outctr,<Personal dir:^P/PERPPN+PERBLK/>>
+	$TEXT	OUTCTR,<Number of read entries ^D/PERNRE+PERBLK/>
+	$TEXT	OUTCTR,<Number of created:>
+	$TEXT	OUTCTR,<  Marks:           ^D/PERNCM+PERBLK/>
+	$TEXT	OUTCTR,<  Persons:         ^D/PERNPE+PERBLK/>
+	$TEXT	OUTCTR,<  Text Parts:      ^D/PERNTE+PERBLK/>
+	$TEXT	OUTCTR,<  Conferences:     ^D/PERNME+PERBLK/>
+	$TEXT	OUTCTR,<  Present Records: ^D/PERNPR+PERBLK/>
+T10,<	$TEXT	OUTCTR,<Debiting PPN: ^P/PERDPP+PERBLK/>>
+T20,<	$TEXT	outctr,<Debiting dir: ^P/perdpp+perblk/>>
+	$RET			;return
+
+	SUBTTL	TAKE command
+
+TAKCMD:	SKIPN	T1,TAKIFN	;in a TAKE command already?
+	 JRST	TAKC10		;no, but soon we'll be
+	HLRZ	T2,TCP		;number of pushed IFNs
+	CAIL	T2,TAKSIZ	;room for one more?
+	 JRST	TAKERR		;no, we must pop the whole stack!
+TAKC10:	$CALL	P$IFIL		;get FD to open as TAKE file
+	SETZ	S2,		;no logfile, as OPRPAR can't handle it
+	$CALL	P$TAKE		;open the take file
+	JUMPF	ERROR		;foo?
+	JUMPE	T1,TAKC20	;in a take command before?
+	PUSH	TCP,T1		;yes, push old IFN
+TAKC20:	MOVEM	S1,TAKIFN	;save as current IFN
+	$RET
+TAKERR:	$WARN	<TAKE: Nesting to deep in TAKE command>
+TAKC50:	POP	TCP,S1		;pop old IFN
+	$CALL	F%REL		;and release it
+	SKIPT			;failed?
+	 $TEXT	,<^M^J? ^E/[-1]/> ;yes, tell him why
+	CAIL	TCP,TAKBLK	;reached bottom?
+	 JRST	TAKC50		;no, more to pop
+	MOVE	S1,TAKIFN	;get current IFN
+	SETO	S2,		;last position in file
+	$CALL	F%POS		;position to it
+	JUMPF	ERROR		;give error!
+	$RET			;otherwise return
+
+	SUBTTL	CLOSE command
+
+CLSCMD:	SKIPN	S1,LOGIFN	;do we have a logfile?
+	 JRST[	$WARN	<CLOSE: No logfile is open>
+		JRST	REPARS]
+	SETO	S2,		;flag to get real FD
+	$CALL	F%FD		;and get it
+	$TEXT	,<Closing logfile ^F/(S1)/>
+	MOVE	S1,LOGIFN	;get IFN again
+	$CALL	F%REL		;and close the file
+	JUMPF	ERROR		;what?!
+	SETZM	LOGIFN		;no logfile any more
+	$RET
+
+	SUBTTL	DATABASE command
+
+DATCMD:	$CALL	P$IFILE			;get the file typed
+	MOVEM	S1,DATFOB+FOB.FD	;save in FOB
+	MOVE	P1,S1			;and save in P1
+	SKIPE	DATOPN			;[005] have a database open?
+	 $CALL	D$EXIT##		;[005] yeah, so we've better close it
+T10,<	MOVEI	S1,FOB.SZ		;size of the FOB
+	MOVEI	S2,DATFOB		;the FOB
+	$CALL	F%IOPN			;open the database
+	JUMPT	DATC10			;ok if we can open it
+>;T10
+T20,<	MOVE	S1,datfob+FOB.FD	;<KPJ.24> get FD pointer
+	HRROI	2,1(S1)			;<KPJ.24> point at ASCIZ file name
+	MOVSI	1,(GJ%OLD!GJ%SHT)	;<KPJ.24> old file, short form
+	GTJFN%				;<KPJ.24> get handle
+	 ERJMP	datc01			;<KPJ.24> failed
+	HRRZ	1,1			;<KPJ.24> get JFN
+	MOVE	2,[FLD(^D36,OF%BSZ)!OF%RD!OF%THW] ;<KPJ.24> words, read, thawed
+	OPENF%				;<KPJ.24> open data base
+	 ERJMP	datc01			;<KPJ.24> failed
+	JRST	datc10
+datc01:					;<KPJ.24>
+>;T20
+	$WARN	<DATABASE: Failed to open ^F/(P1)/, reason: ^E/[-1]/>
+	$RET
+DATC10:
+T10,<	$CALL	F%REL		;close it again
+	MOVE	S1,.FDSTR(P1)	;get the device
+	MOVEM	S1,INIBLK	;save away
+	MOVE	S1,.FDNAM(P1)	;get name part
+	MOVEM	S1,INIBLK+1	;save away
+	MOVE	S1,.FDEXT(P1)	;and the extension
+	MOVEM	S1,INIBLK+2	;save away
+	MOVE	S1,.FDPPN(P1)	;the PPN
+	MOVEM	S1,INIBLK+3	;save away
+	MOVEI	S1,INIBLK	;point to block
+	MOVEI	S2,^D100	;some magic here..
+>;T10
+T20,<	CLOSF%			;<KPJ.24> close data base again
+	ERJMP[	$FATAL	<DATCMD CLOSF% failed: ^E/[-1]/>]
+	MOVEI	S1,.FDFIL(P1)
+	MOVEM	S1,DATIFN
+>;T20
+	$CALL	D$INIT##	;and open the database
+	$TEXT	OUTCTR,<Now using database ^F/(P1)/>
+	SETOM	DATOPN		;[005] remember we have a database open
+	$RET			;return
+
+	SUBTTL	TRANSLATE command
+
+TRACMD:	SKIPE	DATOPN		;[005] have a database open?
+	 JRST	TRAC00		;[005] yes, ok, go on
+	$WARN	<No database opened, use DATABASE command first.> ;[005]
+	$RETF			;[005] fail
+TRAC00:	$CALL	P$NUM		;[005] get number of person to translate
+	MOVEM	S1,PNUMBR	;save the person number away
+	JUMPE	S1,[	$TEXT	OUTCTR,<New created person.>
+		JRST	REPARS]	;back for more
+	TLO	S1,PNA_9	;get the file number
+	$CALL	D$GTER##	;get the record
+	JUMPE	S1,[
+		$WARN	<TRANSLATE: No such person.>
+		JRST	REPARS]	;didn't find him!
+	$TEXT	OUTCTR,<Person number ^D/PNUMBR/ is ^T/1(S1)/>
+	MOVE	S2,S1		;get address into S2
+	MOVEI	S1,PNASIZ-1	;size of chunk
+	$CALL	M%RMEM		;remove the chunk
+	$RET			;return from here
+
+	SUBTTL	USE command
+
+USECMD:	$CALL	P$IFIL		;get FD to use
+	HRRZM	S1,ILLFOB+FOB.FD ;save in FOB
+	MOVEI	S1,FOB.MZ	;size of the FOB
+	MOVEI	S2,ILLFOB	;FOB
+	$CALL	F%IOPN		;open for read access
+	JUMPF	ERROR		;any errors?
+	MOVEM	S1,ILLIFN	;save IFN away
+	SETO	S2,		;flag to get real FD
+	$CALL	F%FD		;and get it
+	$TEXT	,<Reading from file ^F/(S1)/>
+	$RET			;and return from here
+
+	SUBTTL	WHO Command
+
+WHOCMD:	SKIPE	DATOPN		;[005] got something to read from?
+	 JRST	WHOC00		;[005] yea, go on
+	$WARN	<Who: No database is currently open.> ;[005]
+	$RETF			;[005] no, so fail him
+WHOC00:	$CALL	L%CLST		;[005] create a linked list
+	MOVEM	S1,PRELST	;save away the handle
+	MOVX	S1,RECPTR(MET,PRE) ;get a handle for present record meta r
+	$CALL	D$GTER##	;get the record
+	SKIPN	S1		;anything there?
+	 $FATAL	<Who: Can't find Present Meta Record?>
+	MOVE	P1,METMAX(S1)	;get max number of records
+	MOVEI	P2,1		;start at record 1
+	
+;*
+;* Read the present records, and insert them into the list.
+;*
+
+PRELOP:	MOVE	S1,P2		;get the record number
+	TLO	S1,PRE_9	;make it a record handle
+	$CALL	D$GETR##	;get it in
+	JUMPE	S1,PRENXT	;none there, so get next
+	MOVE	P3,S1		;save pointer
+	MOVE	S1,PRELST	;get the list handle
+	MOVEI	S2,PRESIZ	;size of a present record
+	$CALL	L%CENT		;create an entry
+	HRLZ	S1,P3		;get source
+	HRR	S1,S2		;and destination
+	BLT	S1,PRESIZ-1(S2)	;move into a safe place
+PRENXT:	CAMGE	P2,P1		;done?
+	 AOJA	P2,PRELOP	; no, go for next
+
+;*
+;* Start output the people present in KOM/COM
+;*
+
+	$TEXT	OUTCTR,<     --- Who ---                              --- Where --->
+	MOVE	S1,PRELST	;get the list handle
+	$CALL	L%FIRST		;position to first entry in list
+	JUMPF	WHOC99		;huh?
+OUTLOP:	MOVE	P2,S2		;save pointer
+	SKIPG	0(P2)		;does this record exist?
+	 JRST	OUTNXT		; no, so just ignore it
+	MOVE	S1,PREPER(P2)	;get the person present
+	TLO	S1,PER_9	;make it a record handle (if it wasn't)
+	$CALL	D$GTER##	;get the record
+	JUMPE	S1,OUTNXT	;anything there?
+	$TEXT	OUTCTR,<^T35L /RECSTR(S1)/ ^A> ;yes, output his name
+	MOVE	S1,PREMEE(P2)	;get conference
+	TLO	S1,MEE_9	;convert to handle
+	$CALL	D$GTER##	;get it in
+	SKIPE	S1		;anything there?
+	 $TEXT	OUTCTR,<^T44L/RECSTR(S1)/^A> ; yes, output it
+	$TEXT	OUTCTR,<>		;get a new line
+OUTNXT:	MOVE	S1,PRELST	;get list handle
+	$CALL	L%NEXT		;position to next entry
+	JUMPT	OUTLOP		;and output (if there=
+WHOC99:	MOVE	S1,PRELST	;get the list handle
+	$CALL	L%DLST		;delete the list
+	$RET			;and return
+
+	END	evclen,,evec	;<KPJ.23> entry vector length,,address
+..and no more

@@ -1,0 +1,514 @@
+;Oden::DSKG:EDIT.MAC<62,7777,MAC> 1986-11-11 04:18:43, Edit by KPJ @ H.HOLE
+;13	Handle +2 return from BEGLIN.
+;Freja::Qs:<Kom.6.Macro>Edit.Mac.6 860805-1430,KPJ-Jaakkola
+;12	Changed CHKLEN to return +1 and +2 for errors, +3 for OK, and not to
+;	destroy any flags.
+;Oden::DSKD:EDIT.MAC<62,7777,MAC> 1985-10-01 01:25:53, Edit by K P J
+;11	Introduced PROLOG macro.
+;Oden::DSKD:EDIT.MAC<62,7777,MAC> 1985-06-19 22:40:46, Edit by KPJ @ Nadja
+;10	Moved edit commands table (TXTTAB) to ALLTAB where it belongs.
+;	Made RLINRY,RLINRL,REMWOR,JUMPUP,JUMPDW global.
+;Oden::DSKD:EDIT.MAC[62,7777] 1985-01-09 23:54:04, Edit by KPJ @ GRAV
+;7	Added routine GETLEN to compute length of entry, in lines.
+;Oden::DSKD:EDIT.MAC[62,7777] 1985-01-08 05:53:21, Edit by KPJ @ L89
+;6	Got rid of QLISUB calls. Search MACTEN.
+;Oden::DSKD:EDIT.MAC[62,7777] 1985-01-03 16:22:11, Edit by KPJ @ L89
+;5	Moved all language dependent texts to TEXTER. Search UUOSYM only on T10
+;	Brushed up code. Moved some magical numbers to KOMMAC.
+;Oden::Dskd:Edit.Mac[62,7777] 1984-05-14 16:42:08, Edit by KPJ Jaakkola
+;4	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dsk:Edit.Mac[62,657] 1984, Edit by T Tholerus
+;3	Deleted Martin NILsson's LISP-like code
+;FREJA::PS:<KOM.6-SOURCES>EDIT.MAC 198x-xx-xx xx:xx:xx, BJORN-DANIELSSON
+;2	Consistency check at !ENTER time added.
+;Oden::Dsk:Edit.New[1116,134] 1982-03-02 21:37:25, Edit by Lars Enderin
+;1	(unknown)
+;Oden::Edit.Mac, 1981-04-14, Edit by Martin Nilsson
+;0	Original LISP-like version.
+
+	SEARCH	kommac
+	PROLOG	(edit)
+edit:!
+
+; Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 16:42:08
+
+;+
+; This module contains the editor routines, and some related routines.
+; Internal format of the entry text:
+;
+; entry:	+-----------+
+; +-------------+--*  !  *  !<--+
+; !		+--------!--+   !
+; !		   ^	 !      !
+; !		   !	 V      !
+; ! +-----------+--!--------+-----------+-------  -  -  -  -+
+; ! !  byteptr	!  *  !  *  !  charcnt  ! text		    !
+; ! +-----------+--------!--+-----------+-------  -  -  -  -+
+; !		   ^	 !      !
+; !		   !	 V      !
+; ! +-----------+--!--------+-----------+-------  -  -  -  -+
+; ! !  byteptr	!  *  !  *  !  charcnt  ! text		    !
+; ! +-----------+--------!--+-----------+-------  -  -  -  -+
+; !		   ^	 !      !
+; !		   !	 V      !
+; !			        !
+; !		      . . . .   !
+; !				!
+; !		   ^	 !      !
+; !		   !	 V      !
+; ! +-----------+--!--------+-----------+-------  -  -  -  -+
+; ! !  byteptr	!  *  !  *  !  charcnt  ! text		    !
+; ! +-----------+--------!--+-----------+-------  -  -  -  -+
+; !		   ^	 !      !
+; +----------------+	 +------+
+;-
+
+;	D A T A   A R E A
+
+
+entry::	XWD	entry,entry		; main entry pointer
+linptr::EXP	entry			; current line
+; NOTE:
+; NOTE:these words should be reset each time KOM is restarted!
+; NOTE:
+
+number::Z				; area for number
+
+	CODE
+
+;	C O M M A N D   T A B L E S
+
+rlinry::comhed	0,noarg##,finent,ccfien##,zfinhl##	;entry ready
+rlinrl::comhed	0,numarg,relali,ccreli##,zrlihl##	;remove last line
+remwor::comhed	0,numarg,relawo,ccrewo##,zrwohl##	;remove last word
+jumpup::comhed	0,numarg,up,ccjuup##,zjuphl##		;jump up
+jumpdw::comhed	0,numarg,dw,ccjudo##,zjdohl##		;jump down
+
+
+
+
+;+
+; FINENT  --  finish entry
+;-
+
+finent::SETOM	intflg##	; interrupt writing
+	return
+
+;+
+; NUMARG  --  get numeric argument
+; returns number in NUMBER
+; returns number one if no number got
+;-
+
+numarg::save	<str,nr>
+	SKIPGE	hlpflg##		;help wanted?
+	 JRST[	print	zedhlp##	;yes, give a list of editor commands
+		SETOM	errfl##
+		JRST	.+1]		;[KPJ.5]
+	CALL	getnum##		; get number of lines
+	 MOVEI	nr,1			; default all
+	MOVEM	nr,number		; save number
+	return
+
+;+
+;RELALI		remove lines
+;changes STR
+;-
+
+relali:	save	<nr,gp1>	;<TTQ.3> two lines deleted here
+	MOVE	gp1,linptr	;set up argument for REMLIN
+	SKIPLE	nr,number	;get argument
+	 JRST	rlinr0		;positive argument
+	SKIPE	1(gp1)		;current line empty ?
+	 JRST	rlinr9		;no, ready
+	CAIN	gp1,entry	;more lines ?
+	 JRST	rlinr8		;no
+	CALL	remlli		;yes, remove it
+	JRST	rlinr9
+	
+rlinr0:	SKIPLE	1(gp1)		;current line empty ?
+	 JRST	rlinr1		;no
+	HLRZ	t,0(gp1)	;get previous line
+	CAIN	t,entry		;more lines ?
+	 JRST	rlinr8		;no
+	CALL	remlin		;<TTQ.3> yes, remove it first
+rlinr1:	CAIN	gp1,entry	;more lines ?
+	 JRST	rlinr8		;no
+	CALL	remlli		;remove line
+rlinr2:	SOJG	nr,rlinr1	;more lines ?
+	CALL	beglin##	;insert empty line
+	 JRST	rlinr9		;<KPJ.13> failed, give up
+	CAIN	gp1,entry	;last line ?
+	 CALL	subpro##	;yes, add subject
+	JRST	rlinr9
+
+rlinr8:	CALL	nomrln		; no, print msg
+rlinr9:	return
+
+;+
+; REMLIN  --  remove a line (the rock-bottom routine)
+; gets line in GP1.
+; At exit, GP1 points to the line above the removed one.
+;-
+
+remlin:	HRRZ	t,gp1		; get pointer
+	CAIN	t,entry		; empty ?
+	 JRST	remli9		; yes
+	CALL	del		; remove
+remli9:	return
+
+
+
+;+
+; DEL  --  remove a cell (the rock-bottom routine)
+; doesn't do any emptiness-checking.
+; gets cell in GP1.
+; At exit, GP1 points to the cell above the removed one.
+;-
+
+del:	MOVE	gp1,0(gp1)	; get contents of link word
+	HLLM	gp1,0(gp1)	; ptr up
+	MOVS	gp1,gp1		; get previous cell
+	HLRM	gp1,0(gp1)	; ptr down
+	HRRZ	gp1,gp1		; clear left part
+	return
+
+
+
+
+
+;+
+;NOMRLN		say "there are no more lines above" to user
+;-
+
+nomrln:	save	<str>
+	print	znmlin##		;"there are no more lines above"
+	branch	preol##			; new line
+
+;+
+; REMLLI  --  remove a line
+; line to be removed in GP1
+; returns new line in GP1 and LINPTR
+;-
+
+remlli:	save 	<str>
+	CALL	remlin			; now remove it
+	HRRM	gp1,linptr		; update linptr
+	CALL	qshmen##
+	 JRST	remcl9			; say nothing if expert
+	print	zolrem##		;"One line removed"
+	CALL	preol##			; new line
+remcl9:	return
+
+;+
+; GREMLI  --  remove a line
+; gets line in LINPTR.
+; LINPTR is made to point to the line above the removed one.
+;-
+
+gremli::save	<gp1>
+	MOVE	gp1,linptr	; set up arg for remlin
+	CALL	remlin		; now remove it
+	HRRM	gp1,linptr	; update linptr
+	return
+
+;+
+; RELAWO  --  remove last word(s)
+; Number of words in NUMBER
+; Changes LINPTR and STR
+;-
+relawo:	save	<nr,str,gp1>
+	MOVE	nr,number	;put argument in NR
+	JUMPL	nr,remwo9	;quit if negative
+	MOVEI	t,entry
+	CAMN	t,linptr	;nothing to remove?
+	 JRST	remwo5		;yes
+remwo2: CALL	gtnrwd		;get no of words in line
+	SUB	nr,gp1		;remove them
+	JUMPLE	nr,remwo6	;more words?
+	CALL	gremlin		;remove the line
+	MOVEI	t,entry
+	CAME	t,linptr	;entry empty?
+	 JRST	remwo2		;no, remove more
+	CALL	beglin##	;make new line
+	 JRST	remwo9		;<KPJ.13> failed, give up
+remwo5:	CALL	nomrln		;output message
+	JRST	remwo9
+
+remwo6:	MOVN	nr,nr		;make positive
+	CALL	gtnthw		;produce new line
+remwo9:	return
+
+;+
+; GTNRWD  --  get number of words in current line
+; gets line in LINPTR
+; returns number of words in GP1
+; changes STR
+;-
+
+gtnrwd:	save	<ch,bp>
+	MOVE	bp,[POINT 7,2]	; make byte pointer
+	ADD	bp,linptr	; get start of line
+	SETZ	gp1,		; clear word count
+gtnrw1:	ILDB	ch,bp		; get char
+	JUMPE	ch,gtnrw9	; ready ?
+	CALL	qblank##	; start of a word ?
+	 JRST	gtnrw1		; No
+	ADDI	gp1,1		; yes, increase count
+gtnrw2:	ILDB	ch,bp		; get next char
+	JUMPE	ch,gtnrw9	; ready ?
+	CALL	qblank##	; end of a word ?
+	 JRST	gtnrw1		; Yes
+	JRST	gtnrw2		; No
+
+gtnrw9:	return
+
+
+
+
+
+;+
+;GTNTHW		get Nth word in current line
+;accepts	LINPTR/	current line
+;		NR/	word number
+;returns	+1, with STR/    new line
+;			 LINPTR/ new line
+;-
+
+gtnthw:	save	<ch,bp,str,gp2>
+	MOVE	gp2,linptr		;get current line
+	CALL	gremli			;remove it
+	MOVE	bp,[POINT 7,2(gp2)]	;set up byte pointer
+	CALL	beglin##		;get a new line
+	 JRST	gtnth9			;<KPJ.13> failed, give up
+gtnth1:	ILDB	ch,bp			;get character
+	JUMPE	ch,gtnth9		;error ?
+	CALL	qblank##		;start of a word ?
+	 JRST	gtnth4			;no
+	SOJL	nr,gtnth9		;ready ?
+gtnth3:	IDPB	ch,-1(str)		;no, save the character
+	AOS	1(str)			;increase character count
+	ILDB	ch,bp			;get next character
+	JUMPE	ch,gtnth9		;error ?
+	CALL	qblank##		;end of a word ?
+	 TRNA				;yes
+	  JRST	gtnth3			;no
+
+gtnth4:	IDPB	ch,-1(str)	; no, save the char
+	AOS	1(str)		; increase char count
+	JRST	gtnth1
+
+gtnth9:	return
+
+;+
+; UP  --  jump up
+; nr of lines in NUMBER, line in LINPTR
+;-
+
+up:	save	<nr,gp1>
+	MOVE	nr,number	; set up args
+	MOVE	gp1,linptr
+	JUMPGE	nr,up13		; up or down ?
+	MOVN	nr,nr		; move down
+	CALL	dwline
+	JRST	up12
+
+up13:	CALL	upline		; move up
+up12:	HRRM	gp1,linptr	; result
+	return
+
+
+
+
+
+;+
+; UPLINE  --  jumps up NR lines
+; number of lines in NR
+; line pointer in GP1
+; return result in GP1
+;-
+
+upline:	save	<nr>
+uplin1:	CAIN	gp1,entry	; at the top ?
+	 JRST	uplin9		; yes
+	HLR	gp1,(gp1)	; up one line
+	SOJG	nr,uplin1	; decrement and jump
+uplin9:	return
+
+;+
+; DOWN  --  jump down
+; nr of lines in NUMBER, line in LINPTR
+;-
+
+dw:	MOVNS	number				; negate nr
+	branch	up				; and go up instead
+
+
+;+
+; DWLINE  --  jumps down NR lines
+; number of lines in NR
+; line pointer in GP1
+; return result in GP1
+;-
+
+dwline:	save	<nr>
+dwlin1:	HLRZ	t,entry		; get last line
+	CAMN	t,gp1		; at the bottom ?
+	 JRST	dwlin9		; yes
+	HRR	gp1,0(gp1)	; down one line
+	SOJG	nr,dwlin1	; get next line
+dwlin9:	return
+
+
+
+
+
+;+
+; ZERENT  --  clear the entry
+; entry in ENTRY
+;-
+
+zerent::MOVE	t,[XWD entry,entry]
+	MOVEM	t,entry
+	MOVEI	t,entry
+	MOVEM	t,linptr		;empty LINPTR
+	return
+
+
+
+
+
+;+
+;OUTTXT		output text above LINPTR
+;accepts	ENTRY/	text
+;		NR/	number of lines to show
+;			if = 0, output the whole entry
+;-
+
+outtxt::save	<gp1,gp2,linptr,nr,firflg##>
+	SETZM	intflg##	;clear interrupt flag
+	MOVE	gp1,linptr	;ptr to this line
+	MOVE	gp2,linptr	;ptr to this line
+	JUMPN	nr,outtx3	;the whole entry ?
+	HRRI	gp1,entry	;yes, pointer in gp1
+	SETOM	firflg##	;print with subject line
+	CALL	outtex		;print upper half
+	HLR	gp1,entry	;get last line
+	EXCH	gp1,gp2		;switch ptrs
+	CAME	gp1,gp2		;same line ?
+	 CALL	preol##		;no, new line
+	JRST	outtx8
+
+outtx3:	JUMPLE	nr,outtx4	;only lines above ?
+	SKIPN	1(gp1)		;current line empty ?
+	 HLR	gp1,0(gp1)	;yes, up one line
+	CALL	upline		;up NR lines
+	JRST	outtx8
+
+outtx4:	MOVNS	nr		;make positive
+	CALL	dwline		;up NR lines
+	EXCH	gp1,gp2		;switch ptrs
+outtx8:	CALL	outtex		;print upper half
+	return
+
+
+
+
+
+;+
+; OUTTEX  --  print text between gp1 (exclusive) and gp2 (inclusive)
+; text in ENTRY
+;-
+
+outtex:	save	<str,intflg##>
+	CAMN	gp1,gp2		; print anything ?
+	 JRST	outte9		; no
+outte2:	HRRZ	gp1,0(gp1)	; to next line
+	MOVE	str,gp1		; text pointer
+	CALL	prprst##	; print it (incl prompter)
+	CAMN	gp1,gp2		; finished ?
+	 JRST	outte9		; yes
+	SKIPL	firflg##	;subject line?
+	 JRST	outte1		;no
+	MOVE	t,consum##	; get consumer
+	CAIN	t,tercon##	; terminal output ?
+	 CALL	prwhli		; yes, print line
+	SETZM	firflg##	; clear first flag
+	SKIPGE	intflg##	;interrupt?
+	 JRST	outte9		;yes
+outte1:	CALL	preol##		; new line
+	SKIPL	intflg##	;interrupt?
+	 JRST	outte2		;no, continue
+outte9:	return
+
+
+
+
+
+;+
+; PRWHLI  --  print whole line
+;-
+
+prwhli::CALL	preol##		; new line
+	CALL	prhali		; print half line
+	branch	prhali		; print another half
+
+
+
+
+
+;+
+; PRHALI  --  print half line
+;-
+
+prhali::save	<str>
+	MOVE	t,selffl##	;[KPJ.6] get personal flags
+	Txne	t,nlipfl	;[KPJ.6] LINE OF DASHES?
+	 CALL[	print[	ASCIZ !------------------------------!]
+		RET]		;    0	      1		2	  3 
+	return			;    123456789012345678901234567890
+
+
+;+
+;GETLEN		compute length, in lines, of entry		[KPJ.7]
+;accepts	ENTRY/	entry pointers (last,,first line)
+;returns	NR/	length, in lines, of entry
+;-
+
+getlen::save	<gp1,gp2>
+	HRRZ	gp1,entry	; pointer to first line
+	HLRZ	gp2,entry	; pointer to last line
+	MOVEI	nr,1		;always at least one line (Subject: line)
+getle1:	HRRZ	gp1,0(gp1)	;get pointer to next line
+	CAME	gp1,gp2		;ready?
+	 AOJA	nr,getle1	;no, increment line counter, and continue
+	return
+
+;+
+;CHKLEN		check entry length (consistency check)		[BDQ.2]
+;returns	+1 entry too long				<KPJ.12>
+;		+2 entry circular				<KPJ.12>
+;		+3 entry OK					<KPJ.12>
+;-
+
+chklen::save	<gp1,gp2,nr>
+	HRRZ	gp1,entry		;pointer to first line
+	HLRZ	gp2,entry		;pointer to last line
+	MOVEI	nr,maxlen		;max number of lines permitted
+	MOVE	t,gp1			;2nd pointer for checking circularity
+chkle1:	HRRZ	gp1,0(gp1)		;next line
+	CAMN	gp1,gp2			;finished?
+	 JRST	chkle7			;<KPJ.12> yes, +3 return
+	HRRZ	t,0(t)			;step 2 lines with the other pointer
+	HRRZ	t,0(t)			;so we can spot a circular entry
+	CAMN	t,gp1			;if we wrap around, entry is circular
+	 JRST	chkle8			;<KPJ.12> +2, circular entry
+	SOJG	nr,chkle1		;decrement count and loop
+	JRST	chkle9			;<KPJ.12> too long
+chkle7:	skpret				;<KPJ.12> +3 return
+chkle8:	skpret				;<KPJ.12> +2 return
+chkle9:	return
+
+	END
+..and no more

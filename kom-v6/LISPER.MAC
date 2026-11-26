@@ -1,0 +1,670 @@
+;Oden::DSKZ:LISPER.MAC<62,7777,MAC> 1987-09-29 14:22:24, KPJ @ L89 <1,2>
+;23	LIST USERS PROTECTED: don't display names in vain.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1987-05-13 16:06:38, KPJ @ L89 <1,2>
+;22	Handle GTTYTA error code.
+;Freja::Qs:<Kom.6.Macro>Lisper.Mac.9 870121-0210,KPJ-Jaakkola
+;21	Display the exact type specified.  Display directory specification
+;	in a readable manner.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1986-12-29 16:59:58, Edit by KPJ @ L89
+;20	Implement a type parameter to LIST USERS command.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1986-12-11 18:31:37, Edit by KPJ @ L89
+;17	PUTCH is a macro.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1986-11-10 16:02:12, Edit by KPJ @ L89
+;16	Handle +2 return from ISLURP.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1986-11-03 13:09:22, Edit by KPJ @ L89
+;15	Handle empty active file from SORACT.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1986-08-16 15:51:14, Edit by KPJ @ ENSKEDE
+;14	Display object number in LIST ADDRESSES.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1986-08-12 14:57:55, Edit by KPJ @ L89
+;13	Remove edit #1 below.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1986-08-08 15:00:26, Edit by KPJ @ L89
+;12	Better security in LIST STATISTICS. Better error handling.
+;Oden::DSKG:LISPER.MAC<62,7777,MAC> 1986-06-03 16:32:00, Edit by KPJ @ L89
+;11	Moved texts to TEXTER:	ZLPEHL,ZHDNUM,ZLSTHL,ZFLAGS,ZSTAHD,ZLADHL,
+;				ZZLISZ
+;	Sanitized code. Interrupt on LIST STATISTICS: output no sum line.
+;Freja::QS:<KOM.6-SOURCES>LISPER.MAC.3 16-Nov-85 22:54:33,Editor:KPJ-JAAKKOLA
+;10	Display "PPN" as user and directory in LIST STATISTICS.
+;Oden::DSKD:LISPER.MAC<62,7777,MAC> 1985-10-04 19:07:26, Edit by KPJ
+;7	Introduced PROLOG macro.
+;Oden::DSKD:LISPER.MAC<62,7777,MAC> 1985-09-05 08:34:36, Edit by KPJ
+;6	Give organizer information in LIST USERS command.
+;Oden::DSKD:LISPER.MAC<62,7777,MAC> 1985-06-11 18:25:31, Edit by KPJ @ L89
+;5	SORACT changed to return +1 when could not allocate sorting area.
+;	(PAGIN@MONITO changed to return +1 when could not create page)
+;	GTSOAR routine eliminated.
+;Oden::DSKD:LISPER.MAC[62,7777] 1984-10-04 00:14:31, Edit by K.JAAKKOLA
+;4	NRFLAG is compilation dependent. Got rid of useless synonym macros.
+;	Cleaned up code, to see what it does.
+;Oden::Dskd:Lisper.Mac[62,7777] 1984-09-14 10:06:39, Edit by K.Jaakkola
+;3	Moved PAGIN, PAGDEL and GTSOAR under T10-conditional since memory
+;	managing is never necessary under TOPS-20.
+;Oden::Dskd:Lisper.Mac[62,7777] 1984-04-24 14:37:46, Edit by T Tholerus
+;2	[1017] Passive members skipped at LIST STATISTICS <conf> command
+;Oden::Dskd:Lisper.Mac[62,7777] 1984-04-14 08:33:19, Edit by T Tholerus
+;1	[1016] Extra argument to LIST STATISTICS command
+
+	SEARCH	kommac
+	PROLOG	(lisper)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-23 03:08:08
+
+;	D A T A   A R E A
+
+sorasz==:<<3_maxper>+<3_maxmee>+777>/1K	;[SEE] give a name to the size of it
+
+sumtim:	0				;sum of present time
+sumses:	0				;sum of sessions
+sumtex:	0				;sum of texts
+sumlin:	0				;sum of lines
+sumlnm:	0				;sum of links
+sumlnp:	0
+sumlnt:	0
+summee::0				;sum of conferences
+sumrea:	0				;sum of read entries
+sumlet:	0				;sum of received letters
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+lisper::comhed	0,alispe,listpe,cclipe##,zlpehl## ;List users
+;-
+
+
+
+
+;+
+;ALISPE		argument to LIST USERS command
+;returns	+1 always
+;		ERRFL/	-1 invalid reply
+;			-2 no reply
+;			 0 OK, with
+;		OBTYPE/	wanted person type
+;-
+
+alispe:	save	<nr,tp,menuq##>
+	SETZM	obtype##		;get all types
+	SKIPL	hlpflg##		;help wanted ?
+	 JRST	alisp1
+	MOVEI	t,zastyp##		;yes, ask for type
+	MOVEM	t,menuq##
+	JRST	alisp2
+
+alisp1:	CALL	getlet##		;any argument ?
+	 JRST	alisp9			;no ready
+alisp2:	MOVE	tp,otytab##		;get all user types
+	CALL	gttyta##		;get wanted type
+	SKIPL	errfl##			;<KPJ.22> error?
+	 JRST	alisp8			;<KPJ.22> no
+	CAMN	t,[-2]			;<KPJ.22> no answer?
+	 JRST	alisp9			;<KPJ.22> right
+	CAMN	t,[-3]			;<KPJ.22> ambiguous
+	 JRST[	CALL	ambcom##	;<KPJ.22> yes, say so
+		JRST	alisp9]		;<KPJ.22>
+
+;	(assume error code -2)
+
+	MOVEI	str,zflaar##		;<KPJ.22> "no such command:"
+	CALL	errcom##		;<KPJ.22> display command
+	$Skipa				;<KPJ.22>
+alisp8:	 MOVEM	nr,obtype##		;<KPJ.22> no error, save user type
+alisp9:	return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;+
+;LISTPE		LIST USERS
+;-
+
+listpe:	save	<nr,gp1,gp2,tabste##>
+	MOVEI	t,^D10			;<KPJ.11> set tab step
+	MOVEM	t,tabste##		;<KPJ.11>
+	CALL	preol##			;blank line
+	CALL	lipehe			;print heading
+	MOVEI	gp1,per			;person file
+	CALL	soract			;sort active file
+	 JRST[	print	zzlisz##	;<KPJ.5> "no more core"
+		JRST	listp9]		;<KPJ.5>
+	JUMPE	gp2,[			;<KPJ.15> empty file?
+		print	zzlizp##	;<KPJ.15> "no persons"
+		JRST	listp8]		;<KPJ.15>
+listp1:	SKIPGE	intflg##		;<KPJ.11> interrupt ?
+	 JRST	listp8			;<KPJ.11> yes
+	MOVE	nr,1(gp2)		;get most active person
+	MOVEI	gp1,per			;<KPJ.20> person wanted
+	CALL	find##			;<KPJ.20> get him
+	 JRST	listp8			;<KPJ.20> not found
+	SKIPN	0(bfp)			;<KPJ.20> non-existent user?
+	 JRST	listp2			;<KPJ.20> yes
+	MOVE	t,numtyp(bfp)		;<KPJ.21!KPJ.20> get type
+	SKIPE	obtype##		;<KPJ.21> all wanted?
+	 CAMN	t,obtype##		;<KPJ.21!KPJ.20> of wanted type?
+	  CALL	prpein			;print person info
+listp2:	SKIPE	gp2,2(gp2)		;get next person
+	 JRST	listp1			;person got
+listp8:
+T10,<	MOVEI	gp1,sorasz		;[KPJ.3] Tops-10 only
+	MOVEI	gp2,sorare/1K
+	CALL	pagdel##		;[SEE] delete sorting area
+>;T10
+listp9:	return
+
+
+
+
+
+;+
+; LIPEHE  --  print heading for list persons
+;-
+
+lipehe:	save	<gp1,str>
+	print	zhdnum##		;<KPJ.11!KPJ.4> "Number"
+	CALL	prtab##			;tab
+	MOVE	gp1,cursta##		;[BCQ] get the current status
+	CAIN	gp1,sa			;[BCQ] US air force prompter?
+	 JRST[	print[	ASCIZ !PPN!]	;[KPJ.4] yes, give PPN too
+		CALL	prtab##		;[BCQ] next position
+		JRST	.+1]
+	print	zilpre##		;last presence
+	CALL	prtab##			;tab
+	print	ziname##		;name
+	branch	preol##			;blank line
+
+
+
+
+;+
+;GELAOB		get last object
+;accepts	GP1/	file
+;returns	NR/	number of last object of that type
+;-
+
+gelaob::save	<bfp>
+	CALL	gemere##		;get meta record
+	MOVE	nr,metmax(bfp)		;get last person
+	return
+
+
+
+
+
+;+
+;SORACT		sort active file
+;accepts	GP1/	object file
+;returns	+1 failure to allocate sorting buffer
+;		+2 success, with GP2/	most active element
+;-
+
+soract::save	<gp1,bfp,txt,nr,tp>
+T10,<	PUSH	P,gp1			;<SEE!KPJ.3> get sorting area
+	PUSH	P,gp2			;we need some hacking ACs
+	MOVEI	gp1,sorasz		;get number of pages
+	MOVEI	gp2,sorare/1K		;get first page number
+	CALL	pagin##			;sorting area
+	 JRST[	POP	P,gp2
+		POP	P,gp1
+		JRST	sorac9]		;<KPJ.5> core exhausted
+	POP	P,gp2
+	POP	P,gp1
+>;T10
+	ADDI	gp1,1			;get activity file
+	MOVEI	nr,1			;get first object
+	MOVEI	tp,sorare		;get sort area
+	SETZ	gp2,			;clear most active pointer
+sorac1:	CALL	find##			;get object
+	 JRST	sorac8			;ready
+	SKIPG	txt,objtim(bfp)		;get activity time
+	 JRST	sorac2			;object deleted
+	MOVEM	nr,1(tp)		;save object
+	MOVEM	txt,0(tp)		;save time
+	MOVEI	bfp,gp2			;get most active
+sorac3:	SKIPN	t,0(bfp)		;end of list ?
+	 JRST	sorac4			;yes
+	CAML	txt,0(t)		;more active ?
+	 JRST	sorac4			;yes
+	MOVEI	bfp,2(t)		;no, get next
+	JRST	sorac3
+
+sorac4:	MOVE	t,0(bfp)		;<KPJ.11> move pointer
+	MOVEM	t,2(tp)			;<KPJ.11>
+	MOVEM	tp,0(bfp)		;insert new element
+	ADDI	tp,3			;get next free element
+sorac2:	AOJA	nr,sorac1		;get next object
+sorac8:	skpret
+sorac9:	return
+
+
+
+;+
+;PRPEIN		print user info
+;accepts	NR/	user#
+;		GP1/	PER file
+;-
+
+prpein:	save	<nr,gp1,bfp>
+	CALL	find##			;get person
+	 Bug(Hlt,<prpein lisper>,<nr>)	;<KPJ.23> BUGHLT
+	SKIPN	nr,0(bfp)		;<KPJ.20> existing person ?
+	 JRST	prpei9			;no, get next
+	CALL	preol##			;new line
+	CALL	pobjnr			;print object number
+	CALL	prtab##			;print tab
+	MOVE	gp1,cursta##		;[BCQ] get the current status
+	CAIN	gp1,sa			;[BCQ] got the air force prompter?
+	 JRST[	MOVE	gp1,perppn(bfp)	;[BCQ] yes, get the PPN
+		MOVE	t,linpos##	;<KPJ.21> get current position
+		ADD	t,tabste##	;<KPJ.21> add in tab step
+		PUSH	P,t		;<KPJ.21> save information
+T10,<		CALL	prippn##>	;output PPN
+T20,<		CALL	priusr##>	;output user name
+		POP	P,t		;<KPJ.21> get back new position
+		CAMG	t,linpos##	;<KPJ.21> not reached yet?
+		 JRST[	PUSH	P,tabste##	;<KPJ.21> not yet
+			MOVEM	t,tabste##	;<KPJ.21> but we will
+			CALL	preol##		;<KPJ.21> new line
+			CALL	prtab##		;<KPJ.21> now get there
+			POP	P,tabste##	;<KPJ.21> put back tab step
+			JRST	.+1]		;<KPJ.21>
+		CALL	prtab##		;[BCQ] step to next column
+		JRST	.+1]
+	MOVE	gp1,perpre(bfp)		;get last presence
+	CALL	pdate##			;print it
+	PUSH	P,tabste##		;<KPJ.6> save old tabstep
+	MOVE	t,tabste##		;<KPJ.6> get tabstep
+	SUBI	t,2			;<KPJ.6> allocate two
+	MOVEM	t,tabste##		;<KPJ.6>
+	CALL	prtab##			;print tab
+	POP	P,tabste##		;<KPJ.6> restore tabstep
+	MOVE	nr,0(bfp)		;<KPJ.6> get number
+	CALL	chkorg##		;<KPJ.6> organizer?
+	 SKIPA	ch,[.CHSPC]		;<KPJ.6> no
+	  MOVEI	ch,"O"			;<KPJ.6> yes
+	CALL	putch			;<KPJ.6>
+	CALL	putbla##		;<KPJ.17> space
+	PUSH	P,lmarg##		;<KPJ.6> save old lmarg
+	MOVE	t,linpos##		;<KPJ.6> tabstop...
+	MOVEM	t,lmarg##		;<KPJ.6> ...for long lines
+	CALL	prnaty##		;<KPJ.23> print name and type
+	POP	P,lmarg##		;<KPJ.6> restore lmarg
+prpei9:	return
+
+
+
+	
+
+
+
+;+
+;POBJNR		output object number
+;accepts	NR/	object#
+;-
+
+pobjnr:	save	<gp1,nr>
+	CALL	splpoi##		;split pointer
+	CALL	prnum6##		;output object number
+	return
+
+
+
+
+
+;+
+lissta::comhed	0,noarg##,listst,cclist##,zlsthl## ;List statistics    <KPJ.13>
+;-
+
+
+
+;+
+;LISTST		LIST STATISTICS (rewritten in edit 1016/1017)
+;-
+
+listst:	save	<gp1,nr,tabste##>
+	MOVE	nr,number##		;<KPJ.13!TTQ.1> special statistics ?
+	MOVEI	t,nrflag		;[KPJ.4] get number of personal flags
+	ADDI	t,1			;[KPJ.4] get one more
+	MOVEM	t,tabste##		;[KPJ.4]
+	CALL	inista			;clear sums
+	CALL	stahed			;print heading
+	CALL	prwhli##		;print whole line
+	MOVEI	gp1,per			;get person file
+	CALL	gelaob			;get last person
+lists1:	SKIPGE	intflg##		;<KPJ.11> interrupt ?
+	 JRST	lists9			;<KPJ.11> yes, exit
+	CALL	prstat			;print statistics
+	SOJG	nr,lists1		;get next person
+	CALL	prstsu			;print statistics sum
+lists9:	return
+
+
+
+
+
+;+
+;INISTA		clear sums
+;-
+
+inista:	SETZM	sumtim			;clear present time sum
+	SETZM	sumses			;clear session sum
+	SETZM	sumtex			;clear text sum
+	SETZM	sumlin			;clear line sum
+	SETZM	summee			;clear conference sum
+	SETZM	sumlnm			;clear link sum
+	SETZM	sumlnp
+	SETZM	sumlnt
+	SETZM	sumrea			;clear read sum
+	SETZM	sumlet			;clear letter sum
+	SETZM	sum##			;clear person sum
+	return
+
+
+
+
+
+;+
+; STAHED  --  print heading for list statistics
+;-
+
+stahed:	save	<str>
+	CALL	preol##			;blank line
+	print	zflags##		;[KPJ.4] "Flags"
+	CALL	prtab##			;print tab
+	print	zstahd##		;[KPJ.4] "bla bla bla" (flag names)
+	return
+
+;-
+
+
+
+
+;+
+;PRSTAT		output statistics
+;accepts	NR/	user#
+;		GP1/	person file
+;-
+
+prstat:	save	<nr,gp1,bfp>
+	CALL	find##			;get person
+	 error	<prstat lisper>
+	SKIPG	nr,0(bfp)		;existing person ?
+	 JRST	prsta9			;no, get next
+	CALL	preol##			;new line
+	CALL	perfla			;print personal flags
+	CALL	presti			;print present time
+	CALL	creaob			;print created objects
+	CALL	readen			;print read entries
+	CALL	letrec			;print received letters
+	AOS	sum##			;one more person
+	CALL	chkadm##		;administrator ?
+	 JRST	prsta9			;no
+	CALL	pobjnr			;print person number
+	CALL	putbla##		;one blank
+	CALL	prname##		;print person name
+prsta9:	return
+
+
+
+
+
+;+
+;PERFLA		output personal flags
+;accepts	BFP/	person
+;-
+
+perfla:	save	<tp,ch,selffl##>
+	MOVE	tp,exptab##		;get flag table
+	MOVE	t,perpfl(bfp)		;<KPJ.11> get flags
+	MOVEM	t,selffl##		;<KPJ.11>
+perfl1:	CALL	fircom##		;get table element
+	 JRST	perfl9			;end of table
+	MOVEI	ch,"x"			;get "x" character
+	CALL	qflaon##		;flag on ?
+	 MOVEI	ch,.CHSPC		;[KPJ.4] no, get blank
+	CALL	putch			;<KPJ.17> output character
+	CALL	necoel##		;get next flag
+	JRST	perfl1
+
+perfl9:	return
+
+
+
+
+
+;+
+;PRESTI		output #sessions and present time
+;accepts	BFP/	person
+;-
+
+presti:	save	<nr,gp1,ch>
+	CALL	putbla##		;<KPJ.17!KPJ.11> space
+	MOVE	gp1,persti(bfp)		;get present time
+	ADDM	gp1,sumtim		;get sum
+	CALL	acctim##		;print it
+	MOVE	nr,pernpr(bfp)		;get number of sessions
+	ADDM	nr,sumses		;get sum
+	CALL	prnum6##		;print it
+	return
+
+
+
+
+
+;+
+;CREAOB		output created texts and links
+;accepts	BFP/	person
+;-
+
+creaob:	save	<nr>
+	MOVE	nr,pertby+1(bfp)	;get number of texts
+	ADDM	nr,sumtex		;get sum
+	CALL	prnum6##		;print it
+	MOVE	nr,pernte(bfp)		;get number of lines
+	ADDM	nr,sumlin		;get sum
+	CALL	prnum6##		;print it
+	MOVE	nr,pernme(bfp)		;get number of conferences
+	ADDM	nr,summee		;get sum
+	CALL	prnum6##		;print it
+	MOVE	nr,pernlt(bfp)		;get number of text links
+	ADDM	nr,sumlnt		;get sum
+	CALL	prnum6##		;print it
+	MOVE	nr,pernlm(bfp)		;get number of conference links
+	ADDM	nr,sumlnm		;get sum
+	CALL	prnum6##		;print it
+	MOVE	nr,pernlp(bfp)		;get number of person links
+	ADDM	nr,sumlnp		;get sum
+	CALL	prnum6##		;print it
+	return
+
+
+
+
+
+;+
+;READEN		output read entries
+;accepts	BFP/	pointer to PERSON record
+;-
+
+readen:	save	<nr>
+	MOVE	nr,pernre(bfp)		;get number of read entries
+	ADDM	nr,sumrea		;get sum
+	CALL	prnum6##		;print it
+	return
+
+
+
+
+
+;+
+;LETREC		output received letters
+;accepts	BFP/	person
+;-
+
+letrec:	save	<nr>
+	MOVE	nr,objlto+1(bfp)	;get received letters
+	ADDM	nr,sumlet		;get sum
+	CALL	prnum6##		;output it
+	return
+
+
+
+
+
+;+
+;PRSTSU		output statistics sums
+;-
+
+prstsu:	save	<str,nr,gp1>
+	SETZM	intflg##		;clear interrupt
+	CALL	prwhli##		;whole line
+	CALL	preol##			;new line
+	print	zsum##			;say sum
+	CALL	prtab##			;tab
+	MOVE	gp1,sumtim		;get present time
+	CALL	acctim##		;print it
+	MOVE	nr,sumses		;get sessions
+	CALL	prnum6##		;print it
+	MOVE	nr,sumtex		;get texts
+	CALL	prnum6##		;print it
+	MOVE	nr,sumlin		;get lines
+	CALL	prnum6##		;print it
+	MOVE	nr,summee		;get conferences
+	CALL	prnum6##		;print it
+	MOVE	nr,sumlnt		;get links
+	CALL	prnum6##		;print it
+	MOVE	nr,sumlnm		;get links
+	CALL	prnum6##		;print it
+	MOVE	nr,sumlnp		;get links
+	CALL	prnum6##		;print it
+	MOVE	nr,sumrea		;get read entries
+	CALL	prnum6##		;print it
+	MOVE	nr,sumlet		;get received letters
+	CALL	prnum6##		;print it
+	MOVE	nr,sum##		;get persons
+	CALL	prnum6##		;print it
+	CALL	stahed			;print heading again
+prsts9:	return
+
+
+
+
+;+
+;SPPEST		get special person statistics	;[1016]
+;accepts	NR/	object number
+;-
+
+sppest:	save	<nr,gp1,bfp,bp,gp2,free,tabste##>
+	CALL	chkper##		;person ?
+	 JRST	sppes9			;no, skip it
+	CALL	getobj##		;get person
+	 JRST	sppes9			;no person
+;	SKIPG	0(bfp)			;erased ?
+;	 JRST	sppes9			;yes, skip it
+	MOVEM	nr,bp			;save person
+	CALL	preol##			;new line
+	CALL	pobjnr			;print number of person
+	CALL	prtab##			;tab
+	MOVE	t,objtyp(bfp)		;<KPJ.12> get object type
+	TRNN	t,proofl		;<KPJ.12> protected?
+	 JRST[	MOVE	gp1,perppn(bfp)	;get person PPN/user name
+T10,<		CALL	prippn##>	;<KPJ.10> print it
+T20,<		CALL	priusr##>	;<KPJ.10>
+		JRST	.+1]
+	CALL	prtab##			;tab
+	MOVE	t,objtyp(bfp)		;<KPJ.12> get object type
+	TRNN	t,proofl		;<KPJ.12> protected?
+	 JRST[	MOVE	gp1,perdpp(bfp)	;get debiting "PPN"
+T10,<		CALL	prippn##>	;<KPJ.10> print it
+T20,<		CALL	priusr##>	;<KPJ.10>
+		JRST	.+1]
+	CALL	prtab##			;tab
+	MOVEI	t,7			;<KPJ.11> set tab step
+	MOVEM	t,tabste##		;<KPJ.11>
+	CALL	islurp##		;get LOCAL's
+	 JRST	sppes9			;<KPJ.16> failed, give up
+	MOVE	nr,objlto+1(bfp)	;get total number of letters
+	SUB	nr,pernum(bfp)		;get number of unseen letters
+	CALL	prnum##			;print number
+	CALL	prtab##			;tab
+	SETZM	sum##			;clear sum
+sppes1:	SKIPN	0(gp2)			;end of register ?
+	 JRST	sppes8			;yes
+	SKIPG	meltim(gp2)		;active member ?
+	 JRST	sppes2			;no, skip it
+	CALL	getuns##		;get number of unseen entries
+	JUMPL	nr,sppes2		;error ?
+	ADDM	nr,sum##		;collect them
+sppes2:	ADDI	gp2,melsiz		;get next element
+	JRST	sppes1
+
+sppes8:	MOVE	nr,sum			;get sum
+	CALL	prnum##			;print it
+	CALL	prtab##			;tab
+	MOVE	nr,bp			;get person
+	CALL	prname##		;print its name
+sppes9:	return
+
+
+
+
+
+;+
+lisadr::comhed	0,noarg##,listad,ccliad##,zladhl## ;List addresses
+;-
+
+
+
+
+;+
+;LISTAD		list all addresses
+;-
+
+listad:	save	<nr,gp1,bfp,gp2>
+	MOVEI	gp1,per			;person file
+	CALL	soract			;sort active file
+	 JRST[	print	zzlisz##	;<KPJ.5> "no more core"
+		JRST	lista9]		;<KPJ.5>
+	JUMPE	gp2,[			;<KPJ.15> empty file
+		print	zzlizp##	;<KPJ.15> "no persons"
+		JRST	lista8]		;<KPJ.15>
+lista1:	SKIPGE	intflg##		;<KPJ.11> interrupt ?
+	 JRST	lista8			;<KPJ.11> yes
+	MOVE	nr,1(gp2)		;get most active person
+	CALL	find##			;get person
+	 error	<listad lisper>
+	SKIPG	nr,0(bfp)		;person deleted ?
+	 JRST	lista2			;yes
+	CALL	probnr##		;<KPJ.14> output object#
+	CALL	preol##			;<KPJ.14> new line
+	CALL	prnast##		;print name
+	CALL	preol##			;new line
+	CALL	praddr##		;print address
+	CALL	prtele##		;print telephone
+lista2:	SKIPE	gp2,2(gp2)		;get next person
+	 JRST	lista1			;person got
+lista8:
+T10,<	MOVEI	gp1,sorasz		;[KPJ.3] Tops-10 only
+	MOVEI	gp2,sorare/1K
+	CALL	pagdel##		;[SEE] delete sorting area
+>;T10
+lista9:	return
+
+
+	END
+..and no more    

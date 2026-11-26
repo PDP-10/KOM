@@ -1,0 +1,324 @@
+;Oden::DSKG:EXCLUD.MAC<62,7777,MAC> 1986-11-10 15:58:52, Edit by KPJ @ L89
+;7	Handle +2 return from ISLURP.
+;Oden::DSKG:EXCLUD.MAC<62,7777,MAC> 1986-03-05 14:12:34, Edit by KPJ @ L89
+;6	Fixed bug which made EXCLUDE/WITHDRAW commands not work.
+;Oden::DSKG:EXCLUD.MAC<62,7777,MAC> 1986-02-14 19:28:48, Edit by K P J
+;5	Sanitized code.
+;Oden::DSKD:EXCLUD.MAC<62,7777,MAC> 1985-10-01 01:35:38, Edit by K P J
+;4	Introduced PROLOG macro.
+;Oden::DSKD:EXCLUD.MAC[62,7777] 1985-01-16 00:28:30, Edit by KPJ @ GRAV
+;3	Moved language dependent texts to TEXTER. Search correct universals.
+;Oden::Dskd:Exclud.Mac[62,7777] 1984-04-03 03:11:04, Editor: KPJ Jaakkola QZ
+;2	Updated copyright notice. Changed EXCLUDE prompter (J.Palme request)
+;Oden::DSKD:EXCLUD.MAC[62,7777] 1984-03-29 12:50:25, Edit by THOLERUS T
+;1	1014 (???)
+
+	SEARCH	kommac
+	PROLOG	(exclud)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-03-13 03:09:02
+
+;	D A T A   A R E A
+
+	CODE
+
+;	C O M M A N D   T A B L E S
+
+exclud::comhed	0,aexclu,cexclu,ccexcl##,zexchl##	;exclude member
+
+;+
+;AEXCLU		argument to EXCLUDE command
+;-
+
+aexclu:	save	<str,nr,quest##>
+	MOVE	t,conf##		;<TTQ.1> get conference
+	MOVEM	t,number##		;<TTQ.1>
+	MOVEI	t,askexc		;ask for persons
+	MOVEM	t,quest##
+	CALL	gtname##		;get the names
+	SKIPGE	errfl##			;error ?
+	 JRST	aexcl9
+	CALL	gtmana##		;<TTQ.1> conference given ?
+	 JRST	aexcl1			;<TTQ.1> no
+	MOVEM	nr,number##		;<TTQ.1> save it
+	JRST	aexcl2
+
+aexcl1:	SKIPN	nr,conf##		;present ?
+	 JRST	aexcl7			;no
+aexcl2:	CALL	chkorg##		;are you organizer ?
+	 CALL	saynot##		;no, say not right
+	JRST	aexcl9
+
+aexcl7:	SKIPN	silflg##		;silent ?
+	 JRST	aexcl8
+	CALL	preol##			;new line
+	print	znotpr##		;say not present
+aexcl8:	SETOM	errfl##			;error
+aexcl9:	return
+
+
+
+
+
+;+
+;ASKEXC		ask for persons to exclude
+;-
+
+askexc:	save	<str>
+	CALL	lethlp##		;give letter help
+	print	zasexc##		;"who do you want to exclude?"
+	CALL	preol##			;new line
+	branch	prher##
+
+;+
+;CEXCLU		exclude member
+;-
+
+cexclu:	save	<foalfu##>
+	MOVEI	t,excper		;function: exclude person
+	MOVEM	t,foalfu##		;for all, do...
+	CALL	faname##		;... exclude all persons
+	return
+
+
+
+
+
+;+
+;EXCPER		exclude person
+;accepts	NR/	person
+;		NUMBER/	conference
+;-
+
+excper:	save	<errfl##,conf##>
+	MOVE	t,number##		;<TTQ.1> get conference
+	MOVEM	t,conf##		;<TTQ.1>
+	CALL	updbeg##		;start update
+					;+++++++
+	 SETOM	errfl##			;+ initialize flag
+	 CALL	excope			;+ exclude conference from person
+	 CALL	expeco			;+ exclude person from conference
+					;+++++++
+	CALL	updend##		;end of update
+	CALL	repexc			;report exclusion
+	return
+
+
+;+
+;EXCOPE		exclude conference from person
+;accepts	CONF/	conference
+;		NR/	person
+;-
+
+excope:	save	<gp2,txt,gp1>
+	CALL	islurp##		;slurp in PERSON's LOCAL's
+	 JRST	excop9			;<KPJ.7> failed, give up
+	MOVEM	gp2,txt			;save start of register
+	MOVE	gp1,conf##		;get conference
+	CALL	seacon			;search for conference
+	 JRST	excop9			;conference not found
+	CALL	exconf			;exclude conference
+	CALL	endper			;get end of person register
+	CALL	oslurp##		;slurp out register
+	SETZM	errfl##			;person excluded
+excop9:	return
+
+
+
+
+
+;+
+;SEACON		search for conference
+;accepts	GP2/	member list
+;		GP1/	conference
+;returns	GP2/	member element
+;		+1 if conference not found
+;		+2 if found
+;-
+
+seacon::
+seaco1:	SKIPN	0(gp2)			;end of register ?
+	 JRST	seaco9			;yes, not found
+	CAME	gp1,melmee(gp2)		;conference found ?
+	 JRST[	ADDI	gp2,melsiz	;no, get next element
+		JRST	seaco1]
+	skpret				;<KPJ.6> +2, conference found
+seaco9:	return
+
+
+
+
+
+;+
+;EXCONF		exclude conference from person
+;accepts	GP2/	member element
+;		NR/	person
+;-
+
+exconf:	save	<bfp,gp1>
+	SKIPG	0(gp2)			;active member ?
+	 JRST	excon1			;no
+	CALL	updobj##		;get person
+	 error	<exconf exclud>
+	SOSGE	permem(bfp)		;one less membership
+	 SETZM	permem(bfp)		;error
+excon1:	CALL	sqmeli			;squeese member list
+	return
+
+
+
+
+
+;+
+;SQMELI		squeese member list
+;accepts	GP2/	register list
+;-
+
+sqmeli:	save	<gp2,nr,bfp>
+	MOVEI	nr,melsiz		;get element size
+	MOVE	bfp,free		;get next element
+	CALL	clarea##		;clear area
+	HRLI	gp2,melsiz(gp2)		;move one element
+	BLT	gp2,-1(free)		;squeese
+	return
+
+
+
+
+
+;+
+;ENDPER		get end of person register
+;accepts	GP2/	member element
+;returns	+1 always,
+;		with GP2/	end of register
+;-
+
+endper::
+endpe1:	SKIPE	0(gp2)			;end of register ?
+	 JRST[	ADDI	gp2,melsiz	;no, get next element
+		JRST	endpe1]
+	return
+
+
+
+
+
+;+
+;EXPECO		exclude person from conference
+;accepts	NR/	person
+;		CONF/	conference
+;-
+
+expeco:	save	<gp1,gp2,txt,nr>
+	MOVEM	nr,gp1			;save person
+	MOVE	nr,conf##		;get conference
+	CALL	islurp##		;get CONFERENCE's LOCAL's
+	 JRST	expec9			;<KPJ.7> failed, give up
+	MOVEM	gp2,txt			;save start of register
+	CALL	seaper			;search for person
+	 JRST	expec9			;person not found
+	CALL	expers			;exclude person
+	CALL	endcon			;get end of conference register
+	CALL	oslurp##		;slurp out register
+	SETZM	errfl##			;person excluded
+expec9:	return
+
+
+
+
+
+;+
+;SEAPER		search for person
+;accepts	GP2/	member list
+;		GP1/	person
+;returns	+1 if person not found
+;		+2 if found, with
+;		   GP2/	member element
+;-
+
+seaper::
+seape1:	SKIPN	0(gp2)			;end of register ?
+	 JRST	seape9			;yes, +1, not found
+	CAME	gp1,mbrper(gp2)		;person found ?
+	 JRST[	ADDI	gp2,mbrsiz	;no, get next element
+		JRST	seape1]
+	skpret				;+2, person found
+seape9:	return
+
+
+
+
+
+;+
+;EXPERS		exclude person
+;accepts	GP2/	member element
+;		NR/	conference
+;-
+
+expers:	SKIPLE	0(gp2)			;active member ?
+	 CALL	onleme##		;one less member
+	CALL	sqreli			;sqeese register list
+	return
+
+
+
+
+
+;+
+;SQRELI		squeese register list
+;accepts	GP2/	register list
+;-
+
+sqreli::save	<gp2,nr,bfp>
+	MOVEI	nr,mbrsiz		;get element size
+	MOVE	bfp,free		;get next element
+	CALL	clarea##		;clear area
+	HRLI	gp2,mbrsiz(gp2)		;move one element
+	BLT	gp2,-1(free)		;squeese
+	return
+
+
+
+
+
+;+
+;ENDCON		get end of conference register
+;accepts	GP2/	member element
+;returns	+1 always,
+;	 	with GP2/	end of register
+;-
+
+endcon::
+endco1:	SKIPE	0(gp2)			;end of register ?
+	 JRST[	ADDI	gp2,mbrsiz	;no, get next element
+		JRST	endco1]
+	return
+
+
+
+
+
+;+
+;REPEXC		report exclusion
+;accepts	NR/	person
+;		CONF/	conference
+;		ERRFL/	on if not member
+;-
+
+repexc:	save	<str,nr>
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	repex9
+	CALL	prname##		;output person name
+	SKIPGE	errfl##			;person excluded ?
+	 JRST	repex1			;
+	print	zisexc##		;" is now excluded from "
+	JRST	repex8
+
+repex1:	print	zntmem##		;" in not a member of "
+repex8:	MOVE	nr,conf##		;get conference
+	CALL	prname##		;print conference
+repex9:	return
+
+	END
+..and no more

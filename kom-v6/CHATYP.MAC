@@ -1,0 +1,341 @@
+;Oden::DSKG:CHATYP.MAC<62,7777,MAC> 1987-05-13 16:24:37, KPJ @ L89 <10,50>
+;11	Handle GTTYTA error code.
+;Oden::DSKG:CHATYP.MAC<62,7777,MAC> 1986-03-05 17:45:52, Edit by KPJ @ L89
+;10	SUBJECT type conferences under FTSUBJ conditional.
+;Oden::DSKD:CHATYP.MAC<62,7777,MAC> 1985-11-28 13:15:51, Edit by KPJ
+;7	Make CHANGE ORGANIZER confirm.
+;Oden::DSKD:CHATYP.MAC<62,7777,MAC> 1985-09-25 07:12:04, Edit by KPJ
+;6	Introduced PROLOG macro. Changed format of PRINT macros.
+;	Saniztied code.
+;Oden::DSKD:CHATYP.MAC<62,7777,MAC> 1985-07-26 01:10:49, Edit by KPJ @ ORANGE
+;5	Get rid of reference to GECOST (now deleted).
+;Oden::DSKD:CHATYP.MAC[62,7777] 1984-11-19 18:05:22, Edit by K.JAAKKOLA
+;4	SEARCH correct universals. Moved language texts to TEXTER.MAC
+;Oden::Dskd:Chatyp.Mac[62,7777] 1984-05-14 12:13:42, Edit by KPJ Jaakkola
+;3	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dskd:Chatyp.Mac[62,7777] 1984-02-09 12:54:00, Edit by T Tholerus
+;2	CHANGE ORGANIZER not legal for entries any more.
+;Oden::Dsk:Chatyp.New[1116,134] 1982-03-02 20:05:36, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(chatyp)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 12:13:18
+
+;	D A T A   A R E A
+
+
+filnr::	0			;archive file
+supmee::0			;super conference
+
+;	P R O G R A M    C O D E
+
+	CODE
+
+;+
+chatyp::comhed	0,achaty,cchaty,ccchty##,zctyhl##	;change type (of)
+chaorg::comhed	0,achaor,cchaor,ccchor##,zcorhl##	;change organizer (of)
+;-
+
+;+
+;ACHATY		argument to CHANGE TYPE command
+;returns	NUMBER/ \
+;		OBTYPE/ - arguments
+;		SUPMEE/ /
+;-
+
+achaty:	save	<nr,quest##,namfun##>
+	MOVEI	t,askcty		;ask for conference
+	MOVEM	t,quest##
+	MOVEI	t,joinam##		;conference names
+	MOVEM	t,namfun##
+	CALL	gtobnr##		;get object number
+	SKIPGE	errfl##			;error ?
+	 JRST	achat9			;yes
+	MOVE	nr,number##		;no, get conference
+	CALL	chkorg##		;are you organizer ?
+	 CALL	saynot##		;no, not allowed
+	SKIPL	errfl##			;error ?
+	 CALL	reobty			;no, read object type
+achat9:	return
+
+
+
+
+
+;+
+;ASKCTY		ask for conference to CHANGE TYPE of
+;-
+
+askcty:	save	<str>
+	CALL	meehlp##		;give conference help
+	print	zascty##		;"which conf. change type of ?"
+	CALL	preol##			;new line
+	branch	prher##			;prompt
+
+
+;+
+;REOBTY		read object type
+;returns	OBTYPE/	type
+;		ERRFL/	<>0 if no type was given
+;-
+
+reobty::save	<menuq##,tp,nr>
+	SETZM	supmee			;clear super conference
+	SETZM	filnr			;clear archive file
+	MOVEI	t,zastyp##		;"what type?"
+	MOVEM	t,menuq##
+	MOVE	tp,otytab		;get object type table
+	CALL	gttyta##		;get type from table
+	SKIPL	t,errfl##		;<KPJ.11> any error?
+	 JRST	reobt1			;<KPJ.11> no
+	CAMN	t,[-2]			;<KPJ.11> empty answer?
+	 JRST	reobt9			;<KPJ.11> yes, exit
+	CAMN	t,[-3]			;<KPJ.11> ambiguous?
+	 JRST[	CALL	ambcom##	;<KPJ.11> yes, say so
+		JRST	reobt9]		;<KPJ.11>
+	MOVEI	str,zflaar##		;<KPJ.11> "no such keyword"
+	CALL	errcom##		;<KPJ.11>
+	JRST	reobt9			;<KPJ.11>
+reobt1:	MOVEM	nr,obtype##		;<KPJ.11> no error, save type
+	TRNN	nr,wprofl		;write protect ?
+	 TRNE	nr,oriofl		;or original meeting ?
+	  CALL	getsup			;yes, get super conference
+	TRNE	nr,priofl		;local printer ?
+	 CALL	geprfi			;yes, get file
+reobt9:	return
+
+
+
+;+
+;OTYTAB		object type table
+
+otytab::table	sn,[EXP 0,meeofl!opnofl],ztopen##	 ;Open
+	table	sn,[EXP 0,meeofl!cloofl],ztclos##	 ;Closed
+	table	sn,[EXP 0,meeofl!wprofl!opnofl],ztwpop## ;Write protected open
+	table	sn,[EXP 0,meeofl!wprofl!cloofl],ztwpcl## ;Write protected close
+	table	sn,[EXP 0,meeofl!proofl!cloofl],ztprot## ;Protected
+IFN	ftsubj,<					 ;<KPJ.10>
+	table	sn,[EXP 0,subofl!opnofl],ztsubj##	 ;Subject
+>;ftsubj
+	table	sn,[EXP 0,orgofl!cloofl],ztorga##	 ;Organization
+	table	sn,[EXP 0,priofl!cloofl],ztprin##	 ;Printer
+	table	sn,[EXP 0,meeofl!oriofl!opnofl],ztorop## ;Original open
+	table	sn,[EXP 0,meeofl!oriofl!cloofl],ztorcl## ;Original closed
+	endtab
+;-
+
+
+
+
+;+
+;GETSUP		get super conference
+;returns	SUPMEE/	super conference
+;-
+
+getsup:	save	<number##,quest##,namfun##,nr>
+	MOVEI	t,asksup		;ask for super conference
+	MOVEM	t,quest##
+	MOVEI	t,joinam##		;conference names
+	MOVEM	t,namfun##
+	CALL	gtobnr##		;get conference
+	MOVE	nr,number		;get conference
+	CALL	chkrec##		;check receiver
+	MOVEM	nr,supmee		;save super conference
+	return
+
+
+
+
+
+;+
+;ASKSUP		ask for super conference
+;-
+
+asksup:	save	<str>
+	CALL	meehlp##		;conference help
+	print	zassup##		;"name of super conference?"
+	CALL	preol##			;new line
+	branch	prher##			;prompt
+
+
+
+;+
+;GEPRFI		get printer file
+;returns	DIRNR/	file
+;-
+
+geprfi:	save	<consum##>
+	CALL	geoufi##		;get output file
+	CALL	updbeg##		;start update
+	CALL	credir##		;create entry head
+	CALL	dcbeg##			;start data base consumer
+	CALL	proufi##		;output file name
+	CALL	dcend##			;text ready
+	MOVE	t,number##		;get presentation object
+	MOVEM	t,preobj##
+	CALL	adtepo##		;add text pointer
+	MOVE	t,dirnr##		;save file number
+	MOVEM	t,filnr
+	branch	updend##		;end of update
+
+
+
+
+
+;+
+;CCHATY		CHANGE TYPE of a conference
+;accepts	NUMBER \
+;		OBTYPE - arguments
+;		SUPMEE /
+;-
+
+cchaty:	save	<nr,str>
+	MOVE	nr,number##		;get conference
+	CALL	updbeg##		;start update
+	CALL	chanty##		;change type
+	CALL	updend##		;end of update
+	CALL	prname##		;output conference name
+	print	zisnow##		;"is now"
+	CALL	prtype			;output type
+	return
+
+
+
+;+
+;PRTYPE		output type
+;accepts	OBTYPE/	type
+;-
+
+prtype::save	<tp,gp2>
+	MOVE	tp,otytab		;get type table
+	MOVE	gp2,obtype##		;get type
+	TRZ	gp2,noclfl		;[BCQ] clear this flag while matching
+	CALL	ptype			;print type
+	return
+
+
+
+
+
+;+
+;PTYPE		output type
+;accepts	TP/	table
+;		GP2/	value
+;-
+
+ptype::	save	<tp,str>
+	CALL	gtype			;get type
+	 JRST	ptype9			;no type found
+	HLRZ	str,0(tp)		;<KPJ.5> get type name
+	CALL	prstr##			;output it
+ptype9:	return
+
+
+
+
+
+;+
+;GTYPE		get type
+;accepts	TP/	table
+;		GP2/	value
+;returns	+1 if no type found
+;		+2 if found
+;		TP/	table element
+;		AGRORD/	ordinal number
+;-
+
+gtype::	SETZM	agrord##		;clear ordinal number
+gtype1:	CALL	fircom##		;get table element
+	 JRST	gtype9			;no type found
+	MOVE	t,0(tp)			;get type pointer
+	CAMN	gp2,1(t)		;type found ?
+	 JRST	gtype8			;yes
+	CALL	necoel##		;get next table element
+	JRST	gtype1
+
+gtype8:	skpret				;type found
+gtype9:	return
+
+
+
+;+
+;ACHAOR		argument to CHANGE ORGANIZER command
+;returns	NUMBER/	argument
+;-
+
+achaor:	save	<nr,quest##,namfun##>
+	MOVEI	t,askcor		;ask for conference
+	MOVEM	t,quest##
+	MOVEI	t,joinam##		;conference names
+	MOVEM	t,namfun##
+	CALL	gtobnr##		;get object number
+	SKIPGE	errfl##			;error ?
+	 JRST	achao9			;yes
+	MOVE	nr,number##		;no, get conference
+	CALL	chkdir##		;[2] entry ?
+	 CALL	chkorg##		;no, are you organizer ?
+	  CALL	saynot##		;no, not allowed
+achao9:	return
+
+
+
+
+
+;+
+;ASKCOR		ask for conference to CHANGE ORGANIZER of
+;-
+
+askcor:	save	<str>
+	CALL	meehlp##		;conference help
+	print	zascor##		;"change organizer of what?"
+	CALL	preol##			;new line
+	branch	prher##			;prompt
+
+
+;+
+;CCHAOR		code for to change the organizer
+;accepts	NUMBER/	argument
+;-
+
+cchaor:	save	<nr,gp1,bfp,quest##>
+	MOVE	nr,number##		;get conference
+	MOVEI	t,asknor		;ask for new organizer
+	MOVEM	t,quest##
+	CALL	gtobnr##		;get person
+	SKIPGE	errfl##			;error ?
+	 JRST	cchao9			;yes
+	CALL	updbeg##		;no, start update
+	CALL	updobj##		;get conference
+	 JRST[	SETZ	t,		;<KPJ.7> fail
+		JRST	cchao8]		;error
+	MOVE	t,number##		;set new organizer
+	MOVEM	t,objcre(bfp)
+	MOVE	t,0(bfp)		;<KPJ.7> get object
+cchao8:	PUSH	P,t			;<KPJ.7> save status
+	CALL	updend##		;ready
+	POP	P,t			;<KPJ.7> restore status
+	JUMPE	t,cchao9		;<KPJ.7> failure? exit if so
+	PUSH	P,objcre(bfp)		;<KPJ.7> organizer
+	MOVE	nr,t			;<KPJ.7>
+	CALL	preol##			;<KPJ.7> new line
+	print	zcchao##		;<KPJ.7> "New organizer of "
+	CALL	prname##		;<KPJ.7> output name
+	print	zisnow##		;<KPJ.7> " is now "
+	POP	P,nr			;<KPJ.7> get organizer
+	CALL	prname##		;<KPJ.7> say name
+cchao9:	return
+
+;+
+;ASKNOR		ask for new organizer
+;-
+
+asknor:	save	<str>
+	CALL	meehlp##		;give conference help
+	print	zhcrea##		;ask organizer
+	branch	prher##			;prompt
+
+	END
+..and no more

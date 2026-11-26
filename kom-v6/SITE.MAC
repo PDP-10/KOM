@@ -1,0 +1,186 @@
+;AIDA::SS:<KOM.6C.SRC>SITE.MAC.2, 26-Aug-89 13:46:17, Edit by VICTOR
+;25	Added Sun Console (type 30) as a screen.
+;Freja::Ps:<KPJ-Jaakkola.Transit>Site.Mac.3 870518-1418,KPJ-Jaakkola
+;24	Add H19 as a screen too.
+;Aida::Ss:<Kom.6C.Src>Site.Mac.2, 13-May-87 15:39:58, Ed: Zot
+;23	Added some terminal types to trmtps, now more than one word.
+;Oden::DSKG:SITE.MAC<62,7777,MAC> 1986-11-13 09:41:58, Edit by KPJ @ L89
+;22	Added OPNLEN for OPNCEN length.
+;Oden::DSKG:SITE.MAC<62,7777,MAC> 1986-10-30 08:49:31, Edit by KPJ @ L89
+;21	Use QZIF/FOAIF/RUNIF.
+;Freja::Qs:<Kom.6.Macro>Site.Mac.3 860715-0018,KPJ-Jaakkola
+;20	FOAPPN routine is Tops-10 only.
+;Oden::DSKG:SITE.MAC<62,7777,MAC> 1986-07-11 13:25:03, Edit by KPJ @ L89
+;17	Added CENDEV and CENEXT.
+;Oden::DSKG:SITE.MAC<62,7777,MAC> 1986-06-26 22:35:41, Edit by KPJ @ L89
+;16	Moved RUN blocks to RUNTAB and CALVID where used. Unused blocks
+;	eliminated.
+;Oden::DSKG:SITE.MAC<62,7777,MAC> 1986-06-16 20:20:06, Edit by KPJ @ L89
+;15	Added SPEAK NORWEGIAN support code.
+;Freja::Qs:<Kom.6-Sources>Site.Mac.9 27-Mar-86 14:48:13,Editor:KPJ-Jaakkola
+;14	RUNBLK calls screwed up. Made it impossible to CALL anything.
+;Oden::DSKD:SITE.MAC<62,7777,MAC> 1986-01-08 05:42:12, Edit by KPJ
+;13	Add QOM for ODEN (switch FTQOM) under T10, FTQZ and FTRUN.
+;Oden::DSKD:SITE.MAC<62,7777,MAC> 1985-12-05 17:14:35, Edit by KPJ
+;12	Delete SUPER-KOM.
+;Oden::DSKD:SITE.MAC<62,7777,MAC> 1985-10-08 01:16:18, Edit by KPJ
+;11	New format of PRINT macro. Introduced PROLOG macro.
+;Oden::DSKD:SITE.MAC<62,7777,MAC> 1985-09-18 10:13:22, Edit by KPJ
+;10	Use STD: for LOGIN and LOGOUT.
+;Oden::;DSKD:SITE.MAC<62,7777,MAC> 1985-08-01 14:00:50, Edit by KPJ @ BCQ
+;7	Insert T20 terminal type 29 as FACIT TWIST screen
+;Oden::DSKD:SITE.MAC<62,7777,MAC> 1985-06-27 15:47:58, Edit by KPJ @ L89
+;6	Added support for KERMIT.
+;Oden::DSKD:SITE.MAC<62,7777,MAC> 1985-04-25 00:43:50, Edit by KPJ @ HOME
+;5	Get rid of 3RIP.
+;Freja::Ps:<KOM.6-SOURCES>SITE.MAC.5 18-Apr-85 15:35:25,Editor:KPJ-JAAKKOLA
+;4	Name of TMP file name macro changed to XTMPKO due to name collision.
+;Freja::Ps:<KOM.6-SOURCES>SITE.MAC.2 16-Apr-85 16:24:07,Editor:KPJ-JAAKKOLA
+;3	Rewrote run block generation. LOGIN and LOGOUT are called only by
+;	KOM-10.
+;Oden::DSKD:SITE.MAC<62,7777,MAC> 1985-04-04 21:36:35, Edit by KPJ @ NADJA
+;2	Data base and TMPCOR file names defined in FEATUR, used here
+;	TMPCOR file names are used on Tops-10 only.
+;Oden::DSKD:SITE.MAC<62,7777,MAC> 1985-03-28 13:35:20, Edit by KPJ @ L89
+;1	Make TOPS-20 CENNAM be PRINTable (those stupid zero words should be
+;	eliminated, really). Ditto for CENPRO.
+
+	SEARCH	kommac
+	PROLOG	(site)
+site:!
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-20 06:48:52
+
+;	D A T A   A R E A
+
+;OPNCEN		FILOP. argument block
+
+opncen::
+T10,<	BLOCK	1		;0	.FOFNC	function code
+	BLOCK	1		;1	.FOIOS	dump mode,physical device
+	BLOCK	1		;2	.FODEV	device
+	0,,0			;3	.FOBRH	no buffers
+	0,,0			;4	.FONBRF	no buffers
+	0,,cenfil		;5	.FOLEB	RENAME block,,ENTER block
+	.PTPPN+1,,cenpat	;6	.FOPAT	length,,path block pointer
+	BLOCK	1		;7	.FOPPN	PPN (returned here)
+	opnlen==:.-opncen	;<KPJ.22> length of OPNCEN
+>;T10
+T20,<	BLOCK	1		;JFN
+	BLOCK	1		;GTJFN% flags
+	FLD(^D36,OF%BSZ)	;OPENF% flags: 36 bits bytes
+	BLOCK	filmax/5+1	;file name
+>; T20
+T10,<
+cenfil::0,,cenlen		;0	.RBCNT	0,,length
+	0,,0			;1	.RBPPN	path pointer
+	BLOCK	1		;2	.RBNAM	file name
+	BLOCK	1		;3	.RBEXT	extension, etc
+	BLOCK	1		;4	.RBPRV	protection, etc
+	0			;5	.RBSIZ	file size (words)
+cenlen==:.-cenfil		;#parameter words
+
+cenpat::BLOCK	.PTPPN+1	;[SEE] path PPN of central file
+>; T10
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+T20,<
+DEFINE	bldwrd	(bit,pos)<
+	.%word==.%word+<bit'B<pos>>>
+
+	.%word==0
+
+	bldwrd	(0,.TT33)		;TTY model 33
+	bldwrd	(0,.TT35)		;TTY model 35
+	bldwrd	(0,.TT37)		;TTY model 37
+	bldwrd	(0,.TTEXE)		;Execuport
+	bldwrd	(1,4)			;Datamedia ELITE 1520/1521
+	bldwrd	(1,5)			;unspecified display terminal
+	bldwrd	(1,6)			;Beehive B100
+	bldwrd	(1,7)			;Volker Craig VC414
+	bldwrd	(1,.TTDEF)		;System-Default (display?)
+	bldwrd	(0,.TTIDL)		;Ideal
+	bldwrd	(1,.TTV05)		;VT05
+	bldwrd	(1,.TTV50)		;VT50
+	bldwrd	(0,.TTL30)		;LA30
+	bldwrd	(1,.TTG40)		;GT40
+	bldwrd	(0,.TTL36)		;LA36
+	bldwrd	(1,.TTV52)		;VT52
+	bldwrd	(1,.TT100)		;VT100
+	bldwrd	(0,.TTL38)		;LA38
+	bldwrd	(0,.TT120)		;LA120
+	bldwrd	(1,^D19)		;VC415
+	bldwrd	(1,^D20)		;HP2648 
+	bldwrd	(1,^D21)		;Teleray 1061
+	bldwrd	(1,^D22)		;Datamedia Elite 2500
+	bldwrd	(1,^D23)		;Visual 200
+	bldwrd	(1,^D24)		;Volker Craig VC404
+	bldwrd	(0,^D25)		;"Paper"
+	bldwrd	(1,^D26)		;ADM3A
+	bldwrd	(0,^D27)
+	bldwrd	(0,^D28)
+	bldwrd	(1,^D29)		;<KPJ.7> Facit Twist
+	bldwrd	(1,^D30)	;[Vic.25] Sun Console
+	bldwrd	(0,^D31)
+	bldwrd	(0,^D32)
+	bldwrd	(0,^D33)
+	bldwrd	(0,^D34)
+	bldwrd	(1,^D35)		;VT125
+	bldwrd	(1,^D36)		;VK100 - GIGI
+
+trmtps::EXP	.%word
+	.%word==0			;<ZOT.23>
+	bldwrd	(1,.TT102-^D36)		;<ZOT.23> VT102
+	bldwrd	(1,.TTH19-^D36)		;<KPJ.24> H19
+	bldwrd	(1,.TT131-^D36)		;<ZOT.23> VT131
+	bldwrd	(1,.TT200-^D36)		;<ZOT.23> VT200 series
+	EXP	.%word			;<ZOT.23>
+>;T20
+
+T10,<
+cendev::xcedev				;<KPJ.17> data base device
+IFE	<.-cendev>,<
+IF1,<	PRINTX	?XCEDEV incorrect>
+	0>
+>;T10
+cennam::xcenam				;<KPJ.2> data base name
+IFE	<.-cennam>,<
+IF1,<	PRINTX	?XCENAM incorrect>
+	0>
+T20,<	BLOCK	7>		;patch area
+T10,<
+cenext::xceext				;<KPJ.17> data base extension
+IFE	<.-cenext>,<
+IF1,<	PRINTX	?XCEEXT incorrect>
+	0>
+>;T10
+cenpro::				;central file protection
+T10,<	BYTE	(9)477>
+T20,<IFE ftjsys,<ASCIZ !P776464!> ; without KOM% jsys
+     IFN ftjsys,<ASCIZ !P770202!> ; with KOM% jsys
+>;T20
+
+
+ztmpco::xtmpko			;<KPJ.4!KPJ.4>	Tops-10: TMPCOR name to use
+					;	TOPS-20: temporary file to use
+
+;+
+T10,<					;<KPJ.20>
+FOAIF,<					;<KPJ.21>
+;FOAPPN		check if FOA PPN
+;returns	+1 if FOA PPN
+;		+2 if not FOA PPN
+;-
+
+foappn::MOVE	t,selfpp##		;get PPN
+	CAME	t,[barppn]		;FOA PPN ?
+	 skpret				;no
+	return
+>;FOAIF
+>;T10
+	END
+..and no more

@@ -1,0 +1,200 @@
+;Oden::DSKG:STRCON.MAC<62,7777,MAC> 1986-11-11 14:54:59, Edit by KPJ @ L89
+;13	CTRL/H from a file to an entry crashed KOM at times.
+;Oden::DSKG:STRCON.MAC<62,7777,MAC> 1986-11-11 03:21:35, Edit by KPJ @ H.HOLE
+;12	Handle +2 return from ALLOCM. Make BEGLIN return +1 on failure, and
+;	handle this. Same for STBEG.
+;Oden::DSKG:STRCON.MAC<62,7777,MAC> 1986-08-28 11:43:47, Edit by KPJ @ L89
+;11	PASFLG code is only for text phones. Delete useless code (REPEAT 0,).
+;Oden::DSKG:STRCON.MAC<62,7777,MAC> 1986-08-28 10:18:55, Edit by KPJ @ L89
+;10	Rewrote STRCON overprint-password-with-backspace-for-textphones.
+;Oden::DSKD:STRCON.MAC<62,7777,MAC> 1985-11-04 15:53:27, Edit by KPJ
+;7	Suppress commands if so specified.
+;Oden::DSKD:STRCON.MAC<62,7777,MAC> 1985-10-08 01:18:52, Edit by KPJ
+;6	Introduced PROLOG macro.
+;Oden::DSKD:STRCON.MAC<62,7777,MAC> 1985-07-26 xx:xx:xx, Edit by KPJ @ OARNGE
+;5	Deleted CCLINE routine.
+;Oden::DSKD:STRCON.MAC<62,7777,MAC> 1985-06-27 08:27:57, Edit by KPJ @ L89
+;4	Use CMDCHR for command character. Sanitized code.
+;Oden::DSKD:STRCON.MAC[62,7777,MAC] 1985-03-01 18:22:12, Edit by KPJ @ L89
+;3	Swedish PTT "text telephone" under switch FTPHON.
+;Oden::DSKD:STRCON.MAC[62,7777] 1984-09-05 16:04:36, Edit by B.CARLSSON
+;2	Inserted a CLRBFI at STRCON, to avoid multiple prompters.
+;Oden::Dskd:Strcon.Mac[62,7777] 1984-09-04 13:00:35, Edit by K.Jaakkola
+;1	Updated (c) notice.
+;Oden::Dsk:Strcon.Mac[62,657] 198x-xx-xx xx:xx:xx, Edit by Martin Nilsson
+;0.5	Reset FREE pointer.
+
+
+	SEARCH	kommac
+	PROLOG	(strcon)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 13:00:31
+
+;	D A T A   A R E A
+
+
+lastch::0			; end char in string
+strbeg::[0]			; start of current string
+strbp::	0			; current string byte pointer
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;STBEG		start string consumer (STRCON)
+;returns	+1 failure
+;		+2 success
+;-
+
+stbeg::	save	<str>
+	CALL	beglin			;start a new line
+	 JRST	stbeg9			;<KPJ.12> failed, give up
+	CALL	gremli##		;and remove it immediately...
+	MOVE	t,consum##		;save old consumer
+	MOVEM	t,oldcon##
+	MOVEI	t,strcon		;make a line
+	MOVEM	t,consum##
+	skpret				;<KPJ.12> +2 return means success
+stbeg9:	return
+
+
+
+
+
+;+
+;BEGLIN		start a new line:
+;		+0  +--	byte pointer <-----------+
+;		+1  !	link	<--------------+ !
+;		+2  +->	length word	<----+ ! !
+;		+3	ASCIZ text	     ! ! !
+;					     ! ! !
+;returns	+1 failure		     ! ! !
+;		+2 success, with	     ! ! !
+;		STRBEG/	points at length ----+ ! !
+;		STR/	points at link --------+ !
+;		STRBP/	points at byte pointer --+
+;		FREE/	points at free memory (after line)
+;-
+
+beglin::PUSH	P,free			;<KPJ.12> save old value
+	ADDI	free,1			;reserve space for byte pointer
+	PUSH	P,free			;<KPJ.12> STR/ points at link word
+	ADDI	free,1			;reserve space for link word
+	PUSH	P,free			;<KPJ.12> STRBEG/ points at link word
+	ADDI	free,ormarg/5+3		;reserve space for the ASCIZ + 3 words
+	CALL	allocm##		;allocate memory for that space
+	 JRST[	POP	P,0(P)		;<KPJ.12> forget STRBEG change
+		POP	P,0(P)		;<KPJ.12> forget STR change
+		POP	P,free		;<KPJ.12> restore free world
+		JRST	begli9]		;<KPJ.12> failed, give up
+	POP	P,strbeg		;<KPJ.12> change STRBEG
+	POP	P,str			;<KPJ.12> change STR
+	POP	P,0(P)			;<KPJ.12> forget old FREE
+	MOVE	t,strbeg		;get pointer to start of line
+	ADDI	t,1			;point at ASCIZ
+	HRLI	t,(POINT 7,)		;make it a byte pointer
+	MOVEM	t,strbp			;STRBP/ byte pointer at ASCIZ
+	MOVEM	t,-1(str)		;store in byte pointer slot in line
+	SETZM	@strbeg			;clear character count
+	HRL	t,strbeg		;line+2,,line+3
+	BLT	t,ormarg/5+3(str)	;clear ASCIZ string
+	CALL	inslin			;insert line
+	skpret				;<KPJ.12> +2 return means success
+begli9:	return
+
+;+
+;INSLIN		insert line
+;accepts	LINPTR/	current line pointer
+;		STR/	pointer at link word of new line to be inserted
+;
+;-
+
+inslin:	save	<gp1,gp2>
+	MOVE	gp1,str			;copy link word pointer
+	MOVE	gp2,linptr##		;where to insert
+	HRLM	gp2,0(gp1)		;pointer up in GP1-cell
+	HRL	t,0(gp2)
+	HLRM	t,0(gp1)		;pointer down in GP1-cell
+	MOVE	t,0(gp2)
+	HRLM	gp1,0(t)		;pointer up in cell under GP1-cell
+	HRRM	gp1,0(gp2)		;pointer down in GP2-cell
+	MOVEM	str,linptr##		;set new line
+	return
+
+
+
+
+;+
+;STRCON		string consumer
+;accepts	CH/	character
+;-
+
+strcon:	save	<gp1>
+	CAIN	ch,.CHCRT		;<KPJ.4> carriage return ?
+	 JRST	strco9			;<KPJ.4> yes, ignore it
+	CAIE	ch,.CHLFD		;<KPJ.4> line feed?
+	 CAIN	ch,.CHFFD		;<KPJ.4> or form feed?
+	  JRST	strco8			;<KPJ.4> yes, process end of line
+	CAIN	ch,.CHESC		;<KPJ.4> escape?
+	 JRST	strco9			;<KPJ.4> yes, return immediately
+	CAIN	ch,.CHBSP		;<KPJ.4!BCQ> a backspace?
+	 JRST	strco2			;<KPJ.4> yes, back up
+	SKIPN	@strbeg			;are we in column 1 ?
+	 JRST[	SKIPE	cmdpfl##	;<KPJ.7> suppress commands?
+		 JRST	.+1		;<KPJ.7> yes, no command
+		CAIN	ch,cmdchr	;<KPJ.4> no, command character?
+		 JRST	strco9		;<KPJ.4> yes, return immediately
+		JRST	.+1]		;<KPJ.4> no, go on
+
+	IDPB	ch,strbp		;save character
+	AOS	gp1,@strbeg		;increase character count
+IFN	ftphon,<			;<KPJ.11> if text phone support...
+	SKIPE	pasflg##		;[BCQ] reading a password?
+	 JRST[	PUSH	P,ch		;[BCQ] yes, so overprint the char
+		MOVEI	ch,.CHBSP	;<KPJ.4!BCQ> back it over
+		CALL	tput##		;<KPJ.4>
+		POP	P,ch		;[BCQ] restore what we clobbered
+		JRST	.+1]
+>;ftphon
+	CAIG	gp1,ormarg		;is there room ?
+	 JRST	strco9			;yes
+strco8:	MOVEM	ch,lastch		;save last character
+	SETOM	intflg##		;stop producer
+REPEAT	0,<				;<KPJ.11> useless code
+IFN	ftphon,<			;<KPJ.3> text phone support?
+T10,<	SKIPN	phone##			;[BCQ.2] yes,look for PTT terminals
+	 JRST	strco9			;[BCQ.2] it wasn't so leave
+	MOVE	t,produc##		;[BCQ.2] get the producer
+	CAIN	t,terpro##		;[BCQ.2] terminal producer?
+	 CLRBFI				;[BCQ.2] yes, avoid multiple prompters
+>;T10
+>;ftphon
+>;End REPEAT 0
+	JRST	strco9			;<KPJ.4>
+
+strco2:	SKIPN	@strbeg			;[BCQ] any character to delete?
+	 JRST	strco9			;[BCQ] no, so ignore the BS
+	SETZ	ch,.CHNUL		;[BCQ] get a NULL
+	DPB	ch,strbp		;[BCQ] clear out last character
+	MOVE	t,strbp			;[BCQ] get the bytepointer
+	Decrbp	t			;<KPJ.13!KPJ.4!BCQ> decrement it
+	MOVEM	t,strbp			;[BCQ] save it again
+	SOS	@strbeg			;[BCQ] remeber we backed it over
+
+strco9:	return
+
+
+
+;+
+; STEND  --  stop string consumer
+; returns line got in STR
+; returns last char in LASTCH
+;-
+
+stend::	MOVE	str,strbeg	; get start of line
+	return
+
+	END
+..and no more

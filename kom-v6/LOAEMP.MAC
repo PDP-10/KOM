@@ -1,0 +1,285 @@
+;Oden::DSKG:LOAEMP.MAC<62,7777,MAC> 1987-06-10 14:58:18, KPJ @ L89 <10,50>
+;7	Don't display deleted objects.
+;Oden::DSKG:LOAEMP.MAC<62,7777,MAC> 1987-05-13 11:20:54, KPJ @ L89 <10,50>
+;6	ENCRYP rename ENKRYP. Sanitized code.
+;Oden::DSKG:LOAEMP.MAC<62,7777,MAC> 1986-10-14 16:37:00, Edit by KPJ @ L89
+;5	Employee support under FTEMPL.
+;Oden::DSKG:LOAEMP.MAC<62,7777,MAC> 1986-06-05 16:22:08, Edit by KPJ @ L89
+;4	Moved texts to TEXTER: ZLEMHL,ZASORG,ZORGHL,ZASOMA,ZOMARK
+;Oden::DSKG:LOAEMP.MAC<62,7777,MAC> 1986-06-05 16:19:41, Edit by KPJ @ L89
+;3	Added PROLOG and CODE macros.
+;Oden::Dskd:Loaemp.Mac[62,7777] 1984-08-31 07:06:02, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;DSK:LOAEMP.NEW[1116,134] 1982-03-02 19:37:12, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(loaemp)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-31 07:06:00
+
+;	D A T A   A R E A
+
+	CODE
+
+;+
+loaemp::
+IFN	ftempl,<					;<KPJ.5>
+	comhed	0,aloemp,cloemp,ccloem##,zlemhl##	;Load employees
+>;ftempl
+orgmar::comhed	0,aorgma,corgma,ccorma##,zorghl##	;Organization mark
+;-
+
+
+
+
+;+
+IFN	ftempl,<					;<KPJ.5>
+;ALOEMP		arguments to LOAD EMPLOYEES command
+;returns	ORGNR/	organization
+;		LOCPRI/	printer
+;-
+
+aloemp:	CALL	priarg##		;get printer
+	SKIPGE	errfl##			;error ?
+	 JRST	aloem9			;yes
+	CALL	orgarg			;no, get organization
+	SKIPL	errfl##			;<KPJ.6> error ?
+	 CALL	gtifil##		;no, get input file
+aloem9:	return
+>;ftempl
+
+
+
+
+;+
+;ORGARG		get organizational affiliation
+;returns	+1, with ORGNR/ argument
+;-
+
+orgarg:	save	<quest##,namfun##,number##>
+	SKIPN	nrorgs##		;<KPJ.6> any organizations ?
+	 JRST[	SETOM	errfl##		;<KPJ.6> no, error
+		JRST	orgar9]		;<KPJ.6>
+	SETZM	number##		;clear organization
+	MOVEI	t,askorg		;<KPJ.6> ask for organization
+	MOVEM	t,quest##		;<KPJ.6> . . .
+	MOVEI	t,joinam##		;<KPJ.6> meeting names
+	MOVEM	t,namfun##		;<KPJ.6> . . .
+	CALL	gtobnr##		;get organization
+	MOVE	t,number##		;<KPJ.6> save number
+	MOVEM	t,orgnr##		;<KPJ.6> . . .
+	SETZM	errfl##			;clear error condition
+orgar9:	return
+
+
+
+
+
+;+
+;ASKORG		ask for organization
+;-
+
+askorg:	save	<str,obtype##>
+	CALL	preol2##		;blank line
+	print	zasorg##		;"which orgnisation is to pay?"
+	MOVEI	t,orgofl		;<KPJ.6> get organizations
+	MOVEM	t,obtype##		;<KPJ.6> . . .
+	CALL	prmeli			;print meeting list
+	return
+
+
+
+
+;+
+;PRMELI		output conference name list
+;accepts	OBTYPE/	wanted conference type
+;-
+
+prmeli::save	<bfp,gp1,nr,str,acrfl##>
+	SETOM	acrfl##			;make ACR
+	MOVEI	nr,1			;get first conference
+prmel1:	MOVEI	gp1,num			;get number file
+	CALL	find##			;get type
+	 JRST	prmel9			;no more conferences
+	SKIPG	0(bfp)			;<KPJ.10> deleted?
+	 AOJA	nr,prmel1		;<KPJ.10> yes, don't output it
+	SETCM	t,numtyp(bfp)		;get meeting type
+	TDNE	t,obtype##		;wanted type ?
+	 AOJA	nr,prmel1		;no, get next conference
+	print[	ASCIZ !, !]		;output comma
+	SUBI	gp1,1			;get conference
+	CALL	find##			;get conference
+	 Bug(hlt,<prmeli loaemp>,<nr>)
+	CALL	prnam##			;print name
+	AOJA	nr,prmel1		;get next meeting
+
+prmel9:	print[	ASCIZ !. !]		;print dot
+	branch	prher##			;print herald
+
+
+
+
+
+;+
+IFN	ftempl,<			;<KPJ.5>
+;CLOEMP		LOAD EMPLOYEES code
+;accepts	ORGNR/	organization
+;		LOCPRI/	printer
+;......................................................................
+;File format:	<number> <password> <name>
+;	where
+;		<number>	section# (FOA)
+;		<password>	password to use (4-character for FOA)
+;		<name>		name of employee
+;......................................................................
+;-
+cloemp:	save	<produc##,nr,namptr##>
+	CALL	fpbeg##			;file input
+cloem1:	CALL	rdcomm##		;read a line
+	 JRST	cloem9			;line empty
+	CALL	getnum##		;get section
+	 JRST	cloem9			;no number got
+	MOVEM	nr,sectnr##		;save section number
+	CALL	getlet##		;get start of password
+	 JRST	cloem9			;no password
+	CALL	enkryp##		;<KPJ.6> get password
+	MOVEM	nr,paswor##		;save it
+	CALL	getlet##		;get start of name
+	 JRST	cloem9			;no name
+	MOVE	t,chpt##		;<KPJ.6> save name pointer
+	MOVEM	t,namptr##		;<KPJ.6> .. .
+	CALL	chkemp			;create employee
+	MOVE	t,[POINT 7,[BYTE (7) .CHNUL]] ;<KPJ.6> consume name
+	MOVEM	t,chpt##		;<KPJ.6> . . .
+	SKIPL	errfl##
+	 JRST	cloem1			;get next person
+cloem9:	CALL	fpend##			;end of file input
+	return
+>;ftempl
+
+
+
+
+;+
+IFN	ftempl,<			;<KPJ.5>
+;CHKEMP		create employee if necessary
+;accepts	NAMPTR/	wanted name
+
+; organization marks old person
+;-
+
+chkemp:	save	<nr,gp1,bfp,oldflg##>
+	CALL	matbeg##		;start match
+	SETOM	oldflg##		;get old names
+	MOVEI	gp1,pna			;get person names
+	CALL	nacofi##		;get match
+	SKIPE	agrval##		;match ?
+	 CALL	expand##		;yes, expand name
+	CALL	updbeg##		;start update
+	CALL	creemp##		;create employee
+	SKIPN	agrval##		;match ?
+	 JRST	chkem9			;no match
+	MOVE	nr,@agrval##		;get person
+	CALL	updobj##		;get person
+	 JRST	chkem9			;error
+	MOVE	t,empnr##		;<KPJ.6> set employee
+	MOVEM	t,peremp(bfp)		;<KPJ.6> . . .
+	MOVE	t,orgnr##		;<KPJ.6> set organization
+	MOVEM	t,perdeb(bfp)		;<KPJ.6> . . .
+	EXCH	nr,empnr##		;get employee
+	CALL	updobj##		;get it
+	 JRST	chkem9			;error
+	MOVE	t,empnr##		;<KPJ.6> set person
+	MOVEM	t,empper(bfp)		;<KPJ.6> . . .
+chkem9:	CALL	updend##		;end of update
+	return
+>;ftempl
+
+
+
+;+
+;AORGMA		argument to mark as organizer
+;returns	ORGNR/	organization
+;		ARGLIS/	list of persons
+;-
+
+aorgma:	save	<quest##>
+	MOVEI	t,askoma		;<KPJ.6> ask for persons
+	MOVEM	t,quest##		;<KPJ.6> . . .
+	CALL	gtname##		;get names
+	SKIPL	errfl##			;persons got ?
+	 CALL	orgarg			;yes, get debiting organization
+	return
+
+
+
+
+
+;+
+;ASKOMA		ask for persons to mark as organizer
+;-
+
+askoma:	save	<str>
+	CALL	lethlp##		;person help
+	print	zasoma##		;"what person to mark?"
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+
+;+
+;CORGMA		mark a person as organizer
+;-
+
+corgma:	save	<foalfu##>
+	MOVEI	t,ormark		;<KPJ.6> mark as organizer
+	MOVEM	t,foalfu##		;<KPJ.6> . . .
+	CALL	faname##		;for all names
+	return
+
+
+
+
+
+;+
+;ORMARK		mark a person as organizer
+;accepts	NR/	person
+;		ORGNR/	organization
+;-
+
+ormark:	save	<bfp,gp1>
+	CALL	chkper##		;person ?
+	 JRST	ormar9			;no, skip it
+	CALL	updbeg##		;start update
+	CALL	updobj##		;get person
+	 JRST	ormar1			;error
+	MOVE	t,orgnr##		;<KPJ.6> save debiting
+	MOVEM	t,perdeb(bfp)		;<KPJ.6> . . .
+ormar1:	CALL	updend##		;end of update
+	CALL	reporg			;report marked
+ormar9:	return
+
+
+
+
+
+;+
+;REPORG		report organizer mark
+;accepts	NR/	person
+;		ORGNR/	org
+;+
+
+reporg:	save	<nr,str>
+	CALL	preol##		;new line
+	CALL	prname##	;print person
+	print	zisnow##	;" is now "
+	MOVE	nr,orgnr##	;get organization
+	CALL	prname##	;print its name
+	print	zomark##	;" marked."
+	return
+
+	END
+..and no more

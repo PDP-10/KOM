@@ -1,0 +1,192 @@
+;Oden::DSKG:GETNUM.MAC<62,7777,MAC> 1986-03-05 16:23:57, Edit by KPJ @ L89
+;4	Introduced CODE macro.
+;Oden::DSKD:GETNUM.MAC<62,7777,MAC> 1985-10-01 01:49:53, Edit by K P J
+;3	Introduced PROLOG macro.
+;Oden::DSKD:GETNUM.MAC<62,7777,MAC> 1985-03-12 14:28:58, Edit by KPJ @ L89
+;2	Sanitized code. Get rid of funny macros.
+;Oden::Dskd:Getnum.Mac[62,7777] 1984-08-31 06:17:00, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(getnum)
+	CODE
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-31 06:16:53
+
+;+
+;GETNUM		get a number, prints the number if there was any
+;returns	NR/	number
+;		+1 if it was not a number
+;		+2 if it was a number
+;-
+
+getnum::save	<ch>
+	SKIPE	nr,savnum##		;number already given ?
+	 JRST	getnu8			;yes, ready
+	CALL	skblan			;skip all blanks
+	CALL	gshort			;get character
+	CALL	qdigit			;digit ?
+	 JRST	getnu2			;no
+getnu4:	CALL	getpos			;yes, get positive number
+	JRST	getnu7
+
+getnu2:	CAIN	ch,"-"			;<KPJ.2> negative number ?
+	 JRST	getnu3			;<KPJ.2> yes
+	CAIE	ch,"+"			;<KPJ.2> positive number ?
+	 JRST	getnu9			;<KPJ.2> no
+	CALL	nexsho##		;skip plus sign
+	JRST	getnu4
+
+getnu3:	CALL	nexsho##		;skip minus sign
+	CALL	getpos			;get number
+	MOVN	nr,nr			;make it negative
+getnu7:	CALL	expnum			;expand number
+getnu8:	SETZM	savnum##		;clear number area
+	skpret				;skip return
+getnu9:	return				;end of number
+
+
+
+
+
+;+
+;SKBLAN		skip all blanks, but don't skip parenthesis
+;accepts	CHPT/	character pointer in
+;-
+
+skblan::save	<ch,bp>
+	MOVE	bp,chpt##	; get byte pointer
+skbla1:	MOVEM	bp,savbp##	; save old pointer
+	CALL	gechar##	; get char
+	CALL	convc##		; convert it
+	CAIN	ch,chabla	;<KPJ.2> blank ?
+	 JRST	skbla1		;<KPJ.2> yes
+	MOVE	t,savbp##	;<KPJ.2> get old pointer
+	MOVEM	t,chpt##	;<KPJ.2>
+	return
+
+
+
+
+
+;+
+; GSHORT  --  get char from short string, but don't skip parenthesis
+; gets char pointer in CHPT
+; returns char in CH
+; returns new byte pointer in SAVCHP
+;-
+
+gshort::save	<bp>
+	MOVE	bp,chpt##	; get char pointer
+	CALL	gechar##	; get char
+	MOVEM	bp,savchp##	; save new byte pointer
+	return
+
+
+
+
+
+;+
+; QDIGIT  --  check if char is a digit
+; gets char in CH
+; returns at call + 1 if not digit
+; returns at call + 2 if digit
+;-
+
+qdigit::HLRZ	t,chrtab##(ch)	; get char type
+	ANDI	t,ctydig	; check if digit
+	JUMPE	t,qdigi9	; digit ?
+	skpret			; yes
+qdigi9:	return
+
+
+
+
+
+;+
+; GETPOS  --  get a positive number
+; returns number in NR
+;-
+
+getpos:	save	<ch>
+	SETZ	nr,		; start with zero
+getpo0:	CALL	gshort		; get char
+	CALL	qdigit		; digit ?
+	 JRST	getpo9		; no, ready
+	SUBI	ch,"0"		; make it a number
+	IMULI	nr,^D10		; multiply by ten
+	ADD	nr,ch		; add last digit
+	CALL	nexsho##	; get next char
+	JRST	getpo0
+
+getpo9:	return
+
+
+
+
+
+;+
+; EXPNUM  --  expand number
+; gets number in NR
+;-
+
+expnum:	save	<consum##>
+	CALL	qexpan##
+	 JRST	expnu9		; dont print if expert
+	CALL	tcbeg##		; output to terminal
+	CALL	prnum##		; print the number
+	CALL	putbla##	; blank after number
+	CALL	tcend##
+expnu9:	return
+
+
+
+
+
+;+
+; GETFLO  --  get floating point number
+; returns number in NR
+;-
+
+getflo::save	<ch>
+	SETZ	nr,		; start with zero
+getfl1:	CALL	gshort		; get char
+	CALL	qdigit		; digit ?
+	 JRST	getfl2		; no
+	SUBI	ch,"0"		; make it a number
+	FLTR	ch,ch		; make it floating
+	FMPR	nr,[10.]	; multiply by 10.
+	FADR	nr,ch		; add last digit
+	CALL	nexsho##	; get next char
+	JRST	getfl1
+
+getfl2:	CAIE	ch,"."		;<KPJ.2> decimal point ?
+	 JRST	getfl9		;<KPJ.2> no
+	CALL	getfra		; get fraktional part
+getfl9:	return
+
+
+
+
+
+;+
+; GETFRA  --  get fractional part
+; gets number in NR
+; returns number in NR
+;-
+
+getfra:	CALL	nexsho##	; get next char
+	CALL	gshort		; get char
+	CALL	qdigit		; digit ?
+	 JRST	getfr9		; no, ready
+	SUBI	ch,"0"		; make it a number
+	FLTR	ch,ch		; make it floating
+	FMPR	nr,[10.]	; multiply by 10.
+	FADR	nr,ch		; add digit
+	CALL	getfra		; get rest
+	FDVR	nr,[10.]	; divide by 10.
+getfr9:	return
+
+	END
+..and no more

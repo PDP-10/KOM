@@ -1,0 +1,104 @@
+;Oden::DSKG:READ.MAC<62,7777,MAC> 1986-11-11 05:13:18, Edit by KPJ @ H.HOLE
+;5	Handle +2 return from GETSTR.
+;Oden::DSKD:READ.MAC<62,7777,MAC> 1985-10-08 00:25:37, Edit by KPJ
+;4	Introduced PROLOG macro.
+;Oden::DSKD:READ.MAC<62,7777,MAC> 1985-07-07 21:33:18, Edit by KPJ @ ORANGE
+;3	Sanitized code.
+;Freja::Ps:<KOM.6-SOURCES>READ.MAC.2 18-Apr-85 21:04:18,Editor:KPJ-JAAKKOLA
+;2	Don't expand KOM temporary file contents.
+;Oden::DSKD:READ.MAC[62,7777] 1984-12-14 11:52:06, Edit by KPJ @ TDB
+;1	Fix SEARCH
+
+	SEARCH	kommac
+	PROLOG	(read)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computer Centre, 1984-08-21 16:32:35
+
+;	D A T A   A R E A
+
+
+chpt::	POINT	7,[0]		; char pointer
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;READ		get information and read if neccesary
+;accepts	CHPT/	character pointer
+;returns	+1	empty reply
+;		+2	non-empty reply
+;-
+
+read::	save	<ch,str,bp>
+	SETZM	tmiflg##	; clear tempcore flag
+	MOVE	t,produc##		;get producer
+T10,<	CAIN	t,tmppro##>		;<KPJ.2> TMPCOR input ?
+T20,<	CAIN	t,kompro##>		;<KPJ.2> KOM-20 temporary file input ?
+	 SETOM	tmiflg##		;yes
+	CALL	gshort##		;get character
+	CAIE	ch,.CHSEM		;end of command ?
+	 JRST	read3			;no
+	CALL	nexsho##		;yes, skip semicolon
+read3:	CALL	getlet			;check if info is already got
+	 TRNA				;no
+	  JRST	read8			;yes
+	SKIPE	savnum##		;number got ?
+	 JRST	read8			;yes
+read2:	SKIPL	silflg##		;<KPJ.5> dont read if silence
+	 CALL	getstr##		;read one line
+	  JRST	read9			;<KPJ.5> failed, fake empty reply
+	CALL	mkbp			;make pointer
+	MOVEM	bp,chpt			;save pointer
+	CALL	getlet			;check if empty reply
+	 JRST	read9			;empty
+read8:	skpret				;info got
+read9:	return				;empty reply
+
+;+
+; GETLET  --  get the first letter, if there are any
+; gets buffer position in CHPT
+; returns CHPT pointing to first non-blank char, if there was one
+; returns at call + 1 if line was empty
+; returns at call + 2 if a letter or digit was got
+;-
+
+getlet::save	<ch,bp>
+	MOVE	bp,chpt			;get byte pointer
+	CALL	skibla			;skip all blanks
+	MOVEM	bp,chpt			;save new pointer
+	CAIE	ch,.CHNUL		;line empty ?
+	 skpret				;line not empty
+	return
+
+;+
+; SKIBLA  --  skip all blanks
+; gets byte pointer in BP
+; skips parenthesis
+; returns BP pointing to first non-blank char
+; returns this char in CH
+;-
+
+skibla::
+skibl1:	MOVEM	bp,savbp##	; save old pointer
+	CALL	getchr##	; get char
+	CALL	qblank##	; blank ?
+	 JRST	skibl1		; yes
+	MOVE	bp,savbp##	; restore previous pointer
+	return
+
+;+
+; MKBP  --  make a byte pointer from a string pointer
+;accepts
+;	STR/	string address
+;returns
+;	+1/ always, with BP/ byte pointer to string
+;-
+
+mkbp::	MOVE	bp,str			;get string address
+	HRLI	bp,(POINT 7,)		;make byte pointer
+	return
+
+	END
+..and no more

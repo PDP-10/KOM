@@ -1,0 +1,723 @@
+;Oden::DSKD:OBJSTA.MAC<10,50,MAK> 1988-01-25 17:07:31, KPJ @ IBM <10,50>
+;33	Some code under FTEMPL, some under FTEMP2.
+;Freja::Qs:<Kom.6.Macro>Objsta.Mac.17 871123-1448,KPJ-Jaakkola
+;32	Enable everything in administrator mode.
+;Oden::DSKZ:OBJSTA.MAC<62,7777,MAC> 1987-10-14 15:39:02, KPJ @ L89 <1,2>
+;31	Edit #30 was too effective. Re-enable some link stuff.
+;Oden::DSKZ:OBJSTA.MAC<62,7777,MAC> 1987-09-29 14:05:25, KPJ @ L89 <1,2>
+;30	STATUS TEXT: must be organizer (or administrator) of TEXT object.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1987-09-09 11:05:52, KPJ @ L89 <10,50>
+;27	PROLOX "PPN:" moved to TEXTER.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1987-06-12 03:53:30, KPJ @ H.HOLE <10,50>
+;26	Don't display NAME CREATED BY: clause for non-named objects, and not
+;	if name created by object itself.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1987-06-04 15:51:49, KPJ @ L89 <10,50>
+;25	Add NETWORK NAME clause to STATUS output for PERSON and CONFERENCE.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1987-04-30 14:04:04, KPJ @ DK <62,50>
+;24	Display invalid object numbers in format M.N, where M=file#, N=#record
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1987-04-30 13:38:12, KPJ @ DK <62,50>
+;23	Generate stop code GETYNA OBJSTA if GETYNA gets invalid file number.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1987-01-31 08:31:52, Edit by KPJ @ H.HOLE
+;22	GETYNA did expect the "buffer" (in low segment) to contain a "string
+;	pointer" (to high segment).  This does not work very well if we
+;	change high segments, since the string move around, but the pointers
+;	don't.  Change the "string pointer" into a file number and get the
+;	"string pointer" (pointer to ASCIZ) from a table in high segment.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1987-01-13 17:35:35, Edit by KPJ @ L89
+;21	Better code.  Fixed bug in object limit setting.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1986-12-11 18:45:59, Edit by KPJ @ L89
+;20	Use PUTBLA.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1986-11-10 16:08:57, Edit by KPJ @ L89
+;17	Handle +2 return from ISLURP.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1986-10-14 17:16:16, Edit by KPJ @ L89
+;16	Employee support under FTEMPL.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1986-06-09 16:19:38, Edit by KPJ @ L89
+;15	Moved texts to TEXTER.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1986-05-26 19:54:07, Edit by KPJ @ SEMESTer
+;14	Skip letter writer note output if limit object or limit #.
+;Oden::DSKG:OBJSTA.MAC<62,7777,MAC> 1986-04-25 11:47:00, Edit by KPJ @ L89
+;13	Get rid of OPDEFed funny macros.
+;Oden::DSKD:OBJSTA.MAC<62,7777,MAC> 1985-11-12 19:16:58, Edit by KPJ
+;12	Restore the object destroyed by edit#7.
+;Oden::DSKD:OBJSTA.MAC<62,7777,MAC> 1985-10-08 10:08:25, Edit by KPJ
+;11	PROLOG routine changed name to PROLOX to fix name collision.
+;Oden::DSKD:OBJSTA.MAC<62,7777,MAC> 1985-10-04 22:17:33, Edit by KPJ @ ORANGE
+;10	Introduced PROLOG macro.
+;Oden::DSKD:OBJSTA.MAC<62,7777,MAC> 1985-09-10 04:17:34, Edit by KPJ
+;7	Undo edit#6 (re protected name) as defined by The Great Artist Himself.
+;	Also, don't say "(no organizer)" when the object is a PERSON...
+;Oden::DSKD:OBJSTA.MAC<62,7777,MAC> 1985-05-02 16:00:57, Edit by KPJ @ L89
+;6	Don't display name of organizer if protected. If no organizer, say so.
+;Oden::DSKD:OBJSTA.MAC<62,7777,MAC> 1985-05-02 15:12:18, Edit by KPJ @ L89
+;5	Fixed problem with super meeting destroying info about "PPN".
+;	On TOPS-20, we call it "acct" instead.
+;Oden::DSKD:OBJSTA.MAC<62,7777,MAC> 1985-05-02 15:07:39, Edit by KPJ @ L89
+;4	Allow organizer full control over objects.
+;Oden::DSKD:OBJSTA.MAC<62,7777,MAC> 1985-03-12 04:14:35, Edit by KPJ @ NADJA
+;3	Change "Type: " to "Object type: ".
+;Oden::Dskd:Objsta.Mac[62,7777] 1984-09-04 04:45:28, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;Oden::Dsk:Objsta.New[1116,134] 1982-03-02 20:57:21, Edit by Lars Enderin
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(objsta)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-09-04 04:45:26
+
+;	D A T A   A R E A
+
+limit::	0			; limit for member list
+limobj::0			; limited to one object
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+objsta::comhed	0,staarg,obstat,ccobst##,zstahl## ;Status
+;-
+
+
+
+
+;+
+; STAARG  --  argument to status command
+; returns argument got in ARGLIS and NUMBER and LIMOBJ
+;-
+
+staarg::save	<nr,quest##>
+	fromto	savnum##,number##	; get limit
+	SETZM	savnum##		; clear number
+	setmem	quest##,asksta		; ask for status
+	CALL	gtname##		; get the names
+	fromto	number##,savnum##	; restore number
+	CALL	getnum##		; get number
+	 SETZ	nr,			; no number got
+	MOVEM	nr,number##		; save numeric argument
+	ifon	errfl##,staar9		; error ?
+	CALL	gtmana##		; any limit object ?
+	 SETZ	nr,			; no
+	MOVEM	nr,limobj		; save limit
+staar9:	return
+
+
+
+
+
+;+
+; ASKSTA  --  ask for status
+;-
+
+asksta:	save	<str>
+	CALL	lethlp##	; same help as for letter
+	print	zassta##	;"Status of what object?"
+	CALL	preol##		; new line
+	branch	prher##		; print herald
+
+
+
+
+
+
+;+
+;OBSTAT		output status of objects
+;accepts	ARGLIS/	list of objects
+;		NUMBER/	limit
+;-
+
+obstat:	save	<tp,nr,tabstep##,acrfl##>
+	SETOM	acrfl##			;do ACR
+	MOVEI	t,^D31			;set tab step
+	MOVEM	t,tabste##		;. . .
+	MOVE	t,number##		;<KPJ.21> set limit
+	MOVEM	t,limit			;. . .
+	MOVE	tp,arglis##		;get list of names
+obsta1:	JUMPE	tp,obsta9		;ready ?
+	MOVE	nr,0(tp)		;get object
+	LDB	t,[POINT 9,nr,8]	;<KPJ.30> what kind of object?
+	CAIN	t,dir			;<KPJ.30> a TEXT?
+	 JRST[	CALL	chkorg##	;<KPJ.30> organizer?
+		 $Skipa			;<KPJ.30> njet, refuse it
+		  JRST	.+1		;<KPJ.30> yep, allow it
+		MOVEI	str,zntrig##	;<KPJ.30> "Foo, you are but a cracker!"
+		CALL	errmsg##	;<KPJ.30>
+		print[	ASCIZ ! - !]	;<KPJ.30> point out the problem
+		MOVE	nr,0(tp)	;<KPJ.30> this one
+		CALL	probnr		;<KPJ.30>
+		CALL	preol##		;<KPJ.30> CRLF ends sad fact
+		JRST	obsta2]		;<KPJ.30> try next
+	CALL	prista			;output status of object
+obsta2:	MOVE	tp,1(tp)		;<KPJ.30> get next object
+	JRST	obsta1
+
+obsta9:	return
+
+
+
+
+
+;+
+;PRISTA		output status
+;accepts	NR/	object number
+;-
+
+prista:	save	<intflg##>
+	SKIPN	limit			;<KPJ.21> any limit ?
+	 SKIPE	limobj			;no, any limit object ?
+	  JRST	prist7			;<KPJ.30> yes, either
+	CALL	chkmes##		;<KPJ.14!BCQ> check if any messages to 
+					;<KPJ.14!BCQ> letter writers.
+	CALL	prnast			;output name status
+	CALL	getobj##		;<KPJ.25> get object
+	 JRST	prist0			;<KPJ.25> none, fail
+QZIF,<					;<KPJ.25>
+IFN	ftntwk,<			;<KPJ.25> NETWORK ADDRESS enabled?
+	CALL	prntwk			;<KPJ.25> yes, output network address
+>;ftntwk
+>;QZIF
+	SKIPN	reccre(bfp)		;<KPJ.26> get name creator identity
+	 JRST	prist0			;<KPJ.26> no "name creator" defined
+	CALL	prncre			;<KPJ.26> "Name created by:" stuff
+	CALL	getobj##		;<KPJ.26> get back object
+	 nop				;<KPJ.26> failed, ugh
+prist0:	CALL	probst			;<KPJ.25> output object status
+	CALL	prnrln			;output number of links
+prist7:	CALL	prpest##		;<KPJ.25> output person status
+	CALL	prmest			;output conference status
+IFN	ftempl,<			;<KPJ.16>
+	CALL	premst			;output employee status
+>;ftempl
+	return
+
+
+
+;+
+;PRNCRE		say who created name of named object	<KPJ.26>
+;accepts	BFP/	object pointer
+;-
+
+prncre:	save	<nr,gp1>		;<KPJ.26>
+	MOVE	nr,0(bfp)		;<KPJ.26> get object#
+	CALL	splpoi##		;<KPJ.26> split pointer
+	CAIN	gp1,per			;<KPJ.33!KPJ.26> PERSON?
+	 JRST	prncr1			;<KPJ.33> yes
+IFN	ftempl,<			;<KPJ.33> EMPLOYEE support?
+	CAIE	gp1,emp			;<KPJ.26> EMPLOYEE?
+	 CAIN	gp1,mee			;<KPJ.26> or CONFERENCE?
+	  $Skipa			;<KPJ.33!KPJ.26> yes, named object
+>;ftemp
+IFE	ftemp2,<			;<KPJ.33> no EMP file?
+	CAIE	gp1,mee			;<KPJ.33> CONFERERENCE?
+>;ftemp=0
+	 JRST	prncr9			;<KPJ.26> no, unnamed object
+prncr1:	MOVE	nr,reccre(bfp)		;<KPJ.26!KPJ.7> get creator#
+	CAMN	nr,0(bfp)		;<KPJ.26> creator is the object itself?
+	 JRST	prncr9			;<KPJ.26> yes, keep big mouth shut
+	CALL	preol##			;<KPJ.7> new line
+	print	zhname##		;<KPJ.7> "Name created by:"
+	CALL	prinam##		;<KPJ.7> output creator name
+prncr9:	return				;<KPJ.26>
+
+;+
+QZIF,<					;QZ only
+IFN	ftntwk,<			;if NETWORK ADDRESS enabled
+;PRNTWK		output network address
+;accepts	NR/	object#
+;-
+
+prntwk:	save	<nr,gp1>		;<KPJ.25>
+	CALL	splpoi##		;<KPJ.25> split object#
+	CAIE	gp1,per			;<KPJ.25> CONFERENCE?
+	 CAIN	gp1,mee			;<KPJ.25> or PERSON?
+	  $Skipa			;<KPJ.25> yes
+	   JRST	netwr9			;<KPJ.25> no, skip this
+	CALL	preol##			;<KPJ.25>
+	print	znetwk##		;<KPJ.25> "Network name:"
+	MOVEI	ch,"P"			;<KPJ.25> "Pnnnn" format default
+	CAIN	gp1,mee			;<KPJ.25> conference?
+	 MOVEI	ch,"C"			;<KPJ.25> yes, "Cnnnn" format instead
+	CALL	putch			;<KPJ.25> output the leading character
+	CALL	prnum##			;<KPJ.25> output object#
+	print	znetw2##		;<KPJ.25> "mumble @ foo"
+netwr9:	return				;<KPJ.25>
+>;ftntwk
+>;QZIF
+
+
+;+
+; PRNAST  --  output name status
+; gets object number in NR
+;-
+
+prnast::save	<str,nr>
+	CALL	qnamed##		;text object ?
+	 JRST	prnas9			;yes, no name
+	CALL	preol##			;new line
+	print	znamec##		;"Name: "
+	CALL	prshna##		;print short name
+	CALL	getobj##		;<KPJ.7> get the object
+	 JRST	prnas9			;<KPJ.7> it doesn't exist, really
+	SKIPN	reccre(bfp)		;<KPJ.7> get name creator
+	 JRST	prnas9			;<KPJ.7> zeroed
+	PUSH	P,nr			;<KPJ.12> save old number
+	MOVE	nr,reccre(bfp)		;<KPJ.7> get object#
+	CALL	preol##			;<KPJ.7> new line
+	print	zhname##		;<KPJ.7> "Name created by:"
+	CALL	prinam##		;<KPJ.7> output the name
+	POP	P,nr			;<KPJ.12>
+	CALL	getobj##		;<KPJ.12> get back the object
+	 nop
+prnas9:	return
+
+
+
+
+
+
+;+
+; PROBST  --  print object status
+; gets object number in NR
+;-
+
+probst:	save	<str,bfp,gp1,nr>
+	CALL	preol##			; new line
+	print	zhnumb##		;"Number: "
+	CALL	probnr			; print object number
+	CALL	prtab##			; print tab
+	CALL	getobj##		; get object
+	 JRST	probs9			; object not found
+	print	zhcrti##		;"Creation time:"
+	MOVE	gp1,objtim(bfp)		;get creation time
+	CALL	pdate##			;output time
+	SKIPN	nr,objcre(bfp)		;<KPJ.6> get organizer
+	 JRST[	MOVE	nr,0(bfp)	;<KPJ.7> get object#
+		CALL	splpoi##	;<KPJ.7> get the file#
+		CAIN	gp1,per		;<KPJ.7> PERSON?
+		 JRST	probs8		;<KPJ.7> yes, don't say anything
+		CALL	prtab##		;output tab
+		print	zhcrea##	;<KPJ.6> "Organizer:"
+		print	znoorg##	;<KPJ.6> "(no organizer)"
+		JRST	probs8]		;<KPJ.6> back to mainline
+	CALL	prtab##			;output tab
+	print	zhcrea##		;<KPJ.6> "Organizer:"
+	CALL	prinam##		;<KPJ.6> output organizer name
+probs8:	MOVE	t,objtyp(bfp)		;[BCQ] get object type
+	TRNE	t,noclfl		;[BCQ] permanent object?
+	 JRST[	CALL	preol##		;[BCQ] yes, newline
+		print	zprmon##	;[BCQ] "permanent"
+		JRST	.+1]
+probs9:	return
+
+
+
+;+
+;PROBNR		output object number, either as "object NNNNN" or "M.NNNN"
+;accepts	NR/	object number
+;returns	+1 always
+;-
+
+probnr::save	<gp1,nr,str>
+	CALL	splpoi##		;split pointer
+	CAILE	gp1,0			;<KPJ.24> invalid file number?
+	 CAILE	gp1,maxmet		;<KPJ.24> . . .
+	  JRST[	MOVEI	str,zsatan##	;<KPJ.24> yes, say so
+		Makpoi			;<KPJ.24> re-make object "number"
+		JRST	probn1]		;<KPJ.24>
+	CALL	getyna			;get type
+probn1:	CALL	prstr##			;<KPJ.24> output it
+	CALL	putbla##		;<KPJ.20> one space
+	CALL	prnum##			;print number
+	return
+
+
+
+
+
+;+
+;GETYNA		get type name
+;accepts	GP1/	type
+;returns	+1 always, with STR/	word pointer to type name
+;		(Generate stop code GETYNA OBJSTA if invalid file number)
+;-
+
+getyna::save	<txt>
+	CALL	getbuf##		;get buffer (needed?)
+	CAILE	gp1,0			;<KPJ.23> invalid file number?
+	 CAILE	gp1,maxmet		;<KPJ.23> . . .
+	  Bug(Hlt,<getyna objsta>,<gp1>);<KPJ.23> yes, die
+	MOVE	str,namtyp-1(gp1)	;<KPJ.22> get type
+;	MOVE	str,buftyp(txt)		;<KPJ.22> get type
+	return
+
+
+;+
+;NAMTYP		convert from file number to type name	<KPJ.22>
+;-
+
+namtyp:	zzzmet##			;MET
+	zzzinf##			;INF
+	zzztex##			;TEX
+	zzzdir##			;DIR
+	zzzpna##			;PNA
+	zzzper##			;PER
+	zzzpac##			;PAC
+	zzzmna##			;MNA
+	zzzmee##			;MEE
+	zzznum##			;NUM
+	zzzlnk##			;LNK
+	zzzpre##			;PRE
+	zzzloc##			;LOC
+	zzzlac##			;LAC
+	zzzmar##			;MAR
+IFN	ftemp2,<
+	zzzena##			;ENA
+	zzzemp##			;EMP
+>;ftemp
+	zzzsub##			;SUB
+	zzzsac##			;SAC
+IFN	<.-namtyp-maxmet>,<PRINTX ? NAMTYP table is not of correct length.>
+
+;+
+; PRNRLN  --  print number of links
+; gets object in NR
+;-
+
+prnrln:	save	<nr,str,bfp,gp1>
+	CALL	qprote##		;protected ?
+	 JRST[	CALL	qmembe##	;[BCQ] yes, but is he a member?
+		 JRST	.+1		;[BCQ] he is, so print status anyway
+		JRST	prnrl9]		;No, he isn't so don't print anything
+	CALL	getobj##		;get object
+	 JRST	prnrl9			;error
+	SKIPG	nr,objlto+1(bfp)	;get number
+	 JRST	prnrl1			;no links
+	CALL	preol##			;new line
+	print	znrtol##		;"Number of TO links:"
+	CALL	prcnum##		;print it
+	MOVE	nr,objlto(bfp)		;get last link
+	CALL	plalnk			;print last link
+prnrl1:	SKIPG	nr,objlfr+1(bfp)	;get number
+	 JRST	prnrl9			;no links
+	CALL	preol##			;new line
+	print	znrfrl##		;"Number of FROM links:"
+	CALL	prcnum##		;print it
+	MOVE	nr,objlfr+2(bfp)	;get first link
+	CALL	chkorg##		;<KPJ.32> organizer?
+	 $Skipa				;<KPJ.32> njet, refuse it
+	  CALL	pfilnk			;output first link
+prnrl9:	return
+
+
+
+
+
+
+;+
+; PLALNK  --  print last link
+; gets link in NR
+;-
+
+plalnk:	save	<bfp,gp1,str,nr>
+	CALL	getobj##		;get link
+	 JRST	plaln9			;no link
+	CALL	prtab##			;tab
+	print	zobjec##		;"Object: "
+	MOVE	nr,lnkobj(bfp)		;get object
+	CALL	prname##		;print name
+plaln9:	return
+
+
+
+
+
+
+;+
+; PFILNK  --  print first link
+; gets link in NR
+;-
+
+pfilnk:	save	<bfp,gp1,str,nr>
+	CALL	getobj##	; get link
+	 JRST	pfiln9		; no link
+	CALL	prtab##		; tab
+	print	zzlrec##	; say receiver
+	MOVE	nr,lnkrec(bfp)	; get receiver
+	CALL	prname##	; print name
+pfiln9:	return
+
+
+
+
+
+;+
+;PRMEST		output conference status
+;accepts	NR/	number of conference
+;-
+
+prmest:	save	<bfp,gp1>
+	CALL	getobj##		;get conference
+	 JRST	prmes9			;error
+	CAIE	gp1,mee			;conference?
+	 JRST	prmes9			;no
+	CALL	chprot##		;protected ?
+	 JRST[	CALL	qmembe##	;<BCQ> yes, but is he a member?
+		 JRST	.+1		;<BCQ> he is, tell'im all about it
+		CALL	chkorg##	;<KPJ.4> organizer?
+		 JRST	prmes9		;<KPJ.4> no, no information then
+		JRST	.+1]		;<KPJ.4> yes, give all info
+	MOVE	t,objlto+1(bfp)		;get number of entries
+	MOVEM	t,number##		;. . .
+	SKIPN	limit			;<KPJ.21> any limit ?
+	 SKIPE	limobj			;any limit object ?
+	  JRST	prmes1			;yes
+	CALL	preol##			;new line
+	CALL	probty			;output conference type
+	CALL	prsume			;<KPJ.5> output super conference name
+	CALL	getobj##		;get conference again
+	 BUG(HLT,<prmest objsta>,<NR>)
+	CALL	prolox			;<KPJ.5> output debiting PPN
+	CALL	prnume			;output number of members
+prmes1:	CALL	lisreg			;list member register
+prmes9:	return
+
+
+
+
+
+;+
+; PROBTY  --  print object type
+; gets object in BFP
+;-
+
+probty::save	<str,obtype##>
+	CALL	setoty			;set object type
+	print	zhtype##		;"Object type: "
+	CALL	prtype##		;print type
+	return
+
+
+
+;+
+; SETOTY  --  set object type
+; gets object in BFP
+; returns object type in OBTYPE
+;-
+
+setoty::fromto	objtyp(bfp),obtype##	; set object type
+	return
+
+
+
+
+
+;+
+; PRSUME  --  print super meeting
+; gets meeting in BFP
+;-
+
+prsume:	save	<nr,str>
+	SKIPN	nr,recsup(bfp)		;get super meeting
+	 JRST	prsum9			;no super
+	CALL	prtab##			;print tab
+	print	zisume##		;"Super conference"
+	print	zcolon##		;":"
+	CALL	prname##		;print name
+prsum9:	return
+
+
+
+
+
+
+;+
+; PROLOX  --  print organisation login ppn
+; gets conference in BFP
+;-
+
+prolox:	save	<gp1,str,ch>
+	SKIPN	gp1,meedeb(bfp)		; get PPN
+	 JRST	prolo9			; no PPN
+	CALL	prtab##			; tab
+	print	accppn##		;<KPJ.27> "Paying <PPN/User ID>: "
+	CALL	prippn##		;<KPJ.5> print PPN
+prolo9:	return
+
+
+
+
+
+
+;+
+;PRNUME		output number of members
+;accepts	NR/	conference#
+;-
+
+prnume:	save	<str,nr>
+	CALL	getobj##		;get meeting
+	 BUG(HLT,<prnume objsta>,<NR>)
+	CALL	prtab##			;print tab
+	print	zhnume##		;"Number of members:"
+	MOVE	nr,meemem(bfp)		;get number
+	CALL	prcnum##		;print it
+	return
+
+
+
+
+
+
+;+
+;LISREG		list member register
+;accepts	NR/	conference
+;-
+
+lisreg:	save	<gp2,tabstep##>
+	MOVEI	t,8			;set tab step
+	MOVEM	t,tabste##		;. . .
+	CALL	lished			;print heading
+	CALL	preol##			;blank line
+	CALL	islurp##		;slurp in register
+	 JRST	lisre9			;<KPJ.17> failed, give up
+lisre3:	SKIPN	0(gp2)			;end of register
+	 JRST	lisre9			;yes
+	CALL	lireel			;list register element
+	ADDI	gp2,mbrsiz		;get next element
+	SKIPL	intflg##		;interrupt ?
+	 JRST	lisre3			;no
+lisre9:	return
+
+
+
+
+
+;+
+; LISHED  --  heading for member list
+; gets meeting in NR
+;-
+
+lished:	save	<str,nr>
+	CALL	preol2##		;blank line
+	CALL	prname##		;print name of meeting
+	print	zfolme##		;" has these members:"
+	CALL	preol##			;new line
+	print	zilpre##
+	CALL	prtab##			;tab
+	print	ziunse##
+	CALL	prtab##			;tab
+	print	ziname##
+	return
+
+
+
+
+
+
+;+
+; LIREEL  --  list register element
+; gets GP2 pointing to element
+; gets number of entries in NUMBER
+; gets limit in LIMIT and LIMOBJ
+;-
+
+lireel:	save	<gp1,nr,bfp>
+	SKIPN	nr,limobj	; any limit object ?
+	 JRST	liree0		; no
+	CAME	nr,mbrper(gp2)	; wanted person ?
+	 JRST	liree9		; no, skip it
+liree0:	MOVE	nr,mbrper(gp2)	; get person
+	CALL	getobj##	; get it
+	 JRST	liree9		; non existing
+	MOVE	nr,number##	; get total number of entries
+	SUB	nr,mbrnum(gp2)	; get number of unseen
+	SKIPN	limit		; any limit ?
+	 JRST	liree1		; no
+	CAML	nr,limit	; under limit ?
+	 JRST	liree9		; no, skip it
+liree1:	CALL	preol##		; new line
+	MOVE	gp1,mbrtim(gp2)	; get last present
+	CALL	pdate##		; print it
+	CALL	prtab##		; tab
+	CALL	prnum6##	; print number of unseen
+	CALL	prtab##		; tab
+	MOVE	nr,mbrper(gp2)	; get member
+	CALL	prname##	; print its name
+liree9:	return
+
+
+
+
+
+;+
+IFN	ftempl,<		;<KPJ.16>
+;PREMST		output employee status
+;accepts	NR/	employee
+;-
+
+premst:	save	<bfp,gp1>
+	CALL	getobj##	; get employee
+	 JRST	prems9		; error
+	CAIE	gp1,emp		; employee ?
+	 JRST	prems9		; no
+	CALL	preol##		; new line
+	CALL	premor		; print organisation
+	CALL	prtab##		; tab
+	CALL	premid		; print section identifier
+	CALL	prtab##		; tab
+	CALL	prempr		; print printer
+prems9:	return
+>;ftempl
+
+
+
+
+;+
+IFN	ftempl,<		;<KPJ.16>
+;PREMOR		output employee organisation
+;accepts	BFP/	employee
+;-
+
+premor:	save	<str,nr>
+	print	ztorga##		;say organisation
+	print	zcolon##		;print colon
+	MOVE	nr,emporg(bfp)		;get organisation
+	CALL	prname##		;print its name
+	return
+>;ftempl
+
+
+
+
+;+
+IFN	ftempl,<		;<KPJ.16>
+;PREMID		output section identifier
+;accepts	BFP/	employee
+;-
+
+premid:	save	<nr,str>
+	print	zsecti##		;"Section: "
+	MOVE	nr,empid(bfp)		;get section number
+	CALL	prcnum##		;print it
+	return
+>;ftempl
+
+
+
+
+;+
+IFN	ftempl,<			;<KPJ.16>
+;PREMPR		output employee printer
+;accepts	BFP/	employee
+;-
+
+prempr:	save	<str,nr>
+	print	ztprin##		;"Printer"
+	print	zcolon##		;": "
+	MOVE	nr,emppri(bfp)		;get printer
+	CALL	prname##		;print its name
+	return
+>;ftempl
+
+	END
+..and no more    

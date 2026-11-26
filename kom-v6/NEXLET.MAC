@@ -1,0 +1,184 @@
+;Oden::DSKG:NEXLET.MAC<62,7777,MAC> 1986-12-11 18:44:30, Edit by KPJ @ L89
+;14	PUTCH is macro.
+;Oden::DSKG:NEXLET.MAC<62,7777,MAC> 1986-06-09 15:24:43, Edit by KPJ @ L89
+;13	Moved texts to TEXTER.
+;Oden::DSKG:NEXLET.MAC<62,7777,MAC> 1986-02-13 19:26:26, Edit by KPJ
+;12	PTY mode inside FTPTYM conditional.
+;Oden::DSKD:NEXLET.MAC<62,7777,MAC> 1985-11-28 06:00:43, Edit by KPJ
+;11	Edit #4 and #5 eliminated (this is now done in TERCON).
+;Oden::DSKD:NEXLET.MAC<62,7777,MAC> 1985-10-04 19:46:34, Edit by KPJ
+;10	Introduced PROLOG macro.
+;Oden::DSKD:NEXLET.MAC<62,7777,MAC> 1985-06-20 07:10:34, Edit by KPJ @ GR\N
+;7	RECEIV localized.
+;Oden::DSKD:NEXLET.MAC<62,7777,MAC> 1985-05-08 13:31:58, Edit by KPJ @ L89
+;6	Make letters be important only when requested.
+;Oden::DSKD:NEXLET.MAC[62,7777] 1984-12-03 10:25:19, Edit by KPJ @ L89
+;5	Adjust PUTBEL to reverse logic.
+;Oden::DSKD:NEXLET.MAC[62,7777] 1984-11-23 15:32:03, Edit by K.JAAKKOLA
+;4	Make PUTBEL only hack bells when outputting to TERCON.
+;Oden::DSKD:NEXLET.MAC[62,7777] 1984-11-21 14:53:36, Edit by K.JAAKKOLA
+;3	Got rid of useless OPDEF macros from this file.
+;	TTQs later edits (requisite for "LIST LETTERS" command):
+;	;DSKG:NEXLET.MAC[62,657] 1984-11-15 14:19:17, Edit by THOLERUS T
+;	;3	Added UPDLSL after UPDRDT in RECEIV
+;Oden::DSKD:NEXLET.MAC[62,7777] 1984-06-18 18:22:38, Edit by B.CARLSSON
+;2	Changed a TXNE to a TXNN, and searched in MACTEN for the definition.
+;Oden::Dskd:Nexlet.Mac[62,7777] 1984-04-10 14:27:13, Edit by T Tholerus
+;1	[1016] allow SCAN to work on letters in PTY mode
+
+	SEARCH	KOMMAC
+	PROLOG	(nexlet)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-23 06:18:04
+
+;	D A T A   A R E A
+
+
+agalis::BLOCK	100		; review again list
+agaend::			; end of again list
+
+agaptr::agalis			; pointer to again list
+cursub::0			; current sub meeting
+sesred::0			; number of entries read during session
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+nexlet::comhed	qnexle,runarg##,realet,ccnele##,znlehl## ;(Read) next letter
+;-
+
+
+
+
+;+
+;QNEXLE		check letters
+;-
+
+qnexle:	SKIPE	nxlenr##	; any unseen letters ?
+	 skpret			; yes, get command
+	return
+
+
+;+
+;REALET		read first letter
+;-
+
+realet::save	<nr,str,entmax##,nohflg##,recflg##>
+	SKIPN	nr,nxlenr##		;any next letter ?
+	 JRST	reale8			;no next letter
+	CALL	receiv			;mark letter received
+IFN	ftptym,<			;<KPJ.12>
+	SKIPGE	ptyflg##		;[TTQ.1] PTY mode ?
+	 JRST	reale1			;yes
+>;ftptym
+	CALL	revdef##		;set review default
+	MOVEI	ch,.CHBEL		;<KPJ.11> get a BEL
+	SKIPE	conf##			;reading entries ?
+	 CALL	putch			;<KPJ.11> yes, wake up
+IFN	ftptym,<			;<KPJ.12>
+reale1:>
+	CALL	direob			;display received object
+	JRST	reale9
+
+reale8:	CALL	preol##			;blank line
+	print	zyhsal##		;"You have seen all letters."
+reale9:	return
+
+
+
+
+
+
+
+;+
+;PUTBEL		make noise on controlling terminal
+;-
+
+putbel::save	<ch>
+	MOVE	t,consum##		;[KPJ.4] get consumer
+	CAMN	t,[tercon##]		;[KPJ.4] terminal consumer?
+	 CALL[	MOVE	t,selffl##	;[KPJ] yes, get own flags
+		Txnn	t,belpfl	;[KPJ.5] Is door bell enabled?
+		 RET			;[KPJ] yes, go output it
+		MOVEI	ch,"^"		;<KPJ.4>
+		CALL	putch		;<KPJ.4>
+		MOVEI	ch,"G"
+		AOS	0(P)		;<KPJ.4>
+		RET]
+	 MOVEI	ch,.CHBEL		; Output nasty noise
+	CALL	putch
+	return
+
+
+
+
+
+;+
+; DIREOB  --  display received object
+; gets entry number in NR
+;-
+
+direob::save	<gp1,bfp,nr>
+	SETOM	seeflg##		;[KPJ.3] mark entry as seen
+	CALL	displa##		; display it
+	CALL	adagli			; add to again list
+	AOS	sesred			; one more letter read
+	AOS	nrred##			; one more letter read
+	CALL	getobj##		; get entry
+	 JRST	direo9			; error
+	MOVE	nr,dirsub(bfp)		; get sub meeting link
+	MOVEM	nr,nxcoln##		; save link
+	CALL	getobj##		; get link
+	 JRST	direo9			; error
+	MOVE	nr,lnkrec(bfp)		; get sub meeting
+	CAME	nr,cursub		; new sub meeting ?
+	 SETZM	nxconr##		; yes, clear comment number
+	MOVEM	nr,cursub		; save sub meeting
+direo9:	return
+
+
+
+
+
+;+
+; ADAGLI  --  add to again list
+; gets entry in NR
+;-
+
+adagli::MOVE	t,agaptr		; get pointer
+	CAMN	nr,-1(t)		; already saved ?
+	 JRST	adagl9			; yes, dont save again
+	MOVEM	nr,(t)			; save entry
+	ADDI	t,1			; increase pointer
+	CAIL	t,agaend		; end of list ?
+	 MOVEI	t,agalis		; yes, start from beginning again
+	MOVEM	t,agaptr		; save new pointer
+adagl9:	MOVEM	nr,lastnr##		; save as last seen entry
+	return
+
+
+
+
+
+;+
+; RECEIV  --  mark letter received
+; gets last seen letter link in NXLELN
+;-
+
+receiv:	save	<nr,bfp,gp1>		;<KPJ.7>
+	MOVE	nr,nxleln##		; get link
+	CALL	getobj##		; get it
+	 JRST	recei9			; error
+	SKIPE	lnkrdt(bfp)		; already received ?
+	 JRST	recei9			; yes, skip it
+	CALL	updbeg##		; start update
+	CALL	updrdt##		; update received date
+	CALL	updlsl##		;[KPJ.3] update last seen letter
+	CALL	updend##		; end of update
+recei9:	return
+
+	END
+..and no more

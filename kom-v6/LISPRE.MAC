@@ -1,0 +1,474 @@
+;Oden::DSKG:LISPRE.MAC<62,7777,MAC> 1986-07-10 12:27:38, Edit by KPJ @ LOUD
+;21	Change present report to say our name.
+;Oden::DSKG:LISPRE.MAC<62,7777,MAC> 1986-06-16 12:54:50, Edit by KPJ @ L89
+;20	Don't display protected names when reporting entering and leaving.
+;Oden::DSKG:LISPRE.MAC<62,7777,MAC> 1986-06-05 15:52:31, Edit by KPJ @ L89
+;17	Anonymity support under FTANON.
+;Oden::DSKG:LISPRE.MAC<62,7777,MAC> 1986-06-05 15:15:21, Edit by KPJ @ L89
+;16	Handle anonymity and double identities in WHERE (AM) I correctly.
+;Oden::DSKG:LISPRE.MAC<62,7777,MAC> 1986-06-05 13:39:47, Edit by KPJ @ L89
+;15	Correct reporting of users entering and leaving. Make German texts
+;	more like German syntax, bitte!
+;Oden::DSKG:LISPRE.MAC<62,7777,MAC> 1986-06-05 09:58:29, Edit by KPJ @ L89
+;14	Moved texts to TEXTER:	ZLPRHL,ZPERSO,ZPROTY,ZPROTX,ZTPRES,ZMPRES,
+;				ZHALEF,ZHALE1,ZNOW,ZHAJOI,ZHAJO1,ZLWHHL,ZLIWH1,
+;				ZLIWH2,ZALIAS,ZANONY
+;Oden::DSKG:LISPRE.MAC<62,7777,MAC> 1986-04-24 15:09:19, Edit by KPJ @ L89
+;13	Sanitized code.
+;Oden::DSKD:LISPRE.MAC<62,7777,MAC> 1986-02-12 12:58:54, Edit by KPJ
+;12	ZRELET text changed to be less confusing.
+;Oden::DSKD:LISPRE.MAC<62,7777,MAC> 1985-10-25 10:02:44, Edit by KPJ
+;11	Hacked WHERE (AM) I output format.
+;Oden::DSKD:LISPRE.MAC<62,7777,MAC> 1985-10-04 19:10:23, Edit by KPJ
+;10	Introduced PROLOG macro.
+;Oden::DSKD:LISPRE.MAC[62,7777,MAC] 1985-04-10 13:04:35, Edit by KPJ @ L89
+;7	Handle protected persons correctly, and tabulation problem.
+;Oden::DSKD:LISPRE.MAC[62,7777] 1985-01-30 11:57:09, Edit by KPJ @ L89
+;6	Get rid of only call to QPRESE routine.
+;Oden::DSKD:LISPRE.MAC[62,7777] 1984-12-03 17:56:36, Edit by KPJ @ L89
+;5	Make WHERE (AM I) command show what program, version and data base we
+;	are using.
+;Oden::DSKD:LISPRE.MAC[62,7777] 1984-11-14 06:29:55, Edit by K.JAAKKOLA
+;4	Don't search UUOSYM on TOPS-20.
+;Oden::DSKD:LISPRE.MAC[62,7777] 1984-10-09 08:08:25, Edit by K.JAAKKOLA
+;3	Special hack to to show if anonymous.
+;Oden::Dskd:Lispre.Mac[62,7777] 1984-08-31 06:54:46, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;ODEN::DSK:LISPRE.NEW[1116,134] 1982-03-02 20:49:15, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(lispre)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-31 06:54:44
+
+;	D A T A   A R E A
+
+
+presen:	BLOCK	presiz*<1_maxpre>	; present list
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+lispre::comhed	0,noarg##,liprli,cclpre##,zlprhl## ;Who (are present)
+;-
+
+
+
+
+
+;+
+;LIPRLI		list present list ("who (are present)")
+;-
+
+liprli:	save	<str,gp1,foalfu##,tabstep##>
+	MOVEI	t,^D30			;set tab step
+	MOVEM	t,tabste##
+	CALL	preol##			;blank line
+	print	zperso##		;"Person"
+	CALL	prtab##			;print tab
+	print	zpreme##		;"Present in conference"
+	print[	ASCIZ !    !]		;4 spaces
+	CALL	gudate##		;get date
+	CALL	pweek##			;print day
+	CALL	ptime##			;print time
+	MOVEI	t,liprpe		;list present person
+	MOVEM	t,foalfu##
+	CALL	faprli			;for all in present list
+	CALL	savpre			;save present list
+	return
+
+;+
+;LIPRPE		list present person (used by "WHO (IS PRESENT)")
+;		gets BFP pointing to present list element
+;-
+
+liprpe:	save	<nr,str>
+	SKIPG	0(bfp)			;present person ?
+	 JRST	liprp9			;no
+	CALL	preol##			;new line
+	MOVE	nr,preper(bfp)		;<KPJ.7> get user
+	CALL	chkadm##		;<KPJ.7> enabled?
+	 TRNA
+	  JRST	liprp1			;<KPJ.7> yes, skip this nonsense
+	CAMN	nr,selfnr##		;<KPJ.7> self?
+	 JRST	liprp1			;<KPJ.7> yes, show always
+	CALL	chprot			;<KPJ.7> no, somebody protected?
+	 JRST[	print	zprotx##	;<KPJ.7> yes, "(Protected luser)"
+		JRST	liprp2]		;<KPJ.7> and don't say who it is
+liprp1:	CALL	prname##		;print its name
+liprp2:	MOVE	nr,premee(bfp)		;<KPJ.7> get conference
+	JUMPLE	nr,liprp9		;<KPJ.7> existing name?
+	MOVE	t,linpos##		;<KPJ.7> yes, get line position
+	MOVE	t2,tabste##		;<KPJ.7> get tab step
+	SUBI	t2,1			;<KPJ.7>
+	CAML	t,t2			;<KPJ.7> enough space left?
+	 CALL	preol##			;<KPJ.7> no, make a new line
+	CALL	prtab##			;print tab
+	CALL	chkadm##		;<KPJ.7> enabled?
+	 TRNA
+	  JRST	liprp3			;<KPJ.7> yes, skip this nonsense
+	CAMN	nr,selfnr##		;<KPJ.7> self?
+	 JRST	liprp3			;<KPJ.7> yes, show where we are
+	CALL	chprot			;<KPJ.7> protected conference?
+	 JRST[	print	zproty##	;<KPJ.7> yes, "(Protected conference)"
+		JRST	liprp9]		;<KPJ.7> don't say name of it
+liprp3:	CALL	prname##		;output name of conference
+liprp9:	return
+
+
+;+
+;CHPROT		check if protected conference
+;accepts	NR/	conference
+;returns	+1 if protected
+;		+2 if not protected
+;-
+
+chprot::save	<bfp,gp1>
+	CAMN	nr,crenr##		;self ?
+	 JRST	chpro8			;yes
+	CALL	getobj##		;get object
+	 JRST	chpro8			;error
+	MOVE	t,objtyp(bfp)		;get type
+	TRNN	t,proofl		;protected ?
+chpro8:	 skpret				;not protected
+chpro9:	return
+
+
+
+
+
+;+
+;FAPRLI		do for all in present list
+;		calls FOALFU with BFP/	point at present list element
+;-
+
+faprli:	save	<gp1,txt,bfp,nr>
+	CALL	gudate##		;get current date
+	SUBI	gp1,40000		;step back 90 minutes
+	MOVEM	gp1,txt			;save this time
+	MOVEI	nr,1			;get first element
+faprl5:	MOVEI	gp1,pre			;get present list
+	CALL	find##			;end of list ?
+	 JRST	faprl9			;yes
+	SKIPG	0(bfp)			;present person ?
+	 JRST	faprl2			;no
+	CAML	txt,pretim(bfp)		;too old ?
+	 CALL	delpre			;yes, delete
+faprl2:	CALL	@foalfu##		;do for every element
+	AOJA	nr,faprl5		;get next element
+
+faprl9:	return
+
+
+;+
+;DELPRE		delete present list record
+;accepts	BFP/	present list record
+;		GP1/	present file
+;-
+
+delpre:	CALL	updbeg##		;start update
+	CALL	delrec##		;delete record
+	branch	updend##		;end of update
+
+
+
+
+
+;+
+;PRNRPR		output number of present persons
+;-
+
+prnrpr::save	<sum##,str,nr>
+	CALL	genrpr			;get number of present persons
+	MOVE	nr,sum##		;get sum
+	SOJLE	nr,prnrp9		;lonely ?
+	CALL	preol##			;blank line
+	CAIE	nr,1			;just one ?
+	 JRST	prnrp2			;no
+	MOVE	nr,number##		;get this person
+	CALL	prname##		;print its name
+	print	ztpres##		;" is now present."
+	JRST	prnrp9
+
+prnrp2:	CALL	prnum##			;print number
+	print	zmpres##		;" other lusers are now present."
+prnrp9:	CALL	savpre			;save present list
+	return
+
+
+
+
+;+
+;GENRPR		get number of present persons
+;returns	SUM/	number
+;-
+
+genrpr:	save	<foalfu##>
+	SETZM	sum##			;clear sum
+	MOVEI	t,gesupr		;get sum of present persons
+	MOVEM	t,foalfu##
+	CALL	faprli			;get sum
+	return
+
+
+
+;+
+;GESUPR		get sum of present persons
+;accepts	BFP/	pointing to present list element
+;returns	NUMBER/	person
+;-
+
+gesupr:	SKIPG	0(bfp)			;present ?
+	 JRST	gesup9			;no
+	AOS	sum##			;yes
+	MOVE	t,preper(bfp)		;get present person
+	CAME	t,selfnr##		;self ?
+	 MOVEM	t,number##		;no, save person
+gesup9:	return
+
+
+
+
+
+;+
+;REPCHA		report present changes
+;-
+
+repcha::MOVE	t,selffl##		;[KPJ.6] get personal flags
+	Txne	t,prepfl		;[KPJ.6] report?
+	 JRST[	CALL	repjoi		;report joining
+		CALL	replea		;report leaving
+		CALL	savpre		;save new present list
+		JRST	.+1]
+	return
+
+
+
+
+
+;+
+;SAVPRE		save new present list
+;-
+
+savpre:	save	<gp2,foalfu##>
+	MOVEI	gp2,presen		;get start of old list
+	MOVEI	t,sapres		;save present list
+	MOVEM	t,foalfu##
+	CALL	faprli			;do for all in present list
+	return
+
+
+
+
+
+;+
+;SAPRES		save new present list record
+;accepts	BFP/	pointing to new record
+;		GP2/	pointing to old record
+;returns	GP2/	pointing to next old record
+;-
+
+sapres:	save	<gp1>
+	HRL	gp1,bfp			;get new record
+	HRR	gp1,gp2			;get old record
+	BLT	gp1,presiz-1(gp2)	;save new record
+	ADDI	gp2,presiz		;get next old record
+	return
+
+
+
+
+
+;+
+;REPLEA		report old persons leaving
+;-
+
+replea:	save	<str,firflg##,foalfu##,acrfl##,gp2>
+	SETOM	acrfl##			;print with ACR
+	MOVEI	gp2,presen		;get first old person
+	MOVEI	t,releav		;report leaving
+	MOVEM	t,foalfu##
+	SETZM	firflg##		;<KPJ.15> no users output yet
+	CALL	faprli			;do for all in present list
+	SKIPE	t,firflg##		;<KPJ.15> any persons leaving ?
+	 JRST[
+IFE	<ftlan-.swe>,<print zhalef##>	;Swedish
+IFE	<ftlan-.nor>,<print zhalef##>	;Norwegian
+IFN	<ftlan-.swe>,<
+ IFN	<ftlan-.nor>,<			;other language
+		MOVEI	str,zhalef##	;<KPJ.15> " have quitted."
+		CAIN	t,1		;<KPJ.15> just one luser?
+		 MOVEI	str,zhale1##	;<KPJ.15> " has quitted."
+		CALL	prstr##		;<KPJ.15> output whatever
+>>;End other language
+		print	zdbnam##	;<KPJ.21> say what we are
+		print	zhale2##	;<KPJ.21> "."
+		JRST	.+1]
+reple9:	return
+
+
+
+
+
+;+
+;RELEAV		report person leaving
+;accepts	BFP/	pointing to new present list element
+;		FIRFLG/	0, if no names written yet
+;		GP2/	pointing to old present list element
+;returns	GP2/	pointing to next person
+;		FIRFLG/	number of names output
+;-
+
+releav:	save	<nr,str>
+	SKIPG	0(gp2)			;any old person ?
+	 JRST	relea9			;no, get next
+	MOVE	nr,preper(gp2)		;get person
+	SKIPG	0(bfp)			;still present ?
+	 JRST	relea1			;no
+	CAMN	nr,preper(bfp)		;same person ?
+	 JRST	relea9			;yes, still present
+relea1:	SKIPN	firflg##		;<KPJ.15> is this the first person ?
+	 JRST[	CALL	preol2##	;blank line
+		print	znow##		;"Now "
+		JRST	relea8]
+	print[	ASCIZ !, !]		;print comma
+relea8:	CALL	chkadm##		;<KPJ.20> are we enabled?
+	 CAMN	nr,selfnr##		;<KPJ.20> no, user is us?
+	  TRNA				;<KPJ.20> either, skip this nonsense
+	   JRST[CALL	chprot		;<KPJ.20> no, user protected?
+		 JRST[	print	zprotx##;<KPJ.20> "(Protected luser)"
+			JRST	.+2]	;<KPJ.20>
+		  JRST	.+1]		;<KPJ.20> no, output name
+	 CALL	prname##		;print name of person
+	AOS	firflg##		;count the person
+relea9:	ADDI	gp2,presiz		;get next new person
+	return
+
+
+
+
+;+
+;REPJOI		report new persons joining
+;-
+
+repjoi:	save	<str,firflg##,foalfu##,acrfl##,gp2>
+	SETOM	acrfl##			;print with ACR
+	MOVEI	gp2,presen		;get first old person
+	MOVEI	t,rejoin		;report joining
+	MOVEM	t,foalfu##
+	SETZM	firflg##		;<KPJ.15> not written yet
+	CALL	faprli			;do for all in present list
+	SKIPE	t,firflg##		;<KPJ.15> any joining ?
+	 JRST[
+IFE	<ftlan-.swe>,<print zhajoi##>	;Swedish
+IFE	<ftlan-.nor>,<print zhajoi##>	;Norwegian
+IFE	<ftlan-.ger>,<print zhajoi##>	;German
+IFN	<ftlan-.swe>,<
+ IFN	<ftlan-.nor>,<
+  IFN	<ftlan-.ger>,<
+		MOVEI	str,zhajoi##	;<KPJ.15> " have joined."
+		CAIN	t,1		;<KPJ.15> just one luser?
+		 MOVEI	str,zhajo1##	;<KPJ.15> " has joined."
+		CALL	prstr##		;<KPJ.15> say whatever
+>>>;End of plural languages
+		print	zdbnam##	;<KPJ.21> say what we are
+		print	zhaj0i##	;<KPJ.21> "."
+		JRST	.+1]
+	return
+
+
+
+;+
+;REJOIN		report person joining
+;accepts	BFP/	pointing to new present list element
+;		FIRFLG/	ON if first person
+;		GP2/	pointing to old present list element
+;returns	GP2/	pointing to next person
+;-
+
+rejoin:	save	<nr,str>
+	SKIPG	0(bfp)			;any new person ?
+	 JRST	rejoi9			;no, get next
+	MOVE	nr,preper(bfp)		;get person
+	CAMN	nr,selfnr##		;self ?
+	 JRST	rejoi9			;dont report about self
+	SKIPG	0(gp2)			;present earlier ?
+	 JRST	rejoi1			;no
+	CAMN	nr,preper(gp2)		;same person ?
+	 JRST	rejoi9			;yes, still present
+rejoi1:	SKIPN	firflg##		;first person ?
+	 JRST[	CALL	preol2##	;new line
+IFN	<ftlan-.ger>,<print znow##>	;"Now " (except for German)
+		JRST	rejoi8]
+	print[	ASCIZ !, !]		;print comma
+rejoi8:	CALL	chkadm##		;<KPJ.20> are we enabled?
+	 CAMN	nr,selfnr##		;<KPJ.20> no, user is us?
+	  TRNA				;<KPJ.20> either, skip this nonsense
+	   JRST[CALL	chprot		;<KPJ.20> no, user protected?
+		 JRST[	print	zprotx##;<KPJ.20> "(Protected luser)"
+			JRST	.+2]	;<KPJ.20>
+		  JRST	.+1]		;<KPJ.20> no, output name
+	 CALL	prname##		;<KPJ.20> print name of person
+	AOS	firflg##		;count user
+rejoi9:	ADDI	gp2,presiz		;get next new person
+	return
+
+
+
+
+
+;+
+liswhe::comhed	0,noarg##,liwher,cclwhe##,zlwhhl## ;Where (am) I
+;-
+
+
+
+
+;+
+;LIWHER		shows where you are
+;-
+
+liwher:	save	<nr,str>
+	CALL	preol##			;blank line
+	MOVM	nr,selfnr##		;<KPJ.16> get *real* you
+	CALL	prname##		;print your name
+	MOVM	t,crenr##		;<KPJ.16> get other identity
+	CAMN	nr,crenr##		;other identity ?
+	 JRST[
+IFN	ftanon,<			;<KPJ.17>
+		MOVEI	str,zanony##	;<KPJ.16!KPJ.3> "(as anonymous)"
+		SKIPGE	nr,crenr##	;<KPJ.16!KPJ.3> get my identity
+		 CALL	prstr##		;<KPJ.16> yes, anonymous
+>;ftanon
+		JRST	liwhe1]		;end of person part
+	print	zalias##		;<KPJ.16> ", alias "
+	MOVM	nr,crenr##		;<KPJ.16> get other *real* identity
+	CALL	prname##		;print name
+IFN	ftanon,<			;<KPJ.17>
+	SKIPGE	nr,crenr##		;<KPJ.16!KPJ.3> get my identity
+	 JRST[	print	zanony##	;<KPJ.16!KPJ.3> "(as anonymous)"
+		JRST	liwhe1]
+>;ftanon
+liwhe1:	SKIPE	nr,conf##		;get current conference
+	 JRST	liwhe2
+	print	zrelet##		;" is not present in any conference."
+	JRST	liwhe9
+
+liwhe2:	print	zispre##		;" is present "
+	print	zin##			;" in "
+	CALL	prname##		;print name
+liwhe9:	CALL	preol##			;[KPJ.5] empty line
+	print	zliwh1##		;[KPJ.5] "You are running "
+	CALL	pversi##		;[KPJ.5] canonic ID, and version
+	CALL	preol##			;<KPJ.11>
+	print	zliwh2##		;[KPJ.5] "The program is called "
+	CALL	prcinm##		;[KPJ.5] program name
+	CALL	preol##			;[KPJ.5] end of line
+	return
+
+	END
+..and no more

@@ -1,0 +1,600 @@
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1987-05-13 13:20:22, KPJ @ L89 <1,2>
+;35	Save *own* password to temporary file, not random password.
+;Freja::Qs:<Kom.6.Macro>Montmp.Mac.22 870308-0641,KPJ-Jaakkola
+;34	Tell user if we cannot write the T20 KOM-TMPCOR.TMP (et al.) file.
+;	KOMWR2 label is for T20 too.
+;Freja::Qs:<Kom.6.Macro>Montmp.Mac.20 870226-1317,KPJ-Jaakkola
+;33	Use primary structure and not PS: to store TMPCOR file.
+;	SAVE PASSWORD personal flag is for T20, too.
+;Freja::Qs:<Kom.6.Macro>Montmp.Mac.12 870121-0028,KPJ-Jaakkola
+;32	EDITP is T10 only.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1987-01-02 06:04:23, Edit by KPJ @ H.HOLE
+;31	LOGTMP returns +2 on success.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1987-01-02 05:20:22, Edit by KPJ @ H.HOLE
+;30	Give an error message on TMPCOR write failure.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1987-01-02 03:57:12, Edit by KPJ @ H.HOLE
+;27	TMCEND returns +1 on failure, +2 on success.
+;Oden::DSKG:MONTMP.MAC[62,7777,MAC] 1986-12-23 17:59:18, Edit by KPJ @ ORANGE
+;26	Merged KOMWRI and COMTMP routines.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1986-12-17 15:32:11, Edit by KPJ @ L89
+;25	KOMWRI-10 output a TMP:LME, too, if have program-to-run set.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1986-12-11 18:42:34, Edit by KPJ @ L89
+;24	PUTCH is a macro.
+;Freja::Qs:<Kom.6.Macro>Montmp.Mac.6 860821-2103,KPJ-Jaakkola
+;23	Forget KOM-TMPCOR.TMP read errors. Fixed bug in KOMTMP DIRST% call.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1986-06-08 16:12:54, Edit by KPJ @ 1SKEDE
+;22	Don't assume PS: as primary structure.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1986-06-08 15:52:58, Edit by KPJ @ 1SKEDE
+;21	Moved texts to TEXTER.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1986-05-23 18:07:42, Edit by KPJ @ SEMESTer
+;20	Suppress output from TMP:-generated commands.
+;Oden::DSKG:MONTMP.MAC<62,7777,MAC> 1986-03-19 03:02:42, Edit by KPJ @ T-ROOM
+;17	Issue warning if TMPCOR file overflow.
+;Oden::DSKD:MONTMP.MAC<62,7777,MAC> 1986-01-28 08:58:13, Edit by KPJ
+;16	Push INTFLG when changing consumer.
+;Oden::DSKD:MONTMP.MAC<62,7777,MAC> 1986-01-20 21:46:58, Edit by KPJ
+;15	Don't create temp.file if no user#.
+;Oden::DSKD:MONTMP.MAC<62,7777,MAC> 1985-12-07 22:37:03, Edit by KPJ
+;14	General routine TMXBEG to read from TMPCOR. KOMRED-10 changed to use
+;	it. Also used from REAFIL@FILPRO.
+;Oden::DSKD:MONTMP.MAC<62,7777,MAC> 1985-10-04 19:36:12, Edit by KPJ
+;13	Introduced PROLOG macro.
+;Oden::DSKD:MONTMP.MAC<62,7777,MAC> 1985-06-11 18:22:55, Edit by KPJ @ L89
+;12	TMCBEG changed to return +1 for failure to create TMPCOR buffer, with
+;	T containing error code, and +2 for success (PAGIN@MONITO changed).
+;	A bug in TMCBEG which destroyed AC GP2 fixed.
+;	KOMRED will also return +1 failure when cannot create TMPCOR buffer.
+;Oden::DSKD:MONTMP.MAC<62,7777,MAC> 1985-04-25 01:17:57, Edit by KPJ @ NADJA
+;11	Search MACTEN for TXxx macros. Fixed misspelling in TMCEND introduced
+;	in edit#7.
+;Freja::Ps:<KOM.6-SOURCES>MONTMP.MAC.5 18-Apr-85 18:35:44,Editor:KPJ-JAAKKOLA
+;10	Fixed bug which made KOM-20 totally shutup after returning from subfork
+;	(such as editor subforks).
+;Freja::Ps:<KOM.6-SOURCES>MONTMP.MAC.3 18-Apr-85 15:39:11,Editor:KPJ-JAAKKOLA
+;7	Expanded TMP file handling to see what it does, eliminating macros
+;	TMPRF, TMPWF, XTMPCO macros, and routine CNVSIX which is not used
+;	any more. The routines to read and write KOM temporary file (TMPCOR
+;	on Tops-10) are now called KOMRED and KOMWRI. Use standard character
+;	names.
+;Oden::DSKD:MONTMP.MAC[62,7777] 1985-02-04 14:39:24, Edit by KPJ @ L89
+;6	Make tempcore consumer understand LGNFLG, which signals we need
+;	uppercase LOGIN/NAME:-switch on Tops-10 when we have a stupid LOGIN
+;	program, which doesn't like local lower case (e.g. Swedish).
+;Oden::DSKD:MONTMP.MAC[62,7777] 1985-01-25 13:20:50, Edit by KPJ @ L89
+;5	Fix in edit #1 (deleted in edit#3 due to LOGIN problems)
+;	put back: don't uppercase TMPCOR files.
+;Oden::Dskd:Montmp.Mac[62,7777] 1984-09-14 10:10:31, Edit by K.Jaakkola
+;4	Moved PAGIN and PAGDEL under T10-conditional, since memory managing
+;	is not used under TOPS-20.
+;Oden::Dskd:Montmp.Mac[62,7777] 1984-08-16 08:32:37, Edit by K.Jaakkola
+;3	Unsmallified TMPCON back again (Changed by JEQ 1984-03-21 19:50:55)
+;Oden::Dskd:Montmp.Mac[62,7777] 1984-05-23 06:01:11, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 versions.
+;Oden::Dskd:Montmp.Mac[62,7777] 1984-03-21 19:54:48, Edit by J.Eriksson
+;1	Smallified routine TMPCON.
+
+	SEARCH	kommac
+	PROLOG	(montmp)
+montmp::!
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-23 05:55:22
+
+T10,<	tmpsiz==^D510>		;TMPCOR buffer size
+T20,<	tmpsiz==1K>		;1 page
+
+;	D A T A   A R E A
+
+notmp::	0			; write no tempcore flag
+
+T10,<				;<KPJ.7> TMPCOR hacking area
+tmpint:	BLOCK	1		;<KPJ.16> TMPCOR interrupt save area
+tmcbp:	POINT	7,tmcbuf	;TMPCOR consumer byte pointer
+tmpbp:	POINT	7,tmpbuf	;TMPCOR producer byte pointer
+tmccnt:	5*tmpsiz		;TMPCOR consumer byte count
+
+
+tmcnam::Z			;TMPCOR consumer file name argument list
+	IOWD	0,tmcbuf	;(size filled in later)
+	Z
+
+tmpnam:	Z			;TMPCOR producer file name argument list
+	IOWD	tmpsiz,tmpbuf
+	Z
+>;T10
+
+T20,<				;<KPJ.7> KOM temporary file hacking area
+kombp:	POINT	7,tmcbuf	;<KPJ.7> buffer pointer
+>;T20
+
+	PHASE	240K
+tmcbuf:	BLOCK	0		;[SEE] to be allocated later
+	DEPHASE
+
+	PHASE	241K
+tmpbuf::BLOCK	0		;[SEE] to be allocated later
+	DEPHASE
+
+T20,<
+komjfn:	BLOCK	1			;<KPJ.26> JFN of temporary file
+namstr::BLOCK	filmax/5+1		;<KPJ.7> file name buffer
+namlen==.-namstr			;<KPJ.7> length of name buffer
+>;T20
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+T10,<
+;TMCBEG		start TMPCOR consumer (Tops-10 only)
+;accepts	TMCNAM/	name of TMPCOR (in SIXBIT)
+;returns	+1 failure to allocate TMPCOR buffer, T/ error code
+;		+2 success
+;-
+
+tmcbeg::save	<gp1,gp2,str>		;<KPJ.12>
+	MOVE	t,[POINT 7,tmcbuf]
+	MOVEM	t,tmcbp			;initialize byte pointer
+	setmem	tmccnt,5*tmpsiz		;initialize byte count
+	MOVEI	gp1,1
+	MOVEI	gp2,tmcbuf/1K
+	CALL	pagin##			;[SEE] allocate buffer area
+	 JRST[	PUSH	P,consum##
+		MOVEI	t,tercon##
+		MOVEM	t,consum##
+		print	zzmemo##	;<KPJ.12> "cannot allocate TMPCOR"
+		MOVE	gp1,tmcnam	;<KPJ.12> say what TMP: file
+		CALL	prcin3##	;<KPJ.12> output it
+		POP	P,consum##
+		JRST	tmcbe9]		;<KPJ.12> no buffer, no TMPCOR
+	setmem	consum##,tmpcon		; output to tempcore
+	MOVE	t,intflg##		;<KPJ.16> get interrupt flag
+	MOVEM	t,tmpint		;<KPJ.16> save it
+	SETZM	intflg##		;<KPJ.16> not interrupted no more
+	skpret				;<KPJ.12>
+tmcbe9:	return
+>;T10
+
+
+
+;+
+T10,<
+;TMPCON		TMPCOR consumer		 (Tops-10 only)
+;accepts	CH/	character
+;		LGNFLG/	<>0 if need upcase
+;-
+
+tmpcon:	save	<ch>
+	JUMPE	ch,tmpco9			;ignore zero char
+	SOSG	tmccnt				;space left in buffer ?
+	 JRST[	MOVE	t,tmccnt		;<KPJ.17> no, get count
+		CAMN	t,[-1]			;<KPJ.17> just depleted?
+		 CALL[	PUSH	P,consum##	;<KPJ.17> save consumer
+			CALL	tcbeg##		;<KPJ.17> output to TTY
+			CALL	preol##		;<KPJ.17> newline
+			print[	ASCIZ !TMP:!]	;<KPJ.17>
+			PUSH	P,gp1		;<KPJ.17>
+			MOVE	gp1,tmcnam	;<KPJ.17> TMPCOR name
+			CALL	prcin3##	;<KPJ.17> output name
+			print	z42tmp##	;<KPJ.17>
+			POP	P,gp1		;<KPJ.17>
+			CALL	tcend##		;<KPJ.17>
+			POP	P,consum##	;<KPJ.17>
+			RET]			;<KPJ.17>
+		JRST	tmpco9]			;ignore character
+bugfix	ftbg00,<Make TMPCON uppercase LOGIN/NAME:-switch>,<
+	MOVE	t,lgnflg##		;[KPJ.6]
+	 JUMPN	t,[			;[KPJ.6] need upcasing?
+		CAIL	ch,"`"		;[KPJ.5] yes, small char ?
+		 SUBI	ch,"a"-"A"	;[KPJ.5] yes, make it big
+		JRST	.+1]
+>;bugfix
+	IDPB	ch,tmcbp	; output char
+tmpco9:	return
+>;T10
+
+
+;+
+T10,<
+;TMCEND		end of TMPCOR file output (Tops-10 only)
+;returns	+1 failure
+;		+2 success
+;-
+
+tmcend::save	<gp1,gp2,str>
+	MOVEI	t,tmcbuf-1			;get buffer address
+	SUB	t,tmcbp				;get buffer length
+	HRLM	t,tmcnam+1			;save buffer length in arg.list
+
+	MOVE	t,[.TCRWF,,tmcnam]		;<KPJ.11> write TMPCOR,,argblk
+	TMPCOR	t,				;write the TMPCOR
+	 JRST[	MOVEI	str,zztmpw##		;<KPJ.26> "TMPCOR write failed"
+		CALL	errmsg##		;<KPJ.26>
+		PUSH	P,consum##		;<KPJ.26> failed, tell user
+		MOVEI	t,tercon##		;<KPJ.26> . . .
+		MOVEM	t,consum##		;<KPJ.26> . . .
+		print[	ASCIZ ! - TMP:!]	;<KPJ.26> say what TMPCOR
+		MOVE	gp1,tmcnam		;<KPJ.26> . . .
+		CALL	prcin3##		;<KPJ.26> . . .
+		POP	P,consum##		;<KPJ.26> end of message
+		JRST	tmcen1]			;<KPJ.26>
+	skpret					;<KPJ.26> success, +2 return
+tmcen1:	MOVEI	gp1,1				;<KPJ.4>
+	MOVEI	gp2,tmcbuf/1K
+	CALL	pagdel##			;[SEE] delete buffer area
+	SKIPE	t,tmpint			;<KPJ.16> get TMPCOR interrupt
+	 MOVEM	t,intflg##			;<KPJ.16> restore old status
+	return
+>;T10
+
+
+;+
+T10,<
+;TMXBEG		TMPCOR producer starter
+;accepts	IFITYP/	name of TMP file to read from
+;		GP1/	#pages
+;		GP2/	address
+;returns	+1	failed
+;		+2	success
+;-
+
+tmxbeg::CALL	pagin##			;[SEE] allocate buffer area
+	 JRST[	PUSH	P,consum##	;<KPJ.14> save consumer
+		MOVEI	t,tercon##	;<KPJ.14> barf on terminal
+		MOVEM	t,consum##	;<KPJ.14>
+		print	zzmemo##	;<KPJ.12> "cannot read TMP:"
+		MOVE	gp1,ifityp##	;<KPJ.12> get TMPCOR name
+		CALL	prcin3##	;<KPJ.12> output it
+		POP	P,consum##	;<KPJ.14> restore consumer
+		JRST	tmxbe9]		;<KPJ.12> no buffer, no TMPCOR
+	MOVE	t,ifityp##		;<KPJ.7> get TMPCOR name in SIXBIT
+	MOVEM	t,tmpnam		;<KPJ.7> store in argument list
+	MOVE	t,[.TCRRF,,tmpnam]	;read file,,addr of argument list
+	TMPCOR	t,			;read TMPCOR file
+	 JRST	tmxbe9			;***FOO*** ...failed
+
+	MOVE	t,[POINT 7,tmpbuf]
+	MOVEM	t,tmpbp			;initialize byte pointer
+
+	MOVEI	t,tmppro		;get input from TMP file
+	MOVEM	t,produc##
+
+	skpret				;+2 return
+
+tmxbe9:	return
+>;T10
+
+
+;+
+;KOMRED		input KOM temporary file
+;		T10: TMP:xxx		(e.g. TMP:KOM)
+;		T20: PS:<myself>xxx	(e.g. PS:<myself>KOM-TMPCOR.TMP)
+;
+;returns	+1	failed
+;		+2	success, with file contents read into TMPBUF
+;-
+
+komred::
+T10,<	save	<gp1,gp2>		;[KPJ.3] we don't use these on 20x
+	MOVE	t,ztmpco##		;<KPJ.14> TMPCOR name
+	MOVEM	t,ifityp##		;<KPJ.14> save it
+	MOVEI	gp1,1			;<KPJ.14>
+	MOVEI	gp2,tmpbuf/1K		;<KPJ.14>
+	CALL	tmxbeg			;<KPJ.14> get input
+	 JRST	komre9			;<KPJ.14> no space for it
+>;T10
+					;<KPJ.7> read temporary file
+T20,<	CALL	komtmp				;<KPJ.7> make TMP file name
+	 JRST	komre9				;<KPJ.7> failed
+
+	MOVSI	1,(GJ%SHT!GJ%OLD)		;short form, existing file
+	HRROI	2,namstr			;create name
+	GTJFN%					;get handle on it
+	 ERJMP	komre9				;failed...
+	MOVE	2,[FLD(7,OF%BSZ)!OF%RD]		;7 bits bytes, read access
+	OPENF%					;open it
+	 ERJMP	komre9				;failed...
+						;1 = JFN
+	HRROI	2,tmpbuf			;where to put data
+	MOVNI	3,tmpsiz			;size of buffer
+	IMULI	3,5				;make bytes
+	SUBI	3,1				;make space for NUL
+	SIN%					;read the file
+	ERJMP[	PUSH	P,1		;save JFN
+		MOVEI	1,.FHSLF	;this fork
+		GETER%			;whazza matter?
+		HRRZ	2,2		;get error code
+		POP	P,1		;restore JFN
+		CAIN	2,IOX4		;end of file reached?
+		 JRST	.+1		;yes, not so dangerous really...
+		JRST	komre9]		;something else: failed...
+
+	SETZ	3,.CHNUL		;get a NUL
+	IDPB	3,2			;make it ASCIZ
+					;1 = JFN
+	CLOSF%				;close file, release JFN
+	 ERJMP	komre9			;failed...
+
+	MOVE	t,[POINT 7,tmpbuf]	;initialize byte pointer
+	MOVEM	t,kombp
+
+	MOVEI	t,kompro		;get input from temporary file
+	MOVEM	t,produc##
+>;T20
+
+	SETOM	notmp			;don't write new file
+T10,<	CALL	preol##			;<KPJ.20> new line
+	SETOM	tmpflg##		;<KPJ.20> no more echo
+>;T10
+
+	skpret				;+2 means success return
+komre9:
+T20,<	MOVEI	1,.FHSLF		;<KPJ.23> self
+	MOVEI	2,LSTRX1		;<KPJ.23> "Process has not encountered"
+	SETER%				;<KPJ.23> " any error"
+>;T20
+	return
+
+
+
+;+
+;KOMWRI		create external temporary "file"
+;		T10: TMPCOR file for KOM (used when calling programs on T10)
+;		     will write a TMP:LME as well if have a program-to-run set
+;		T20: write temporary (";T") file
+;accepts	SELFNR/		current user's object (0=no user)
+;		EDITP/	-1	this is an editor call (T10 only)
+;		BAKFLG/	-1	delete .BAK file too (T10 only)
+;		TMPEDI/		SIXBIT name of TMP:-file to delete
+;returns	+1 failure
+;		+2 success
+;-
+
+komwri::save	<consum##,chpt##,nr,ch,gp1> ;<KPJ.26>
+	SKIPN	selfnr##		;<KPJ.15> are we defined today?
+	 JRST	komwr8			;<KPJ.15> return +2 for success, though
+
+T10,<	CALL	logtmp##		;<KPJ.31> maybe write TMP:LME
+	 JRST	komwr9			;<KPJ.31> couldn't, +1 return
+	MOVE	t,ztmpco##		;<KPJ.7> get KOM TMPCOR file name
+	MOVEM	t,tmcnam		;<KPJ.26> save TMPCOR name
+	CALL	tmcbeg			;<KPJ.26> start TMPCOR output
+	 JRST	komwr9			;<KPJ.12> no core for buffer
+>;T10
+T20,<	CALL	komtmp			;create temporary file name
+	 JRST	komwr9			;couldn't
+	MOVSI	1,(GJ%SHT)		;short form
+	HRROI	2,namstr		;pointer to ASCIZ name
+	GTJFN%				;get handle
+	 ERJMP	komwr7			;<KPJ.26> failed, +1 return
+	HRRZM	1,komjfn		;1 = JFN
+	MOVE	2,[FLD(7,OF%BSZ)!OF%WR]	;7 bits bytes, write access
+	OPENF%				;open file
+	 ERJMP	komwr7			;couldn't
+
+	MOVE	t,[POINT 7,tmcbuf]	;initialize byte pointer
+	MOVEM	t,kombp
+	MOVEI	t,komcon		;use special consumer
+	MOVEM	t,consum##
+>;T20
+	MOVE	nr,selfnr##		;get own user's number
+	CALL	probnr##		;output number ("Person 42")
+T10,<	SKIPE	editp##			;<KPJ.32!KPJ.26> an editor call?
+	 JRST	komwr1			;<KPJ.32> no
+>;T10
+	MOVE	t,selffl##		;<KPJ.33!KPJ.26> no, get personal flags
+	Txnn	t,spapfl		;<KPJ.33> SAVE PASSWORD?
+	 JRST	komwr2			;<KPJ.33!KPJ.26> no, we are done
+T10,<					;<KPJ.33>
+komwr1:					;<KPJ.32>
+>;T10
+	MOVEI	ch,.CHSEM		;semicolon starts password
+	CALL	putch			;. . .
+	MOVE	t,[POINT 7,pusbeg##]	;<KPJ.35> password pointer
+	MOVEM	t,chpt##		;<KPJ.35> . . .
+	CALL	prcoli##		;output password
+T10,<	SKIPN	editp##			;<KPJ.32!KPJ.26> an editor call?
+	 JRST	komwr2			;<KPJ.26> no, we are done
+	CALL	preol##			;<KPJ.26> new line
+	MOVEI	ch,cmdchr		;<KPJ.26> make this a command
+	CALL	putch			;<KPJ.26> so it works
+	print	zzsubm##		;<KPJ.26> "Submit file"
+	CALL	putbla##		;<KPJ.26> a space
+	CALL	predfi##		;<KPJ.26> output file name
+	CALL	preol##			;<KPJ.26> new line
+	SKIPE	nr,conf##		;<KPJ.26> get current conference
+	 JRST[	MOVEI	ch,cmdchr	;<KPJ.26> make this a command
+		CALL	putch		;<KPJ.26> so it works
+		print	zzjoin##	;<KPJ.26> "Join (conference) "
+		CALL	putbla##	;<KPJ.26> a space
+		CALL	probnr##	;<KPJ.26> output conference object#
+		CALL	preol##		;<KPJ.26> new line
+		JRST	.+1]
+	MOVEI	ch,cmdchr		;<KPJ.26> make this a command
+	CALL	putch			;<KPJ.26> so it works
+	print	zzdefi##		;<KPJ.26> "Delete file"
+	CALL	putbla##		;<KPJ.26> a space
+	CALL	predfi##		;<KPJ.26> output file name
+	CALL	preol##			;<KPJ.26> new line
+	SKIPE	bakflg##		;<KPJ.26> delete .BAK files?
+	 JRST[	MOVEI	ch,cmdchr	;<KPJ.26> yes, start new command
+		CALL	putch		;<KPJ.26> . . .
+		print	zzdefi##	;<KPJ.26> "Delete file"
+		CALL	putbla##	;<KPJ.26> a space
+		SETOM	baktmp##	;<KPJ.26> tell PREDFI about this
+		CALL	predfi##	;<KPJ.26> and get file name (with .BAK)
+		SETZM	bakflg##	;<KPJ.26> no more .BAK deleting
+		JRST	.+1]		;<KPJ.26>
+	CALL	preol##			;<KPJ.26> new line
+	MOVEI	ch,cmdchr		;<KPJ.26> start new command
+	CALL	putch			;<KPJ.26> . . .
+	print	zzdefi##		;<KPJ.26> "Delete file"
+	print[	ASCIZ ! TMP:!]		;<KPJ.26> " TMP:"
+	MOVE	gp1,tmpedi##		;<KPJ.26> get file name
+	CALL	prcin3##		;<KPJ.26> output file name
+	CALL	preol##			;<KPJ.26> new line
+	MOVEI	ch,cmdchr		;<KPJ.26> start new command
+	CALL	putch			;<KPJ.26> . . .
+	print	zzdefi##		;<KPJ.26> "Delete file"
+	print[	ASCIZ ! TMP:!]		;<KPJ.26> " TMP:"
+	MOVE	gp1,ztmpco##		;<KPJ.26> suicidal file name
+	CALL	prcin3##		;<KPJ.26> die!
+>;T10
+komwr2:					;<KPJ.34>
+T10,<	CALL	tmcend			;T10: end of TMPCOR
+	 JRST	komwr9			;<KPJ.31> failed, give up
+>;T10
+T20,<	MOVE	1,kombp			;T20: output file
+KL10N,<	SETZ	2,.CHNUL>		;get a NUL
+KL10,<	MOVEI	2,.CHNUL>		;. . .
+	IDPB	2,1			;make ASCIZ
+	MOVE	1,komjfn		;<KPJ.26> 1 = JFN
+	HRROI	2,tmcbuf		;where to get the data from
+KL10N,<	SETZ	3,>			;no limit
+KL10,<	MOVEI	3,0>			;. . .
+	SOUT%				;output the data
+	ERJMP	komwr7			;failed, give up
+	CLOSF%				;close file, release JFN
+	 ERJMP	komwr7			;failed
+	JRST	komwr8			;<KPJ.26!KPJ.15> OK
+
+komwr7:	MOVE	str,[POINT 7,zkomtm##]	;<KPJ.34!KPJ.26> "Failed to write "
+	MOVE	t2,[POINT 7,errtxt##]	;<KPJ.34> where to put message
+komwr5:	ILDB	t,str			;<KPJ.34> get a byte of the message
+	JUMPN	t,[			;<KPJ.34> end of text?
+		IDPB	t,t2		;<KPJ.34> no, copy to output buffer
+		JRST	komwr5]		;<KPJ.34> and get next byte
+	MOVE	str,[POINT 7,namstr]	;<KPJ.34> name of file
+komwr4:	ILDB	t,str			;<KPJ.34>
+	JUMPN	t,[			;<KPJ.34>
+		IDPB	t,t2		;<KPJ.34>
+		JRST	komwr4]		;<KPJ.34>
+KL10,<	MOVEI	t,.CHNUL>		;<KPJ.34> make ASCIZ
+KL10N,<	SETZ	t,.CHNUL>		;<KPJ.34> . . .
+	IDPB	t,t2			;<KPJ.34> . . .
+	MOVEI	str,errtxt##		;<KPJ.34>
+	CALL	.jserr##		;<KPJ.26> append error message
+	CALL	warmsg##		;<KPJ.34!KPJ.26> output warning
+	PUSH	P,ch			;<KPJ.34>
+	MOVEI	ch,.CHCRT		;<KPJ.34> append CRLF
+	CALL	tput##			;<KPJ.34> . . .
+	MOVEI	ch,.CHLFD		;<KPJ.34> . . .
+	CALL	tput##			;<KPJ.34> . . .
+	POP	P,ch			;<KPJ.34>
+	TRNA				;<KPJ.31> give up
+>;T20
+komwr8:	 skpret				;<KPJ.31> success, +2 return
+komwr9:	MOVEI	t,terpro##		;<KPJ.26> restore terminal producer
+	MOVEM	t,produc##		;<KPJ.26> . . .
+T10,<	SETZM	editp##>		;<KPJ.26> end of editor output
+	return
+
+
+;+
+T20,<
+;KOMPRO		KOM output temporary file producer	(TOPS-20 only)
+
+kompro::save	<ch,intflg##,gp1,gp2>
+	SETZM	intflg##		;clear interrupt
+kompr1:	ILDB	ch,kombp		;get character character from buffer
+	JUMPE	ch,kompr8		;end of buffer?
+	CALL	putch			;no, output character
+	ifoff	intflg##,kompr1		;interrupt ?
+	JRST	kompr9			;yes, end of output buffer
+kompr8:	CALL	tpbeg##			; get input from terminal
+	MOVEI	ch,.CHLFD		;<KPJ.7> return line feed
+	CALL	putch			; send it away
+kompr9:	return
+>;T20
+
+;+
+T20,<
+;KOMCON		KOM output temporary file consumer	(TOPS-20 only)
+;accepts	CH/	character
+
+komcon:	JUMPE	ch,[RET]		;don't store NULs
+	IDPB	ch,kombp		;output character to output buffer
+	RET
+>;T20
+
+;+
+T20,<
+;KOMTMP		make name of temporary file to use		<KPJ.7>
+;returns	+1 failed to create temporary file
+;		+2 success, with
+;			NAMSTR/	name of file in ASCIZ
+
+komtmp:	CALL	myname			;output name part
+	 JRST	komtm9
+	HRROI	2,ztmpco##		;<KPJ.7> name of temporary file
+KL10N,<	SETZ	3,.CHNUL>		;<KPJ.7> end on NUL
+KL10,<	MOVEI	3,.CHNUL>		;<KPJ.7> end on NUL
+	SOUT%				;<KPJ.7> put into buffer
+	 ERJMP	komtm8			;<KPJ.7> failed...
+KL10N,<	SETZ	2,.CHNUL>		;<KPJ.7> a NUL
+KL10,<	MOVEI	2,.CHNUL>		;<KPJ.7> a NUL
+	IDPB	2,1			;<KPJ.7> tie off with a NUL
+	skpret				;<KPJ.7> +2 return means success
+	JRST	komtm9			;<KPJ.7> exit
+komtm8:	HRROI	1,[0]
+	ESOUT%
+	HRROI	1,kpj100##		;"Could not create file "
+	PSOUT%
+	MOVEI	1,.PRIOUT		;primary output
+	MOVE	2,selfpp##		;our user#
+	HRLI	2,(^O540000,,0)		;<KPJ.23> make for primary structure
+	DIRST%				;output it
+	 ERJMP	.+1			;***FOO***
+	HRROI	1,ztmpco##		;name of file
+	PSOUT%
+	HRROI	1,[ASCIZ !
+!]					;crlf
+	PSOUT%
+komtm9:	return
+>;T20
+
+
+;+
+T20,<
+;MYNAME		output own user name in form "primarystr:<myself>"
+;returns	+1 failed
+;		+2 success, with NAMSTR/ name in ASCII and
+;				 1/ pointer to next position
+
+myname::SETZM	namstr			;empty it
+	MOVE	1,[namstr,,namstr+1]	;from,,to
+	BLT	1,namstr+namlen-1	;clear the buffer
+
+	HRROI	1,namstr		;where to put name
+	MOVE	2,selfpp##		;<KPJ.33> our user#
+	HRLI	2,(^O540000,,0)		;<KPJ.33> make for primary structure
+	DIRST%				;<KPJ.33> output it
+	 ERJMP	mynam9			;failed...
+	skpret
+mynam9:	return
+>;T20
+
+
+;+
+T10,<
+;TMPPRO		TMPCOR producer		(Tops-10 only)
+;-
+
+tmppro::save	<ch,intflg##,gp1,gp2>
+	SETZM	intflg##		; clear interrupt
+tmppr1:	ILDB	ch,tmpbp		; get character
+	JUMPE	ch,tmppr8		;NUL?
+	CALL	putch			;no, send it away
+	ifoff	intflg##,tmppr1		;interrupt ?
+	JRST	tmppr9
+tmppr8:	MOVEI	gp1,1
+	MOVEI	gp2,tmpbuf/1K
+	CALL	pagdel##		;[SEE] delete buffer area
+	CALL	tpbeg##			; get input from terminal
+	MOVEI	ch,.CHLFD		;<KPJ.7> return line feed
+	CALL	putch			; send it away
+tmppr9:	return
+>;T10
+	END
+..and no more

@@ -1,0 +1,1180 @@
+;Oden::DSKG:MATCH.MAC<62,7777,MAC> 1987-05-15 20:16:34, KPJ @ H.HOLE <10,50>
+;34	Error check CONVC, so we don't get ?Illegal memory READ.
+;Freja::Qs:<Kom.6.Macro>Match.Mac.13 870421-2058,Kpj-Jaakkola
+;33	PRNAM9 occurred twice becuase of edit #32. Call the new one PRNAX9.
+;Oden::DSKG:MATCH.MAC<62,7777,MAC> 1987-04-16 14:13:08, KPJ @ L89 <62,50>
+;32	Personal flag to turn on/off name cache.
+;Oden::DSKG:MATCH.MAC<62,7777,MAC> 1987-03-24 18:35:18, KPJ @ L89 <1,2>
+;31	All cache handling under FTCACH conditional. Implemented name input
+;	cache.
+;Oden::DSKG:MATCH.MAC<62,7777,MAC> 1987-01-31 09:44:31, Edit by KPJ @ H.HOLE
+;30	New global routine MATBAK, called from SEGRET@MONITO, to restore the
+;	low segment routine pointers this module is using.
+;Oden::DSKG:MATCH.MAC[62,7777,MAC] 1987-01-26 12:51:47, Edit by KPJ @ DK
+;27	QISMBR code optimized and documentation corrected.
+;Oden::DSKG:MATCH.MAC<62,7777,MAC> 1986-10-14 17:03:21, Edit by KPJ @ L89
+;26	Employee support under FTEMPL.
+;Oden::DSKG:MATCH.MAC<62,7777,MAC> 1986-07-18 21:54:15, Edit by KPJ @ 1SKEDE
+;25	Expand VERIFY NAME correctly.
+;Oden::DSKG:MATCH.MAC<62,7777,MAC> 1986-07-18 16:07:23, Edit by KPJ @ L89
+;24	Expanded routine "GETLON" since only used once. Rewrote COMWOR to see
+;	what it does.
+;Oden::DSKG:MATCH.MAC<62,7777,MAC> 1986-07-17 17:27:49, Edit by KPJ @ L89
+;23	Merged COMMAT and NAMMAT module to one. NAMFLG localized.
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;		NAMMAT edit history:
+;Oden::DSKG:NAMMAT.MAC<62,7777,MAC> 1986-06-08 17:18:03, Edit by KPJ @ 1SKEDE
+;22	Moved texts to TEXTER.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1986-01-14 03:46:57, Edit by KPJ
+;21	Better descriptors for deleted and non-existent named objects.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1986-01-13 21:58:45, Edit by KPJ
+;20	Expand names if wanted.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1986-01-09 12:49:49, Edit by KPJ
+;17	Display object number for nameless objects.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1985-10-22 00:28:53, Edit by KPJ
+;16	Optimize colour coding. Handle line pos increment.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1985-10-04 19:37:59, Edit by KPJ
+;15	Introduced PROLOG macro.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1985-08-01 18:17:55, Edit by KPJ @ DECGR
+;14	Forget NACOFI in edit#13.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1985-07-26 xx:xx:xx, Edit by KPJ @ ORANGE
+;13	Prepared for deletion of "string" zero words.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1985-07-19 08:51:50, Edit by KPJ @ L89
+;12	Sanitized code.
+;Oden::DSKD:NAMMAT.MAC<62,7777,MAC> 1985-04-22 23:25:16, Edit by KPJ @ NADJA
+;11	Added VIEWDATA colour hacking.
+;Oden::DSKD:NAMMAT.MAC<62,7777> 1984-12-05 06:16:02, Edit by KPJ @ NADJA
+;10	Get rid of SETLMA routine and all calls to it.
+;Oden::DSKD:NAMMAT.MAC<62,7777> 1984-10-22 13:15:54, Edit by THOLERUS T
+;7	Only VERIFY NAME switches NAMFLG on.
+;	Changed CMPNAM and AVERNA
+;Oden::DSKD:NAMMAT.MAC<62,7777> 1984-10-12 13:36:48, Edit by K.JAAKKOLA
+;6	Globals not used outside this module: COND, NATOOB. Made local.
+;	Fixed SEARCH not to search UUOSYM on 20x.
+;	Inserted COPYRIGHT macro.
+;Oden::DSKD:NAMMAT.MAC<62,7777> 1984-10-02 13:33:50, Edit by K.JAAKKOLA
+;5	Merged calls to PRNALI@LOGIN and PNAMLI@ADDENT.
+;Oden::DSKD:NAMMAT.MAC<62,7777> 1984-09-18 19:48:44, Edit by B.CARLSSON
+;4	Correct bug that made Macro warn on Fromto (Bfp),(Str).
+;	Since this is a macro, it's not a good idea to do that.
+;Oden::DSKD:NAMMAT.MAC<62,7777> 1984-08-28 01:25:01, Edit by K.JAAKKOLA
+;3	Added Torgny Tholerus later hack to make VERIFY NAME allow
+;	arguments like CONFERENCE 4711 to match. Let's hope it works,
+;	since Jacob Palme's transfer programs obviously requires that.
+;Oden::DSKD:NAMMAT.MAC<62,7777> 1984-08-08 19:10:58, Edit by B.CARLSSON
+;2	Really added the verify name command. Two MATBEG missing.
+;Oden::DSKG:NAMMAT.MAC<62,657> 1984-08-03 16:08:05, Edit by THOLERUS T
+;1	Added the VERIFY NAME command
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;		COMMAT edit history:
+;Oden::DSKD:COMMAT.MAC[62,7777,MAC] 1986-01-12 22:23:48, Edit by KPJ
+;12	Don't expand anything when not logged in.
+;Oden::DSKD:COMMAT.MAC<62,7777,MAC> 1985-10-01 01:14:07, Edit by KPJ
+;11	Introduced PROLOG macro.
+;Oden::DSKD:COMMAT.MAC<62,7777,MAC> 1985-09-08 18:48:47, Edit by KPJ
+;10	Sanitized code.
+;Oden::DSKD:COMMAT.MAC<62,7777,MAC> 1985-07-26 01:18:06, Edit by KPJ @ ORANGE
+;7	Delete GECOST references.
+;Freja::Ps:<KOM.6-SOURCES>COMMAT.MAC.2 18-Apr-85 21:07:52,Editor:KPJ-JAAKKOLA
+;6	Don't expand KOM-20 temporary file input.
+;Oden::DSKD:COMMAT.MAC<62,7777,MAC> 1985-03-28 07:38:10, Edit by KPJ @ L89
+;5	Search MACTEN for TXxx macros.
+;Oden::DSKD:COMMAT.MAC[62,7777,MAC] 1985-03-15 12:49:29, Edit by KPJ @ L89
+;4	Don't expand file input. Use TXxx macros.
+;Oden::DSKD:COMMAT.MAC[62,7777] 1984-12-01 04:16:14, Edit by KPJ @ NADJA
+;3	Get rid of funny macros. Moved all language dependent texts to TEXTER.
+;Oden::DSKD:COMMAT.MAC[62,7777] 1984-10-22 13:27:40, Edit by THOLERUS T [TTQ.2]
+;2	Exact name matching on word level added.
+;	Changed COMLIN and COMWOR.
+;Oden::Dskd:Commat.Mac[62,7777] 1984-05-14 15:45:03, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	SEARCH	kommac
+	PROLOG	(match)
+match::
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 15:44:40
+;	QZ Computing Centre, 1986-07-17 19:53:36
+;+
+;Module:	MATCH
+;Purpose:	Matching routines, and match subroutines.
+;Contains:
+;-
+;	D A T A   A R E A
+
+cond:	accall			;<KPJ.30!KPJ.6>match condition function
+namflg:	0			;name flag
+namfun::allnam			;name function
+oldflg::0			;get old name flag
+IFN	ftcach,<		;<KPJ.31>
+;-----------------------------------
+;	Output name cache
+
+	namsiz==1+strssi	;size of name record
+namept:	namtab			;name pointer
+namtab:	BLOCK	namlen*namsiz	;name table
+namend:	Z
+>;ftcach
+;-----------------------------------
+;	Input name cache
+
+IFG	ftcach,<		;<KPJ.32> input cache = output cache
+	numsiz==namsiz		;<KPJ.32> same size of table
+	numept==namept		;<KPJ.32> same pointer
+	numtab==namtab		;<KPJ.32> same table
+	numend==namend		;<KPJ.32> same end of table
+>;ftcach .GT. 0
+IFL	ftcach,<		;<KPJ.32> want own input name cache
+	numsiz==1+strssi	;size of name record
+numept:	numtab			;name pointer
+numtab:	BLOCK	namlen*numsiz	;name table
+numend:	Z
+>;ftcach .LT. 0
+agrend::Z			;end of match
+agrmax::0			;maximal agreement
+agrord::0			;ordinal number
+agrval::0			;match value
+cspt::	Z			;command byte pointer
+cursta::0			;current status
+expfun::Z			;expansion function
+savchp::Z			;save area for short byte pointer
+savchr:	Z			;save area for char
+savcsp:	Z			;save area for long byte pointer
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;COMMAT		match a command
+;accepts
+;	TP/	command table
+;	CHPT/	ASCIZ
+;returns
+;	AGRVAL/	pointing to matches
+;	CHPT/	pointing to end of match, if exactly one match
+;	+1 if no match
+;	+2 if exactly one match
+;	+3 if many matches
+;-
+
+commat::CALL	matbeg			;initialize match variables
+	SETZM	namflg			;not a VERIFY NAME command
+	CALL	tabcom			;compare table
+	branch	matend			;*** BEWARE *** must be like this
+
+
+
+
+;+
+;MATBEG		start match
+;returns
+;	+1 always, with ERRFL, AGRVAL, AGRMAX, AGRORD cleared.
+;-
+
+matbeg::SETZM	errfl##			;clear error
+	SETZM	agrval			;clear match value
+	SETZM	agrmax			;clear maximal agreement
+	SETZM	agrord			;clear ordinal number
+	return
+
+;+
+;TABCOM		compare command table
+;accepts	TP/	command table
+;		CHPT/	command
+;returns	+1 always
+;-
+
+tabcom:	save	<tp,str>
+	MOVEI	t,expcom		;set expansion function
+	MOVEM	t,expfun
+tabco1:	CALL	fircom			;get first command
+	 JRST	tabco9			;no more commands
+	HLRZ	str,0(tp)		;get command string
+	CALL	cmpstr			;compare string
+	CALL	cosuta			;compare sub table
+	CALL	necoel			;get next command
+	JRST	tabco1
+tabco9:	return
+
+
+
+;+
+;EXPCOM		expand command
+;accepts	AGRVAL/	command
+;returns	+1 always, with command name printed
+;-
+expcom:	save	<tp,str>
+	MOVE	tp,agrval		;get command
+	HLRZ	str,0(tp)		;get command string
+	CALL	prstr##			;output it
+	return
+
+
+;+
+;FIRCOM		get first command
+;accepts	TP/	command table
+;returns	TP/	command found
+;		+1 if no command found
+;		+2 if command found
+;-
+fircom::JUMPE	tp,firco9	;end of table ?
+	HLRZ	t,tp		;get command mask
+	ANDCM	t,cursta	;check current status
+	JUMPE	t,firco8	;legal command ?
+	CALL	necoel		;no, get next command
+	JRST	fircom
+firco8:	skpret			;command found
+firco9:	return
+
+;+
+;COSUTA		compare sub table
+;accepts	TP/	table pointer
+;returns	+1 always
+;-
+
+cosuta:	save	<tp>
+	HRRZ	tp,0(tp)		;get pointer to command head
+	SKIPN	0(tp)			;any sub table ?
+	 JRST	cosut9			;no
+	CALL	necoel			;no, skip menu question
+	CALL	tabcom			;compare table
+cosut9:	return
+
+;+
+;NECOEL		get next command list element
+;accepts	TP/	command table
+;returns	TP/	new command table
+;-
+
+necoel::MOVE	tp,1(tp)	; get next element
+	AOS	agrord		; next element
+	return
+
+
+
+;+
+;CMPSTR		compare command string
+;accepts	STR/	command string
+;		CHPT/	command
+;-
+
+cmpstr:	save	<nr,tp,chpt##>
+	CALL	comp			;any match ?
+	 JRST	cmpst9			;no
+	CAMLE	nr,agrmax		;more alike ?
+	 CALL	gtfima			;yes, get first match
+	MOVE	nr,0(tp)		;get match value
+	MOVEI	tp,agrval		;get list pointer, where to store
+	CALL	addlis##		;store match in list
+cmpst9:	return
+
+
+
+;+
+;COMP		compare two ASCIZ, handling quote-search
+;accepts	CHPT/	pointer to first ASCIZ
+;		STR/	pointer to second
+;returns	+1 if not match
+;		+2 if match
+;		NR/	match count, where
+;			+100	for each matching character
+;			+ 10	for each matching word
+;			+  1	for whole line matching (exact match)
+;		CHPT/	end of match
+;-
+
+comp::	save	<bp,ch>
+	CALL	mkbp##			;make pointer
+	MOVEM	bp,cspt			;save pointer
+	SETZ	nr,			;initialize agree count
+	CALL	getsho			;get first character
+	CAIN	ch,.CHQUO		;quote?
+	 JRST[	CALL	strcmp		;yes, string compare
+		JRST	comp8]
+	CALL	nelowo			;no, get start of long word
+	CALL	qeostr			;end of string ?
+	 JRST	comp9			;empty
+	CALL	comlin			;compare strings
+comp8:	JUMPE	nr,comp9		;any likeness ?
+	CAML	nr,agrmax		;yes, alike ?
+	 skpret				;match
+comp9:	return
+
+
+
+
+;+
+;GETSHO		get character from ASCIZ string
+;accepts	CHPT/	byte pointer to ASCIZ
+;returns	CH/	ASCII character
+;		SAVCHP/	updated byte pointer
+;-
+
+getsho::save	<bp>
+	MOVE	bp,chpt##	;get byte pointer
+	CALL	getchr##	;get ASCII character in CH, update BP
+	MOVEM	bp,savchp	;save updated byte pointer
+	return
+
+
+
+;+
+;NELOWO		get next long word
+;accepts	CSPT/	pointer to long string
+;returns	CH/	last char
+;-
+
+nelowo:	save	<bp>
+	MOVE	bp,cspt		;get long string
+	CALL	skibla##	;get next word
+	MOVEM	bp,cspt		;save pointer
+	return
+
+
+
+
+
+;+
+;QEOSTR		test for end of string
+;accepts	CH/	character
+;returns	+1 if end of string
+;		+2 if not
+;-
+
+qeostr::JUMPE	ch,qeost9		;end of line ?
+	CAIN	ch,.CHSEM		;semicolon?
+	 JRST	qeost9			;yes, end of command
+	CAIE	ch,","			;comma?
+	 skpret				;no, +2 return
+qeost9:	return
+
+
+
+
+
+;+
+;COMLIN		compare two ASCIZ 
+;accepts	CSPT/	first ASCIZ
+;		CHPT/	second ASCIZ
+;returns	NR/	match sum, where
+;			+100	for each matching character
+;			+ 10	for each matching word
+;			+  1	if whole line matching (except if VERIFY NAME)
+;			=0 if no match
+;-
+
+comlin::save	<ch>
+	SETZ	nr,			;clear match count
+comli1:	CALL	neshwo			;get next short word
+	CALL	qeostr			;end of string ?
+	 JRST	comli7			;[TTQ.2] not exact match
+	CALL	comwor			;compare words
+	JUMPE	nr,comli9		;any form of match ?
+	CALL	nelowo			;yes, get next long word
+	CALL	qeostr			;end of string ?
+	 JRST	comli8			;yes, exact match
+	JRST	comli1			;no, compare next words
+
+comli7:	CALL	nelowo			;[TTQ.2] get next long word
+	CALL	qeostr			;[TTQ.2] end of string ?
+	 TRNA				;<KPJ.10!TTQ.2> yes, exact match
+	  JRST	comli9			;[TTQ.2]
+
+comli8:	SKIPL	namflg			;VERIFY NAME command ?
+	 ADDI	nr,1			;no, exact match
+comli9:	return
+
+
+
+
+
+;+
+;NESHWO		get next short word
+;accepts	CHPT/	pointer to short string
+;returns	CH/	last char
+;-
+
+neshwo:	save	<bp>
+	MOVE	bp,chpt##	;get short string
+	CALL	skibla##	;get next word
+	MOVEM	bp,chpt##	;save pointer
+	return
+
+
+
+
+
+;+
+;COMWOR		compare words
+;accepts	CSPT/	long word
+;		CHPT/	short word
+;		NR/	old match count
+;returns	NR/	match count
+;-
+
+comwor:	save	<ch>
+	CALL	getsho		;get short character
+	PUSH	P,ch			;<KPJ.24> save character
+	PUSH	P,bp			;<KPJ.24> save byte pointer
+	MOVE	bp,cspt			;<KPJ.24> get alternate byte pointer
+	CALL	getchr##		;<KPJ.24> get character from ASCIZ
+	MOVEM	ch,savchr		;<KPJ.24> save away character
+	MOVEM	bp,savcsp		;<KPJ.24> save away updated byte ptr.
+	POP	P,bp			;<KPJ.24> restore byte pointer
+	POP	P,ch			;<KPJ.24> restore character
+
+comwo1:	CALL	cmpchr			;compare CH/ to SAVCHR/, "normal form"
+	 JRST	comwo8			;not "same" character, no match
+	ADDI	nr,^O100		;one more character matches
+	CALL	neloch			;get next long char
+	 JRST[	CALL	neshch		;get next short character
+		 JRST[	SKIPL	namflg	;<KPJ.10!TTQ.2> VERIFY NAME command ?
+			 ADDI	nr,^O10	;no, exact match
+			JRST	comwo9]	;ready
+		JRST	comwo8]		;no match
+	CALL	neshch			;get next short char
+	 TRNA				;end of short word, not exact match
+	  JRST	comwo1			;compare rest of word
+comwo5:	CALL	neloch			;get next long char
+	 JRST	comwo9			;end of word found
+	JRST	comwo5			;get end of long word
+
+comwo8:	SETZ	nr,		;not match
+comwo9:	return
+
+
+
+;+
+;CMPCHR		compare two characters, converting to "normal form" first
+;accepts	CH/	character 1
+;		SAVCHR/	character 2
+;returns	+1 if not the same
+;		+2 if same chars
+;-
+
+cmpchr:	save	<gp1,ch>
+	CALL	convc		;convert character in CH to "normal form"
+	MOVE	gp1,ch		;save normalized character for awhile
+	MOVE	ch,savchr	;get the other ASCII character
+	CALL	convc		;convert character in CH to "normal form"
+	CAMN	gp1,ch		;same character in "normal form"?
+	 skpret			;yes, +2 return
+	return
+
+
+
+
+
+;+
+;CONVC		return a character in "normal form"
+;accepts	CH/	ASCII character (0:127 decimal)
+;		CHRTAB/	character conversion table
+;returns	CH/	"normalized" character
+;-
+
+convc::	CAIL	ch,.CHNUL		;<KPJ.34> valid character?
+	 CAILE	ch,.CHDEL		;<KPJ.34> . . .
+	  BUG(HLT,<convc match>,<ch>)	;<KPJ.34> no, die
+	HRRZ	ch,chrtab##(ch)		;convert character
+	return
+
+
+
+
+;+
+;NELOCH		get next character
+;accepts	CSPT/	byte pointer to ASCIZ
+;returns	SAVCHR/	ASCII character
+;returns	+1 if end of word
+;		+2 if not end
+;-
+
+neloch:	save	<ch,bp>
+	MOVE	bp,cspt		;get byte pointer
+	CALL	getchr##	;get character to CH, update BP
+	MOVEM	ch,savchr	;save ASCII character
+	CALL	qblank##	;end of word ?
+	 JRST	neloc9		;yes
+	CALL	qeostr		;no, end of string ?
+	 JRST	neloc9		;yes
+	MOVEM	bp,cspt		;no, save new byte pointer
+	skpret			;not end of word
+neloc9:	return
+
+
+;+
+;NESHCH		get next short character
+;returns	CH/	character
+;		+1 if end of word
+;		+2 if not end
+;-
+
+neshch:	CALL	getsho		;get character from ASCIZ to CH
+	CALL	qblank##	;end of word ?
+	 JRST	neshc9		;yes
+	CALL	qeostr		;no, end of string ?
+	 JRST	neshc9		;yes
+	CALL	nexsho		;no, step forward
+	skpret			;not end of word
+neshc9:	return
+
+
+
+
+
+;+
+;STRCMP		string compare
+;accepts	CHPT/	pointing to quote in ASCIZ
+;		CSPT/	pointing to ASCIZ to comapre with
+;		NR/	0
+;returns	NR/	0, if no match
+;-
+
+strcmp:	save	<ch>
+	CALL	nexsho			;skip quote character
+	CALL	gsshor			;get first character
+strcm1:	CALL	gslong			;get character from string
+	SKIPN	savchr			;end of string ?
+	 JRST	strcm9			;yes, no match
+	CALL	cmpchr			;compare
+	 JRST	strcm1			;not same, get next
+	CALL	corest			;compare rest of string
+	JUMPE	nr,strcm1		;match ?
+strcm9:	return
+
+
+
+
+
+;+
+;NEXSHO		step forward in short string
+;accepts	CHPT/
+;returns	CHPT/
+;-
+
+nexsho::MOVE	t,savchp
+	MOVEM	t,chpt##		;update character pointer
+	return
+
+
+
+;+
+;GSSHOR		get string char from short string
+;returns	CH/	char
+;-
+
+gsshor:	save	<bp>
+	MOVE	bp,chpt##		;get char pointer
+	CALL	gschar##		;get string char
+	MOVEM	bp,chpt##		;save char pointer
+	return
+
+
+
+
+
+;+
+;GSLONG		get string char from long string
+;returns	CH/	char
+;-
+
+gslong:	save	<ch,bp>
+	MOVE	bp,cspt			;get char pointer
+	CALL	gschar##		;get string char
+	MOVEM	bp,cspt			;save char pointer
+	MOVEM	ch,savchr		;save char
+	return
+
+
+;+
+;COREST		compare rest of string
+;accepts	CHPT/	strings
+;		CSPT/	strings
+;		NR/	zero
+;returns	NR/	zero if not the same
+;-
+
+corest:	save	<ch>
+	MOVE	t,chpt##
+	MOVEM	t,savchp		;save short pointer
+	MOVE	t,cspt
+	MOVEM	t,savcsp		;save long pointer
+cores1:	ADDI	nr,1			;one same char
+	CALL	gsshor			;get short char
+	JUMPE	ch,cores9		;end of short string ?
+	CALL	gslong			;get long char
+	CALL	cmpchr			;compare
+	 TRNA				;different
+	  JRST	cores1			;same, get next
+
+cores8:	CALL	nexlon			;restore long pointer
+	CALL	nexsho			;restore short pointer
+	SETZ	nr,			;no match
+cores9:	return
+
+
+
+
+
+;+
+;NEXLON		step forward in long string
+;accepts	CSPT/	
+;returns	CSPT/	
+;-
+
+nexlon:	MOVE	t,savcsp
+	MOVEM	t,cspt			;update character pointer
+	return
+
+
+
+
+
+;+
+;GTFIMA		get first match
+;		clears old matches
+;-
+
+gtfima::MOVEM	nr,agrmax		;save new max
+	MOVE	t,chpt##
+	MOVEM	t,agrend		;save end pointer
+	SETZM	agrval			;clear old matches
+	return
+
+
+
+
+
+;+
+;MATEND		end of match
+;accepts	AGRVAL/	pointing to all matches
+;		AGREND/	end of match
+;returns	+1 if no match
+;		+2 if exact one match
+;		+3 if many matches
+;-
+
+matend::SKIPN	t,agrval		;any match ?
+	 JRST	maten9			;no
+	skpret				;match
+	SKIPN	1(t)			;exact one match ?
+	 JRST	maten8			;yes
+	skpret				;many matches
+	JRST	maten9
+
+maten8:	MOVE	t,agrend
+	MOVEM	t,chpt##		;get end of match
+	CALL	expand			;expand match
+maten9:	return
+
+
+
+
+
+;+
+;EXPAND		expand input
+;accepts	EXPFUN/	expansion function
+;-
+
+expand::save	<consum##>
+	CALL	qexpan			;check if to expand
+	 JRST	expan9			;no
+	CALL	tcbeg##			;start terminal consumer
+	CALL	@expfun			;do expansion function
+	CALL	putbla			;output blank
+	CALL	tcend##
+expan9:	return
+
+
+
+
+;+
+;QEXPAN		test if to expand
+;accepts	SILFLG/	silence flag
+;		PRODUC/	producer
+;		SELFFL/	own flags
+;returns	+1 if not
+;		+2 if to expand
+;-
+
+qexpan::SKIPGE	silflg##		;silent ?
+	 JRST	qexpa9			;yes
+	CALL	qlogin##		;<KPJ.12> logged in?
+	 TRNA				;<KPJ.12> yeah, go ahead
+	  JRST	qexpa9			;<KPJ.12> naw, +1 return
+	MOVE	t,produc##		;get producer
+	CAIE	t,filpro##		;<KPJ.4> file input?
+T10,<	 CAIN	t,tmppro##>		;<KPJ.6!KPJ.4> or TMPCOR input ?
+T20,<	 CAIN	t,kompro##>		;<KPJ.6> KOM-20 temporary file input ?
+	  JRST	qexpa9			;yes, +1 return
+	MOVE	t,selffl##		;get flags
+	Txne	t,nexpfl		;<KPJ.4> expand ?
+	 skpret				;yes, +2 return
+qexpa9:	return
+
+
+
+
+
+;+
+;PUTBLA		output blank character
+;-
+
+putbla::save	<ch>
+	MOVEI	ch,.CHSPC		;<KPJ.10> space
+	CALL	putch			;<KPJ.10> output it
+	return
+
+
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;		NAMMAT module routines follow:
+
+
+;+
+;NAMMAT		match a name
+;accepts	CHPT/	string pointer
+;		COND/	match condition
+;		NAMFUN/	compare function
+;returns	+1 if no match
+;		+2 if exact one match, CHPT/	points to end of match
+;		+3 if many matches, AGRVAL/	points to matches
+;-
+
+nammat::CALL	matbeg		;initialize match variables
+	MOVEI	t,expnam	;set expansion function
+	MOVEM	t,expfun	;. . .
+	CALL	@namfun		;compare names
+	branch	matend		;*** must be like this **** BEWARE ***
+
+
+
+;+
+T10,<
+;MATBAK		restore match routine pointers in the low segment (T10 only)
+;-
+matbak::MOVEI	t,accall		;accept all routine
+	MOVEM	t,cond			;as "condition"
+	MOVEI	t,allnam		;all names routine
+	MOVEM	t,namfun		;as "name function"
+	return
+>;T10
+
+
+
+;+
+;ALLNAM		compare all names:
+IFN	ftcach,<;0. compare against input name cache>
+;		 1. compare against PERSON names
+;		 2. compare against CONFERENCE names
+IFN	ftempl,<;3. compare against EMPLOYEE names>
+;-
+
+allnam:	save	<gp1>
+IFN	ftcach,<			;<KPJ.31>
+	MOVE	t,selffl##		;<KPJ.32> our flags
+	Txnn	t,matpfl		;<KPJ.32> flag on?
+	 JRST	allna0			;<KPJ.32> no, no cache
+	CALL	inpnam			;<KPJ.31> match against name cache
+	SKIPE	t,agrval		;<KPJ.31> match found?
+	 JRST[	SKIPN	1(t)		;<KPJ.31> yes, ambiguous?
+		 JRST	allna9		;<KPJ.31> no, ready
+		JRST	.+1]		;<KPJ.31> yes, better look it up
+allna0:					;<KPJ.32>
+>;ftcach
+	MOVEI	gp1,pna			;get person name file
+	CALL	nacofi			;compare person file
+	SKIPE	agrval			;match already got ?
+IFE	ftcach,<JRST	allna9>		;yes, ready
+IFN	ftcach,<JRST	allna8>		;yes, ready
+	MOVEI	gp1,mna			;get meeting name file
+	CALL	nacofi			;compare meeting file
+IFN	ftempl,<			;<KPJ.26>
+	SKIPE	agrval			;match got now ?
+IFE	ftcach,<JRST	allna9>		;yes, ready
+IFN	ftcach,<JRST	allna8>		;yes, ready
+	MOVEI	gp1,ena			;get employee name file
+	CALL	nacofi			;compare employee file
+>;ftempl
+IFN	ftcach,<			;<KPJ.31>
+allna8:	MOVE	t,selffl##		;<KPJ.32> our flags
+	Txnn	t,matpfl		;<KPJ.32> any cache?
+	 JRST	allna9			;<KPJ.32> no, skip this nonsense
+	MOVE	nr,agrval		;<KPJ.31> get match list head
+	SKIPE	1(nr)			;<KPJ.31> ambiguous?
+	 JRST	allna9			;<KPJ.31> yes, don't say this cruft
+	MOVE	nr,@agrval		;<KPJ.31> get match#
+	CALL	getobj##		;<KPJ.31> get obejct
+	 JRST	allna9			;<KPJ.31> failed, somehow
+	CALL	inpnum			;<KPJ.31> save name in name cache
+>;ftcach
+allna9:	return
+
+
+;+
+IFN	ftcach,<
+;INPNUM		save name in input name cache
+;accepts	NUMEPT/	pointer to input name cache
+;		BFP/	pointer to object record
+;-
+
+inpnum::MOVE	t2,numept		;<KPJ.31> get name pointer
+	MOVE	t,0(bfp)		;<KPJ.31> save object number
+	MOVEM	t,0(t2)			;<KPJ.31> . . .
+	HRLI	t,recstr(bfp)		;<KPJ.31> get start of name string
+	HRRI	t,1(t2)			;<KPJ.31> get table
+	BLT	t,numsiz-1(t2)		;<KPJ.31> move name
+	ADDI	t2,numsiz		;<KPJ.31> get next name
+	CAIL	t2,numend		;<KPJ.31> end of name table ?
+	 MOVEI	t2,numtab		;<KPJ.31> yes, get start of table
+	MOVEM	t2,numept		;<KPJ.31> save new name pointer
+	return
+>;ftcach
+
+;+
+;EXPNAM		expand name got
+;-
+
+expnam:	save	<nr>
+	CALL	qexpan			;<KPJ.20> expand?
+	 JRST	expna9			;<KPJ.20> no
+	MOVE	nr,@agrval		;get object number
+	CALL	prshna			;output its name
+expna9:	return				;<KPJ.20>
+
+
+;+
+;NACOFI		compare name against a name file
+;accepts	GP1/	name file
+;-
+
+nacofi::save	<nr,bfp,tp,str,namflg>	;<KPJ.26>
+	SETOM	namflg			;<KPJ.26> name matching in progress
+	MOVEI	nr,1			;get first name
+nacof1:	CALL	find##			;get name
+	 JRST	nacof9			;no more person names
+	SKIPG	tp,0(bfp)		;deleted object?
+	 AOJA	nr,nacof1		;yes, get next
+	MOVEI	str,pnanam(bfp)		;get name string
+	CALL	cmpnam			;compare string
+	AOJA	nr,nacof1		;get next name
+nacof9:	return
+
+
+;+
+;PRSHNA		output short name
+;accepts	NR/	object number
+;-
+
+prshna::save	<bfp,gp1,nr,str,lmarg##>
+	CALL	qnamed			;named object ?
+	 JRST[	CALL	probnr##	;no, output object#
+		JRST	prshn9]
+	CALL	obtona##		;yes, get name file
+	CALL	getobj##		;get name
+	 TRNA				;error, cannot find object
+	  JRST[	print	pnanam(bfp)	;output name
+		JRST	.+1]
+prshn9:	return
+
+
+;+
+;PRNAME		output name
+;accepts	NR/	object number
+;-
+
+prname::JUMPLE	nr,prnam9		;existing name ?
+	CALL	qnamed			;named object ?
+	 JRST	prnam1			;no, print object number
+	CALL	getnam			;get name
+	TRNA
+prnam1:	 CALL	probnr##		;output object number
+prnam9:	return
+
+
+;+
+;QNAMED		test if named object (PERSON, CONFERENCE, or EMPLOYEE (opt.))
+;accepts	NR/	object
+;returns	+1 if not named
+;		+2 if object has a name
+;-
+
+qnamed::save	<gp1,nr>
+	CALL	splpoi##		;split pointer
+	CAIE	gp1,per			;<KPJ.26> person ?
+	 CAIN	gp1,mee			;<KPJ.26> or conference?
+IFN	ftempl,<			;<KPJ.26>
+	  TRNA				;<KPJ.26>
+	   CAIN	gp1,emp			;<KPJ.26> or employee?
+>;ftempl
+	 skpret				;yes
+	return
+
+
+;+
+IFN	ftcach,<
+;INPNAM		match name against input name table
+;returns	+1 always, with AGRVAL/ =0: not found in table
+;-
+
+inpnam:	save	<nr,bfp,tp,str,namflg>
+	SETOM	namflg			;name matching in progress
+	MOVEI	nr,numtab		;get start of name table
+inpna1:
+;
+;This trickery is to fool the CMPNAM that we really ARE reading from the
+;data base (the author of that routine did not us ever to match against
+;anything else than data base, and let the damned routine "understand"
+;the data base format.  This makes the CMPNAM return the number we already
+;know, but we have to subtract 1 from the file part of it.
+;
+	SKIPN	tp,@nr			;get number, if any
+	 JRST	impna2			;no number, ignore this "entry"
+	LDB	t,[POINT 9,tp,8]	;extract "file number"
+	CAILE	t,1			;test if legal
+	 CAILE	t,maxmet		;. . .
+	  error	<torgny tholerus>	;we lost badly here
+	SUBI	t,1			;ho hum...
+	DPB	t,[POINT 9,tp,8]	;put it back again
+;
+;End of fiddling.
+;
+	MOVEI	str,1(nr)		;point at name
+	CALL	cmpnam			;compare string
+impna2:	ADDI	nr,numsiz		;get next name
+	CAIGE	nr,numend		;end of table?
+	 JRST	inpna1			;no, continue
+	return
+>;ftcach
+
+
+;+
+;GETNAM		get name of named object (PERSON/CONFERENCE/EMPLOYEE)
+;accepts	NR/	object#
+;-
+
+getnam:	save	<gp1,bfp,str,lmarg##>
+	CALL	colmag			;set magenta colour
+IFN	ftcach,<			;<KPJ.31> name in name cache?
+	MOVE	t,selffl##		;<KPJ.32> our flags
+	Txnn	t,matpfl		;<KPJ.32> any cache?
+	 JRST	getna0			;<KPJ.32> no, skip this nonsense
+	MOVEI	str,namtab		;get start of name table
+getna1:	CAMN	nr,0(str)		;object found ?
+	 JRST[	ADDI	str,1
+		CALL	prstr##		;yes, output name
+		JRST	getna9]		;ready
+	ADDI	str,namsiz		;get next name
+	CAIGE	str,namend		;end of table ?
+	 JRST	getna1			;no
+getna0:					;<KPJ.32>
+>;ftcach
+	CALL	getobj##		;yes, get object
+	 JRST	getna7			;cannot find object
+	SKIPG	0(bfp)			;deleted ?
+	 JRST	getna8			;object deleted
+	CALL	prnam			;output name
+	JRST	getna9
+
+getna7:	CALL	probnr##		;<KPJ.17> prepend object#
+	print	znozuc##		;" (does not exist)"
+	JRST	getna9
+
+getna8:	CALL	probnr##		;<KPJ.17> prepend object#
+	print	zhaswi##		;" (deleted)"
+getna9:	CALL	colcya##		;cyan colour
+	return
+
+
+
+
+;+
+; PRNAM  --  print name
+; gets object in BFP
+;-
+
+prnam::	save	<str>
+	print	recstr(bfp)		;get name string
+IFN	ftcach,<			;<KPJ.31> save name in output cache
+	MOVE	t,selffl##		;<KPJ.32> our flags
+	Txnn	t,matpfl		;<KPJ.32> any cache?
+	 JRST	prnax9			;<KPJ.33!KPJ.32> no, skip this nonsense
+	MOVE	str,namept		;get name pointer
+	MOVE	t,(bfp)			;[004] save object number
+	MOVEM	t,0(str)		;[004] ...
+	HRLI	t,recstr(bfp)		;get start of name string
+	HRRI	t,1(str)		;get table
+	BLT	t,namsiz-1(str)		;move name
+	ADDI	str,namsiz		;get next name
+	CAIL	str,namend		;end of name table ?
+	 MOVEI	str,namtab		;yes, get start of table
+	MOVEM	str,namept		;save new name pointer
+prnax9:					;<KPJ.33!KPJ.32>
+>;ftcach
+	return
+
+
+
+
+
+;+
+; COLMAG  --  start magenta (pig skin) colour
+;-
+
+colmag::SKIPL	colflg##		;any colours?
+	 JRST	colma9			;no, return
+IFN	ftview,<			;<KPJ.11> if VIEWDATA supported
+	SKIPGE	viewfl##		;<KPJ.11> if VIEWDATA
+	 JRST[	MOVEI	t,"E"		;<KPJ.16> "magenta"
+		MOVEM	t,pndcol##	;<KPJ.16> make it pending colour
+		JRST	colma9]		;<KPJ.11> return
+>;ftview
+	CALL	tcolor##		;output ANSI sequence
+	TRN[	BYTE(7).CHESC,.CHOBR,.CHSEM,"3","5",.CHSEM,"7","m",.CHNUL]
+colma9:	return
+
+;+
+;CMPNAM		compare name string
+;accepts	STR/	pointer to name string
+;		CHPT/	command
+;		COND/	match condition
+;		TP/	name number
+;returns	AGRVAL/	match
+;-
+
+cmpnam:	save	<nr,tp,chpt##,ch>
+;	SETOM	namflg			;[TTQ.7] match names
+	CALL	comp			;any match ?
+	 JRST	cmpna9			;no
+	SKIPGE	oldflg			;old name wanted ?
+	 JRST	cmpna1			;yes
+	CALL	getlet##		;no, skip blanks
+	 nop
+	CALL	gshort##		;get next char
+	CALL	qeostr			;end of name ?
+	 TRNA				;yes
+	  JRST	cmpna9			;no, dont accept match
+
+cmpna1:	CALL	@cond			;check condition
+	 JRST	cmpna9			;dont accept
+	CAMLE	nr,agrmax		;more alike ?
+	 CALL	gtfima			;yes, get first match
+	MOVE	nr,tp			;get match value
+	CALL	natoob			;get object number
+	MOVEI	tp,agrval		;get old values
+	CALL	addlis##		;add it
+cmpna9:	return
+
+
+
+
+
+;+
+; NATOOB  --  get object number from name number
+; gets name number in NR
+; returns object number in NR
+;-
+
+natoob:	save	<gp1>		;[KPJ.6]
+	CALL	splpoi##	; split pointer
+	ADDI	gp1,1		; get object file
+	CALL	makpoi##	; make pointer
+	return
+
+
+
+
+
+;+
+; ACCALL  --  accept all names
+; gets TP pointing to object number
+;-
+
+T10,<accall::>			;<KPJ.30>
+T20,<accall:>
+	skpret			; accept all matches
+	return
+
+
+
+
+
+;+
+IFN	ftcach,<			;<KPJ.31>
+;CLENAM		clear name from output name cache
+;accepts	NR/	object
+;-
+
+clenam::save	<str>
+	MOVE	t,selffl##		;<KPJ.32> own flags
+	Txnn	t,matpfl		;<KPJ.32> any cache?
+	 JRST	clena9			;<KPJ.32> no
+	MOVEI	str,namtab		;get name table
+clena1:	CAMN	nr,0(str)		;object found ?
+	 JRST	clena2			;yes
+	ADDI	str,namsiz		;get next name
+	CAIGE	str,namend		;end of table ?
+	 JRST	clena1			;no
+clena2:	SETZM	0(str)			;clear name
+clena9:	return				;<KPJ.32>
+>;ftcach
+
+
+
+
+;+
+vernam::comhed	0,averna,cverna,ccvena##,zvenhl## ;Verify name
+cverna:	RET
+;-
+
+
+
+
+;+
+;AVERNA		argument to VERIFY NAME
+;-
+
+averna:	save	<gp1,tp,namflg>
+	CALL	qexpan			;<KPJ.25> expand?
+	 TRNA				;<KPJ.25> no
+	  JRST[	MOVE	str,chpt##	;<KPJ.25> get pointer
+		CALL	prstr##		;<KPJ.25> output it
+		CALL	toutpu##	;<KPJ.25> be explicit
+		JRST	.+1]		;<KPJ.25>
+	SETOM	namflg			;<TTQ.7> no exact match
+	CALL	preol##			;[TTQ.1] blank line
+	CALL	matbeg			;<TTQ.1> initialize match variables
+	MOVEI	gp1,pna			;[TTQ.1] get person name file
+	CALL	nacofi			;[TTQ.1] compare person file
+	MOVE	tp,agrval		;[TTQ.1] get matches
+	SETOM	probjp##		;[KPJ.5] print object# too
+	CALL	prnali##		;[KPJ.5] print names
+	CALL	matbeg			;<BCQ!KPJ.2> re-initiliaze match vars
+	MOVEI	gp1,mna			;[TTQ.1] get conference name file
+	CALL	nacofi			;[TTQ.1] compare conference file
+	MOVE	tp,agrval		;[TTQ.1] get matches
+	SETOM	probjp##		;[KPJ.5] print object# too
+	CALL	prnali##		;[TTQ.1] print names
+IFN	ftempl,<			;<KPJ.26>
+	CALL	matbeg			;<BCQ!KPJ.2> re-initialize match vars
+	MOVEI	gp1,ena			;[TTQ.1] get employee name file
+	CALL	nacofi			;[TTQ.1] get matches
+	MOVE	tp,agrval		;[TTQ.1] get matches
+	SETOM	probjp##		;[KPJ.5] print object# too
+	CALL	prnali##		;[TTQ.1] print names
+>;ftempl
+	SETOM	silflg##		;silent
+	CALL	gettyp##		;get type
+	 MOVEI	gp1,dir			;get directory file
+	CALL	getnum##		;get object number
+	 JRST	avern9			;no number
+	CALL	makpoi			;make pointer
+	CALL	preol##			;new line
+	CALL	prname			;print its name
+	CALL	putbla			;one blank
+	CALL	prennr##		;output "(object number)" too
+avern9:	branch	clear##			;[TTQ.1] clear input
+
+	END
+..and no more

@@ -1,0 +1,271 @@
+;Oden::DSKG:FIND.MAC<62,7777,MAC> 1986-03-05 15:53:14, Edit by KPJ @ L89
+;10	Sanitized code, and introduced CODE macro.
+;Oden::DSKD:FIND.MAC<62,7777,MAC> 1985-10-01 01:40:57, Edit by K P J
+;7	Introduced PROLOG macro.
+;Oden::DSKD:FIND.MAC<62,7777,MAC> 1985-08-19 06:15:34, Edit: KPJ @ Loud Room
+;6	Corrected and rewrote documentation of various routines.
+;	Rewrote GETBLK.
+;Oden::DSKD:FIND.MAC<62,7777,MAC> 1985-06-20 04:23:20, Edit by KPJ @ GR\N
+;5	QCORRE localized.
+;Oden::DSKD:FIND.MAC<62,7777,MAC> 1985-06-06 05:49:16, Edit by KPJ @ NADJA
+;4	Fixed bug in 3.
+;DSKD:FIND.MAC[62,7777,MAC] 1985-05-17 15:33:23, Edit by THOLERUS T
+;3	Corrected bug in FINDBL that made only halfword used
+;Oden::DSKD:FIND.MAC<62,7777,MAC> 1985-03-12 12:30:09, Edit by KPJ @ L89
+;2	Sanitized code, got rid of useless synonym macros.
+;Oden::Dskd:Find.Mac[62,7777] 1984-05-14 17:52:01, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(find)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 17:52:00
+
+;	D A T A   A R E A
+
+
+savnr:	Z				;save area
+
+	CODE
+
+;+
+;FIND		find disk record
+;		finds old record if record already in memory
+;		outputs old buffer if buffer written
+;accepts	NR/	record number in data base file (1:N)
+;		GP1/	data base file number (1:maxfile#)
+;returns	BFP/	pointing to the right record
+;		+1 if some error
+;		+2 if record found
+;-
+
+find::	CALL	qcorre			;file# correct ?
+	 JRST	find9			;no, give up
+	CALL	getrec			;get record
+	skpret				;record found
+find9:	return
+
+
+
+
+
+;+
+;QCORRE		check if correct record description
+;accepts	GP1/	data base file number (1:maxfile#)
+;		NR/	record number in data base file (1:N)
+;returns	BFP/	meta record
+;		+1 if	(a)	invalid file number
+;			(b)	invalid record number
+;		+2 if correct
+;-
+
+qcorre:	CALL	corfil##	;<KPJ.5> valid file number?
+	 JRST	qcorr9		;no, error
+	CALL	gemere		;convert file number to get Meta record
+	CALL	qexrec		;valid record number?
+	 TRNA			;<KPJ.10> no, invalid
+	  skpret		;valid file and record numbers, +2 return
+qcorr9:	return
+
+
+
+
+
+;+
+;GEMERE		get META record
+;accepts	GP1/	data base file number (1:maxfile#)
+;returns	BFP/	meta pointer
+;-
+
+gemere::save	<gp1,gp2>
+	SUBI	gp1,1			;make offset 0
+	IDIV	gp1,metbas##+metrpb	;divide by max#-of-records
+					;GP1 = block#, GP2 = word#
+	LSH	gp1,blkssi		;block# * 2**7
+	IMULI	gp2,metsiz		;get META record address (0:n)
+	ADDI	gp1,firwrd(gp2)		;get word number
+	MOVEI	bfp,metsta##(gp1)	;get meta record
+	return
+
+
+;+
+;QEXREC		check if valid record number (1:METMAX[file])
+;accepts	NR/	record number to test
+;returns	+1 if not a valid record number
+;		+2 if valid record number
+;-
+
+qexrec:	JUMPLE	nr,qexre9	;negative numbers are invalid
+	CAMG	nr,metmax(bfp)	;record number too large?
+	 skpret			;no, valid record number
+qexre9:	return
+
+
+;+
+;GETREC		get record
+;accepts	GP1/	file#
+;		NR/	record#
+;		BFP/	address of META record
+;returns	BFP/	record#
+;-
+
+getrec::save	<nr,gp2,txt>
+	CALL	findbl			;explode record# to (block#,word#)
+					;NR = block#, GP2 = word# (1:N)
+	CALL	getbuf##		;TXT = buffer address for file GP1
+	CALL	getblk			;get wanted block
+	CALL	findwd			;get word inside buffer
+	return
+
+
+					;<KPJ.6>
+;+
+;FINDBL		compute disk block# from record#
+;accepts	NR/	record#
+;		BFP/	address of META record
+;returns	NR/	block# in disk file
+;		GP2/	word# inside block
+;-
+
+findbl:	save	<gp1>
+	MOVE	gp1,nr			;<KPJ.4> get record#
+	SUBI	gp1,1			;<KPJ.4> record 1 is the first (0th)
+	IDIV	gp1,metrpb(bfp)		;divide by records-per-block count
+	MOVE	nr,gp1			;get block# within file
+	ADD	nr,metbeg(bfp)		;get block# in disk file
+	IMUL	gp2,metsi(bfp)		;get word# inside block
+	ADDI	gp2,firwrd		;dont use first word (***FOO***)
+findb9:	return
+
+
+
+;+
+;GETBLK		get wanted block.
+;		reads buffer from disk, if not already in memory.
+;		outputs buffer to disk first, if modified.
+;
+;accepts	NR/	wanted block#
+;		TXT/	address of KOM control block for file
+;		GP1/	file# or 0 (new file)
+;		BFP/	address of META record for file
+;returns		+1 always, with block in file buffer
+;-
+
+getblk:	save	<nr>
+	SKIPG	gp1			;<KPJ.6> new file?
+	 SKIPA	t,[newbsi]		;<KPJ.6> yes, define buffer size
+	  MOVE	t,bufbsz(txt)		;<KPJ.6> no, use defined buffer size
+	SKIPLE	gp1			;<KPJ.6> new file?
+	 SKIPN	metbus(bfp)		;<KPJ.6> or buffer size undefined?
+	  MOVEM	t,metbus(bfp)		;<KPJ.6> yes, define buffer size
+	CALL	qfind			;is record in memory already ?
+	 CALL	inpblk			;no, input block from disk
+	return
+
+
+;+
+;QFIND		check if record already is in memory
+;accepts	NR/	wanted block#
+;		TXT/	address of KOM control block
+;		BFP/	address of META record
+;returns	+1 if record is not in memory, with 
+;		   NR/ new wanted block#
+;		+2 if record is in memory
+;-
+
+qfind:	save	<gp1,gp2>
+	SKIPGE	updflg##		;are we in update state?
+	 JRST[	MOVE	t,bufver(txt)	;yes, check version# in control block
+		CAMGE	t,updcnt##	;current version ?
+		 JRST	qfind7		;no, get fresh copy
+		JRST	.+1]
+	SKIPN	t,bufblk(txt)		;is any block in memory ?
+	 JRST	qfind7			;no
+	CAML	nr,bufblk(txt)		;is record in memory ?
+	 JRST	qfind1			;yes, perhaps
+	SUB	nr,bufbsz(txt)		;no, reduce by buffer size
+	ADDI	nr,1			;get first block
+	CAMGE	nr,metbeg(bfp)		;is it before start of file
+	 MOVE	nr,metbeg(bfp)		;yes, get start of file
+	JRST	qfind9
+
+qfind1:	MOVE	t,bufblk(txt)		;get block#
+	ADD	t,bufbsz(txt)		;get buffer end
+	CAMGE	nr,t			;is record in memory ?
+	 JRST	qfind8			;yes
+qfind7:	MOVE	gp1,metmax(bfp)		;get #records
+	SUBI	gp1,1
+	IDIV	gp1,metrpb(bfp)		;get #blocks in file
+	ADDI	gp1,1
+	ADD	gp1,metbeg(bfp)		;get first block of next file
+	SUB	gp1,bufbsz(txt)		;step one buffer back
+	CAMLE	nr,gp1			;too close to file end ?
+	 MOVE	nr,gp1			;yes, step back
+	JRST	qfind9
+
+qfind8:	skpret				;+2 return (record is in memory)
+qfind9:	return
+
+
+;+
+;INPBLK		input a disk block.
+;		output old contents if file marked as modified.
+;		when we come here, we know the block is not in memory.
+;
+;accepts	NR/	block#
+;		TXT/	address of KOM control block for file
+;		GP1/	file#
+;-
+
+inpblk:	save	<nr>
+	SKIPE	bufwri(txt)		;is block marked as modified ?
+	 CALL	outblk##		;yes, output it first
+	MOVEM	nr,savnr		;save block#
+	CALL	gefisi			;compute file size (in blocks)
+	ADD	nr,metbeg(bfp)		;add start of file
+	SUB	nr,metbus(bfp)		;step back buffer size
+	CAMLE	nr,savnr		;is block# too big ?
+	 MOVE	nr,savnr		;no, get it back
+	CAIL	nr,firblk		;is block# too small ?
+	 CAIN	gp1,met			;or META file ?
+	  MOVEI	nr,firblk		;yes, get first block
+	CALL	inblk##			;input a block (200 (octal) words)
+	return
+
+
+					;<KPJ.6>
+;+
+;GEFISI		get file size
+;accepts	GP1/	file#
+;		BFP/	address of META record for file
+;returns	NR/	file size (in blocks)
+;-
+
+gefisi:	save	<gp1,gp2>
+	MOVE	gp1,metmax(bfp)		;get #records in file
+	SUBI	gp1,1			;record 1 is the first (0th)
+	IDIV	gp1,metrpb(bfp)		;divide by records-per-block
+	MOVE	nr,gp1			;get block#
+	ADDI	nr,1			;block 1 is the first (0th)
+	return
+
+
+;+
+;FINDWD		find right word inside buffer
+;accepts	NR/	block number
+;		GP2/	word number
+;		TXT/	buffer pointer
+;returns	BFP/	pointing to the right word in the buffer
+;-
+
+findwd:	save	<nr>
+	SUB	nr,bufblk(txt)		;get right block
+	LSH	nr,blkssi		;get word number
+	ADD	nr,gp2			;get right word
+	ADD	nr,bufbeg(txt)		;get word inside buffer
+	MOVE	bfp,nr			;return pointer in bfp
+	return
+
+	END
+..and no more

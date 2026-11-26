@@ -1,0 +1,494 @@
+;Oden::DSKG:REPTIM.MAC<62,7777,MAC> 1987-03-10 13:47:06, KPJ @ L89 <1,2>
+;13	Added free format daytime output.
+;Oden::DSKG:REPTIM.MAC<62,7777,MAC> 1986-12-11 18:50:45, Edit by KPJ @ L89
+;12	PUTCH is macro.
+;Oden::DSKG:REPTIM.MAC<62,7777,MAC> 1986-02-13 19:32:36, Edit by KPJ
+;11	PTY mode inside FTPTYM conditional.
+;Oden::DSKD:REPTIM.MAC<62,7777,MAC> 1985-11-01 03:42:34, Edit by KPJ
+;10	Use ISO standard time format when outputting to a file.
+;Oden::DSKD:REPTIM.MAC<62,7777,MAC> 1985-10-08 00:27:06, Edit by KPJ
+;7	New format of PRINT and STRING macros. Introduced PROLOG macros.
+;Oden::DSKD:REPTIM.MAC<62,7777,MAC> 1985-07-24 13:34:55, Edit by KPJ @ L89
+;6	Moved texts to TEXTER module.
+;Oden::DSKD:REPTIM.MAC<62,7777,MAC> 1985-07-24 13:04:11, Edit by KPJ @ L89
+;5	Eliminated deleted code (QDISPL,PDATUM). Converted UDTX routine
+;	to not change RADIX and to not use SCAN ACs (inserted also a compile
+;	time test that we have 4 consecutive ACs).
+;Oden::DSKD:REPTIM.MAC[62,7777] 1985-01-08 04:04:03, Edit by KPJ @ L89
+;4	Make time output format independent of echo and paperness of terminal.
+;	Get rid of QQUIFI call. Search MACTEN.
+;Freja::<Kom.6-Sources>Reptim.Mac.2 10-Dec-84 16:41:48,Editor:KPJ-Jaakkola
+;3	Misspelling.
+;Oden::DSKD:REPTIM.MAC[62,7777] 1984-11-27 06:53:11, Edit by KPJ @ L89
+;2	Use ISO standard date format. Use TXnn macros to refer to flags.
+;	Lessified space in daytimes.
+;Oden::Dskd:Reptim.Mac[62,7777] 1984-09-04 10:17:49, Edit by K.Jaakkola
+;1	Updated (c) notice.
+;Oden::Dsk:Reptim.Mac 19??-??-?? ??:??:??, Edit by S.E.Enblom
+;0.5	Rewrote UDT output routine.
+
+	SEARCH	kommac
+	PROLOG	(reptim)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computer Centre, 1984-09-04 10:17:47
+
+;	D A T A   A R E A
+
+
+day:	0			; day
+month:	0			; month
+secflg::0			; print seconds flag
+year:	0			; year
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+reptim::comhed	qrepti,noarg##,retime,cctime##,ztimhl## ;(Get) daytime
+;-
+
+
+;+
+;QREPTI		check if to add TIME command
+;returns	+1 QUIT or news-command first in menu
+;		+2 TIME first in menu
+;-
+
+qrepti:	CALL	anynew##	; any news
+	 JRST	qrept9		; yes, dont add command
+	MOVE	t,selffl##	;[KPJ.4] get personal flags
+	Txnn	t,quipfl	;[KPJ.4] QUIT FIRST IN MENU?
+	 skpret			; no, add TIME command
+qrept9:	return
+
+
+;+
+;RETIME		report time
+;-
+
+retime:	save	<gp1,secflg>
+	CALL	preol##			;empty line
+	CALL	gudate##		;get date
+	CALL	ptoday			;output todays date
+	print[	BYTE (7) .CHSPC,.CHNUL]	;a space, too
+	SETOM	secflg			;output seconds, too
+	CALL	ptime			;output time
+	return
+
+
+;+
+;PTODAY		output date (in a free format way)
+;used:		DAYTIME command, and on headers on printer output
+;accepts	GP1/	date
+;-
+
+ptoday::save	<nr,ch>			;<KPJ.13>
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	ptoda9
+	CALL	glyear##		;get year
+	MOVEM	nr,year			;save it
+	CALL	glmont##		;get month
+	MOVEM	nr,month		;save it
+	CALL	glday##			;get day
+	MOVEM	nr,day			;save it
+	CALL	pvecka			;<KPJ.13> output week day
+	MOVEI	ch,.CHSPC		;<KPJ.13> output space
+	CALL	putch			;<KPJ.13>
+	CALL	prdatt			;<KPJ.13> output date
+ptoda9:	return
+
+
+;+
+;PVECKA		output week day in a free format way	<KPJ.13>
+;		this is used mainly for DAYTIME command, and header page
+;		in printer requests
+;-
+
+pvecka::save	<gp1,gp2,str>
+	HLRZ	gp1,gp1			;get day
+	IDIVI	gp1,7			;divide by 7
+	MOVE	str,dagtab(gp2)		;get day name
+	CALL	prstr##			;output it
+	return
+
+
+
+;+
+;DAGTAB		table of the weekday names in a free format.	<KPJ.13>
+;		This table is used for DAYTIME command and such.
+
+dagtab:	zonsda##			;Wednesday
+	ztorsd##			;Thursday
+	zfreda##			;Friday
+	zlorda##			;Saturday
+	zsonda##			;Sunday
+	zmanda##			;Monday
+	ztisda##			;Tuesday
+;-
+
+
+;+
+;PWEEK		output week day
+;-
+
+pweek::	save	<gp1,gp2,str>
+	HLRZ	gp1,gp1			;get day
+	IDIVI	gp1,7			;divide by 7
+	MOVE	str,daytab(gp2)		;get day name
+	CALL	prstr##			;output it
+	return
+
+
+;+
+;DAYTAB		table of the weekday names (10 columns wide)
+;		This table is used for tables and other fixed output.
+
+daytab:	zwedne##			;Wednesday
+	zthurs##			;Thursday
+	zfrida##			;Friday
+	zsatur##			;Saturday
+	zsunda##			;Sunday
+	zmonda##			;Monday
+	ztuesd##			;Tuesday
+;-
+
+
+;+
+;PDATE		output date and time
+;accepts	GP1/	day and time
+;-
+
+pdate::	CALL	pdatum			;output date
+	CALL	ptime			;output time of day
+	return
+
+
+;+
+;PDATUM		output date
+;GP1/		day and time
+;-
+
+pdatum::save	<str,gp1,gp2,ch,nr>
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	pdatu9			;yes, exit
+	JUMPLE	gp1,pdatu8		;no, date undefined ?
+	CALL	qtoday			;today ?
+	 JRST	pdatu9			;<BCQ> yes (not really) ready
+	MOVE	t,consum##		;<KPJ.10> get consumer
+	CAIN	t,filcon##		;<KPJ.10> outputting to file?
+	 JRST	pdatu1			;<KPJ.10> use ISO format
+	MOVE	t,selffl##		;<BCQ> get flags
+	Txne	t,sispfl		;<BCQ> print in ISO standard?
+	 JRST	pdatu1			;<BCQ> yes, so go do it
+	CAIL	nr,7			;less than a week ago ?
+	 JRST	pdatu1			;no, more
+	CALL	pweek			;print week day
+	JRST	pdatu9			;ready
+
+pdatu1:	CALL	pdat			;output old datum
+	JRST	pdatu9
+
+pdatu8:	JUMPE	gp1,pdatu7		;non-existent ?
+	print[	ASCIZ !********* !]
+	JRST	pdatu9
+
+pdatu7:	print[	ASCIZ !          !] ;10 spaces
+pdatu9:	return
+
+
+;+
+;QDISPL		check if display output
+;returns	+1 if not display
+;		+2 if display
+;-
+
+qdispl:
+IFN	ftptym,<			;<KPJ.11>
+	SKIPGE	ptyflg##		;PTY output ?
+	 JRST	qdisp9			;yes, not display
+>;ftptym
+	MOVE	t,consum##		;no, get consumer
+	CAIN	t,tercon##		;terminal output ?
+	 skpret				;yes, display
+qdisp9:	return
+
+
+;+
+;QTODAY		test if today
+;accepts	GP1/	old date
+;returns	+1 if today
+;		+2 if not today, with NR/ number of days ago
+;-
+
+qtoday:	save	<gp1,gp2,str>
+	HLRZ	gp2,gp1			;get old date
+	HRRZ	str,gp1			;get time of day
+	CALL	gudate##		;get current date
+	HLRZ	gp1,gp1			;get day number
+	SUB	gp1,gp2			;get difference
+	CALL	qdispl			;display output ?
+	 JRST	qtoda8			;no
+	MOVE	t,consum##		;<KPJ.10> get consumer
+	CAIN	t,filcon##		;<KPJ.10> output to file?
+	 JRST	qtoda8			;<KPJ.10> yeah, bye
+	MOVE	t,selffl##		;<BCQ> get my own flags
+	Txne	t,sispfl		;<BCQ> SIS format?
+	 JRST	qtoda8			;<BCQ> yes, so return
+	CAILE	gp1,1			;today or yesterday ?
+	 JRST	qtoda8			;no
+	JUMPE	gp1,qtoda1		;today ?
+	print	zyeste##		;"Yesterday "
+	JRST	qtoda9
+
+qtoda1:	JUMPG	gp1,qtoda8		;today ?
+	CAIL	str,200000		;tonight ?
+	 JRST[	print	ztoday##	;"Today" (10 columns wide)
+		JRST	qtoda9]
+	print	ztonig##		;"Tonight" (10 cols. wide)
+	JRST	qtoda9
+
+qtoda8:	MOVE	nr,gp1			;save difference
+	skpret
+qtoda9:	return
+
+
+;+
+;PDAT		output old date
+;accepts	NR/	number of days ago
+;-
+
+pdat:	save	<nr,gp1>
+	HLRZ	gp1,curdat##		;get current date
+	SUB	gp1,nr			;get old absolute date
+	CALL	udtx			;split into year, month and day
+	CALL	prdat			;output datum
+	return
+
+
+;+
+;UDTX		convert UDT to year, month and day
+;		Modification of SCAN .CNTDT	<SEE:0.5>
+;		Rewritten for clarity		<KPJ.5>
+;accepts	GP1/	UDT
+;returns	YEAR/	year#
+;		MONTH/	month# in year
+;		DAY/	day# in month
+;-
+
+IFG	<<gp1+3>-16>,<
+	PRINTX	?REPTIM(UDTX): definition of GP1 AC is out of bounds
+	PASS2
+	END>
+
+udtx:	save	<gp1,<gp1+1>,<gp1+2>,<gp1+3>>
+	ADDI	gp1,<^D1857-^D1500>*^D365+
+		<^D1857-^D1500>/4-
+		<^D1857-^D1500>/^D100+
+		<^D1857-^D1500>/^D400+
+		^D31+^D28+^D31+^D30+
+		^D31+^D30+^D31+^D31+
+		^D30+^D31+^D17		;GP1=days since 1501-01-01
+	IDIVI	gp1,^D400*^D365+^D400/4-
+		^D400/^D100+^D400/^D400	;split into quadracentury
+	LSH	<gp1+1>,2		;convert to number of quarter days
+	IDIVI	<gp1+1>,<^D100*^D365+^D100/4-
+		^D100/^D100>*4+
+		^D400/^D400		;split into century
+	IORI	<gp1+2>,3		;discard fractions of day
+	IDIVI	<gp1+2>,4*^D365+1	;separate into years
+	LSH	<gp1+3>,-2		;GP1+3:	# days this year
+	LSH	gp1,2			;GP1:	4*# quadracenturies
+	ADD	gp1,gp1+1		;GP1:	# centuries
+	IMULI	gp1,^D100		;GP1:	100*# centuries
+	ADDI	gp1,^D1501(gp1+2)	;GP1:	year
+					;GP1+3:	day in year
+	MOVEM	gp1,year		;save year
+	TRNE	gp1,3			;is the year a multiple of 4?
+	 JRST	udtx1			; no, just indicate not a leap year
+	MOVE	<gp1+1>,gp1		;copy year to see if leap year
+	IDIVI	<gp1+1>,^D100		;see if year is multiple of 100
+	SKIPN	<gp1+2>			;if not, then leap
+	 TRNN	<gp1+1>,3		; is year multiple of 400?
+	  TDZA	<gp1+2>,gp1+2		;  yes, leap year after all
+udtx1:	MOVEI	<gp1+2>,1		;set leap year, <GP1+2>=0 if leap year
+	MOVEI	gp1,1			;get month January
+	JUMPN	<gp1+2>,udtx2		;if not leap year, proceed
+	CAIL	<gp1+3>,^D31+^D29	;leap year, see if beyond Feb 29
+	 SOJA	<gp1+3>,udtx2		; yes, back off one day
+	CAIGE	<gp1+3>,^D31		;in January?
+	 AOJA	<gp1+3>,udtx4		; yes, adjust day number and return
+	SUBI	<gp1+3>,^D31-1		;make day in February
+	AOJA	gp1,udtx4		;make month be February and return
+udtx2:	MOVSI	<gp1+1>,-^D11		;loop for 11 months
+udtx3:	CAMLE	<gp1+3>,montab+1(gp1+1)	;see if beyond this month
+	 AOBJN	<gp1+1>,udtx3		; no, loop through November
+	MOVEI	gp1,1(gp1+1)		;get month number
+	SUB	<gp1+3>,montab(gp1+1)	;get days in this month
+udtx4:	MOVEM	gp1,month		;save month
+	MOVEM	<gp1+3>,day		;save day
+	MOVE	gp1,year		;get year
+	IDIVI	gp1,^D100		;extract in-century part
+	MOVEM	<gp1+1>,year		;save it
+	return
+
+montab:	EXP	-1
+	EXP	^D31-1			;1
+	EXP	^D59-1			;2
+	EXP	^D90-1			;3
+	EXP	^D120-1			;4
+	EXP	^D151-1			;5
+	EXP	^D181-1			;6
+	EXP	^D212-1			;7
+	EXP	^D243-1			;8
+	EXP	^D273-1			;9
+	EXP	^D304-1			;10
+	EXP	^D334-1			;11
+	EXP	^D365-1			;12
+
+IFN	<<.-montab>-^D13>,<
+	PRINTX	?REPTIM: MONTAB not 13 words long
+	PASS2
+	END>
+
+
+
+;+
+;PRDATT		output date in a free format (e.g. "11 december 1987")
+;accepts	YEAR/	year (in form "1984")			<KPJ.13>
+;		MONTH/	month# in year
+;		DAY/	day# in month
+;-
+
+prdatt:	save	<nr,ch>
+	MOVE	nr,day			;output day (e.g. "31")
+	CALL	prnum##			;. . .
+	MOVEI	ch,.CHSPC		;output space
+	CALL	putch			;. . .
+	MOVE	nr,month		;get month (e.g. "12")
+	CAILE	nr,0			;valid month?
+	 CAILE	nr,^D12			;(in range 1:12)?
+	  SKIPA	str,[[ASCIZ !xxxxxx!]]	;no, say so
+	   MOVE	str,manad##-1(nr)	;yes, get month name
+	CALL	prstr##			;output month name
+	MOVEI	ch,.CHSPC		;output space
+	CALL	putch			;. . .
+	MOVE	nr,year			;output year (e.g. "1987")
+	CALL	prnum##			;. . .
+	return
+
+
+;+
+;PRDAT		output date in a 12-char. fixed format: "yyyy-mm-dd  "
+;		(e.g. "1984-12-31  ")
+;accepts	YEAR/	year (in form "1984")
+;		MONTH/	month# in year
+;		DAY/	day# in month
+;-
+
+prdat:	save	<nr,ch>
+	MOVE	nr,year			;get year
+	CALL	prnum##			;output it
+	MOVEI	ch,"-"			;output hyphen
+	CALL	putch
+	MOVE	nr,month		;get month
+	CALL	pr2num			;output it
+	MOVEI	ch,"-"			;output hyphen
+	CALL	putch
+	MOVE	nr,day			;get day
+	CALL	pr2num			;output it
+	CALL	putbla##		;a space
+	CALL	putbla##		;a space
+	return
+
+
+;+
+;PR2NUM		output a number with two digits
+;accepts	NR/	number
+;-
+
+pr2num:	save	<gp1,gp2,ch>
+	CAIL	nr,^D99			;more than 2 digits ?
+	 JRST	pr2nu8			;yes
+	MOVE	gp1,nr			;get number
+	IDIVI	gp1,^D10		;divide by ten
+	ADDI	gp1,"0"			;make it an ASCII number
+	MOVE	ch,gp1
+	ANDI	ch,^O177		;make it a character
+	CALL	putch			;output first digit
+	ADDI	gp2,"0"			;make it an ASCII number
+	MOVE	ch,gp2
+	CALL	putch			;output second digit
+	TRNA
+pr2nu8:	 CALL	prnum##			;output number
+pr2nu9:	return
+
+
+;+
+;PTIME		output time of day in form "hh:mm"
+;accepts	GP1/	day and time of day
+;-
+
+ptime::	save	<gp1,nr,ch,str>
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	ptime9			;yes, exit
+	JUMPLE	gp1,ptime8		;date undefined ?
+	HRRZ	gp1,gp1			;get rid of day
+	IMULI	gp1,^D24		;get hours
+	HLRZ	nr,gp1			;get hours
+	HRRZ	gp1,gp1			;get rid of hours
+	CALL	pr2num			;output hour
+	CALL	pcolon			;[KPJ.2] output correct colon
+	IMULI	gp1,^D60		;get minuts
+	HLRZ	nr,gp1			;get minuts
+	CALL	pr2num			;output minutes
+	SKIPL	secflg			;output seconds ?
+	 JRST	ptime9			;no, exit
+	HRRZ	gp1,gp1			;yes, get rid of minutes
+	CALL	pcolon			;[KPJ.2] output correct colon
+	IMULI	gp1,^D60		;get seconds
+	HLRZ	nr,gp1			;get seconds
+	CALL	pr2num			;output seconds
+	JRST	ptime9
+
+ptime8:	JUMPE	gp1,ptime7		;non-existent ?
+	print[	ASCIZ !*****!]		;5 stars
+	JRST	ptime9
+
+ptime7:	print[	ASCIZ !     !]		;5 spaces
+ptime9:	return
+
+
+;+
+;PCOLON		output correct colon (ISO uses "." in times)
+;returns	CH/	correct colon
+;-
+
+pcolon:	MOVE	t,consum##		;<KPJ.10> get consumer
+	CAIN	t,filcon##		;<KPJ.10> outputting to file?
+	 JRST	pcolo1			;<KPJ.10> yes, use ISO format
+	MOVE	t,selffl##	;get personal flags
+	Txne	t,sispfl	;ISO format?
+pcolo1:	 SKIPA	ch,["."]	;[KPJ.2] yes, use dot
+	  MOVEI	ch,":"		;[KPJ.2] no, use colon
+	CALL	putch		;[KPJ.2]
+	return
+
+;+
+;ACCTIM		output accumulated time, in form "dd-hh:mm"
+;accepts	GP1/	time
+;-
+
+acctim::save	<nr,ch>
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	accti9			;yes, exit
+	HLRZ	nr,gp1			;no, get number of days
+	CALL	pr2num			;output it
+	MOVEI	ch,"-"			;output hyphen
+	CALL	putch
+	CALL	ptime			;output time
+accti9:	return
+
+	END
+..and no more

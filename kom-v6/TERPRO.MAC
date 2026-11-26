@@ -1,0 +1,204 @@
+;Oden::DSKG:TERPRO.MAC<62,7777,MAC> 1986-12-28 06:31:02, Edit by KPJ @ H.HOLE
+;12     Handle all line break characters as end of line (except CTRL/L which is
+;       newpage). On T10, echo "^K" on CTRL/K to be compatible with KOM-20.
+;Oden::DSKG:TERPRO.MAC<62,7777,MAC> 1986-12-11 18:59:20, Edit by KPJ @ L89
+;11     PUTCH is macro.
+;Oden::DSKG:TERPRO.MAC<62,7777,MAC> 1986-08-29 01:52:08, Edit by KPJ @ 1SKEDE
+;10     Bug in handling of special characters fixed. Handle text phone ACR.
+;Oden::DSKG:TERPRO.MAC<62,7777,MAC> 1986-06-12 12:10:52, Edit by KPJ @ L89
+;7      Clear TMPCOR flag when returning to TTY input.
+;Oden::DSKG:TERPRO.MAC<62,7777,MAC> 1986-04-25 14:52:00, Edit by KPJ @ L89
+;6      Get rid of OPDEFed funny macros.
+;Oden::DSKD:TERPRO.MAC<62,7777,MAC> 1985-10-22 00:38:05, Edit by KPJ
+;5      Optimized colour coding. Handle line pos incrementation OK.
+;Oden::DSKD:TERPRO.MAC<62,7777,MAC> 1985-10-08 02:05:24, Edit by KPJ
+;4      Introduced PROLOG macro.
+;Oden::DSKD:TERPRO.MAC[62,7777,MAC] 1985-03-01 18:12:53, Edit by KPJ @ L89
+;3      Swedish PTT "text telephone" under switch FTPHON.
+;Oden::DSKD:TERPRO.MAC[62,7777] 1985-01-16 04:58:24, Edit by KPJ @ GRAV
+;2      Use standard names for characters. Rewrote TERSPC routine.
+;Oden::Dskd:Terpro.Mac[62,7777] 1984-09-05 11:54:00, Edit by K.Jaakkola
+;1      Updated (c) notice.
+
+        SEARCH  kommac
+        PROLOG  (terpro)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;       (c) QZ Computing Centre, 1984-09-05 11:53:57
+
+;       D A T A   A R E A
+
+
+lffl::  -1                      ; line feed flag
+lfiflg::-1                      ; line feed input plag
+produc::terpro                  ; current producer
+quest:: [RET]                   ; promt question
+useflg::0                       ; from user flag
+
+;       P R O G R A M   C O D E
+
+        CODE
+
+;+
+; TPBEG  --  set up terminal producer
+;-
+
+tpbeg:: setmem  produc,terpro   ; get input from terminal
+        SETZM   tmpflg##        ;<KPJ.7> end of TMPCOR
+        return
+
+
+
+
+
+;+
+;TERPRO         terminal producer, produces characters by getting them from
+;               the terminal
+;-
+
+terpro::save    <intflg##>
+        SETZM   intflg##                ;clear interrupt
+terpr1: CALL    tget##                  ;get character
+        SETZM   lffl                    ;clear line feed flag
+        SETZM   lfiflg                  ;clear LF input flag
+        CALL    terspc                  ;check for special char
+        SKIPGE  intflg##                ;entry finished ?
+         JRST   terpr9                  ;yes
+        SETOM   useflg                  ;character from user
+        CALL    inclpo##                ;increase line position
+        CALL    putch                   ;send character away
+        SETZM   useflg                  ;clear from user flag
+        SKIPL   intflg##                ;interrupt ?
+         JRST   terpr1                  ;no
+terpr9: CALL    colcya##                ;restore colour
+        return
+
+
+
+
+
+;+
+;TERSPC         test for special characters;
+;accepts        CH/     character
+;       special characters are:
+;               ^G, ^K, ^L, ^M, ^Z, ESC
+;               SPACE (for text phones)
+;returns        +1 always, with CH/     character
+;-
+
+terspc:
+T20,<   CAIE    ch,.CHVTB>              ;<KPJ.12> ^K echoes "^K" on T20.
+         CAIN   ch,.CHBEL               ;<KPJ.12> bell just rings the bell
+          JRST[ MOVEI   ch,.CHCRT       ;<KPJ.12> yes, generate a CRLF
+                CALL    tput##          ;<KPJ.12> . . .
+                MOVEI   ch,.CHLFD       ;<KPJ.12> if no text phone, LF
+IFN     ftphon,<SKIPN   phone##>        ;<KPJ.12> text phones don't grok LFs
+                 CALL   tput##          ;<KPJ.12>
+                MOVEI   ch,.CHLFD       ;<KPJ.12>
+                CALL    eoltty          ;<KPJ.12> end of line
+                JRST    tersp9]         ;<KPJ.12>
+T10,<   CAIE    ch,.CHVTB>              ;<KPJ.12> ^K echoes LF on T10.
+         CAIN   ch,.CHLFD               ;[KPJ.2] ^J *is* a LF
+          JRST[ MOVEI   ch,.CHCRT       ;<KPJ.12> yes, echo CR
+                SKIPE   linpos##        ;<KPJ.12> at line start?
+                 CALL   tput##          ;<KPJ.12> no, put us there
+                MOVEI   ch,.CHLFD       ;<KPJ.12> fake a LF
+                CALL    eoltty          ;<KPJ.10!KPJ.2> yes, end of line
+                JRST    tersp9]         ;<KPJ.10>
+        CAIN    ch,.CHFFD               ;[KPJ.2] form feed ?
+         JRST[  CALL    fftty           ;<KPJ.10!KPJ.2> yes
+                JRST    tersp9]         ;<KPJ.10>
+        CAIN    ch,.CHCRT               ;<KPJ.10!KPJ.2> carriage return ?
+IFE     ftphon,<
+         SETZM  linpos##                ;<KPJ.10> yes, clear line position
+>;ftphon=0
+IFN     ftphon,<                        ;<KPJ.10> text phone support?
+         JRST[  SETZM   linpos##        ;[KPJ.2] yes, clear line position
+                JRST    tersp9]         ;<KPJ.10!BCQ> and return
+        SKIPN   phone##                 ;[KPJ.2][BCQ] yes, and a text phone?
+         JRST   tersp9                  ;[BCQ] no, so just return
+        CAIE    ch,.CHSPC               ;[KPJ.2!BCQ] a space?
+         JRST   tersp9                  ;<KPJ.10!KPJ.2> no, return
+        MOVE    t,linpos##              ;[BCQ] get current line position
+        CAIGE   t,opgsz4                ;<KPJ.10!BCQ> automagic newline?
+         JRST   tersp9                  ;<KPJ.10!BCQ> no, so it's OK to return
+        SETZM   linpos##                ;[BCQ] it will, remember in column 0
+        SKIPN   wriflg##                ;[KPJ.2][BCQ] are we writing an entry?
+         JRST   tersp9                  ;<KPJ.10!KPJ.2> no
+        MOVEI   ch,.CHLFD               ;<KPJ.10>
+        CALL    eoltty                  ;<KPJ.10!BCQ> yes, get a new line
+>;ftphon
+tersp9: return
+
+
+
+
+;+
+;EOLTTY         end of line on terminal
+;returns        +1 always
+;-
+
+eoltty::ifon    scrfl##,eoltt2  ; scrolls ?
+        CALL    inclfc##        ; no, increase line feed count
+        JRST    eoltt9
+
+eoltt2: SETZM   lfcnt##         ; clear line feed count
+eoltt9: SETOM   lffl            ; new line begins
+        SETOM   lfiflg          ; line feed inputed
+        return
+
+
+
+
+
+;+
+; FFTTY  --  form feed on terminal
+;-
+
+fftty:  save    <ch,consum##>
+        ifoff   papflg##,fftty1 ; prints on paper ?
+        CALL    tcbeg##         ; output on terminal
+        CALL    prhead##        ; print heading
+        CALL    tcend##         ; stop terminal output
+        TRNA
+fftty1:  CALL   erascr##        ; erase screen
+        SETZM   lfcnt##         ; clear line feed count
+        return
+
+
+
+
+
+;+
+; ASKQUE  --  ask question
+;-
+
+askque::save    <consum##>
+        CALL    tcbeg##         ; output to terminal
+        CALL    @quest          ; output promt question
+        SETZM   hlpflg##        ; clear help
+        CALL    colwhi          ; white colour
+        branch  tcend##         ; end of terminal output
+
+
+
+
+
+;+
+; COLWHI  --  start white colour
+;-
+
+colwhi::SKIPL   colflg##                ;any colours?
+         JRST   colwh9                  ;no, return
+IFN     ftview,<                        ;<KPJ.4> if VIEWDATA supported
+        SKIPGE  viewfl##                ;<KPJ.4> if VIEWDATA
+         JRST[  MOVEI   t,"G"           ;<KPJ.5> "white"
+                MOVEM   t,pndcol##      ;<KPJ.5> make it pending colour
+                JRST    colwh9]         ;<KPJ.4> return
+>;ftview
+         CALL   tcolor##                ;output ANSI sequence
+        TRN[    BYTE(7) .CHESC,.CHOBR,"m",.CHNUL]
+colwh9: return
+
+        END
+..and no more

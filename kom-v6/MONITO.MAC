@@ -1,0 +1,4034 @@
+	editnr=^O252
+;sauron.smilax.zyx.se!B:/monito.mac 1991-11-22 18:38:54 MET, kpj
+;252	Fix edit #245/251 (use $DMOVM)
+; Aida::Ss:<Kom.6C.Src>Monito.Mac.3, 21-Sep-87 16:17:17, Ed: Zot
+;251?	 a DMOVEM was erroneously replaced by a $Dmove in INITTY
+;Aida::Ss:<Kom.6C.Src>Monito.Mac.2, 18-Sep-87 12:30:58, Ed: Zot
+;250?	added rstreg before debrk% in caint. 
+;Aida::Ss:<Kom.6C.Src>Monito.Mac.4, 13-May-87 15:43:38, Ed: Zot
+;247	Added Vt102 and Vt131 as ANSI terminals
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-05-06 16:22:12, KPJ @ LOUD <10,50>
+;246	Make edit #245 ready.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-05-06 00:03:58, KPJ @ H.HOLE <10,50>
+;245	For all unexpected JSYS errors, add an ERCAL to FATAL@ERRLOG.
+;	Use $SKIPA, $SETZ, $MOVX, $DMOVE, $DMOVM, $DMOVI macros to minimize
+;	assembly switch jungle.  Use TRMBLK in TRMOP. if needed (not ready)
+;Aida::Ss:<Kom.6C.Src>MONITO.MAC.2 1987-05-04 16:53:29, Edit by Zot!
+;244	Change skip sense of batch check for CTRL/C test.
+;Freja::Qs:<Kom.6.Macro>Monito.Mac.38 870421-2113,KPJ-Jaakkola
+;243	Don't use Bottoms-10 opcodes on Twenex in MORDOR.
+;Freja::Qs:<Kom.6.Macro>Monito.Mac.33 870421-1655,KPJ-Jaakkola
+;242	*Really* disable UUO simulation.  Make code more bug resistant.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-03-28 17:37:44, KPJ @ H.HOLE <10,50>
+;241	Make WAIT (FOR NEWS) work on a text phone.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-03-26 01:40:11, KPJ @ H.HOLE <1,2>
+;240	Make code test for T10 version and execute different code for 7.03
+;	and later in the TRMOP. code.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-03-25 10:29:55, KPJ @ DK <1,2>
+;237	TRMOP. still does not match documentation fully. Grrr....
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-03-24 23:53:15, KPJ @ L89 <1,2>
+;236	TRMOP. (and documentation of it) has changed.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-02-23 15:54:27, Edit by KPJ @ L89
+;235	Make EMPLOYEE LOGIN and (REASSIGN) OUTPUT FILE TTY: work.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-02-03 14:27:39, Edit by KPJ @ L89
+;234	Display all receiver headings in !(RE-)TYPE command.  Fixed bug which
+;	made personal flag output incorrect.
+;Freja::Qs:<Kom.6.Macro>Monito.Mac.27 870203-1348,KPJ-Jaakkola
+;233	KOMWR2@MONFIL is for T20, too.
+;Freja::Qs:<Kom.6.Macro>Monito.Mac.26 870202-1655,KPJ-Jaakkola
+;232	Save password in temporary file only when requested on T20, too.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-31 09:48:52, Edit by KPJ @ H.HOLE
+;231	The match routines did have a few variables with to high segment
+;	locations.  Zap them to their "standard" values when changing segments.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-31 08:47:12, Edit by KPJ @ H.HOLE
+;230	KOM-10 low segment contains pointers to high segment in the "buffers".
+;	Get rid of them pointers, and use a high segment table to convert
+;	from file numbers to ASCIZ pointers.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-30 08:48:52, Edit by KPJ @ L89
+;227	Teach KOM-10 about size of a block, so we don't get stray ^@ in output.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-29 10:09:00, Edit by KPJ @ L89
+;226	Ignore temporary file in BEGIN (WITH NEW NAME) command.
+;Freja::Qs:<Kom.6.Macro>Monito.Mac.21 870123-1754,KPJ-Jaakkola
+;225	Allow batch jobs (which have no ^C capability) to run us. Get rid of
+;	CTCCHK routine (we test for ^C cpability in MORDOR already).
+;Freja::Qs:<Kom.6.Macro>Monito.Mac.19 870116-0327,KPJ-Jaakkola
+;224	GRRBLC is T10 only.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-13 15:55:55, Edit by KPJ @ L89
+;223	FTREMO assembly switch to govern if USE ADMINISTRATOR (MODE) is to be
+;	allowed on remote TTY lines (FTREMO#0: disallowed).
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-09 13:04:39, Edit by KPJ @ H.HOLE
+;222	Corrected BUGHLT entry format.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-06 06:25:52, Edit by KPJ @ H.HOLE
+;221	Don't put "(Read) next comment" in the menu if have "too many" unread
+;	entries in current conference.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-04 04:15:44, Edit by KPJ @ H.HOLE
+;220	Include ERRLOG support.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-02 08:07:38, Edit by KPJ @ H.HOLE
+;217	Removed BYEBYE routine.  Make LOGOUT command return error message if
+;	cannot save STD:LOGOUT.EXE in low segment.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1987-01-02 05:32:35, Edit by KPJ @ H.HOLE
+;216	TMPCOR handling rewritten. LOGTMP returns +2 on success. Less code.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-28 20:23:17, Edit by KPJ @ H.HOLE
+;215	Output TTY: buffer before reading a line from TTY:.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-28 04:54:33, Edit by KPJ @ H.HOLE
+;214	GRRBLK copied the path incorrectly.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-19 18:15:51, Edit by KPJ @ L89
+;213	Make interrupt routines callable from low segment even if high segment
+;	is concealed.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-19 16:58:02, Edit by KPJ @ L89
+;212	Special routine GRRBLC to convert a FILOP. block to a RUN block.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-19 14:51:32, Edit by KPJ @ L89
+;211	Remember if program name and high segment names are equal. Since the
+;	GETSEG'ed segment maybe defined with a logical device name, ask for
+;	the real device, file name and extension.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-17 12:56:38, Edit by KPJ @ L89
+;210	Moved JOBDAT locations to IMPURE. Make MORDOR routine initialize the
+;	XMYSLF to contain the original high segment name when virgin high
+;	segment. Make PRCINM use contents of XMYSLF as the high segment name.
+;	GETSLF and XRUNBL eliminated.  Move program-to-run test for LOGMTP
+;	to LOGTMP itself.  RUNX-20 eliminated because unused.  PSITTY renamed
+;	PSIOUT.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-15 15:39:13, Edit by KPJ @ LOUD
+;207	Moved rest of low segment to IMPURE.  Fixed The Last Bug (hopefully)
+;	of the GETSEG logic.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-11 18:38:59, Edit by KPJ @ L89
+;206	Internal I/O made faster. Ignore interrupts during segment change.
+;	Get rid of .JBINT use.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-10 18:43:04, Edit by KPJ @ L89
+;205	PRCINM changed to display high segment name if not same as program.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-09 12:54:35, Edit by KPJ @ L89
+;204	Corrected .JBREL and .JBHDA usage.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-12-08 15:40:11, Edit by KPJ @ L89
+;203	PSIVEC must be changed when GETSEG'ing a new HIGH segment.  While the
+;	interrupt system is off, we must intercept ^C.  Also, say what went
+;	wrong if we fail.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-11-22 23:03:35, Edit by KPJ @ L89
+;202	You cannot ask the high segment for its start address because it's
+;	concealed from the low segment, and the GETSEG UUO clears the low
+;	segment start address .JBSA, so, the entry vector must	be the first
+;	thing in the high segment if you are to be able to JRST there from
+;	the low segment.
+;	The GETSEG UUO also makes life hard it other ways:
+;	(1)	put REENTER address for high segment in high segment, so we
+;		can put it into .JBREN for REENTER command
+;	(2)	copy .JBSA from .JBHSA for START command (only RH)
+;	(3)	put version# in high segment, so we can put it into .JBVER
+;	(4)	the segment name is not the same as the program name (we must
+;		test for this at odd places)
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-11-20 08:37:45, Edit by KPJ @ L83
+;201	New routine GETX.  Move common stuff to GETSLF. Moved magical numbers
+;	to KOMMAC.  Moved low segment code to IMPURE module.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-11-18 16:38:51, Edit by KPJ @ L89
+;200	(REASSIGN) OUTPUT (TO) PRINTER bug fixed.
+;Freja::Qs:<Kom.6.Macro>Monito.Mac.12 861113-1539,KPJ-Jaakkola
+;177	DBP macro changed to DECRBP, else too easy to misspell DPB.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-11-13 09:45:06, Edit by KPJ @ L89
+;176	T10 7.03 support, and some paranoid code.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-11-11 15:35:58, Edit by KPJ @ L89
+;175	CTRL/H's in file to an entry crashed KOM.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-11-11 02:36:42, Edit by KPJ @ H.HOLE
+;174	T10: handle CORE. error returns (no more "FOALLO MONITO" bughalt)
+;	T20: test for memory full (no more "?Illegal memory WRITE" crash)
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-11-03 13:22:21, Edit by KPJ @ L89
+;173	Test for empty data base PER/MEE file when LISTing PERSONs and/or
+;	CONFERENCEs, to get rid of bughalt "prmein lisper" etc.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-10-29 14:30:09, Edit by KPJ @ L89
+;172	Use QZIF/FOAIF/RUNIF.  COSTPR is QZ specific and T10 only.
+;Qzeta::DSKA:MONITO.MAC<5,16,MAC> 1986-10-27 13:18:35, Edit by KPJ @ LOUD
+;171	AMIS support is QZ specific.
+;Oden::DSKG:MONITO.MAC[62,7777,MAC] 1986-10-22 20:39:59,Edit by KPJ @ Loud Room
+;170	Version 6C(170): Fixed bug which made KOM-10 crash with "?Address check
+;	on device RPA0;" etc. Names starting with "@" not considered when
+;	saying the user been unpresent for more than 3 days. Fixed bug which
+;	made KOM enter a vexed state with a strange prompter, when a delayed
+;	command raised an error. Moved VERSION to top of file for easy change.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-10-20 15:01:52, Edit by KPJ @ L89
+;167	SFDP had no +2 return ever.  Bug in PRCINM with SFD displaying.
+;	Make SFDP global (it is needed in odd places).
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-10-15 18:15:25, Edit by KPJ @ L89
+;166	Make this 6c(166).
+;Freja::QS:<KOM.6.MACRO>MONITO.MAC.7 861003-1147, KPJ-JAAKKOLA
+;165	Add KOM% definition to ^A definition if using KOM%. If JSYS name is
+;	defined, use "JSYS nnn" form insetad.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-08-28 21:44:25, Edit by KPJ @ L89
+;164	Still problems with multiple prompters on text phones (will this
+;	never end??).
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-08-28 13:07:31, Edit by KPJ @ L89
+;163	Text phone RETURN key sends always CRLF. Thus, we must ignore LFs when
+;	they appear as the first character on the line.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-07-19 00:27:55, Edit by KPJ @ 1SKEDE
+;162	COMMAT and NAMMAT replced with MATCH module.
+;Freja::Qs:<Kom.6.Macro>Monito.Mac.3 860715-0104,KPJ-Jaakkola
+;161	Handle ^Z correctly on T20 too (broken by edits 151,153)
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-06-26 22:38:28, Edit by KPJ @ L89
+;160	Fixed LOGOUT-10 call.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-06-19 12:48:53, Edit by KPJ @ L89
+;157	(deleted)
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-06-18 17:42:34, Edit by KPJ @ L89
+;156	Store specified RUN block in RUNBLK (in low segment), and save memory
+;	by storing the RUN blocks in sharable high segment.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-06-16 10:45:52, Edit by KPJ @ L89
+;155	Test for FOAness with FOAPPN subroutine, deleted hardwired PPN test.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-05-23 17:46:34, Edit by KPJ @ SEMESTer
+;154	Return to terminal on any error.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-05-06 15:32:19, Edit: KPJ @ ENSKEDE
+;153	Handle ^Z correctly (broken by edit 151).
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-05-06 14:47:06, Edit: KPJ @ ENSKEDE
+;152	Suppress ERRLOG module until fully developed (code now in LOGIN module)
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-05-02 15:05:18, Edit by KPJ @ L89
+;151	Rewrote Tops-10 terminal input routine (TGET):
+;		TGET	get a character from terminal
+;		TTINP	get a line from terminal
+;		MICTTY	handle Tops-10 MIC states
+;	EOFTTY routine is Bottoms-10 only.
+;Freja::Qs:<Kom.6-Sources>Monito.Mac.54 28-Apr-86 13:41:57,Editor:KPJ-Jaakkola
+;150	Added JSYS name table.
+;Freja::Qs:<Kom.6-Sources>Monito.Mac.52 21-Apr-86 15:57:51,Editor:KPJ-Jaakkola
+;147	Disable any privileges in MORDOR, and mumble. Test for FFAness on T10.
+;	Make this version 42.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-04-21 12:37:57, Edit by KPJ @ L89
+;146	EVCLEN = Entry vector length.
+;Freja::Qs:<Kom.6-Sources>Monito.Mac.42 10-Apr-86 11:40:49,Editor:KPJ-Jaakkola
+;145	Make ^A typeout say what JSYS.
+;Freja::Qs:<Kom.6-Sources>Monito.Mac.39 27-Mar-86 17:15:22,Ed:KPJ-Jaakkola
+;144	OLDPAG used on T20. Fixed bug in T20 logout routine.
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-03-17 16:41:45, Edit by KPJ @ L89
+;143	Handle Tops-10 RUN failures, and return to command level, instead of
+;	dying a horrible death, logging out users etc.
+;	Problem: RUNX now returns (all RUNX references must be re-hacked)
+;Oden::DSKG:MONITO.MAC<62,7777,MAC> 1986-03-05 22:22:45, Edit by KPJ @ QZ/KTH
+;142	Added "waiting for data base" on ^A status report.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1986-02-10 16:48:46, Edit by KPJ
+;141	Made ENQ wait loop counter (2) into a symbol (ENQSL3), and made it
+;	5 times larger, so max ENQ wait is 5 times longer (was 60s).
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1986-02-10 16:40:30, Edit by KPJ
+;140	Delete FTBG01 (AMIS 40 character support) code.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1986-02-10 12:02:17, Edit by KPJ
+;137	Identify data base open errors as being from the system.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1986-01-08 08:37:36, Edit by KPJ
+;136	Tops-10 LOGOUT is a mess. Try to make it work like we want.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1986-01-02 16:00:29, Edit by KPJ
+;135	End confusion about "page size": "TTY LENGTH nn"/"TERMINAL LENGTH nn"
+;	and "TTY PAGE nn"/"TERMINAL PAUSE END-OF-PAGE" are different stuff.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1986-01-02 15:43:54, Edit by KPJ
+;134	Get rid of KL-instructions.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1986-01-02 14:28:49, Edit by KPJ
+;133	Make edit 111 work on Tops-10.
+;Aida::SS:<KOM.SRC>MONITO.MAC.40  6-Dec-85 20:21:58,Editor:QZ.KPJ
+;132	;127	Output correct file name for program.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-11-24 04:43:32, Edit by KPJ
+;131	Handle STIW% error return on missing ^C caps (cf edit#125)
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-11-22 03:59:35, Edit by KPJ
+;130	Don't allow ENQ. block, since that makes the rest of the code never
+;	to become used. Also, give a more human oriented error message when
+;	the ENQ timeouts.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-11-22 03:03:57, Edit by KPJ
+;127	*Use* ENQ interrupt (never referenced in code...)
+;Freja::QS:<KOM.6-SOURCES>MONITO.MAC.37 21-Nov-85 19:38:52,Editor:KPJ-JAAKKOLA
+;126	Use SKPRET macro to do just that.
+;Freja::QS:<KOM.6-SOURCES>MONITO.MAC.35 19-Nov-85 21:50:54,Editor:KPJ-JAAKKOLA
+;125	Make it possible run in batch, even though batch disables Control-C-
+;	capability (lose, lose!). This *CAN* crash the data base...
+;Freja::QS:<KOM.6-SOURCES>MONITO.MAC.34 17-Nov-85 00:05:43,Editor:KPJ-JAAKKOLA
+;124	Handle disappearing EXEC subfork as it never existed.
+;Freja::QS:<KOM.6-SOURCES>MONITO.MAC.31 16-Nov-85 14:44:47,Editor:KPJ-JAAKKOLA
+;123	Label KILME1 never defined in KOM-20.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-10-31 00:55:02, Edit by KPJ
+;122	Undo edit #121 for AMIS. Governed by FTBG01.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-10-25 09:22:06, Edit by KPJ
+;121	Use brokets when displaying our program name. Assume extension EXE.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-10-18 01:27:59, Edit by KPJ
+;120	Bug in RUNX crashes.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-10-16 12:58:42, Edit by KPJ
+;117	Make HAVENQ global. Used in TERCON to see if we can hang for terminal
+;	input, or if we should just continue.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-10-09 05:31:31, Edit by KPJ
+;116	Handle terminals with automatic linefeed misfeature, broken by
+;	edit #102 (cf edit #33 and #34).
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-10-08 03:36:15, Edit by KPJ
+;115	Use symbolic high segment start address.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-10-08 01:08:59, Edit by KPJ
+;114	Added SCNDAT to EXTERN list (had mysteriously expired)
+;Oden::DSKD:MONITO.FOO<62,7777,MAC> 1985-10-04 19:30:49, Edit by KPJ
+;113	Introduced PROLOG macro. Global module entry .FILPR@FILPRO renamed
+;	to FILPRO@FILPRO.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-09-19 09:50:32, Edit by KPJ
+;112	Handle problem with PTY-TTY's in T10 V7.02 (ref. Richard Haller,
+;	Univ.of Oregon 85-03-06 04.03)
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-09-18 17:43:00, Edit by KPJ
+;111	CRLF to make LINPOS reflect reality.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-09-18 09:36:52, Edit by KPJ
+;110	Make RUNX handle UU.PHY; make all RUN's thru RUNX (including call of
+;	STD:LOGOUT.EXE)
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-09-18 09:19:18, Edit by KPJ
+;107	Make SLEEPT work.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-09-18 07:59:13, Edit by KPJ
+;106	EDIT#40.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-09-05 07:24:34, Edit by KPJ
+;105	Got rid of KPJHAT.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-09-02 13:04:48, Edit by KPJ
+;104	Close PSI off on T10 to handle problem with DETACH trapping before
+;	LOGOUT.EXE is called.
+;Freja::QS:<KOM.6-SOURCES>MONITO.MAC.27 24-Aug-85 22:34:57,Editor:KPJ-JAAKKOLA
+;103	Entry vector (EVEC) was mistyped ENTVEC in T20 code. T10 entry vector
+;	was incorrectly in low segment. Minor typos.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-08-22 22:26:56, Edit by KPJ @ DECgrupf
+;102	Handle ^O correctly.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-08-18 05:50:31, Edit by KPJ
+;101	Moved around things to make it work with LINK-10:
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-08-05 19:51:57, Edit by KPJ @ DECGR
+;100	BINFUN, PARSE and EVAL merged with COMPUT. Thus deleted their entries.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-08-01 14:01:46, Edit by KPJ @ BCQ
+;77	Added Facit Twist to list of VT100s.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-07-26 xx:xx:xx, Edit by KPJ @ ORANGE
+;76	Added code to prepare for deletion of "string" zero words.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-07-25 19:41:45, Edit by KPJ
+;75	Use physical TTY:, so local definitions don't disturb.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-07-10 16:22:02, Edit by KPJ
+;74	Version 6C frozen. ============ R E L E A S E ==============
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-07-10 19:33:37, Edit by KPJ
+;73	Make restart make it clean.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-06-27 10:30:01, Edit by KPJ @ L89
+;72	Version 6B(13)-3. Don't update data base from not-logged-in.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-06-25 14:05:25, Edit by KPJ @ KYLA
+;71	Version 6B(11)-3. Hacks in ENTCON and LOGIN.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-06-19 23:04:47, Edit by KPJ @ Nadja
+;70	Moved .JBVER and .JBREN to KOMMAC.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-06-19 22:51:06, Edit by KPJ @ Nadja
+;67	TOPS-20 only:	ABORTF (^G routine disabled until fully supported)
+;	Localized:	DETFLG,INPFLG,PSSINI,PSIQUE,SELFJB,SFDP,TRPSTP
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-06-14 14:51:07, Edit by KPJ @ L89
+;66	Version 6B(10)-3.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-06-11 18:17:30, Edit by KPJ @ L89
+;65	Corrected call to TMCBEG (TMP:LME).
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-06-11 14:03:14, Edit by KPJ @ L89
+;64	Moved TOPS-20 JSYS error hacking to QUIT, and constants to KOMMAC.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-05-28 15:58:25, Edit by THOLERUS T
+;63	Added dirty hack in GFRESH in module DBPRO.  Version 6B(7)-3.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-05-21 10:42:22, Edit by THOLERUS T
+;62	Corrected bug in FINDBL in module FIND.  Version 6B(6)-3.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-05-08 12:47:07, Edit by KPJ @ L89
+;61	Make LMENU understand short menus. This is now version 6B(5)-3.
+;	Make cost output routine be more specific about errors.
+;	Unmake edit #51, since it might give problems. (Note: KOM-20 has no
+;	such feature yet.)
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-05-02 16:11:58, Edit by KPJ @ L89
+;60	Version 6B(3): protected names improved.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-04-30 19:32:31, Edit by KPJ @ NADJA
+;57	Use standard DIGITAL format of version word.
+;	This is now version 6B(1).
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-04-22 23:43:37, Edit by KPJ @ NADJA
+;56	VIEWDATA support code added.
+;Freja::Ps:<KOM.6-SOURCES>MONITO.MAC.13 20-Apr-85 01:19:36,Editor:KPJ-JAAKKOLA
+;55	Implemented new fascist code to test for various nasty conditions which
+;	makes us barf:
+;		switches off UUO simulation on TOPS-20 for security reasons
+;		(KL10) non-zero section not supported by us
+;		need ^C capability on TOPS-20
+;		refuses to go on after being stopped with ^C
+;Freja::Ps:<KOM.6-SOURCES>MONITO.MAC.10 18-Apr-85 19:13:05,Editor:KPJ-JAAKKOLA
+;54	Tops-10 LMENU TMPCOR file is now TMP:LME (was TMP:KJO). The contents
+;	have changed to the new format understood by LMENU.
+;Freja::Ps:<KOM.6-SOURCES>MONITO.MAC.7 18-Apr-85 14:32:07,Editor:KPJ-JAAKKOLA
+;53	Fix bug in controlling TTY handling.
+;Freja::Ps:<Kom.6-Sources>Monito.Mac.2 11-Apr-85 17:12:48,Editor:KPJ-Jaakkola
+;52	Flag HAVENQ now *really* used on TOPS-20 too.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-04-11 14:25:16, Edit by KPJ @ PCOM
+;51	Since KOM-10 wakes up once in a while (currently 60s), there is no
+;	reason to return to monitor after a timeout.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-04-10 12:28:01, Edit by KPJ @ L89
+;50	Version changed to 6A(1024)-3 by request from Sven Olofsson QZ.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-03-28 12:30:59, Edit by KPJ @ L89
+;47	Symbol to point at version word. Use standard TOPS-20 symbols for
+;	version word fields. This is now version 6A(1024)-6. Changed PRCIN3
+;	to suppress trailing spaces.
+;Freja::<KOM.6-SOURCES>MONITO.MAC.3 15-Mar-85 02:44:18,Editor:KPJ-JAAKKOLA
+;46	Zero name on TOPS-20 is called "(priv)" by default.
+;	Flag HAVENQ now used on TOPS-20 too.
+;	Same handling of ^C on data base lock on both systems (protects
+;	against database crash due to user ^C)
+;	Same handling of ^C on password input on both systems.
+;	Correct sense of FTPHON usage.
+;	Use standard "local labels" syntax.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-03-21 10:38:40, Edit by KPJ @ L89
+;45	Load ERRLOG module only when error logging enabled.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-03-13 23:21:11, Edit by KPJ @ AIDA
+;44	Make this version 1024.
+;Oden::DSKD:MONITO.MAC<62,7777,MAC> 1985-03-13 22:01:49, Edit by KPJ @ AIDA
+;43	Make program understand process controlling terminal concept.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-03-08 03:04:54, Edit by KPJ @ NADJA
+;42	Get rid of QACR calls. Fixed bug in SETACR which made personal flag
+;	AUTOMATIC fail at times.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-03-04 17:17:03, Edit by KPJ @ L89
+;41	Make all "impossible" error returns give a warning (expect when
+;	DETACHed). Try to dequeue database if we have a resource or waiting
+;	for resource.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-03-01 16:58:53, Edit by KPJ @ L89
+;40	"Text phones" now under switch FTPHON. Sanitized code.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-02-26 07:54:55, Edit by KPJ @ L89
+;37	Moved magical numbers to KOMMAC. Fixed bug in cost output routine.
+;	Routine to test if Tops-10 SFDs feature exists on system, and how
+;	deep they are allowed to nest. New routine CHKTTY to set terminal
+;	type dependent things.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-02-26 07:13:54, Edit by KPJ @ L89
+;36	MACRO-10 bug with literals generates lots of Phase-errors, and
+;	LINK-10 crashes with illegal memory reference. Trying code reformatting
+;	to sidestep this.
+;Oden::DSKD:MONITO.MAC[62,7777,MAC] 1985-02-25 14:01:31, Edit by KPJ @ L89
+;35	Use standard character names. Moved local macros to KOMMAC.
+;	Get rid of useless TRMOP.-macros. Restore ACR and TTY CRLF settings
+;	when halting.
+;Oden::DSKD:MONITO.MAC[62,7777] 1985-01-30 13:29:35, Edit by KPJ @ L89
+;34	Problems with LF here and there. KOM must be fixed to trig on LF
+;	instead of CR. Till that have been done, on Tops-10 edit 33 is off.
+;Oden::DSKD:MONITO.MAC[62,7777] 1985-01-16 05:40:16, Edit by KPJ @ GRAV
+;33	Allow LF to end commands.
+;Oden::DSKD:MONITO.MAC[62,7777] 1985-01-14 00:36:47, Edit by KPJ @ AIDA
+;32	Check if the EXEC fork is still with us, and create it if it is lost.
+;Oden::DSKD:MONITO.MAC[62,7777] 1985-01-07 20:45:01, Edit by KPJ @ L89
+;31	Make personal flag DISCONNECT AFTER LOGOUT work on TOPS-20 too.
+;	Got rid of crummy QDISCO routine. Rewrote ECHOFF/SEECOF routine.
+;	ECHFLG only used here, localized. Got rid of QLFECH calls.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-12-24 16:03:57, Edit by KPJ @ AIDA
+;30	Stop fiddling with MIC echo. Got rid of TMPFLG, which is not used.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-12-11 06:49:31, Edit by KPJ @ NADJA
+;27	RUNX literals must be in low segment, since RUNX zaps away the hiseg.
+;Freja::<Kom.6-Sources>Monito.Mac.2 10-Dec-84 15:09:25,Editor:KPJ-Jaakkola
+;26	Misspelling in T20 code (".CNCNZ" == ".CHCNZ")
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-12-04 21:43:50, Edit by KPJ @ NADJA
+;25	Implement T10 LOGOUT command to care about DISCONNECT flag.
+;	QZ-special hacking for FOA persons: FOA-PPN ==> logout always!
+;24	(this space intentionally left blank)
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-12-03 16:46:32, Edit by KPJ @ L89
+;23	We are now running [edit 1023]. Hurray!
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-12-03 13:28:11, Edit by KPJ @ L89
+;22	New routine to write a TMP:KJO file. It contains "K/C" when
+;	personal flag DISCONNECT AFTER LOGOUT is OFF. Called from QUIT.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-11-29 02:58:27, Edit by KPJ @ UPSALA
+;21	Make a SESSION cost output routine.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-11-23 11:37:34, Edit by K.JAAKKOLA
+;20	Obey the line width as given, and don't assume wrapping column.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-11-19 18:25:05, Edit by K.JAAKKOLA
+;17	Made reference to TEXTER module.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-11-19 11:00:41, Edit by K.JAAKKOLA
+;16	Refer to RUNTAB only when CALL commands active.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-11-12 19:30:29, Edit by K.JAAKKOLA
+;15	LOGOUT routine incorporated.,
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-11-12 12:53:11, Edit by K.JAAKKOLA
+;14	Now the ^C routine is called TRPSTP on both T10 and T20 (was called
+;	CCINT on T20). Deleted inaccessible code in T10 TRPSTP. Set flag
+;	STPFLG, when ^C succeeds, which is checked in QUIT.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-11-02 09:53:54, Edit by K.JAAKKOLA
+;13	Moved magical numbers to KOMMAT.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-10-12 15:31:24, Edit by K.JAAKKOLA
+;12	COPYRIGHT is not used anywhere. Deleted. Inserted COPYRIGHT macro.
+;	Globals not used except in this module: DETFLG - localized.
+;Oden::DSKD:MONITO.MAC[62,7777] 1984-10-04 05:30:38, Edit by K.JAAKKOLA
+;11	Cleanup code for future changes.
+;Oden::Dskd:Monito.Mac[62,7777] 1984-09-25 02:12:43, Edit by K.Jaakkola
+;10	Inserted (c) message as an ASCIZ string in the code.
+;	Deleted KSYWRN variable. Documented buffer control block, version
+;	word and 20x entry vector for future generations.
+;	ENQWAT and HAVENQ not global anymore.
+;	UMODF (T20) deleted, since it was PC%USR really.
+;	STPFLG is never changed on Tops-10. Put into T20 conditional.
+;	RSET routine does nothing under TOPS-20. Put into T10 conditional.
+;Oden::Dskd:Monito.Mac[62,7777] 1984-09-19 18:12:35, Edit by K.Jaakkola
+;7	Problem with RUNX at TOPS-20 fixed.
+;Oden::Dskd:Monito.Mac[62,7777] 1984-09-17 20:19:08, Edit by K.Jaakkola
+;6	Included BCQs TOPS-20 hacks:
+;;;	;Freja::QS:<BJORN-CARLSSON.KOM-LOGIN>MONITO.MAC.2, 10-Sep-84 17:03:33,
+;;;							 Ed: BJORN-CARLSSON
+;;;	;3	Some hacks to allow COM-login.
+;Oden::Dskd:Monito.Mac[62,7777] 1984-09-14 10:08:14, Edit by K.Jaakkola
+;5	Moved PAGIN, PAGOUT and PAGDEL under T10-conditional, since memory
+;	managing is never necessary under TOPS-20.
+;Oden::Dskd:Monito.Mac[62,7777] 1984-09-14 09:29:47, Edit by K.Jaakkola
+;4	Rewrote TOPS-20 RUNFRK routine to not crash for everything. It will
+;	now instead say what went wrong, and return failure.
+;	This also is a temporary fix to these errors:
+;	known bug #8	if you reset your editor fork outside KOM,
+;			you got "runfrk (sfrkv)" crash, with JSYS error
+;			"Invalid process handle". Now you will not crash.
+;	known bug #29	if you reset your EXEC fork outside KOM,
+;			you got "runfrk (sfrkv)" crash, with JSYS error
+;			"Invalid process handle". Now you will not crash.
+;Oden::Dskd:Monito.Mac[62,7777] 1984-09-04 06:15:46, Edit by K.Jaakkola
+;3	Somebody had hacked this module so MACRO barfed over it.
+;Oden::Dskd:Monito.Mac[62,7777] 1984-06-25 15:57:59, Edit by KPJ Jaakkola
+;2	^G interrupt routine fixed to not crash KOM with "inblk monfil"
+;	(known bug #14)
+;Oden::Dskd:Monito.Mac[62,7777] 1984-05-23 05:39:15, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated to version 1017: new version,
+;	.UNDO is no longer with us, text phone hacking incorporated (BCQ
+;	hacking...), lots of fancy backspace hacking (BCQ/BDQ), try to
+;	disconnect line at times, and one or two more hacks...
+;======================================================================
+
+	SEARCH	kommac
+	PROLOG	(monito,hisegm)		;<KPJ.115>
+
+;Copyright (c) Swedish National Defense Research Institute
+;Copyright (c) QZ Computing Centre, 1984
+;Copyright (c) QZ Computing Centre, 1987
+
+	kommaj==6		;major version
+	kommin==3		;minor version
+	komedt==editnr		;edit#
+	komwho==0		;last hacker (well, not quite OK, but...)
+
+				;Version number:
+
+		;   0   2 3	 12 13	      17 18			 35
+		;  +=====+=========+============+==========================+
+		;  ! who ! version !  minor     !	    edit	   !
+		;  +=====+=========+============+==========================+
+
+versio==:FLD(komwho,VI%WHO)!
+	 FLD(kommaj,VI%MAJ)!
+	 FLD(kommin,VI%MIN)!
+	 FLD(komedt,VI%EDN)
+
+T10,<
+IFN	<.-hisegm>,<		;<KPJ.202> must be FIRST in the high segment
+PRINTX	?Entry vector block is not at high segment start. Moby lossage...
+PRINTX	?Must because LOWSEG can't find out start address of concealed HISEG
+PRINTX	<Execution suppressed>
+
+evec::	PORTAL	crashj		;START address
+	PORTAL	crashj		;CCL address
+	JRST	crashj		;data base create
+	PORTAL	crashj		;segment return
+myvers::EXP	versio		;<KPJ.202> version
+myree:	EXP	crashj		;<KPJ.202> REENTER address for high segment
+crashj:	OUTSTR[	ASCIZ	!
+?Compilation error in MONITO - execution fails!]
+	EXIT	0,
+>;High segment bad
+IFE	<.-hisegm>,<
+evec::	PORTAL	start##		;/RUNOFFSET:0	normal entry
+	PORTAL	cclent##	;/RUNOFFSET:1	CCL entry
+	JRST	create##	;/RUNOFFSET:2	create data base
+	PORTAL	segret		;/RUNOFFSET:3	segment return
+myvers::EXP	versio		;<KPJ.202> version
+myree:	EXP	reent##		;<KPJ.202> REENTER address for high segment
+>;High segment OK
+>;T10
+T20,<				;	TOPS-20 entry vector	<KPJ.103>
+				; +=====================================+
+evec::	JRST	start##		; !	      START address		!
+				; +=====================================+
+	JRST	cclent##	; !	    REENTER address		!
+				; +=====================================+
+myvers::EXP	versio		; !<KPJ.47>    version number		!
+				; +=====================================+
+	JRST	create##	; !	   entry to create data base	!
+				; +=====================================+
+	evclen==.-evec		;<KPJ.146>
+>;T20	
+
+;	E X T E R N A L S
+
+T10,<	EXTERN	ptykom>
+	EXTERN	exclud,prior,nexcom
+	EXTERN	uppmun,waitx,monfil,montmp,dbpro,defspe,revfun
+	EXTERN	rdobj,loaemp,creemp
+	EXTERN	movent,deamon,delobj
+	EXTERN	outent,prirec,mark,cremar,revtab,chkrec,chanam
+	EXTERN	subtra,updlse,help,alltab,chatab,chapre
+	EXTERN	calvid,chatyp,search,add,prpest
+	EXTERN	onlyre,site,member,creloc,gtname,chknew,zapobj
+	EXTERN	rdnext,joinmt,lismee,cremee,creatm,crepre
+	EXTERN	lispre,nexlet,mkmess,mkcomm,review,displa
+	EXTERN	addlnk,crelnk,addent,dbcon,oerase,tertab
+	EXTERN	objsta,sysinf,lisper,reptim,liscom
+	EXTERN	creper,crenam,mkmenu,chapgs,wrient,writee
+	EXTERN	entcon,adreli,filpro,filcon,refina,prnews
+	EXTERN	edit,enter,addlis,login,newnam,getnum
+IFN	ftcomp,<EXTERN	comput>
+	EXTERN	strcon,match,getchr,read,topcom,terpro ;<KPJ.162>
+	EXTERN	tercon,strpro,find,updbeg,quit,genera,new
+	EXTERN	scndat,texter
+	EXTERN	errlog
+RUNIF,<	EXTERN	runtab>			;<KPJ.172> only if CALL commands
+
+T10,<					;[KPJ.35]
+;T1, T2, T3, T4 must be in that order for this module to work.
+
+IFN	<<t2-t1>-1>,<PRINTX ? T1 and T2 not in order.>
+IFN	<<t3-t2>-1>,<PRINTX ? T2 and T3 not in order.>
+IFN	<<t4-t3>-1>,<PRINTX ? T3 and T4 not in order.>
+>;T10
+
+
+
+T10,<				;never written into, put into high segment
+;-----------------------------------
+;+
+;TTYCON		Output done on TTY channel done interrupt (Tops-10)
+;-
+
+ttycon::EXP	ttycha				;channel number
+	XWD	<psiout##-psivec##>,PS.ROD	;vector offset,,reason
+						;reason = output done
+	XWD	0,0				;priority,,0
+;-----------------------------------
+;+
+;DATCON		ATTACH/DETACH interrupt condition (Tops-10)
+;-
+
+datcon:	.PCDAT					;ATTACH/DETACH call executed
+	XWD	<psidat##-psivec##>,0		;vector offset,,reasons
+	XWD	2,0				;priority,,0
+;-----------------------------------
+;+
+;STPCON		^C interrupt
+;-
+
+stpcon:	.PCSTP					;^C intercept
+	XWD	<psistp##-psivec##>,0		;vector offset,,reasons
+	XWD	1,0				;priority,,0
+;-----------------------------------
+;+
+;TLECON		Time limit exceeded interrupt condition (Tops-10)
+;-
+
+tlecon:	.PCTLE					;time limit exceeded
+	XWD	<psitle##-psivec##>,0		;vector offset,,reasons
+	XWD	2,0				;priority,,0
+;-----------------------------------
+;+
+;CJICON		Cross-job interrupt interrupt condition (Tops-10)
+;-
+
+cjicon:	.PCJBI					;crossjob interrupt
+	XWD	<psicji##-psivec##>,0		;vector offset,,reasons
+	XWD	2,0				;priority,,0
+;-----------------------------------
+;+
+;QUECON		ENQ resource free interrupt condition (Tops-10)
+;-
+
+quecon:	.PCQUE					;<TEQ> ENQ resource available
+	XWD	<psique##-psivec##>,0		;<TEQ> vector offset,,reasons
+	XWD	2,0				;<TEQ> priority,,0
+>;T10
+T20,<					;level table
+levtab:	lev1pc##			;1	^C
+	lev2pc##			;2	^T, ^A, ^O, normal input
+	lev3pc##			;3	(unused)
+
+				;never written into, write-protect
+
+chntab:	channel	cc.chn,1,trpstp		;0	^C intercept, priority 1
+	channel	typchn,2,ttyint		;1	character typed,priority 2
+REPEAT	0,<channel	cg.chn,2,cgint>	;2	^G-interrupt, priority 2
+REPEAT	1,<0>				;	no ^G interrupt
+	channel	ca.chn,2,caint		;3	^A-interrupt, priority 2
+	channel	co.chn,2,coint		;4	^O-interrupt, priority 2
+	BLOCK	^D36-<.-chntab>		;the rest is unused
+>;T20
+T10,<				;T10 ENQ/DEQ block never written into, hi seg
+enqblk:	FLD(0,^O77B5)!FLD(1,^O7777B17)!FLD(enqlen,^O777777)
+					;size, number, length
+	0,,0				;0,,request identifier
+	FLD(0,^O37777B17)!FLD(cencha,^O777777)
+					;level#,,channel#
+	<^O500000+0>,,0			;500000+user code,,0
+	0,,0				;size of pool,,number requested
+enqlen==.-enqblk
+>;T10
+
+	ASCIZ	"
+Copyright (c) 1984,1985,1987
+		   by   Stockholm University Computing Center, QZ,
+			Box 27322, S-102 54 Stockholm, SWEDEN.
+
+This  software is furnished under a license and may be used and copied
+only  in  accordance  with  the  terms  of  such  license and with the
+inclusion  of  the above copyright notice.  This software or any other
+copies  thereof may not be provided or otherwise made available to any
+other  person.   No  title  to and ownership of the software is hereby
+transferred.   The  information  in this software is subject to change
+without  notice  and  should  not  be  construed  as  a  commitment by
+the Stockholm University Computing Center, QZ."
+
+;+
+;MORDOR		special fascist control code		<KPJ.55>
+;		puts up stack pointer.
+;called:	JSP	5,mordor
+;returns	+1 if all requirements to run program exists
+;-
+
+mordor::MOVE	1,[%CNMNT]		;get monitor type
+	CALLI	1,^O41			;<KPJ.243> get the information
+	 MOVSI	1,(CN%MNX)		;error, treat as unknown monitor type
+	TLNE	1,(CN%MNX)		;unknown monitor type?
+	 JRST[	JRST	4,^O4711	;<KPJ.243> yes, halt
+		JRST	mordor]		;<KPJ.243> continue
+	AND	1,[CN%MNT]		;extract monitor type
+					;now, see if stupid mistake here...
+T10,<	CAMN	1,[FLD(.CNT20,CN%MNT)]>	;Tops-10 code on TOPS-20 ?
+T20,<	CAMN	1,[FLD(.CNT10,CN%MNT)]>	;TOPS-20 code on Tops-10 ?
+	 JRST[				;yes, someone goofed
+T10,<		HRROI	1,[ASCIZ !Cannot run Tops-10 code on TOPS-20!]
+		JSYS	^O313		;<KPJ.242> yell a bit
+		JSYS	^O170		;<KPJ.242> die
+>;T10
+T20,<		TTCALL	3,[ASCIZ !?
+Cannot run TOPS-20 code on Tops-10!]	;<KPJ.243> OUTSTR
+		CALLI	1,^O12		;<KPJ.243> EXIT to monitor				
+>;T20
+		JRST	.]		;don't allow CONTINUE
+					;now see if any unsupported monitor..
+T10,<	CAME	1,[FLD(.CNT10,CN%MNT)]>	;Tops-10?
+T20,<	CAME	1,[FLD(.CNT20,CN%MNT)]>	;TOPS-20?
+	 JRST[	JRST	4,^O666		;<KPJ.242> no, unsupported monitor
+		JRST	.]		;refuse continue
+
+;	- - - - - - - - - - - -
+
+T20,<
+mordo5:	$Dmovi	1,.FHSLF,<-1>		;<KPJ.245>
+	SCVEC%				;do it
+	ERJMP[	HRROI	1,[ASCIZ !Cannot disable UUO simulation:!]
+		ESOUT%			;<KPJ.245>
+		HALTF%			;<KPJ.245>
+		JSR	4,.erstr	;<KPJ.245>
+		HALTF%			;<KPJ.245>
+		JRST	mordo5]		;<KPJ.245> try again
+>;T20
+	$Setz	1,			;<KPJ.245!KPJ.201> clear old contents
+	XHLLI	1,mordor		;get section# (or 0) into LH
+	JUMPN	1,[			;using extended addressing?
+T10,<		OUTSTR[	ASCIZ !?Cannot run in non-zero section!]
+		EXIT	0,		;die hard
+>;T10
+T20,<		HRROI	1,[ASCIZ !Cannot run in non-zero section!]
+mordo1:		ESOUT%			;say we don't like it
+		HALTF%			;return to superior
+		HRROI	1,[ASCIZ !Cannot CONTINUE - GET into zero section!]
+		JRST	mordo1		;no CONTINUE
+>;T20
+		]			;end of non-zero section test
+
+;	- - - - - - - - - - - - -
+
+T20,<
+mordo4:	$Dmovi	1,0,<-1,,4>		;<KPJ.245> this job, one word into AC4
+	MOVEI	3,.JIBAT		;batch controlled? flag
+	GETJI%				;obtain info about us
+	 ERJMP[	HRROI	1,[ASCIZ !GETJI failure - !]
+		ESOUT%			;<KPJ.245>
+		JSR	4,.erstr	;<KPJ.245> display latest error code
+		HALTF%			;<KPJ.245>
+		JRST	mordo4]		;<KPJ.245> try again
+	MOVEM	4,batchf##		;save batch flag
+	MOVEI	1,.FHSLF		;this fork
+	RPCAP%				;get our capabilities
+	ERJMP[	JSR	4,.erstr	;<KPJ.245> ugh
+		HALTF%			;<KPJ.245> thud
+		JRST	mordo4]		;<KPJ.245> try again
+	TLO	3,(SC%CTC)		;enable ^C capability
+	EPCAP%				;set the new capabilities
+	ERJMP[	JSR	4,.erstr	;<KPJ.245> ouch
+		HALTF%			;<KPJ.245> pow
+		JRST	mordo4]		;<KPJ.245> try again
+	RPCAP%				;get the capabilities again
+	ERJMP[	JSR	4,.erstr	;<KPJ.245> argh
+		HALTF%			;<KPJ.245> zonk
+		JRST	mordo4]		;<KPJ.245> try again
+	TLNN	3,(SC%CTC)		;well, do we have the ^C capability?
+	 JUMPE	4,[			;<KPJ.225> and not a batch job?
+		HRROI	1,[ASCIZ !Need Control-C capability to run program!]
+		ESOUT%			;tell user we like ^C capability
+		HALTF%			;die
+		JRST	mordo4]		;<KPJ.245> try again
+>;T20
+
+mordo3:	SKIPE	stpflg##		;stopped by ^C lately?
+	 JRST[	$Psout	zctrlc##	;<KPJ.245> yes, we have objections
+		$Exit			;<KPJ.245> die
+		JRST	mordo3]		;<KPJ.245> one more
+
+T10,<	SKIPE	xmyslf##		;<KPJ.210> have initialized the world?
+	 JRST	mordo9			;<KPJ.210> yep, exit
+	SETOM	samnes##		;<KPJ.210> we are a virgin high segment
+	HRROI	t,.GTRDV		;<KPJ.210> get "run device"
+	GETTAB	t,			;<KPJ.210> . . .
+	 JRST	mordo8			;<KPJ.210> failed, give up
+	MOVEM	t,xmyslf##+0		;<KPJ.210> save away our name
+	HRROI	t,.GTRFN		;<KPJ.210> get "run file name"
+	GETTAB	t,			;<KPJ.210> . . .
+	 JRST	mordo8			;<KPJ.210> failed, give up
+	MOVEM	t,xmyslf##+1		;<KPJ.210> save away our name
+	SETZM	xmyslf##+2		;<KPJ.210> extension unknown
+	SETZM	xmyslf##+3		;<KPJ.210> always zero
+	MOVEI	t,xmypth##		;<KPJ.143> path block address
+	MOVEM	t,xmyslf##+4		;<KPJ.143> store in GETSEG block
+	HRROI	t,.GTRDI		;<KPJ.210> get "run directory"
+	GETTAB	t,			;<KPJ.210> . . .
+	 JRST	mordo8			;<KPJ.210> failed, give up
+	MOVEM	t,xmypth##+2		;<KPJ.210> save PPN
+	SETZM	xmypth##+3		;<KPJ.210> zero away SFD list
+	MOVE	t,[%FTSTR]		;<KPJ.210> get feature word
+	GETTAB	t,			;<KPJ.210> . . .
+	 JRST	mordo8			;<KPJ.210> failed, give up
+	TRNN	t,<F%SFD&^O777777>	;<KPJ.210> monitor likes SFDs?
+	 JRST	mordo9			;<KPJ.210> no, we are done
+	MOVE	t,[%LDSFD]		;<KPJ.210> get max #SFDs
+	GETTAB	t,			;<KPJ.210>
+	 JRST	mordo8			;<KPJ.210> failed, give up
+	MOVN	t2,t			;<KPJ.210> make negative counter
+	HRLZ	t2,t2			;<KPJ.210> -nn,,0
+mordo7:	HRROI	t,.GTRS0(t2)		;<KPJ.210> get "run SFD name"
+	GETTAB	t,			;<KPJ.210> . . .
+	 JRST	mordo8			;<KPJ.210> failed, give up
+	MOVEM	t,xmypth##+3(t2)	;<KPJ.210> save in SFD list
+	JUMPE	t,mordo9		;<KPJ.210> end of list?
+	AOBJN	t2,mordo7		;<KPJ.210> get next name in list
+	$Skipa				;<KPJ.210> done
+mordo8:	 SETOM	xmyslf##+0		;<KPJ.210> we don't our high seg. name
+mordo9:					;<KPJ.210>
+>;T10
+	JRST	0(5)			;return to caller
+
+
+;+
+T20,<					;<KPJ.245> MORDOR subroutine
+;.ERSTR		special subroutine for MORDOR
+;		used to output latest error code for this fork
+;call:		JSR	4,.erstr
+;returns	+1 always
+;-
+
+.erstr:	$Dmovi	1,.PRIOUT,<.FHSLF,,-1>	;<KPJ.245>
+	$Setz	3,			;<KPJ.245>
+	ERSTR%				;<KPJ.245>
+	 ERJMP[	HRROI	1,[ASCIZ !(internal error 1 in ERSTR)!]
+		PSOUT%			;<KPJ.245>
+		JRST	0(4)]		;<KPJ.245>
+	 ERJMP[	HRROI	1,[ASCIZ !(internal error 2 in ERSTR)!]
+		PSOUT%			;<KPJ.245>
+		JRST	0(4)]		;<KPJ.245>
+	JRST	0(4)			;<KPJ.245>
+>;T20
+
+;+
+;INITTY		initialize terminal
+;-
+
+initty::save	<nr>
+T10,<	$Crlf>				;<KPJ.133!KPJ.111> go to at left margin
+	SETZM	linpos##		;initialize line position
+T10,<	HRRZ	t,.JBREL		;<KPJ.204> initialize end-of-lowseg
+	MOVEM	t,.JBFF			;...from .JBREL
+	GETPPN	t,			;get own PPN
+	 Nop
+>;T10
+T20,<
+initt1:	MOVEI	1,.FHSLF		;<KPJ.43> this fork
+	SCTTY%				;<KPJ.43> get controlling terminal
+	ERCAL	fatal##			;<KPJ.245> thud
+	CAIN	2,.CTTRM		;<KPJ.53> job controlling terminal?
+	 JRST[	GJINF%			;<KPJ.43> yes, what is it?
+		MOVE	2,4		;<KPJ.43> return it
+		JRST	.+1]		;<KPJ.43>
+	JUMPL	2,[
+		MOVEI	1,.CHSPC	;<KPJ.201!KPJ.43!BDQ> if detached,
+		PBOUT%			;[BDQ] block in output wait
+		JRST	initt1]		;<KPJ.43!BDQ> until reattached
+	GJINF%				;<KPJ.53> get our user#
+>;T20
+	MOVEM	t,selfpp##		;save it
+	CALL	reitty			;reinitialize terminal
+T10,<	SETOM	echflg##		;set echo flag on
+	.foo==0				;<KPJ.245> default can use ACs
+IFN	<t3-t2-1>,<.foo==1>		;<KPJ.245> can't use ACs
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFE	.foo,<				;<KPJ.245> can use ACs
+IFE	<t2-t-1>,<			;<KPJ.245> even more using?
+	$Dmovi	t,<2,,t2>,.TOLCP	;<KPJ.245> yep
+>;t2=t+1
+IFN	<t2-t-1>,<			;<KPJ.245> nope
+	$Movx	t,<2,,t2>		;<KPJ.245> len,,addr
+	MOVEI	t2,.TOLCP		;<KPJ.35> read "local copy" (echo)
+>;t2<>t+1
+>;can use ACs
+IFN	.foo,<				;<KPJ.245> can't use ACs
+IFE	<t2-t-1>,<			;<KPJ.245> might?
+	$Dmovi	t,<2,,trmblk##>,.TOLCP	;<KPJ.245> yep
+>;t2=t+1
+IFN	<t2-t-1>,<			;<KPJ.245> might not?
+	MOVE	t,[2,,trmblk##]		;<KPJ.245> nope
+	MOVEI	t2,TOLCP		;<KPJ.245> read "local copy" (echo)
+>;t2<>t+1
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+>;can't use ACs
+	PURGE	.foo			;<KPJ.245> forget
+	TRMOP.	t,			;<KPJ.35>
+	 nop
+	SKIPLE	t			;echo on ?
+	 SETZM	echflg##		;no
+>;T10
+	CALL	chktty			;<KPJ.37> get terminal data
+
+T10,<	.foo==0				;<KPJ.245> default can use ACs
+IFN	<t3-t2-1>,<.foo==1>		;<KPJ.245> can't
+IFE	.foo,<				;<KPJ.245> can use ACs?
+IFE	<t2-t-1>,<			;<KPJ.245> even more?
+	$Dmovi	t,<2,,t2>,.TOLCT	;<KPJ.245> yep
+>;t2=t+1
+IFN	<t2-t-1>,<			;<KPJ.245> not even more?
+	$Movx	t,<2,,t2>		;<KPJ.245!KPJ.35> len,,addr
+	MOVEI	t2,.TOLCT		;<KPJ.35> get "lowercase bit"
+>;t2#t+1
+>;can use ACs
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFN	.foo,<				;<KPJ.245> can't use ACs
+	MOVEI	t2,.TOLCT		;<KPJ.35> get "lowercase bit"
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	t,[2,,trmblk##]		;<KPJ.245> len,,addr
+>;can't use ACs
+	PURGE	.foo			;<KPJ.245> forget
+	TRMOP.	t,			;<KPJ.35>
+	 warn	<monito initty trmop read tolct>
+	MOVEM	t,trmlct##		;<KPJ.35> save away old LC value
+
+	.foo==0				;<KPJ.245> default can use ACs
+IFN	<t3-t2-1>,<.foo==1>		;<KPJ.245> can't
+IFN	<t4-t3-1>,<.foo==1>		;<KPJ.245> can't
+IFE	.foo,<				;<KPJ.245> can use ACs
+IFE	<t2-t-1>,<			;<KPJ.245> even more?
+	$Dmovi	t,<3,,t2>,.TOLCT+.TOSET	;<KPJ.245> yep
+>;t2=t+1
+IFN	<t2-t-1>,<			;<KPJ.245> not even more?
+	$Movx	t,<3,,t2>		;<KPJ.245> nope
+	MOVEI	t2,.TOLCT+.TOSET	;<KPJ.35> set lower case
+>;t2<>t+1
+	$Setz	t4,			;<KPJ.245!KPJ.35> lower case ON, please
+>;can use ACs
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFN	.foo,<				;<KPJ.245> can't use ACs
+	MOVEI	t2,.TOLCT+.TOSET	;<KPJ.245> set lower case
+KL10,<	IFE	<t3-t2-1>,<		;<KPJ.245> hm?
+	DMOVE	t2,trmblk##		;<KPJ.245> yep
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.245> sob
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+>>;KL10
+KL10N,<	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+>;KL10N
+	MOVE	t,[3,,trmblk##]		;<KPJ.245> len,,addr
+	SETZM	trmblk##+2		;<KPJ.245> lower case ON, please
+>;can't use ACs
+	PURGE	.foo			;<KPJ.245> forget
+	TRMOP.	t,			;<KPJ.35> set lower case
+	 warn	<monito initty trmop write tolct>
+
+	.foo==0				;<KPJ.245> default can use ACs
+IFN	<t3-t2-1>,<.foo==1>		;<KPJ.245> can't
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFE	.foo,<				;<KPJ.245> can use ACs?
+IFE	<t2-t-1>,<			;<KPJ.245> even more?
+	$Dmovi	t,<2,,t2>,.TOFNC	;<KPJ.245> yep
+>;t2=t+1
+IFN	<t2-t-1>,<			;<KPJ.245> not even more?
+	$Movx	t,<2,,t2>		;<KPJ.245!KPJ.35> len,,addr
+	MOVEI	t2,.TONFC		;<KPJ.35> get "CR/LF bit"
+>;t2<>t+1
+>;can use ACs
+IFN	.foo,<				;<KPJ.245> can't use ACs
+	MOVEI	t2,.TONFC		;<KPJ.35> get "CR/LF bit"
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	t,[2,,trmblk##]		;<KPJ.245> len,,addr
+>;can't use ACs
+	PURGE	.foo			;<KPJ.245> forget
+	TRMOP.	t,			;<KPJ.35>
+	 warn	<monito initty trmop read tonfc>
+	MOVEM	t,trmnfc##		;<KPJ.35> save old value
+	.foo==0				;<KPJ.245> default can use ACs
+	MOVEI	t2,.TONFC+.TOSET	;<KPJ.35> CRLF bit
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+	MOVEI	t4,1			;<KPJ.35> set NO CRLF
+IFE	.foo,<				;<KPJ.245> can use ACs
+	$Movx	t,<3,,t2>		;<KPJ.245!KPJ.35> len,,addr
+>;can use ACs
+IFN	.foo,<				;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVEM	t4,trmblk##+2		;<KPJ.245> . . .
+	MOVE	t,[3,,trmblk##]		;<KPJ.245> len,,addr
+>;can't use ACs
+	PURGE	.foo			;<KPJ.245> forget
+	TRMOP.	t,			;[KPJ.35]
+	 warn	<monito initty trmop write tonfc>
+
+	MOVEI	t2,.TOLNB		;<KPJ.135> get "TTY LENGTH nn"
+	MOVE	t3,uxxtrm##		;<KPJ.135!KPJ.35> controlling TTY
+IFE	<t3-t2-1>,<			;<KPJ.245> can se ACs
+	$Movx	t,<2,,t2>		;<KPJ.246!KPJ.135!KPJ.35> len,,addr
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	t,[2,,trmblk##]		;<KPJ.245> len,,addr
+>;t3<>t2+1
+	TRMOP.	t,			;<KPJ.135!KPJ.35>
+	 warn	<monito ttypgs trmop read topsz> ;<KPJ.135!KPJ.41>
+	MOVEM	t,oldpsz##		;<KPJ.135!BCQ> save the size
+
+	MOVEI	t2,.TOPSZ		;<KPJ.135> get "TTY PAGE nn"
+	MOVE	t3,uxxtrm##		;<KPJ.135!KPJ.35> controlling TTY
+IFE	<t3-t2-1>,<			;<KPJ.245> can use ACs
+	$Movx	t,<2,,t2>		;<KPJ.246!KPJ.135!KPJ.35> len,,addr
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	t,[2,,trmblk##]		;<KPJ.245> len,,addr
+>;t3<>t2+1
+	TRMOP.	t,			;<KPJ.135!KPJ.35>
+	 warn	<monito ttypgs trmop read topsz> ;<KPJ.135!KPJ.41>
+	MOVEM	t,oldpag##		;<KPJ.135!BCQ> save the size
+>;T10
+T20,<	MOVEI	1,.PRIOUT		;get old settings
+	RFMOD%
+	ERCAL	fatal##			;<KPJ.245>
+	MOVEM	2,oldmod##		;save old settings
+
+	TRZ	2,TT%ECM!TT%DAM		;<KPJ.201!BDQ> deferred echo,data mode
+	TDO	2,[TT%LCA!FLD(.TTASC,TT%DAM)]
+					;<KPJ.245!BDQ> LC, xlate echo/output
+	SFMOD%
+	ERCAL	fatal##			;<KPJ.245>
+	STPAR%
+	ERCAL	fatal##			;<KPJ.245>
+
+	MOVEI	2,.MORXO		;<BDQ> read PAUSE END-OF-PAGE status
+	MTOPR%
+	ERCAL	fatal##			;<KPJ.245>
+	MOVEM	3,oldpag##		;<KPJ.135!BDQ> save it
+
+	$Dmovi	2,.MOXOF,.MOOFF		;<KPJ.245!BDQ> then turn it off
+	MTOPR%
+	ERCAL	fatal##			;<KPJ.245>
+
+	RFCOC%				;get CCOC words
+	ERCAL	fatal##			;<KPJ.245>
+
+	$Dmovm	2,oldcoc##		;<KPJ.252!KPJ.201!KPJ.134!BDQ> save'm
+
+	TDZ	2,[BYTE(2) 0,0,0,0,0,0,0,3,3,0,3,0,3,3,0,0,0,0]	;modify it
+	TDO	2,[BYTE(2) 0,0,0,0,0,0,0,2,2,0,3,0,0,2,0,0,0,0]
+			;; @ A B C D E F G H I J K L M N O P Q
+	TDZ	3,[BYTE(2) 0,0,0,0,0,0,0,0,3,3,0,0,0,3]
+	TDO	3,[BYTE(2) 0,0,0,0,0,0,0,0,1,3,0,0,0,3]	;(trick -- simulate)
+			;; R S T U V W X Y Z [ \ ] ^ _
+	SFCOC%
+	ERCAL	fatal##			;<KPJ.245>
+
+	MOVEI	1,.FHJOB		;get job terminal interrupt word
+	RTIW%
+	ERCAL	fatal##			;<KPJ.245>
+	MOVEM	2,oldtiw##		;<BDQ> save it
+
+	TDO	2,[1B<.TICCC>!1B<.TICCO>!1B<.TICCT>! 
+		   1B<.TICTI>!1B<.TICCG>!1B<.TICCA>]
+	STIW%				;interrupt on ^C,^O,^T,^G,^A
+	ERCAL	fatal##			;<KPJ.245> what's up, Doc?
+	MOVE	t,[POINT 7,rtybuf##,6]	;set up this pointer correctly
+	MOVEM	t,rtypnt##
+>;T20
+	SKIPE	papflg##		;prints on paper?
+	 JRST[	MOVEI	t,opgsz2-1	;[KPJ.13] yes, get paper size
+		MOVEM	t,maxlin##	;[KPJ.13] set page size
+		SETZM	scrfl##		;set scroll flag off
+		JRST	.+1]
+
+	CALL	reitty			;one extra open
+	CALL	psiini			;go and initialize interrupt system
+	return
+
+
+;+
+;CHKTTY	(not documented)
+;-
+
+chktty::SETOM	papflg##		;set paper flag on
+	SETOM	scrfl##			;scrolls
+T10,<	MOVEI	t2,.TODIS		;<KPJ.35> read "display" bit
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFE	<t3-t2-1>,<			;<KPJ.245> can use ACs
+	MOVE	nr,[2,,t2]		;<KPJ.35> len,,addr
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	nr,[2,,trmblk##]	;<KPJ.245> len,,addr
+>;t3<>t2+1
+	TRMOP.	nr,			;<KPJ.35>
+	 warn	<monito chktty read todis>
+>;T10
+T20,<	MOVEI	1,.PRIOUT		;get terminal type
+	GTTYP%
+	ERCAL	fatal##			;<KPJ.245>
+KL10,<	ADJBP	2,[POINT 1,trmtps##]>
+KL10N,<	PRINTX	?ADJBP in code - you lose (CHKTTY MONITO)
+	HRROI	1,[ASCIZ !ABJBP in code - you lose (CHKTTY MONITO)!]
+	ESOUT%				;<KPJ.245>
+	HALTF%				;<KPJ.245>
+	MOVE	2,[POINT 1,trmtps##]	;<KPJ.245>
+>;KL10N
+	ILDB	nr,2			;get display attribute
+>;T20
+	CAIE	nr,0			;<TEQ> display terminal ?
+	 SETZM	papflg##		;yes, no paper then
+	CALL	ttywid			;set TTY width
+
+T10,<	MOVEI	t2,.TOTRM		;<KPJ.35> get SIXBIT terminal type
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFE	<t3-t2-1>,<			;<KPJ.245> can use ACs
+	$Movx	nr,<2,,t2>		;<KPJ.35> len,,addr
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	nr,[2,,trmblk##]	;<KPJ.245> len,,addr
+>;t3<>t2+1
+	TRMOP.	nr,			;<KPJ.35>
+	 warn	<monito chktty trmop read totrm>
+
+IFN	ftphon,<			;<KPJ.40> text phone support?
+	CAMN	nr,[SIXBIT !textte!]	;[BCQ] terminal type TEXTTE?
+	 CALL	textte##		;[BCQ] yes, set things up
+>;ftphon
+
+	CAMN	nr,[SIXBIT !id100!]	; terminal type ID100 ?
+	 CALL	termid##		; yes, set colour
+
+IFN	ftview,<			;<KPJ.56> if VIEWDATA support
+	CAMN	nr,[SIXBIT !viewda!]	; terminal type VIEWDA ?
+	 CALL	termvi##		; yes, set parameters
+>;ftview
+
+	SETZM	ansflg##		;clear ANSI flag
+	CAME	nr,[SIXBIT !ambass!]	;terminal type AMBASS ?
+	 CAMN	nr,[SIXBIT !vt100!]	;or terminal type VT100 ?
+	  $Skipa			;yes, set ANSI flag
+	   CAMN	nr,[SIXBIT !ansi!]	;terminal type ANSI ?
+	    SETOM ansflg##		;yes, set ANSI flag
+>;T10
+T20,<	SETZM	ansflg##		;clear ANSI flag
+	MOVEI	1,.PRIOUT		;get terminal type
+	GTTYP%
+	ERCAL	fatal##			;<KPJ.245>
+	CAIE	2,.TT102		;<ZOT.247> VT102?
+	 CAIN	2,.TT131		;<ZOT.247> or VT131?
+	  SETOM	ansflg##		;<ZOT.247> yes, assume ANSI mode
+	CAIE	2,^D29			;<KPJ.77> Facit Twist?
+	 CAIN	2,.TT100		;is it VT100?
+	  SETOM	ansflg##		;yes, assume in ANSI mode
+IFN	ftphon,<			;<KPJ.40>
+	CAIN	2,.ttext		;<BCQ> Swedish PTT "text phones"?
+	 CALL	textte##		;<BCQ> yes, setup for it
+>;ftphon
+>;T20
+	return
+
+;+
+;REITTY		reinitialize terminal
+;-
+
+reitty::save	<nr>
+T10,<	SETZM	detflg##		;we're not detached now!
+	SETO	nr,			;our job
+	CTLJOB	nr,			;get controlling job number
+	 JRST	reitt1			;not implemented, or job number too big
+	CAMN	nr,[-1]			;not controlled via a PTY?
+	 JRST	reitt1			;no, so use non-blocking I/O
+	MOVSI	nr,(UU.AIO)		;get bit to clear
+	ANDCAM	nr,opntty##+.OPMOD	;clear "non blocking I/O" bit
+reitt1:	OPEN	ttycha,opntty##		;open TTY channel
+	 error	<reitty-1 monito>
+
+	PUSH	P,.JBFF			;save old lowseg end
+
+	MOVEI	t,ttibuf##		;we want our own input buffer ring
+	MOVEM	t,.JBFF			;tell system where to put it
+	INBUF	ttycha,noftti		;TTY channel,,number of buffers
+
+	MOVEI	t,ttobuf##		;we want our own input buffer ring
+	MOVEM	t,.JBFF			;tell system where to put it
+	OUTBUF	ttycha,noftto		;TTY channel,,number of buffers
+
+	POP	P,.JBFF			;restore old lowseg end
+	OUTPUT	ttycha,			;make a dummy OUTPUT
+>;T10
+T20,<	SETZM	ittbuf##+.BFADR		;<KPJ.201> clear buffer ring header
+	SETZM	ittbuf##+.BFPTR		;<KPJ.201>
+	SETZM	ittbuf##+.BFCTR		;<KPJ.201>
+	MOVEI	t,noftto*^O23*5-1	;max number of characters in buffer
+	MOVEM	t,ottbuf##+.BFCTR	;<KPJ.201> setup buffer ring byte count
+	MOVE	t,[POINT 7,ttobuf##]	;byte pointer to buffer
+	MOVEM	t,ottbuf##+.BFPTR	;<KPJ.201> setup buffer ring byte ptr
+>;T20
+T10,<	PJOB	nr,			;get job number
+	TRMNO.	nr,			;[KPJ.35] get controlling terminal UDX
+	 error	<reitty-2 monito>	;couldn't
+	MOVEM	nr,uxxtrm##		;<KPJ.35> save UDX
+>;T10
+	CALL	echon			;echo is on
+	return
+
+;+
+;SETACR		set ACR
+;-
+
+setacr::save	<nr>
+T10,<	SKIPN	echflg##		;echo on ?
+	 JRST	setac9			;no, forget ACR
+>;T10
+	MOVE	t,selffl##		;<KPJ.42> get my flags
+	Txne	t,acrpfl		;<KPJ.42> any ACR ?
+	 JRST	setac1			;yes
+	CALL	cleacr			;no, clear ACR
+	JRST	setac9
+
+setac1:
+T10,<	MOVEI	t2,.TOACR		;[KPJ.35] get "auto CRLF facility"
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFE	<t3-t2-1>,<			;<KPJ.245> can use ACs
+	$Movx	nr,<2,,t2>		;<KPJ.245!KPJ.35> len,,addr
+>;can use Acs
+IFN	<t3-t2-1>,<			;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	nr,[2,,trmblk##]	;<KPJ.245> len,,addr
+>;can't use ACs
+	TRMOP.	nr,			;[KPJ.35]
+	 warn	<monito setacr read toacr> ;[KPJ.41]
+	MOVEM	nr,trmcr##		;[KPJ.35] save old value
+
+	MOVEI	t2,.TOACR+.TOSET	;[KPJ.35] set ACR flag
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+	MOVEI	t4,irmarg		;<KPJ.42!35> to our inner margin
+	.foo==0				;<KPJ.245> default can use ACs
+IFN	<t4-t3-1>,<.foo==1>		;<KPJ.245> can't
+IFN	<t3-t2-1>,<.foo==1>		;<KPj.245> can't
+IFE	.foo,<				;<KPJ.245> can use ACs
+	$Movx	t,<3,,t2>		;<KPJ.246!KPJ.35> len,,addr
+>;can use ACs
+IFN	.foo,<				;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVEM	t4,trmblk##+2		;<KPJ.245> . . .
+	MOVE	t,[3,,trmblk##]		;<KPJ.245> len,,addr
+>;can't use ACs
+	PURGE	.foo			;<KPJ.245> forget
+	TRMOP.	t,			;<KPJ.35>
+	 warn	<monito setacr write toacr>
+>;T10
+T20,<	MOVEI	1,.PRIOUT
+	RFMOD%				;<BDQ> check if half-duplex
+	ERCAL	fatal##			;<KPJ.245>
+	MOVSI	1,(1B0)
+	TRNN	2,FLD(.TTHDX&.TTLDX,TT%DUM) ;<BDQ> skip if half-duplex
+	 IORM	1,txtbrk##+1		;set bit for wake-up on SPACE
+>;T20
+setac9:	return
+
+
+;+
+;CLEACR		clear ACR
+;-
+
+cleacr::
+T10,<	MOVEI	t2,.TOACR+.TOSET	;<KPJ.35> set ACR
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+	$Setz	t4,			;<KPJ.35> clear ACR
+	.foo==0				;<KPJ.245> default can use ACs
+IFN	<t4-t3-1>,<.foo==1>		;<KPJ.245> can't
+IFN	<t3-t2-1>,<.foo==1>		;<KPJ.245> can't
+IFE	.foo,<				;<KPJ.245> can use ACs
+	$Movx	t,<3,,t2>		;<KPJ.246!KPJ.35> len,,addr
+>;can use ACs
+IFN	.foo,<				;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVEM	t4,trmblk##+2		;<KPJ.245> . . .
+	MOVE	t,[3,,trmblk##]		;<KPJ.245>
+>;can't use ACs
+	PURGE	.foo			;<KPJ.245> forget
+	TRMOP.	t,			;<KPJ.35>
+	 warn	<monito cleacr trmop write toacr>
+>;T10
+T20,<	MOVSI	t,(1B0)
+	ANDCAM	t,txtbrk##+1		;clear bit for wake-up on SPACE
+>;T20
+	return
+
+
+;+
+;TTYWID		get TTY width
+;-
+
+ttywid:	save	<nr>
+T10,<	MOVEI	t2,.TOWID		;<KPJ.35> get "carriage width"
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFE	<t3-t2-1>,<			;<KPJ.245> can use ACs
+	$Movx	nr,<2,,t2>		;<KPJ.245!KPJ.35> len,,addr
+>;t3=t2+1
+IFN	<t3-t2-1>,<			;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	nr,[2,,trmblk##]	;<KPJ.245> len,,addr
+>;t3=t2+1
+	TRMOP.	nr,			;<KPJ.35>
+	 warn	<monito ttywid trmop read towid> ;[KPJ.41]
+>;T10
+T20,<	$Dmovi	1,.PRIOUT,.MORLW	;<KPJ.246>
+	MTOPR%				;read terminal width
+	ERCAL	fatal##			;<KPJ.245>
+	SKIPN	nr,3
+	 MOVEI	nr,infwid		;[BDQ] set infinite width if width=0
+>;T20
+;;;;	SUBI	nr,1			;[KPJ.20] (don't) adjust for wrap
+	MOVEM	nr,crmarg##		;set current right margin
+	return
+
+
+;+
+;TTYPGS		get TTY page size  [BDQ & BCQ]
+;returns	NR/	crt size,,paper size
+;-
+
+ttypgs::
+T10,<	MOVEI	t2,.TOPSZ		;[KPJ.35] get "page setting"
+	MOVE	t3,uxxtrm##		;<KPJ.35> controlling TTY
+IFE	<t3-t2-1>,<			;<KPj.246> can use ACs
+	$Movx	nr,<2,,t2>		;<KPJ.246!KPJ.35> len,,addr
+>;can use ACs
+IFN	<t3-t2-1>,<			;<KPJ.246> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.246> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.246> . . .
+	MOVE	nr,[2,,trmblk##]	;<KPJ.246> len,,addr
+>;can't use ACs
+	TRMOP.	nr,			;[KPJ.35]
+	 warn	<monito ttypgs trmop read topsz> ;[KPJ.41]
+
+	SKIPN	nr			;[BCQ] if it was set?
+	 HLRZ	nr,selfpg##		;[BCQ] wasn't so get number from dbase
+	HRLZS	nr			;[BCQ] get it left half
+IFN	ftphon,<			;[KPJ.40]
+	SKIPE	phone##			;[BCQ] this is a text telephone?
+	 HRLI	nr,opgsz3		;[BCQ!KPJ.13] yes, it has 12 lines/page
+>;ftphon
+	HRR	nr,selfpg##		;[BCQ] get the rigth margin
+					;[KPJ.35!KPJ.36!BCQ]
+	MOVEI	t2,.TOSET+.TOPSZ	;[KPJ.36] change page size
+	SETO	t3,			;[KPJ.36] controlling tty
+	SETZ	t4,			;[KPJ.36] reset page mode output
+	.foo==0				;<KPJ.246> default can use ACs
+IFN	<t3-t2-1>,<.foo==1>		;<KPJ.246> can't
+IFN	<t4-t3-1>,<.foo==1>		;<KPJ.246> . . .
+IFE	.foo,<				;<KPJ.246> can use ACs
+	$Movx	t,<3,,t2>		;<KPJ.246!KPJ.36> len,,addr
+>;can use ACs
+IFN	.foo,<				;<KPJ.246> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.246> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.246> . . .
+	MOVEM	t4,trmblk##+2		;<KPJ.246> . . .
+	MOVE	t,[3,,trmblk##]		;<KPJ.246> len,,addr
+>;can't use ACs
+	PURGE	.foo			;<KPJ.246> forget
+	TRMOP.	t,			;[BCQ] reset paged mode output
+	 warn	<monito ttypgs trmop write topsz> ;[KPJ.41]
+>;T10
+T20,<	$Dmovi	1,.PRIOUT,.MORLL	;<KPJ.246>
+	MTOPR%				;read terminal page length
+	ERCAL	fatal##			;<KPJ.246>
+	HRRZ	nr,3
+	HRL	nr,3
+	SKIPE	batchf##
+	 HRLI	nr,0			;set screen length 0 if batch job
+>;T20
+	return
+
+
+
+
+;+
+;PSIINI		Initialize the interrupt system
+;-
+
+psiini:				;<KPJ.67>
+T10,<	MOVEI	t,psivec##
+	PIINI.	t,			;initialize the PSI system
+	 error	<psiini-1 monito>
+					;turn on facility, and add condition
+	MOVE	t,[PS.FAC!PS.FON!tlecon] ;"time limit exceeded"
+	PISYS.	t,
+	 error	<psiini-2 monito>
+
+	MOVE	t,[PS.FAC!ttycon]	;add condition
+	PISYS.	t,			; "output done on TTY channel"
+	 error	<psiini-3 monito>
+
+	MOVE	t,[PS.FAC!cjicon]	;add condition
+	PISYS.	t,			; "crossjob interrupt" (ignore error)
+	 warn	<monito psiini pisys psfac>
+
+	MOVE	t,[PS.FAC!datcon]	;Add condition
+	PISYS.	t,			; "ATTACH/DETACH call executed"
+	 error	<psiini-4 monito>
+
+	MOVE	t,[PS.FAC!quecon]	;<KPJ.127> add condition
+	PISYS.	t,			;<KPJ.127> "ENQ got"
+	 error	<psiini-5 monito>
+>; T10
+T20,<	MOVEI	1,.FHSLF
+	MOVE	2,[levtab,,chntab]	;level and channel tables
+	SIR%
+	ERCAL	fatal##			;<KPJ.245>
+	EIR%
+	ERCAL	fatal##			;<KPJ.245>
+	SKIPN	batchf##		;<ZOT.244!BDQ> batch has no ^C caps.
+	 JRST[	MOVE	1,[.TICCC,,cc.chn] ;assign interrupt on ^C to chan 0
+		ATI%
+		ERCAL	fatal##		;<KPJ.245>
+		JRST	.+1]
+	MOVE	1,[.TICTI,,typchn]	; assign interrupt on typein to chan 1
+	ATI%
+	ERCAL	fatal##			;<KPJ.245>
+REPEAT	0,<				;<KPJ.67>
+	MOVE	1,[.TICCG,,cg.chn]	; assign interrupt on ^G to chan 2
+	ATI%
+	ERCAL	fatal##			;<KPJ.245>
+>;REPEAT 0				;<KPJ.67>
+	MOVE	1,[.TICCA,,ca.chn]	; assign interrupt on ^A to chan 3
+	ATI%
+	ERCAL	fatal##			;<KPJ.245>
+	MOVE	1,[.TICCO,,co.chn]	; assign interrupt on ^O to chan 4
+	ATI%
+	ERCAL	fatal##			;<KPJ.245>
+	MOVEI	1,.FHSLF
+REPEAT	0,<				;<KPJ.67>
+	MOVSI	2,(1B<cg.chn>!1B<ca.chn>!1B<co.chn>)
+>;REPEAT 0				;<KPJ.67>
+REPEAT	1,<
+	MOVSI	2,(1B<ca.chn>!1B<co.chn>)
+>;REPEAT 1
+	AIC%
+	ERCAL	fatal##			;<KPJ.246>
+>;T20
+	return
+
+
+;+
+;PSIOFF		disable interrupt system
+;-
+
+psioff::
+T10,<	MOVE	t,[PS.FOF!PS.FCP]	;turn off, and clear all pending
+	PISYS.	t,
+	 warn	<monito psioff pisys>	;don't care, we're leaving anyway
+>;T10
+T20,<	CIS%				;clear all pending interrupts
+	ERCAL	fatal##			;<KPJ.246>
+	MOVEI	1,.FHSLF
+	DIR%				; disable all interrupts
+	ERCAL	fatal##			;<KPJ.246>
+>;T20
+	return
+	
+
+
+
+
+
+;+
+T10,< ; Twenex can't trap time limit exceeded, and doesn't really need to
+      ; either, since a time limit is seldom ever set
+
+;TRPTLE		Here we come, when the users time limit has run out. There
+;		really nothing to do about it. Just return from this interrupt
+;		and let the user continue running KOM.
+;-
+
+trptle::PORTAL	.+1			;<KPJ.213>
+	DEBRK.				;dismiss
+	 error	<trptle monito>	; shouldn't happen, unless monitor problems!
+;	warn	<monito trptle debrk>
+	return			; Not at interrupt level?!?! then return
+>;T10
+
+;+	
+T10,< ; Twenex can't trap ATTACH/DETACH, only carrier drop, and only top fork.
+
+;TRPDAT		Here we arrive when some one has detached or attached
+;		us. If we are being DETACHed - set flag to indicate to TTY I/O
+;		should be done. If reason is attach, clear this flag
+;-
+
+trpdat::PORTAL	.+1			;<KPJ.213>
+	save	<t>
+	SKIPL	t,psidat##+.PSVIS	;was it an ATTACH?
+	 JRST[	SETZM	detflg##	;yes, we are not detached now
+		JRST	trpda1]		;<TEQ> restore, return from interrupt
+					;*** we are now DETACHed ***
+	SETO	t,			;this job
+	TRMNO.	t,			;get TTY number
+	 TRNA				;failed, we are truly detached
+	  JRST[	warn	<monito trpdat trmno>
+		JRST	trpda1]		;success, not detached really...
+	SETOM	detflg##		;remember we're detached
+	SKIPN	havenq##		;if we've resources, ignore interrupt
+	 SKIPE	enqwat##		;if waiting for resources, ignore too
+	  JRST	trpda1			;yes, ignore interrupt
+	SKIPE	sema##			;critical part?
+	 JRST	trpda1			;yes, so DON'T sleep!!
+	MOVE	t,psidat##+.PSVOP	;get old PC
+	HRRZM	t,oldpc##		;and save it
+	MOVEI	t,trpda2		;where to "return" after interrupt
+	MOVEM	t,psidat##+.PSVOP	;new "old" PC
+trpda1:	rstreg				;restore ACs
+	DEBRK.				; and dismiss this interrupt
+	 error	<trpdat monito>		; failed, should never happen anyway
+	warn	<monito trpdat debrk>	;[KPJ.41]
+
+trpda2:	save	<gp1,t>
+IFN	ftphon,<			;[KPJ.40]
+	SKIPE	phone##			;[BCQ] this is a text hone?
+	 JRST	endkom##		;[BCQ] yes, don't wait, logout NOW!
+>;ftphon
+				;sleep 15 minutes, and check once in a minute
+				;for ATTACHed. If still detached after 15
+				;minutes, exit
+
+	MOVEI	t,detslp		;[KPJ.37] sleep time at DETACH
+trpd10:	MOVEI	gp1,^D60*^D1000*detwak	;[KPJ.37] test interval for ATTACH
+	PUSH	P,t			;<KPJ.106> save loop counter
+	CALL	sleept			;to sleep
+	 nop				;don't care if this fails..
+	POP	P,t			;<KPJ.106> restore loop counter
+	SKIPE	detflg##		;are we still DETACHed?
+	 JRST[	SOJGE	t,trpd10	;yes, we are very tired..
+		JRST	endkom##]	;last time, so finish up, and exit
+	rstreg				;<KPJ.201> restore stack
+	JRST	@oldpc##		;attached, go to where we came from
+>;T10
+
+
+
+;+
+T10,<
+;TRPSTP		^C interrupt handler
+;		Note: called by interrupt system
+;-
+
+trpstp::PORTAL	.+1			;<KPJ.213>
+	save	gp1			;<KPJ.67>
+	SKIPE	havenq##		;<TEQ> if have resource, ...
+	 JRST	trpst9			;[TEQ]    then cannot stop 
+	SKIPE	enqwat##		;<TEQ> if something to update, then...
+	  JRST	trpst9			;<TEQ> no, hang on for a while more
+	MOVEI	gp1,endkom##		;[KPJ.14!TEQ] fake return to stop
+	MOVEM	gp1,psistp##+.PSVOP	;<TEQ>
+	SETOM	stpflg##		;<KPJ.14> mark we ^C'ed us out...
+
+trpst9:	restore	gp1
+	DEBRK.
+	 error	<trpstp monito>
+	warn	<monito trpstp debrk>
+	JRST	endkom##
+>;T10
+
+
+;+
+T10,<
+;TRPQUE		interrupt for receiving ENQ. lock
+;		Note: called by interrupt system
+;-
+
+trpque::PORTAL	.+1			;<KPJ.213>
+	save	<t>
+	SETOM	havenq##		;yes, we are in
+	SETZM	enqwat##		;no, no longer waiting
+	PJOB	t,
+	WAKE	t,		; good morning!
+	 warn	<monito trpque wake>
+	rstreg			; restore registers
+	DEBRK.
+	 error	<trpque monito>
+	warn	<monito trpque debrk>
+	return
+>;T10
+
+
+
+
+;+
+T10,<
+;TRPOUT		TTY output done interrupt
+;		Note: called by interrupt system
+;-
+
+trpout::PORTAL	.+1			;<KPJ.213>
+	SKIPE	enqwat##		;<TEQ> if waiting for ENQ. ...
+	 JRST	trpou9			;[TEQ]   then avoid wake
+	save	<t>
+	PJOB	t,			;[TEQ]
+	WAKE	t,			;[TEQ] must wake to avoid race
+	 warn	<monito trpout wake>	;[KPJ.41!TEQ] never mind 
+	rstreg				;[TEQ]
+trpou9:	DEBRK.				; just dismiss the interrupt
+	 error	<trpout monito>		; error - DEBRK. failed
+	warn	<monito trpout debrk>	;[KPJ.41]
+	return				; here if no interrupt in progress
+>;T10
+
+
+
+
+;+
+;TPUT		just put a character in terminal output buffer
+;accepts	CH/	character
+;-
+
+tput::
+T10,<	SKIPE	detflg##			;we're detached?
+	 JRST	tput9				;yes, we can't do any TTY I/O
+>;T10
+	SOSGE	ottbuf##+.BFCTR			; this buffer full ?
+	 JRST	tput2				; yes, flush this, get a new
+	IDPB	ch,ottbuf##+.BFPTR		; store character in buffer
+T20,<	DPB	ch,rtypnt##			; put the char in ^R-buffer
+	$Setz	t,.CHNUL			;[KPJ.13] put a null last..
+	IDPB	t,rtypnt##			; ..in the ^R-buffer
+	CAIN	ch,.CHLFD			;[KPJ.13] LF ?
+	 JRST[	MOVE	t,[POINT 7,rtybuf##,6]	; yes, reset..
+		MOVEM	t,rtypnt##		; ..the bytepointer
+		$Setz	t,.CHNUL		;[KPJ.13] make ASCIZ
+		DPB	t,rtypnt##
+		JRST	.+1]
+>;T20
+	JRST	tput9		; and return
+
+tput2:	CALL	toutpu		; force output buffer to terminal
+	JRST	tput		; forced, go and retry
+
+tput9:	return
+
+
+
+
+;+
+;TOUTPU		output the terminal buffer
+;-
+
+toutpu::
+T10,<	SKIPE	detflg##	;detached?
+	 JRST	toutp9		;yes, we can't flush!
+	MOVEI	t,oficha	;<KPJ.235> output channel
+	DEVTYP	t,		;<KPJ.235> get physical properties
+	 JRST	toutp0		;<KPJ.235> "should never take the error return"
+	JUMPE	t,toutp0	;<KPJ.235> channel unassigned
+	ANDI	t,TY.DEV	;<KPJ.235> extract device code
+	CAIN	t,.TYTTY	;<KPJ.235> terminal?
+	 CALL	foutpu##	;<KPJ.235> yes, dump the terminal buffer
+toutp0:	OUT	ttycha,		;<KPJ.235> force out the TTY: buffer
+	 JRST	toutp9		;ok, return if done
+	SETZ	t,		;sleep forever, we'll be interrupted
+	HIBER	t,		;go to sleep
+	 error	<toutpu monito>	;should not happen
+	JRST	toutpu		;go and retry now
+>;T10
+T20,<	$Setz	1,.CHNUL		; finish the buffer with a null
+	IDPB	1,ottbuf##+.BFPTR
+	HRROI	1,ttobuf##
+	PSOUT%				; print buffer
+	MOVEI	t,8*^O23*5-1		; max number of chars in buffer
+	MOVEM	t,ottbuf##+.BFCTR
+	MOVE	t,[POINT 7,ttobuf##]	; pointer to buffer
+	MOVEM	t,ottbuf##+.BFPTR
+>;T20
+toutp9:	return
+
+
+
+
+
+;+
+;TGET		get a character from terminal input buffer,
+;		ignoring multiple LFs
+;accepts	HAVENQ/	=0 if no ENQ wait in progress
+;			#0 if ENQ wait in progress
+;		PASFLG/	=0  if not reading a password
+;			=1  reading password, already output prompter
+;			=-1 reading password, output prompter first
+;		LFIFLG/	=0 last character not LF
+;			#0 previous character LF
+;returns	CH/	character
+;-
+
+tget::	save	<gp1,nr>
+	$Setz	ch,			;<KPJ.245!KPJ.151> ho hum...
+tget1:
+IFN	ftphon,<			;<KPJ.163> if text phone support...
+	SKIPE	pasflg##		;<BCQ> reading a password?
+	 JRST[
+T10,<		SKIPE	havenq##	;<TEQ> can't accept waiting for TTY
+					;<TEQ> I/O if owning an interlock
+		 JRST[	error	<tget monito>]
+>;T10
+		MOVE	t,pasflg##	;<BCQ> get the flag
+		CAMN	t,[-1]		;<KPJ.164!BCQ> this is first time?
+		 CALL	askque##	;[BCQ] yes, so ask him
+		CALL	toutpu		;[BCQ] and force out the buffer
+		MOVEI	t,1
+		MOVEM	t,pasflg##	;<BCQ> indicate we've read read a char
+T10,<		INCHRW	ch>		;[BCQ] read a character
+T20,<		PBIN%			;[BCQ] read a character
+		MOVE	ch,1		;[BCQ] and get into ch
+				;[BCQ] char will be backed over at STRCON
+>;T20
+		JRST	tget7]		;[BCQ] return the character
+>;ftphon
+tget0:	SOSL	ittbuf##+.BFCTR			;<KPJ.241> any characters?
+	 JRST[	ILDB	ch,ittbuf##+.BFPTR	;<KPJ.241> yes, get one
+		JRST	tget7]			;<KPJ.241> character got
+	CALL	toutpu			;output terminal buffer
+	CALL	ospclr			;<KPJ.102!BDQ> clear ^O bit here
+	MOVE	t,lfiflg##		;<KPJ.164> get LF flag
+	CAME	t,[-2]			;<KPJ.164> ignoring multiple LFs?
+	 CALL	askque##		;<KPJ.102> no, ask question
+tget6:	CALL	ttinp			;<KPJ.151> read input from terminal
+	 JRST	tget1			;<KPJ.151> OK, we got some stuff
+	SETZM	linpos##		;<KPJ.151> ^Z was typed, indicate EOF
+	CALL	eoltty##		;<KPJ.151> newline hacking
+T10,<	JRST	tget6>		;<KPJ.161!KPJ.153!KPJ.151> get that char, now
+T20,<	JRST	tget0>			;<KPJ.241> get character, now
+
+tget7:	JUMPE	ch,tget1		;ignore NULs
+	SKIPE	lfiflg##		;[KPJ.33,34] last char line feed ?
+	 JRST[	CAIE	ch,.CHLFD	;[KPJ.33,34] yes, LF ?
+		 JRST	.+1		;<KPJ.164> no
+		MOVNI	t,2		;<KPJ.164> yes, set ignore LF "ON"
+		MOVEM	t,lfiflg##	;<KPJ.164> . . .
+		JRST	tget1]		;<KPJ.163,33,34> go for next character
+	return
+
+	
+;+
+T10,<					;<KPJ.151>
+;MICTTY		see if MIC state changed
+;returns	+1	yes, has changed
+;		+2	no, has not changed
+
+mictty:	MOVEI	t2,.TOGMS		;[KPJ.35] read MIC status data
+	SETO	t3,			;[KPJ.35] controlling tty
+	MOVE	t,[%CNVER]		;<KPJ.240> get T10 version
+	GETTAB	t,			;<KPJ.240> . . .
+	 error	<mictty-1 monito>	;<KPJ.240> kapow!
+	CAIL	t,^O70300		;<KPJ.240> 7.03 or later?
+	 JRST	mictt3			;<KPJ.240> yes, use new method
+;
+;This code worked before 7.03
+;
+	MOVE	t,[2,,t2]		;[KPJ.35] len,,addr
+	TRMOP.	t,			;read MIC status
+	 JRST	mictt4			;failed, not a MIC session
+	JRST	mictt5			;success, a MIC session
+;
+;This code works with with 7.03 (but NOT according to the documentation)
+;
+mictt3:	MOVE	t,[3,,t2]		;<KPJ.240!KPJ.236> len,,addr
+	TRMOP.	t,			;<KPJ.240> 
+	 CALL[	CAME	t,@mictt3	;<KPJ.240!KPJ.237> any error code?
+		 error	<mictty-2 monito> ;<KPJ.240> yes, die
+		$setz	t4,		;<KPJ.245!KPJ.237> no, simulate a "no"
+		RET]			;<KPJ.237>
+	JUMPN	t4,mictt5		;<KPJ.236!KPJ.240> not a MIC session?
+	Fall	mictt4			;<KPJ.240> a MIC session
+;
+;Not a MIC session at the moment.
+;
+mictt4:	SKIPN	micflg##		;<KPJ.240> no, MIC session before?
+	 JRST	mictt8			;no, so continue
+	SETZB	t,micflg##		;clear MIC flag
+	JRST	mictt1
+;
+;A MIC session at the moment.
+
+mictt5:	SKIPE	micflg##		;<KPJ.240> MIC session before too?
+	 JRST	mictt8
+
+	SETOB	t,micflg##		;no, so we must reopen TTY
+mictt1:	CLOSE	ttycha,			;<KPJ.151> close TTY channel
+	MOVSI	t2,(UU.AIO)		;<KPJ.151> non-blocking I/O
+	CAIN	t,0			;<KPJ.151>
+	 IORM	t2,opntty##+.OPMOD	;<KPJ.151>
+	CAIE	t,0			;<KPJ.151>
+	 ANDCAM	t2,opntty##+.OPMOD	;<KPJ.151>
+	CALL	eoftty			;<KPJ.151> and re-OPEN TTY
+	TRNA
+mictt8:	 Skpret
+	return
+>;T10
+
+
+
+;+
+T10,<					;<KPJ.151>
+;MICP		test for MIC-in-progress
+;returns	+1	yes, a MIC session
+;		+2	no, no MIC session
+;-
+
+micp:	MOVEI	t2,.TOGMS		;[KPJ.35] read MIC status data
+	SETO	t3,			;[KPJ.35] controlling tty
+	MOVE	t,[2,,t2]		;[KPJ.35] len,,addr
+	TRMOP.	t,			;read MIC status
+	 $Skipa				;not a MIC session
+	  skpret
+	return
+>;T10
+
+
+
+;+
+;TTINP		read a line from the terminal
+;	T10:		read from TTY:
+;	T20:		do a TEXTI to read from primary input
+;accepts	HAVENQ/	=0 have not an ENQ interlock
+;			#0 have an ENQ interlock
+;		MICFLG/	=0 no a MIC in progress
+;			#0 a MIC in progress
+;returns	+1 got a line
+;		+2 ^Z
+;-
+
+ttinp:	CALL	toutpu
+T10,<	SKIPE	havenq##		;<KPJ.151!TEQ> can't accept TTY wait
+	 error	<ttinp monito>		;<KPJ.151!TEQ> if owning an interlock
+
+ttin1:	CALL	mictty			;<KPJ.151> MIC status changed?
+	 JRST	ttin1			;<KPJ.151> yes, re-open TTY accordingly
+	IN	ttycha,			;get the buffer
+	 SKIPG	ittbuf##+.BFCTR		;<KPJ.112> got anything in buffer?
+	  $Skipa			;<KPJ.112> no
+	   JRST	ttin9			;<KPJ.151> OK, we've got a buffer
+	STATZ	ttycha,IO.EOF		;test if end of file (^Z)
+	 JRST[	CALL	reitty		;<KPJ.151> yes, re-initialize TTY
+		skpret			;<KPJ.151> +2 return
+		JRST	ttin9]		;<KPJ.151> return
+
+	MOVEI	t,inslp1		;[KPJ.37] use t as HIBER counter
+	SKIPN	logflg##		;[BCQ] are we LOGGED IN?
+	 MOVEI	t,inslp2		;[KPJ.37!BCQ] if we aren't logged in,
+					;[BCQ] there is a much shorter timeout
+ttin2:	MOVEI	gp1,^D60*^D1000		;a minute in sleep-time
+	CALL	sleept			;fall asleep while waiting
+	 JRST	ttin1			;<KPJ.151> read the line from TTY
+	MOVE	gp1,selffl##		;<KPJ.61> get my flags
+	Txne	gp1,idlpfl		;<KPJ.61> idle killer active?
+	 JRST	ttin2			;<KPJ.61!51> no, loop
+	SOJGE	t,ttin2			;<KPJ.61> yes, try again
+
+					;<KPJ.151> terminal timeout
+
+	MOVEI	t2,.TORMT		;[KPJ.35] get "remote" bit
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+IFN	<t3-t2-1>,<			;<KPJ.245> can't use ACs
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVE	nr,[2,,trmblk##]	;<KPJ.245> len,,addr
+>;t3<>t2+1
+IFE	<t3-t2-1>,<			;<KPJ.245> can use ACs
+	$Movx	nr,<2,,t2>		;<KPJ.246!KPJ.35> len,,addr
+>;t3=t2+1
+	TRMOP.	nr,			;<KPJ.35>
+	 warn	<monito tget trmop read tormt> ;<KPJ.41>
+
+	JUMPE	nr,ttin9		;no remote terminal ?
+	JRST	endkom##		;go and finish up, we'll be killed
+ttin9:
+>;T10
+
+T20,<	MOVE	1,txtarg##+.RDBFP	;pointer to start of buffer
+	MOVEM	1,txtarg##+.RDDBP	;should be initialized here
+	MOVEI	1,8*<<^D80/5>+3>*5-1	;size of text buffer
+	MOVEM	1,txtarg##+.RDDBC
+ttinp1:	MOVEI	1,txtarg##
+ttinp0:	TEXTI%				;<KPJ.245> read string from TTY
+	 error	<ttinp monito>
+	LDB	1,txtarg##+.RDDBP	;yes, get break char
+	CAIN	1,.CHBSP		;[KPJ.11][BDQ] was last char a ^H?
+	 JRST[	MOVE	1,txtarg##+.RDDBP	;[BDQ] yes, zap byte pointer
+		Decrbp	1			;<KPJ.177> decrement byte ptr
+		Decrbp	1			;<KPJ.177>
+		MOVEI	2,0(1)
+		CAIGE	2,ttibuf##		;[BDQ] check if outside buffer
+		 JRST	ttinp
+		MOVEM	1,txtarg##+.RDDBP	;[BDQ] store byte pointer
+		AOS	txtarg##+.RDDBC		;[BDQ] zap byte count
+		AOS	txtarg##+.RDDBC
+		JRST	ttinp1]
+
+	CAIE	1,.CHSPC		;[KPJ.11] was last char a space?
+	 JRST	ttinp2			;no, don't try an ACR
+	MOVEI	1,.PRIIN
+	RFPOS%				;where on the screen are we?
+	ERCAL	fatal##			;<KPJ.245> ouch
+	HRRZ	2,2			;only column, thank you
+	CAIG	2,irmarg		;beyond margin?
+	 JRST	ttinp1			;no
+	HRROI	1,[BYTE (7) .CHCRT,.CHLFD,.CHNUL]
+	PSOUT%				;<KPJ.245!KPJ.41> yes, "echo" it
+	MOVEI	1,.CHCRT		;<KPJ.11> transform the space into CR..
+	DPB	1,txtarg##+.RDDBP
+	MOVEI	1,.CHLFD		;<KPJ.11> ..followed by LF
+	IDPB	1,txtarg##+.RDDBP
+	SOS	txtarg##+.RDDBC		;decrement byte count also
+ttinp2:	MOVEI	3,8*^O23*5-1		;max space in buffer
+	SUB	3,txtarg##+.RDDBC	;calculate # of chars read
+	MOVEM	3,ittbuf##+.BFCTR	;<KPJ.201> store that
+	MOVE	3,[POINT 7,ttibuf##]	;pointer to input buffer
+	MOVEM	3,ittbuf##+.BFPTR	;<KPJ.201> store that too
+	MOVE	3,[POINT 7,rtybuf##,6]	;reset..
+	MOVEM	3,rtypnt##		;..the bytepointer
+	$Setz	3,.CHNUL		;<KPJ.245> make ASCIZ
+	DPB	3,rtypnt##
+	CAIN	1,.CHCNZ		;[KPJ.11]!KPJ.26 was last char ^Z?
+	 JRST[	HRROI	1,[BYTE (7) .CHCRT,.CHLFD,.CHNUL]
+					;yes, echo CRLF after "^Z"
+		PSOUT%
+		skpret			;<KPJ.126> and give +2 return
+		JRST	.+1]
+>;T20
+	return
+
+
+;+
+;EOFTTY		end of file on terminal (Tops-10 only)
+T10,<
+;-
+
+eoftty:	CALL	reitty			; at EOF, reopen TTY channel
+	SETZM	linpos##		; clear line position
+	branch	eoltty##		; new line handling
+>;T10
+
+;+
+;ECHOFF		set echo off	(Tops-10 version)
+;-
+
+echoff::
+T10,<	SKIPE	echflg##	;echo ?
+	 JRST	echof1		;yes
+	MOVE	t,selffl##	;[KPJ.31] get personal flags
+	Txne	t,lfepfl	;[KPJ.31] LINE FEED ECHO?
+echof1:	 CALL	seecof		;[KPJ.31] yes, turn off echo
+	return
+>;T10
+T20,<	Fall	seecof>			;[KPJ.31] fall into SEECOF routine
+
+
+
+;+
+;SEECOF		set echo off
+;-
+
+seecof::
+T10,<	GETSTS	ttycha,t		; get old TTY status
+	TRO	t,IO.SUP		; include no echo bit
+	SETSTS	ttycha,(t)		; turn off echoing
+	CALL	toutpu			; output terminal
+>;T10
+T20,<	MOVEI	1,.PRIOUT
+	RFMOD%				; get mode word
+	ERCAL	fatal##			;<KPJ.246>
+	TRZ	2,TT%ECO		; clear echo bit
+	SFMOD%				; set mode word
+	ERCAL	fatal##			;<KPJ.246>
+>;T20
+	return
+
+
+
+;+
+;ECHON		set echo on
+;-
+
+echon::
+T10,<	SKIPE	echflg##	;echo?
+	 JRST	echon1		;yes
+	MOVE	t,selffl##	;[KPJ.31] get personal flags
+	Txnn	t,lfepfl	;[KPJ.31] LINE FEED ECHO?
+	 JRST	echon9		; no
+echon1:	GETSTS	ttycha,t	; get status of TTY channel
+	TRZ	t,IO.SUP	; include suppress status
+	SETSTS	ttycha,(t)	; turn on echoing
+	CALL	toutpu		; output terminal
+echon9:
+>;T10
+T20,<	MOVEI	1,.PRIOUT
+	RFMOD%				;get JFN mode word
+	ERCAL	fatal##			;<KPJ.245> argh
+	TRO	2,TT%ECO		;set echo bit
+	SFMOD%				;set JFN mode word
+	ERCAL	fatal##			;<KPJ.245> ugh
+>;T20
+	return
+
+
+
+
+
+
+;+
+;CLEAR		clear input
+;returns	CHPT/	pointing to a NUL
+;-
+
+clear::	save	<bp>
+	MOVE	bp,[POINT 7,[0]]	;zap byte pointer
+	MOVEM	bp,chpt##		;save it
+T10,<	CLRBFI>				; clear input buffer
+T20,<	MOVEI	1,.PRIIN
+	CFIBF%				; clear input buffer
+	ERCAL	fatal##			;<KPJ.246>
+>;T20
+	MOVEI	t,terpro##		;<KPJ.154> get terminal producer
+	MOVEM	t,produc##		;<KPJ.154>
+	SETZM	tmpflg##		;<KPJ.154>
+	return
+
+
+
+
+
+;+
+;GUDATE		get "universal" (Tops-10) daytime
+;returns	GP1/	date
+;		CURDAT/	date
+;-
+
+gudate::
+T10,<	MOVE	gp1,[%CNDTM]		;[KPJ.35] get universal daytime
+	GETTAB	gp1,			;[KPJ.35]
+	 warn	<monito gudate gettab cndtm> ;[KPJ.41]
+>;T10
+T20,<	save	<1,2,3,4>
+	MOVEI	1,.SFTMZ		;get timezone (hours west of Greenwich)
+	TMON%
+	ERCAL	fatal##			;<KPJ.246>
+	MOVE	gp1,2			; save timezone
+	GTAD%
+	ERCAL	fatal##			;<KPJ.246>
+	MOVE	2,1			; set up args for ODCNV%
+	SETZ	4,
+	ODCNV%				; find out what conversions are used.
+	ERCAL	fatal##			;<KPJ.246>
+	TLNE	4,(IC%ADS)		; test if daylight saving time is on
+	 SUBI	gp1,1			;shift 1h to the east if it is on
+	IMUL	gp1,[-1B1/^D24]		; multiply timezone with -2^34/24.
+	ASH	gp1,-^D16		;div with 2^16 to get fraction of day
+	ADD	gp1,1			; make the "local" UDT that KOM wants
+>;T20
+	MOVEM	gp1,curdat##		;save current date
+	return
+
+
+
+
+
+;+
+;GLYEAR		get local year
+;returns	NR/	year#
+;-
+
+glyear::
+T10,<	MOVE	nr,[%CNYER]		;[KPJ.35] get local year
+	GETTAB	nr,			;[KPJ.35]
+	 warn	<monito glyear gettab cnyer> ;[KPJ.41]
+>;T10
+T20,<	SETO	2,
+	SETZ	4,
+	ODCNV%
+	ERCAL	fatal##			;<KPJ.246>
+	HLRZ	nr,2
+>;T20
+	return
+
+
+
+
+
+;+
+;GLMONT		get local month
+;returns	NR/	month# (1..12)
+;-
+
+glmont::
+T10,<	MOVE	nr,[%CNMON]		;[KPJ.35] get local month
+	GETTAB	nr,			;[KPJ.35]
+	 warn	<monito glmont gettab cnmon> ;[KPJ.41]
+>;T10
+T20,<	SETO	2,
+	SETZ	4,
+	ODCNV%
+	ERCAL	fatal##			;<KPJ.246>
+	HRRZI	nr,1(2)			;On Twenex, first month is #0
+>;T20
+	return
+
+
+;+
+;GLDAY		get local day of week
+;returns	NR/	day#	(1..7)
+;-
+
+glday::
+T10,<	MOVE	nr,[%CNDAY]		;[KPJ.35] get local day
+	GETTAB	nr,			;[KPJ.35]
+	 warn	<monito glday gettab cnday> ;[KPJ.41]
+>;T10
+T20,<	SETO	2,
+	SETZ	4,
+	ODCNV%
+	ERCAL	fatal##			;<KPJ.246>
+	HLRZ	nr,3
+	ADDI	nr,1			;On Twenex, Monday is day #0
+>;T20
+	return
+
+
+;+
+;ALLOCM		allocate enough memory
+;accepts	FREE/	wanted memory
+;		.JBREL/	RH: highest used memory address
+;returns	+1 failure:
+;			T10: with T/ CORE error code
+;			T20: memory is write-protected or invalid
+;-
+
+allocm::HRRZ	t,.JBREL	;get end of memory
+	CAML	t,free		;<KPJ.174> already that much free ?
+	 JRST	alloc8		;<KPJ.174> yep
+	CALL	foallo		;no, force allocation
+	 $Skipa			;<KPJ.174> failed
+alloc8:	  skpret		;<KPJ.174> +2 return means success
+alloc9:	return			;<KPJ.174>
+
+
+;+
+;FOALLO		force allocation
+;accepts	FREE/	memory end
+;returns	+1	failure:
+;			T10:	with T/	CORE error code
+;			T20:	memory full
+;		+2	success, with .JBFF/	new memory size
+;-
+
+foallo::MOVE	t,free			;get end
+	ADDI	t,fresiz		;get more
+					;<SEE>dont shrink, would mung cell area
+T10,<	HRRZ	t2,.JBREL		;<KPJ.204>
+	CAMLE	t,t2			;<KPJ.204!SEE> shrinking memory use?
+	 JRST[	CORE	t,		;no, get more memory
+		 JRST 	foall8		;<KPJ.174> can't, tell user about this
+		JRST	.+1]		;<KPJ.174> OK
+>;T10
+T20,<
+;You could use RPACS% JSYS to test for page accessibility, but that's a lot of
+;useless overhead, since this routine is called every now and then.  We just
+;need to test if page is write-protected, which we barf on.  We don't want to
+;destroy any data, so we use a page fault call to test for page accessability,
+;since that is well optimized on Twenex.
+
+	MOVE	t2,0(t)		;<KPJ.174> get old stuff
+	MOVEM	t2,0(t)		;<KPJ.174> put it back
+	ERJMP	foall8		;<KPJ.174> fails if write-protected
+>;T20
+	MOVEM	t,.JBFF		;<KPJ.174> set new lowseg end
+	skpret			;<KPJ.174> +2 return means success
+	JRST	foall9		;<KPJ.174>
+
+foall8:	PUSH	P,str		;<KPJ.174> save precious data
+	MOVEI	str,zfoall##	;<KPJ.174> "arrggh... I lost my memory"
+	CALL	errmsg##	;<KPJ.174> that's an error
+	SETOM	errfl##		;<KPJ.174> make random routines give up
+	SETOM	intflg##	;<KPJ.174> make random routines give up	
+	POP	P,str		;<KPJ.174> restore garbage
+foall9:	return			;<KPJ.174>
+
+
+;+
+;RELTTY		release terminal
+;-
+
+reltty::
+T10,<	MOVEI	t2,.TONFC+.TOSET	;[KPJ.35] change "CR/LF bit"
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+	MOVE	t4,trmnfc##		;[KPJ.35] restore TTY CRLF setting
+	MOVE	t,[3,,t2]		;[KPJ.35] len,,addr
+	TRMOP.	t,			;[KPJ.35]
+	 warn	<monito reltty trmop write tonfc> ;[KPJ.41]
+
+	MOVEI	t2,.TOACR+.TOSET	;[KPJ.35] change ACR flag
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+	MOVE	t4,trmcr##		;[KPJ.35] restore ACR setting
+	MOVE	t,[3,,t2]		;[KPJ.35] len,,addr
+	TRMOP.	t,			;[KPJ.35]
+	 warn	<monito reltty trmop write toacr> ;[KPJ.41]
+
+	MOVEI	t2,.TOLCT+.TOSET	;[KPJ.35] change LC flag
+	MOVE	t3,uxxtrm##		;<KPJ.35> this UDX
+	MOVE	t4,trmlct##		;[KPJ.35] restore lower case setting
+	MOVE	t,[3,,t2]		;[KPJ.35] len,,addr
+	TRMOP.	t,			;[KPJ.35]
+	 warn	<monito reltty trmop write tolct> ;[KPJ.41]
+
+	SKIPN	detflg##		;detached?
+	 RELEAS	ttycha,			;no, release terminal
+
+	.foo==0
+IFE	<t3-t2-1>,<IFE	<t4-t3-1>,<.foo==1>>
+IFE	.foo,<				;<KPJ.245> can't use ACs
+	.bar==ftcpu			;<KPJ.245> remember old FTCPU
+	ftcpu==.pdpx			;<KPJ.245> make believe we are not KL10
+>;can't use ACs
+KL10,<	DMOVE	t2,[EXP .TOSET+.TOPSZ,-1]> ;<KPJ.245!KPJ.35> change "PAGE nn"
+KL10N,<	MOVEI	t2,.TOSET+.TOPSZ	;[KPJ.35] change "PAGE nnn"
+	SETO	t3,			;[KPJ.35] controlling terminal
+>;KL10N
+	MOVE	t4,oldpag##		;<KPJ.135!KPJ.35> "TTY PAGE nnn"
+IFE	.foo,<				;<KPJ.245> can't use ACs
+	ftcpu==.bar			;<KPJ.245> restore old FTCPU
+	PURGE	.bar			;<KPJ.245> forget this trickery
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. argblk
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVEM	t4,trmblk##+2		;<KPJ.245> . . .
+	MOVE	t,[3,,trmblk##]		;<KPJ.245> len,,addr
+>;can't use ACs
+IFN	.foo,<				;<KPJ.245> can use ACs
+	MOVE	t,[3,,t2]		;[KPJ.35] len,,addr
+>;can use ACs
+	PURGE	.foo			;<KPJ.245> forget this fiddling
+	TRMOP.	t,			;[BCQ] restore paged mode
+	 warn	<monito reltty trmop write topsz> ;[KPJ.41]
+	
+	.foo==0
+IFE	<t3-t2-1>,<IFE	<t4-t3-1>,<.foo==1>>
+IFE	.foo,<				;<KPJ.245> can't use ACs
+	.bar==ftcpu			;<KPJ.245> remember old CPU type
+	ftcpu==.pdpx			;<KPJ.245> fake a no-KL10
+>;can't use ACs
+KL10,<	DMOVE	t2,[EXP .TOSET+.TOLNB,-1]> ;<KPJ.245!KPJ.35> change "LENGTH n"
+KL10N,<	MOVEI	t2,.TOSET+.TOLNB	;[KPJ.35] change "LENGTH nnn"
+	SETO	t3,			;[KPJ.35] controlling terminal
+>;KL10N
+	MOVE	t4,oldpsz##		;<KPJ.135!KPJ.35> "TTY LENGTH nnn"
+IFE	.foo,<				;<KPJ.245> can't use ACs
+	ftcpu==.bar			;<KPJ.245> put back reality
+	PURGE	.bar			;<KPJ.245> forget this trickery
+	MOVEM	t2,trmblk##+0		;<KPJ.245> save in TRMOP. block
+	MOVEM	t3,trmblk##+1		;<KPJ.245> . . .
+	MOVEM	t4,trmblk##+2		;<KPJ.245> . . .
+	MOVE	t,[3,,trmblk##]		;<KPJ.245> len,,addr
+>;can't use ACs
+IFN	.foo,<				;<KPJ.245> can use ACs
+	$Movx	t,<3,,t2>		;<KPJ.246!KPJ.35> len,,addr
+>;can use ACs
+	TRMOP.	t,			;<BCQ> restore paged mode
+	 warn	<monito reltty trmop write topsz> ;[KPJ.41]
+>;T10
+T20,<	CALL	toutpu
+	MOVEI	1,.PRIOUT
+	MOVE	2,oldmod##
+	SFMOD%				; restore parameters
+	ERCAL	fatal##			;<KPJ.245>
+	STPAR%
+	ERCAL	fatal##			;<KPJ.245>
+	MOVEI	2,.MOXOF		;[BDQ] restore pause end-page setting
+	MOVE	3,oldpag##		;<KPJ.135>
+	MTOPR%
+	ERCAL	fatal##			;<KPJ.245>
+	$Dmove	2,oldcoc##		;<KPJ.245> restore CCOC words
+	SFCOC%
+	ERCAL	fatal##			;<KPJ.245>
+	MOVEI	1,.FHJOB		;[BDQ] restore terminal interrupt word
+	MOVE	2,oldtiw##
+	STIW%
+	 ERCAL	fatal##			;<KPJ.245!KPJ.131!BDQ> ugh
+>;T20
+	return
+
+
+;+
+;DISCIN		disable ^C interrupt
+;-
+
+discin::save	<t>
+T10,<	MOVE	t,[PS.FCS!PS.FRC!stpcon]
+	PISYS.	t,			;remove ^C PSI condition
+	 error	<discin monito>
+>;T10
+T20,<	$Dmovi	1,.FHSLF,<1B<cc.chn>>	;<KPJ.246>
+	DIC%				;deactivate ^C-channel
+	ERCAL	fatal##			;<KPj.246>
+>;T20
+	return
+
+
+;+
+;ENACIN		enable ^C interrupt
+;-
+
+enacin::
+T10,<	MOVE	t,[PS.FAC!PS.FON!stpcon]
+	PISYS.	t,			;turn CTRL/C trap on
+	 error	<enacin monito>
+>;T10
+T20,<	$Dmovi	1,.FHSLF,<1B<cc.chn>>	;<KPJ.246>
+	AIC%				;activate ^C-channel
+	ERCAL	fatal##			;<KPJ.246>
+>;T20
+	return
+
+
+
+;+
+T20,<
+;TRPSTP		^C interrupt routine
+;-
+
+trpstp::SKIPE	havenq##		;<KPJ.46> have ENQ on database?
+	 JRST[	PUSH	P,1		;<KPj.245> no, save AC 1
+		HRROI	1,[BYTE (7) "^","C",.CHNUL] ;<KPJ.246> "echo" CTRL/C
+		PSOUT%			;<KPJ.245> . . .
+		POP	P,1		;<KPJ.245> . . .
+		DEBRK%			;<KPJ.245> bye, bye
+		ERCAL	fatal##]	;<KPJ.245> ugh
+	PUSH	P,1			;<KPJ.245> dis-trustful code
+	PUSH	P,2			;<KPJ.245> . . .
+	PUSH	P,3			;<KPJ.245> . . .
+	PUSH	P,4			;<KPJ.245> . . .
+	MOVEI	1,.PRIOUT		;<KPJ.245> clear output buffer
+	CFOBF%				;<KPJ.245> . . .
+	ERCAL	fatal##			;<KPJ.245> ouch
+	MOVEI	1,.PRIOUT		;<KPJ.245> get JFN mode word
+	RFMOD%				;<KPJ.245> . . .
+	ERCAL	fatal##			;<KPJ.245> ouch
+	TLZE	2,(TT%OSP)		;<KPJ.245> clear suppress-output bit
+	 SFMOD%				;<KPJ.245> . . .
+	ERCAL	fatal##			;<KPJ.245> ugh
+	MOVEI	1,.PRIOUT		;<BDQ> get CCOC words
+	RFCOC%				;<BDQ> . . .
+	ERCAL	fatal##			;<KPJ.245> ugh
+
+;<BDQ> trick: see if CCOC of CTRL/_ has changed, means we were DETACHed
+
+	LDB	1,[POINT 2,3,2*<"_"-"@">-^D36+1]
+	CAIN	1,.CCSIM		;changed from SIMULATE?
+	 JRST[				;<KPJ.245> no, this is for *real*
+		HRROI	1,[BYTE (7) "^","C",.CHCRT,.CHLFD,.CHNUL]
+		PSOUT%			;<KPJ.245> "echo" the CTRL/C
+		SETZM	linpos##	;we are now at left margin
+		SETOM	stpflg##	;<BDQ> ^C flag
+		MOVE	1,[PC%USR!endkom##] ;<KPJ.245>
+		MOVEM	1,lev1pc##	;<KPJ.245> user mode, return to ENDKOM
+		JRST	trpst9]		;<KPJ.245> exit CTRL/C handler
+
+;We come here after being DETACHed and then reATTACHed
+;<BDQ> no ^C exit if caused by ATTACH
+
+	MOVEI	1,.PRIOUT
+	TRO	3,<.CCSIM>B<2*<"_"-"@">-^D36+1>	;<KPJ.245> put back SIMULATE
+	SFCOC%
+	ERCAL	fatal##			;<KPJ.245> ouch
+	HRROI	1,zzctlc##		;<KPJ.245> hello there
+	PSOUT%				;<KPJ.245>
+	HRRZ	1,lev1pc##		;<BDQ> get interrupted PC
+	CAIE	1,ttinp0+1		;<KPJ.245!BDQ> was it in TEXTI% jsys?
+	 JRST	trpst9			;<BDQ> no, exit
+	MOVE	1,[PC%USR!ttinp]	;<KPJ.245!BDQ> user mode, go to TTINP
+	MOVEM	1,lev1pc##		;<BDQ> "return" to TTINP
+
+;Come here to restore I/O world after ATTACH.
+
+	MOVEI	1,.PRIIN		;<BDQ>
+	CFIBF%				;<BDQ> clear input buffer
+	ERCAL	fatal##			;<KPJ.245> ouch
+					;<KPJ.245> restore buffer ring
+	SETZM	ittbuf##+.BFADR		;<KPJ.245> clear buffer ring
+	SETZM	ittbuf##+.BFPTR		;<KPJ.245> . . .
+	SETZM	ittbuf##+.BFCTR		;<KPJ.245> . . .
+	MOVEI	1,noftto*^O23*5-1	;<KPJ.245> max #characters in buffer
+	MOVEM	1,ottbuf##+.BFCTR	;<KPJ.245> . . .
+	MOVE	1,[POINT 7,ttobuf##]	;<KPJ.245> buffer byte pointer
+	MOVEM	1,ottbuf##+.BFPTR	;<KPJ.245> . . .
+	MOVEI	1,.PRIOUT		;<KPJ.245>
+	RFMOD%				;<KPJ.245> get JFN mode word
+	ERCAL	fatal##			;<KPJ.245> argh
+	TRO	2,TT%ECO		;<KPJ.245> set echo bit
+	SFMOD%				;<KPJ.245> set JFN mode word
+	ERCAL	fatal##			;<KPJ.245> ugh
+	HRROI	1,rtybuf##		;simulate CTRL/R
+	PSOUT%				;. . .
+
+trpst9:	POP	P,4			;<KPJ.245!KPJ.46> restore stack
+	POP	P,3			;<KPJ.245> . . .
+	POP	P,2			;<KPJ.245> . . .
+	POP	P,1			;<KPJ.245> . . .
+	DEBRK%				;return somewhere
+	ERCAL	fatal##			;<KPJ.245> grunt
+
+;+
+;CAINT	^A interrupt routine (not documented)
+;-
+
+caint:	save	<1,2,3>
+	MOVEI	1,.PRIIN
+	RFPOS%				;where on the screen are we?
+	ERCAL	fatal##			;<KPJ.246>
+	HRRZ	2,2			;only column, thank you
+	JUMPE	2,cain1
+	HRROI	1,[BYTE (7) .CHCRT,.CHLFD,.CHNUL] ;<KPJ.246>
+	PSOUT%				;<KPJ.246>
+cain1:	$Dmovi	1,.PRIOUT,.CHSPC	;<KPJ.246> output one space
+	BOUT%
+	ERCAL	fatal##			;<KPJ.246>
+	$Dmovi	2,<-1>,<OT%NDA!OT%SCL>	;<KPJ.246>
+	ODTIM%
+	ERCAL	fatal##			;<KPJ.246>
+	MOVEI	2,.CHSPC		;space
+	BOUT%
+	ERCAL	fatal##			;<KPJ.246>
+	CALL	komsts
+	rstreg				;<ZOT.250>
+	DEBRK%
+	ERCAL	fatal##			;<KPJ.246>
+>;T20
+
+;+
+T20,<
+;KOMSTS		routine to output a CTRL/A status message.
+
+;			*NOTE*
+;			 ====
+;		May only use ACs 1, 2, 3, 4 freely.
+;		May use P as a stack pointer only.
+;		All other ACs *must* be preserved. 
+;-
+
+komsts:	GETNM%
+	ERCAL	fatal##			;<KPJ.246>
+	SKIPN	2,1			;<KPJ.45> zero name?
+	 MOVE	2,[SIXBIT !(priv)!]	;<KPJ.45> make the default one
+
+komst1:	$Setz	1,			;<KPJ.246> output SIXBIT name
+	LSHC	1,6
+	ADDI	1,"A"-'A'		;make ASCIZ
+	PBOUT%
+	ERCAL	fatal
+	JUMPN	2,komst1
+
+	MOVEI	1,.CHSPC		;output space
+	PBOUT%
+	ERCAL	fatal##			;<KPJ.246>
+
+	HRRZ	1,lev2pc##		;interrupted from where?
+	MOVEI	2,ststab		;<KPJ.142> point at wait table
+stslup:	MOVE	3,0(2)			;<KPJ.142> get wait state
+	JUMPE	3,[			;<KPJ.142> not a known wait state
+		MOVE	2,lev2pc##	;<KPJ.142> get interrupted PC
+		HRRO	1,ststab-2	;<KPJ.142> assume we are in RN state
+		TLNN	2,(PC%USR)	;<KPJ.124> executing a JSYS?
+		 HRRO	1,ststab-1	;<KPJ.124> yes
+		JRST	stsout]		;<KPJ.142>
+	CAME	1,3			;<KPJ.142> this wait state?
+	 JRST[	ADDI	2,2		;<KPJ.142> no, step forward
+		JRST	stslup]		;<KPJ.142> try next
+	HRRO	1,1(2)			;<KPJ.142> get wait state text
+stsout:	PSOUT%
+	ERCAL	fatal##			;<KPJ.246>
+	JUMPE	3,[			;<KPJ.145> random state?
+		TLNE	2,(PC%USR)	;<KPJ.145> yes, JSYS?
+		 JRST	.+1		;<KPJ.145> no, forget this
+		MOVEI	1,.CHSPC	;<KPJ.145>
+		PBOUT%			;<KPJ.145>
+		ERCAL	fatal##		;<KPJ.246>
+		MOVEI	1,.CHLPR	;<KPJ.145> yes, output left paren
+		PBOUT%			;<KPJ.145>
+		ERCAL	fatal##		;<KPJ.246>
+		HRRZ	2,lev2pc##	;<KPJ.150> here we are again...
+		SUBI	2,1		;<KPJ.150> this is more like it...
+		HRRZ	2,@2		;<KPJ.150> get JSYS#
+		HRRZ	1,jstab(2)	;<KPJ.165!KPJ.150> any name for it?
+		SKIPN	@1		;<KPJ.165> anything there?
+		 JRST[	HRROI	1,[ASCIZ !JSYS !]	;<KPJ.165> no, JSYS nnn
+			PSOUT%				;<KPJ.165>
+			ERCAL	fatal##			;<KPJ.246>
+			MOVEI	1,.PRIOUT		;<KPJ.165>
+			MOVEI	3,<FLD(8,NO%RDX)>	;<KPJ.165>
+			NOUT%				;<KPJ.165>
+			 ERJMP[	HRROI	1,[ASCIZ !???!]	;<KPJ.165>
+				PSOUT%			;<KPJ.165>
+				JRST	.+1]		;<KPJ.165>
+			JRST	.+1]			;<KPJ.165>
+		PSOUT%			;<KPJ.150> output name
+		MOVEI	1,.CHRPR	;<KPJ.145> output closing paren
+		PBOUT%			;<KPJ.145>
+		JRST	.+1]		;<KPJ.145>
+	HRROI	1,[ASCIZ !, PC=!]	;<KPJ.142>
+	PSOUT%				;<KPJ.142>
+	MOVEI	1,.PRIOUT		;<KPJ.142> no
+	HRRZ	2,lev2pc##		;<KPJ.142> get PC
+	MOVEI	3,<FLD(8,NO%RDX)>	;<KPJ.142> octal
+	NOUT%				;<KPJ.142> output PC
+	 ERJMP[	HRROI	1,[ASCIZ !???!]	;<KPJ.142> failed
+		PSOUT%			;<KPJ.142> say so
+		JRST	.+1]		;<KPJ.142>
+stsxit:	Tmsg	<.
+>
+	return
+
+DEFINE	defjs	(foo,bar,baz1,baz2,baz3)<
+	kaka==.
+	RELOC	jstab+^O'bar
+	[ASCIZ	!foo'%!]
+	RELOC	kaka>
+
+jstab:	BLOCK	1K
+
+DEFJS LOGIN,1,MSEC1,,OLD
+DEFJS CRJOB,2,MSEC1,,OLD
+DEFJS LGOUT,3,MSEC1,,OLD
+DEFJS CACCT,4,MSEC1,,OLD
+DEFJS EFACT,5,MSEC1,NIM,OLD
+DEFJS SMON,6,MSEC1,,OLD
+DEFJS TMON,7,MSEC1,,OLD
+DEFJS GETAB,10,MSEC1,,OLD
+DEFJS ERSTR,11,MSEC1,,OLD
+DEFJS GETER,12,MSEC1,,OLD
+DEFJS GJINF,13,MSEC1,,OLD
+DEFJS TIME,14,MSEC1,,OLD
+DEFJS RUNTM,15,MSEC1,,OLD
+DEFJS SYSGT,16,MSEC1,,OLD
+DEFJS GNJFN,17,MSEC1,,OLD
+DEFJS GTJFN,20,MSEC1,,OLD
+DEFJS OPENF,21,MSEC1,,OLD
+DEFJS CLOSF,22,MSEC1,,OLD
+DEFJS RLJFN,23,MSEC1,,OLD
+DEFJS GTSTS,24,MSEC1,,OLD
+DEFJS STSTS,25,MSEC1,,OLD
+DEFJS DELF,26,MSEC1,,OLD
+DEFJS SFPTR,27,MSEC1,,OLD
+DEFJS JFNS,30,MSEC1,,OLD
+DEFJS FFFFP,31,MSEC1,,OLD
+DEFJS RDDIR,32,MSEC1,,OLD	;OBSOLETE,,OLD
+DEFJS CPRTF,33,,NIM,OLD
+DEFJS CLZFF,34,MSEC1,,OLD
+DEFJS RNAMF,35,MSEC1,,OLD
+DEFJS SIZEF,36,MSEC1,,OLD
+DEFJS GACTF,37,MSEC1,,OLD
+DEFJS STDIR,40,MSEC1,,OLD	;OBSOLETE,,OLD
+DEFJS DIRST,41,MSEC1,,OLD
+DEFJS BKJFN,42,MSEC1,,OLD
+DEFJS RFPTR,43,MSEC1,,OLD
+DEFJS CNDIR,44,,NIM,OLD
+DEFJS RFBSZ,45,MSEC1,,OLD
+DEFJS SFBSZ,46,MSEC1,,OLD
+DEFJS SWJFN,47,MSEC1,,OLD
+DEFJS BIN,50,MSEC1,,OLD
+DEFJS BOUT,51,MSEC1,,OLD
+DEFJS SIN,52,MSEC1,,OLD
+DEFJS SOUT,53,MSEC1,,OLD
+DEFJS RIN,54,MSEC1,,OLD
+DEFJS ROUT,55,MSEC1,,OLD
+DEFJS PMAP,56,MSEC1,,OLD
+DEFJS RPACS,57,MSEC1,,OLD
+DEFJS SPACS,60,MSEC1,,OLD
+DEFJS RMAP,61,MSEC1,,OLD
+DEFJS SACTF,62,MSEC1,,OLD
+DEFJS GTFDB,63,MSEC1,,OLD
+DEFJS CHFDB,64,MSEC1,,OLD
+DEFJS DUMPI,65,MSEC1,,OLD
+DEFJS DUMPO,66,MSEC1,,OLD
+DEFJS DELDF,67,MSEC1,,OLD
+DEFJS ASND,70,MSEC1,,OLD
+DEFJS RELD,71,MSEC1,,OLD
+DEFJS CSYNO,72,,NIM,OLD
+DEFJS PBIN,73,MSEC1,,OLD
+DEFJS PBOUT,74,MSEC1,,OLD
+DEFJS PSIN,75,,NIM,OLD
+DEFJS PSOUT,76,MSEC1,,OLD
+DEFJS MTOPR,77,MSEC1,,OLD
+DEFJS CFIBF,100,MSEC1,,OLD
+DEFJS CFOBF,101,MSEC1,,OLD
+DEFJS SIBE,102,MSEC1,,OLD
+DEFJS SOBE,103,MSEC1,,OLD
+DEFJS DOBE,104,MSEC1,,OLD
+DEFJS GTABS,105,MSEC1,,OLD	;OBSOLETE
+DEFJS STABS,106,MSEC1,,OLD	;OBSOLETE
+DEFJS RFMOD,107,MSEC1,,OLD
+DEFJS SFMOD,110,MSEC1,,OLD
+DEFJS RFPOS,111,MSEC1,,OLD
+DEFJS RFCOC,112,MSEC1,,OLD
+DEFJS SFCOC,113,MSEC1,,OLD
+DEFJS STI,114,MSEC1,,OLD
+DEFJS DTACH,115,MSEC1,,OLD
+DEFJS ATACH,116,MSEC1,,OLD
+DEFJS DVCHR,117,MSEC1,,OLD
+DEFJS STDEV,120,MSEC1,,OLD
+DEFJS DEVST,121,MSEC1,,OLD
+DEFJS MOUNT,122,MSEC1,,OLD	;OBSOLETE
+DEFJS DSMNT,123,,,OLD		;OBSOLETE
+DEFJS INIDR,124,MSEC1,,OLD	;OBSOLETE
+DEFJS SIR,125,MSEC1,,OLD
+DEFJS EIR,126,MSEC1,,OLD
+DEFJS SKPIR,127,MSEC1,,OLD
+DEFJS DIR,130,MSEC1,,OLD
+DEFJS AIC,131,MSEC1,,OLD
+DEFJS IIC,132,MSEC1,,OLD
+DEFJS DIC,133,MSEC1,,OLD
+DEFJS RCM,134,MSEC1,,OLD
+DEFJS RWM,135,MSEC1,,OLD
+DEFJS DEBRK,136,MSEC1,,OLD
+DEFJS ATI,137,MSEC1,,OLD
+DEFJS DTI,140,MSEC1,,OLD
+DEFJS CIS,141,MSEC1,,OLD
+DEFJS SIRCM,142,MSEC1,,OLD
+DEFJS RIRCM,143,MSEC1,,OLD
+DEFJS RIR,144,MSEC1,,OLD
+DEFJS GDSTS,145,MSEC1,,OLD
+DEFJS SDSTS,146,MSEC1,,OLD
+DEFJS RESET,147,MSEC1,,OLD
+DEFJS RPCAP,150,MSEC1,,OLD
+DEFJS EPCAP,151,MSEC1,,OLD
+DEFJS CFORK,152,MSEC1,,OLD
+DEFJS KFORK,153,MSEC1,,OLD
+DEFJS FFORK,154,MSEC1,,OLD
+DEFJS RFORK,155,MSEC1,,OLD
+DEFJS RFSTS,156,MSEC1,,OLD
+DEFJS SFORK,157,MSEC1,,OLD
+DEFJS SFACS,160,MSEC1,,OLD
+DEFJS RFACS,161,MSEC1,,OLD
+DEFJS HFORK,162,MSEC1,,OLD
+DEFJS WFORK,163,MSEC1,,OLD
+DEFJS GFRKH,164,MSEC1,,OLD
+DEFJS RFRKH,165,MSEC1,,OLD
+DEFJS GFRKS,166,MSEC1,,OLD
+DEFJS DISMS,167,MSEC1,,OLD
+DEFJS HALTF,170,MSEC1,,OLD
+DEFJS GTRPW,171,MSEC1,,OLD
+DEFJS GTRPI,172,MSEC1,,OLD
+DEFJS RTIW,173,MSEC1,,OLD
+DEFJS STIW,174,MSEC1,,OLD
+DEFJS SOBF,175,MSEC1,,OLD
+DEFJS RWSET,176,MSEC1,,OLD
+DEFJS GETNM,177,MSEC1,,OLD
+DEFJS GET,200,MSEC1,,OLD
+DEFJS SFRKV,201,MSEC1,,OLD
+DEFJS SAVE,202,MSEC1,,OLD
+DEFJS SSAVE,203,MSEC1,,OLD
+DEFJS SEVEC,204,MSEC1,,OLD
+DEFJS GEVEC,205,MSEC1,,OLD
+DEFJS GPJFN,206,MSEC1,,OLD
+DEFJS SPJFN,207,MSEC1,,OLD
+DEFJS SETNM,210,MSEC1,,OLD
+DEFJS FFUFP,211,MSEC1,,OLD
+DEFJS DIBE,212,MSEC1,,OLD
+DEFJS FDFRE,213,,NIM,OLD
+DEFJS GDSKC,214,MSEC1,,OLD
+DEFJS LITES,215,MSEC1,,OLD	;OBSOLETE
+DEFJS TLINK,216,MSEC1,,OLD
+DEFJS STPAR,217,MSEC1,,OLD
+DEFJS ODTIM,220,MSEC1,,OLD
+DEFJS IDTIM,221,MSEC1,,OLD
+DEFJS ODCNV,222,MSEC1,,OLD
+DEFJS IDCNV,223,MSEC1,,OLD
+DEFJS NOUT,224,MSEC1,,OLD
+DEFJS NIN,225,MSEC1,,OLD
+DEFJS STAD,226,MSEC1,,OLD
+DEFJS GTAD,227,MSEC1,,OLD
+DEFJS ODTNC,230,MSEC1,,OLD
+DEFJS IDTNC,231,MSEC1,,OLD
+DEFJS FLIN,232,MSEC1,,OLD
+DEFJS FLOUT,233,MSEC1,,OLD
+DEFJS DFIN,234,MSEC1,,OLD
+DEFJS DFOUT,235,MSEC1,,OLD
+
+DEFJS CRDIR,240,MSEC1,,OLD
+DEFJS GTDIR,241,MSEC1,,OLD
+DEFJS DSKOP,242,MSEC1,,OLD
+DEFJS SPRIW,243,MSEC1,,OLD
+DEFJS DSKAS,244,MSEC1,,OLD
+DEFJS SJPRI,245,MSEC1,,OLD
+DEFJS STO,246,MSEC1,,OLD
+DEFJS ARCF,247,MSEC1,,OLD	;ARCHIVE SYSTEM JSYS
+DEFJS ASNDP,260,,NIM,OLD
+DEFJS RELDP,261,,NIM,OLD
+DEFJS ASNDC,262,,NIM,OLD
+DEFJS RELDC,263,,NIM,OLD
+DEFJS STRDP,264,,NIM,OLD
+DEFJS STPDP,265,,NIM,OLD
+DEFJS STSDP,266,,NIM,OLD
+DEFJS RDSDP,267,,NIM,OLD
+DEFJS WATDP,270,,NIM,OLD
+
+DEFJS GTNCP,272,,NIM,OLD	;TOPS20AN, Obsolete
+DEFJS GTHST,273,MSEC1,,OLD	;TOPS20AN
+DEFJS ATNVT,274,MSEC1,,OLD	;TOPS20AN
+DEFJS CVSKT,275,,NIM,OLD	;TOPS20AN, Obsolete
+DEFJS CVHST,276,MSEC1,,OLD	;TOPS20AN
+DEFJS FLHST,277,,NIM,OLD	;TOPS20AN, Obsolete
+
+DEFJS GCVEC,300,MSEC1,,OLD
+DEFJS SCVEC,301,MSEC1,,OLD
+DEFJS STTYP,302,MSEC1,,OLD
+DEFJS GTTYP,303,MSEC1,,OLD
+DEFJS BPT,304,MSEC1,,OLD	;OBSOLETE
+DEFJS GTDAL,305,MSEC1,,OLD
+DEFJS WAIT,306,MSEC1,,OLD
+DEFJS HSYS,307,MSEC1,,OLD
+DEFJS USRIO,310,MSEC1,,OLD
+DEFJS PEEK,311,MSEC1,,OLD
+DEFJS MSFRK,312,MSEC1,,OLD
+DEFJS ESOUT,313,MSEC1,,OLD
+DEFJS SPLFK,314,MSEC1,,OLD
+DEFJS ADVIS,315,,NIM,OLD
+DEFJS JOBTM,316,,NIM,OLD
+DEFJS DELNF,317,MSEC1,,OLD
+DEFJS SWTCH,320,MSEC1,,OLD	;OBSOLETE
+DEFJS TFORK,321,MSEC1,,OLD
+DEFJS RTFRK,322,MSEC1,,OLD
+DEFJS UTFRK,323,MSEC1,,OLD
+DEFJS SCTTY,324,MSEC1,,OLD
+
+DEFJS OPRFN,326,,NIM,OLD	;TOPS20AN, Obsolete
+
+DEFJS SETER,336,MSEC1,,OLD
+
+
+;NEW (NOT IN BBN TENEX) JSYS'S ADDED STARTING AT 500
+
+DEFJS RSCAN,500,MSEC1,,OLD
+DEFJS HPTIM,501,MSEC1,,OLD
+DEFJS CRLNM,502,MSEC1,,OLD
+DEFJS INLNM,503,MSEC1,,OLD
+DEFJS LNMST,504,MSEC1,,OLD
+DEFJS RDTXT,505,MSEC1,,OLD	;OBSOLETED BY RDTTY AND TEXTI
+DEFJS SETSN,506,MSEC1,,OLD
+DEFJS GETJI,507,MSEC1,,OLD
+DEFJS MSEND,510,MSEC1,,OLD
+DEFJS MRECV,511,MSEC1,,OLD
+DEFJS MUTIL,512,MSEC1,,OLD
+DEFJS ENQ,513,MSEC1,,OLD
+DEFJS DEQ,514,MSEC1,,OLD
+DEFJS ENQC,515,MSEC1,,OLD
+DEFJS SNOOP,516,MSEC1,,OLD
+DEFJS SPOOL,517,MSEC1,,OLD
+DEFJS ALLOC,520,MSEC1,,OLD
+DEFJS CHKAC,521,MSEC1,,OLD
+DEFJS TIMER,522,MSEC1,,OLD
+DEFJS RDTTY,523,MSEC1,,OLD
+DEFJS TEXTI,524,MSEC1,,OLD
+DEFJS UFPGS,525,MSEC1,,OLD
+DEFJS SFPOS,526,MSEC1,,OLD
+DEFJS SYERR,527,MSEC1,,OLD
+DEFJS DIAG,530,MSEC1,,OLD
+DEFJS SINR,531,MSEC1,,OLD
+DEFJS SOUTR,532,MSEC1,,OLD
+DEFJS RFTAD,533,MSEC1,,OLD
+DEFJS SFTAD,534,MSEC1,,OLD
+DEFJS TBDEL,535,MSEC1,,OLD
+DEFJS TBADD,536,MSEC1,,OLD
+DEFJS TBLUK,537,MSEC1,,OLD
+DEFJS STCMP,540,MSEC1,,OLD
+DEFJS SETJB,541,MSEC1,,OLD
+DEFJS GDVEC,542,MSEC1,,OLD
+DEFJS SDVEC,543,MSEC1,,OLD
+DEFJS COMND,544,MSEC1,,OLD
+DEFJS PRARG,545,MSEC1,,OLD
+DEFJS GACCT,546,MSEC1,,OLD
+DEFJS LPINI,547,MSEC1,,OLD
+DEFJS GFUST,550,MSEC1,,OLD
+DEFJS SFUST,551,MSEC1,,OLD
+DEFJS ACCES,552,MSEC1,,OLD
+DEFJS RCDIR,553,MSEC1,,OLD
+DEFJS RCUSR,554,MSEC1,,OLD
+DEFJS MSTR,555,MSEC1,,OLD
+DEFJS STPPN,556,MSEC1,,OLD
+DEFJS PPNST,557,MSEC1,,OLD
+DEFJS PMCTL,560,MSEC1,,OLD
+DEFJS PLOCK,561,MSEC1,,OLD
+DEFJS BOOT,562,MSEC1,,OLD
+DEFJS UTEST,563,MSEC1,,OLD
+DEFJS USAGE,564,MSEC1,,OLD
+DEFJS WILD,565,MSEC1
+DEFJS VACCT,566,MSEC1,,OLD
+DEFJS NODE,567,MSEC1,,OLD
+DEFJS ADBRK,570,MSEC1,,OLD
+DEFJS SINM,571,MSEC1
+DEFJS SOUTM,572,MSEC1
+DEFJS SWTRP,573,MSEC1
+DEFJS GETOK,574,MSEC1
+DEFJS RCVOK,575,MSEC1
+DEFJS GIVOK,576,MSEC1
+DEFJS SKED,577,MSEC1		;SCHEDULER CONTROL JSYS
+DEFJS MTU,600,MSEC1		;MTU JSYS
+DEFJS XRIR,601,MSEC1		;EXTENDED RIR
+DEFJS XSIR,602,MSEC1		;EXTENDED SIR
+DEFJS PDVOP,603,MSEC1		;MANIPULATE PROGRAM DATA VECTORS
+DEFJS NTMAN,604,MSEC1		;DECNET NETWORK MANAGEMENT INTERFACE
+DEFJS XSFRK,605,MSEC1		;START FORK AT GLOBAL PC
+DEFJS XGVEC,606,MSEC1		;GET FULL ENTRY VECTOR
+DEFJS XSVEC,607,MSEC1		;SET FULL ENTRY VECTOR
+DEFJS RSMAP,610,MSEC1		;READ SECTION MAP
+DEFJS XRMAP,611,MSEC1		;EXTENDED RMAP
+DEFJS XGTPW,612,MSEC1		;EXTENDED GET TRAP WORD
+DEFJS XSSEV,613,MSEC1		;EXTENDED SET SPECIAL ENTRY VECTOR
+DEFJS XGSEV,614,MSEC1		;EXTENDED GET SPECIAL ENTRY VECTOR
+DEFJS QUEUE,615,MSEC1		;QUEUE REQUEST TO COMPONENT
+DEFJS DYNLB,616,MSEC1		;DYNamic LiBrary
+DEFJS CTSOP,617,MSEC1		;Canonical Terminal Support OPeration
+DEFJS DAP,620,MSEC1		;~6.0 Data Access Protocol
+DEFJS SCS,622,MSEC1		;SCA user interface JSYS
+DEFJS WSMGR,623,MSEC1		;Working-set manager JSYS
+DEFJS LLMOP,624,MSEC1		;~6.0 Low Level MOP for Ethernet DLL
+DEFJS APCON,625,,NIM		;Reserved for FPS array processor support
+DEFJS XPEEK,626,MSEC1		;EXTENDED PEEK
+DEFJS CNFIG,627,MSEC1		;CONFIGURATION INFORMATION
+DEFJS NI,630,MSEC1		;Direct Ethernet Interface
+DEFJS LATOP,631,MSEC1		;~6.0 LAT Operation Display and Control
+DEFJS NTINF,632,MSEC1		;NETWORK INFORMATION JSYS
+IFN	ftjsys,<		;<KPJ.165>
+Defjs KOM%,661			;<KPJ.165> KOM%
+>;ftjsys
+IFN	ftjsy2,<		;<KPJ.246>
+Defjs GTKOM%,663		;<KPJ.246> GTKOM%
+>;ftjsy2
+DEFJS MONRD,717,,NIM		;Reserved for MONRD
+DEFJS DBGRD,720,,NIM		;Reserved for MONRD debuging
+
+;TOPS20AN JSYS DEFINITIONS
+
+DEFJS SEND,740,MSEC1      	;TOPS20AN, BBN TCP JSYS Interface
+DEFJS RECV,741,MSEC1      	;TOPS20AN, BBN TCP JSYS Interface
+DEFJS OPEN,742,MSEC1      	;TOPS20AN, BBN TCP JSYS Interface
+DEFJS CLOSE,743,MSEC1     	;TOPS20AN, BBN TCP JSYS Interface
+DEFJS SCSLV,744,MSEC1     	;TOPS20AN, BBN TCP JSYS Interface
+DEFJS STAT,745,MSEC1      	;TOPS20AN, BBN TCP JSYS Interface
+DEFJS CHANL,746,MSEC1     	;TOPS20AN, BBN TCP JSYS Interface
+DEFJS ABORT,747,MSEC1     	;TOPS20AN, BBN TCP JSYS Interface
+DEFJS SNDIM,750,MSEC1,,OLD 	;TOPS20AN, Send IMP Special Queue Message
+DEFJS RCVIM,751,MSEC1,,OLD 	;TOPS20AN, Receive IMP Special Queue Message
+DEFJS ASNSQ,752,MSEC1,,OLD 	;TOPS20AN, Assign IMP Special Queue
+DEFJS RELSQ,753,MSEC1,,OLD 	;TOPS20AN, Release IMP Special Queue
+DEFJS SNDIN,754,MSEC1     	;TOPS20AN, Send Internet Message
+DEFJS RCVIN,755,MSEC1     	;TOPS20AN, Receive Internet Message
+DEFJS ASNIQ,756,MSEC1     	;TOPS20AN, Assign Internet Queue
+DEFJS RELIQ,757,MSEC1     	;TOPS20AN, Release Internet Queue
+DEFJS IPOPR,760,MSEC1		;TOPS20AN, IP Functions JSYS
+DEFJS TCOPR,761,MSEC1		;TOPS20AN, TCP Functions JSYS
+
+;TEMPORARY JSYS DEFINITIONS
+
+DEFJS METER,766,MSEC1		;METER JSYS. FOR KL ONLY
+DEFJS SMAP,767,MSEC1		;CREATE AND MAP SECTIONS
+DEFJS THIBR,770,MSEC1,,OLD
+DEFJS TWAKE,771,MSEC1,,OLD
+DEFJS MRPAC,772,MSEC1,,OLD
+DEFJS SETPV,773,,NIM,OLD
+DEFJS MTALN,774,MSEC1,,OLD
+DEFJS TTMSG,775,MSEC1,,OLD
+DEFJS MDDT,777,MSEC1
+	PURGE	kaka
+
+
+	EXP	%run##			;<KPJ.142> running somewhere
+	EXP	%jsys##			;<KPJ.142> waiting fo a JSYS
+ststab:	EXP	1+ttinp0,%texti##	;<KPJ.245!KPJ.142> waiting for input
+	EXP	mkenqx,%mkenq##		;<KPJ.142> waiting for ENQ%
+	EXP	1+inblx##,%inblk##	;<KPJ.145> waiting for data base
+	EXP	1+outblx##,%utblk##	;<KPJ.145>  - - - " " - - -
+	0				;<KPJ.142> end of table
+;-
+
+
+;+
+REPEAT	0,<			;<KPJ.67>
+;CGINT	^G interrupt routine (not documented)
+;-
+
+cgint:	save	<1,2>		;[KPJ.2] Used by TTYCLR
+	CALL	ttyclr
+	Tmsg	<^G
+>
+	SETZM	linpos##
+	SETOM	abortf		;set abort flag
+	rstreg			;[KPJ.2] Restore used ACs
+	DEBRK%			;Return from interrupt
+>;REPEAT 0			;<KPJ.67>
+
+;+
+;COINT	^O interupt routine (not documented)
+;-
+
+coint:	save	<1,2>
+	MOVEI	1,.PRIOUT
+	RFMOD%
+	TLCE	2,(TT%OSP)	;toggle output suppress bit
+	 JRST	coint9		;if it was on already, just go do the SFMOD%
+	CFOBF%			;clear output buffer
+	Tmsg	<^O
+>
+	MOVEI	1,.PRIOUT
+coint9:	SFMOD%
+	rstreg
+	DEBRK%			;Return from interrupt
+>;T20
+
+;+
+;TTYCLR	(not documented)
+;OSPCLR	(not documented)
+;-
+
+T20,<
+ttyclr:	MOVEI	1,.PRIOUT
+	CFOBF%				;clear output buffer
+	Fall	ospclr			;<KPJ.245>
+>;T20
+ospclr::
+T10,<	MOVE	t1,[3,,[EXP .TOOSU+.TOSET,-1,0]] ;<KPJ.102>
+	TRMOP.	t1,			;<KPJ.102> clear suppress-output bit
+	 nop				;<KPJ.102> ***FOO*** should't fail
+>;T10
+T20,<	MOVEI	1,.PRIOUT		;clear suppress-output bit
+	RFMOD%
+	TLZE	2,(TT%OSP)
+	 SFMOD%
+>;T20
+	return
+
+
+;+
+;MKENQ		make enque
+;-
+
+mkenq::
+T10,<	save	<gp1>
+	CALL	toutpu			; output terminal buffer
+>;T10
+	SKIPE	havenq##		;<TEQ!KPJ.46> already have resource?
+	 error	<mkenq-1 monito>	;<TEQ!KPJ.46> yes, bug in program
+T10,<	SETOM	enqwat##		;<TEQ> indicate we are waiting
+	MOVE	t,[.ENQSI,,enqblk]	;<KPJ.130!TEQ> DON'T allow blocking
+	ENQ.	t,
+	 TRNA				;[TEQ] couldn't now, wait for interrupt
+	  JRST	mkenq8			;[TEQ]
+	CAIN	t,ENQRU%		;<TTQ!KPJ.123> resource not available?
+	 JRST	mkenq0			;<KPJ.123> yes
+	CAIN	t,ENQQE%		;<KPJ.123> ENQ quota exceeded
+	 JRST[	SKIPN	noenqp		;<KPJ.123> already crashed with this?
+		 CALL[	print	zmkenq##	;<KPJ.123> "ENQ quota exceeded"
+			SETOM	noenqp		;<KPJ.123>
+			RET]			;<KPJ.201>
+		SETZM	enqwat##	;<KPJ.123> not waiting any more
+		JRST	endkom##]	;<KPJ.123> give up
+	 error	<mkenq-2 monito>	;no, something else
+					;<KPJ.137>
+
+mkenq0:					;<KPJ.123> yes, let's wait for it
+IFGE	<enqsl1-maxhib>,<PRINTX ? HIBER nap time too large in MKENQ>
+	MOVE	t,[HB.RWJ+enqsl1]	;[TEQ] take a short nap
+	HIBER	t,			;zzzzzz
+	 warn	<monito mkenq hiber nap>;[KPJ.41]
+	SKIPE	havenq##		;have ENQ. lock yet?
+	 JRST	mkenq9			;yes
+	MOVEI	gp1,enqsl3			;<KPJ.141> set a counter
+IFGE	<enqsl2-maxhib>,<PRINTX ? HIBER max time too large in MKENQ>
+mkenq3:	MOVE	t,[HB.RWJ+^D1000*enqsl2]	;[TEQ] protect from others
+	HIBER	t,				;[TEQ] sleep awhile
+	 warn	<monito mkenq hiber sleep>	;[KPJ.41!TEQ]
+	SKIPE	havenq##			;<TEQ> OK if interrupt got it
+	 JRST	mkenq9				;[TEQ]
+	SOJG	gp1,mkenq3			;[TEQ] rept, HIBER may failed?
+	SKIPE	noenqq##			;<KPJ.130> yelled about this?
+	 JRST[	print	mkenqq##		;<KPJ.130> say what happened
+		JRST	.+1]			;<KPJ.201>
+	SETOM	noenqq##			;<KPJ.130> remember we yelled
+	SETOM	noenqp##			;<KPJ.130> no ENQ quota
+	SETZM	enqwat##			;<KPJ.130> not waiting any more
+	JRST	endkom##			;<KPJ.130> go and die
+
+mkenq8:	SETOM	havenq##		;<TEQ> yes, we are in
+mkenq9:	SETZM	enqwat##		;<TEQ> no, no longer waiting
+>;T10
+T20,<	HRRZ	1,@curcha##		;<KPJ.201> get JFN
+	MOVEM	1,enqblk##+.ENQLV	;store in ENQ% block
+	MOVEI	1,.ENQBL
+	MOVEI	2,enqblk##
+	ENQ%
+mkenqx:	 error	<mkenq-2 monito>	;<KPJ.142>
+	SETOM	havenq##		;<KPJ.46> have resource now
+>;T20
+	return
+
+
+;+
+;MKDEQ		make deque
+;-
+
+mkdeq::
+T10,<	MOVE	t,[.DEQDR,,enqblk]	;<TEQ> dequeue specific request
+	DEQ.	t,			;get rid of it
+>;T10
+T20,<	HRRZ	1,@curcha##		;get JFN
+	MOVEM	1,enqblk##+.ENQLV	;store in DEQ% block
+	MOVEI	1,.DEQDR
+	MOVEI	2,enqblk##
+	DEQ%
+>;T20
+	 error	<mkdeq monito>			;DEQ./DEQ% failed...
+	SETZM	havenq##		;<KPJ.46!TEQ> we have no resource
+	return
+
+
+;+
+;DEQUE		dequeue all pending requests
+;-
+
+deque::	SKIPE	havenq##		;<KPJ.45> have resource?
+	 JRST	deque1			;<KPJ.41> yes, get rid of it
+T10,<	SKIPN	enqwat##>		;<KPJ.45> no, waiting for it?
+	 JRST	deque2			;[KPJ.41] no, get lost
+deque1:					;[KPJ.41] either have or waiting
+T10,<	MOVE	t,[.DEQDA,,enqblk]	;[TEQ] deque all locks etc
+	DEQ.	t,			; dequeue all pending requests
+>;T10
+T20,<	MOVEI	1,.DEQDA
+	DEQ%
+>;T20
+	 warn	<monito deque>		;[KPJ.41] ignore errors
+deque2:	SETZM	havenq##		;<KPJ.46!TEQ> we have no resource 
+	return
+
+
+
+T10,<
+;RUNX		call program (T10 only)
+;T10:		GP1/	flags+offset,,run block
+;			flags:
+;				1B1:	use UU.PHY		<KPJ.110>
+;T20:		GP1/	offset,filename string addr
+
+runx::	MOVEM	0,acblk##+0		;<KPJ.143> save AC 0
+	MOVE	0,[1,,acblk##+1]	;<KPJ.143> from,,to
+	BLT	0,acblk##+^O17		;<KPJ.143> save AC1 .. AC17
+	CALL	runxx##			;<KPJ.143> go to low segment
+	PORTAL	xxback			;<KPJ.207> failed, tell user about it
+>;T10
+
+T10,<
+;BADPRG		say we couldn't, what program we couldn't load, and why
+;accepts	RUNBLK/	RUN/GETSEG argument block:
+;		+0	device name (SIXBIT)
+;		+1	file name (SIXBIT)
+;		+2	extension (SIXBIT)
+;		+3	0 (ignored)
+;		+4	path pointer (PPN is allowed, normally never used)
+;		PATH block:
+;		+0	0 (ignored)
+;		+1	0 (ignored)
+;		+2	P,,PN
+;		+3	SFD list (in SIXBIT)
+;		 :
+;		+n	0 (end of SFD list)
+
+badprg:	print	zrun01##		;<KPJ.143> "cannot run program "
+	MOVE	gp1,runblk##+0		;<KPJ.143> get device name
+	CALL	prcin3			;<KPJ.143> output SIXBIT device name
+	MOVEI	ch,":"			;<KPJ.143> end it with ":"
+	CALL	putch			;<KPJ.143>
+	MOVE	gp1,runblk##+1		;<KPJ.143> get file name
+	CALL	prcin3			;<KPJ.143> output it
+	SKIPE	gp1,runblk##+2		;<KPJ.143> is it defined?
+	 JRST[	MOVEI	ch,"."		;<KPJ.143> yes, start of extension
+		CALL	putch		;<KPJ.143> 
+		CALL	prcin3		;<KPJ.143> output extension
+		JRST	.+1]		;<KPJ.143>
+	SKIPN	gp1,runblk##+4		;<KPJ.143> is it defined?
+	 JRST	xnoppn			;<KPJ.143> no, we are done
+	HLRZ	t,gp1			;<KPJ.214> PPN or path?
+	JUMPE	t,[			;<KPJ.214> a path
+		HRRZ	t,gp1		;<KPJ.214> get path pointer
+		SKIPN	2(t)		;<KPJ.214> any PPN out there?
+		 JRST	xnoppn		;<KPJ.214> no
+		JRST	.+1]		;<KPJ.214> yes, continue
+	MOVEI	ch,ppnbeg		;<KPJ.143> start a path or PPN
+	CALL	putch			;<KPJ.143> . . .
+	HLRZ	t,gp1			;<KPJ.143> is it a PPN or a path?
+	JUMPN	t,[			;<KPJ.143> a PPN
+		CALL	prippn		;<KPJ.143> output PPN
+		JRST	xdone]		;<KPJ.143> end of PPN
+	ADDI	gp1,2			;<KPJ.143> skip two first words
+	PUSH	P,gp1			;<KPJ.210> save away address
+	SKIPN	gp1,@gp1		;<KPJ.214!KPJ.210!KPJ.143> get PPN
+	 JRST[	POP	P,gp1		;<KPJ.214> no PPN, exit fast
+		JRST	xdone]		;<KPJ.214> . . .
+	CALL	prippn##		;<KPJ.143> output PPN
+xxlupe:	POP	P,t2			;<KPJ.210> get back address
+	ADDI	t2,1			;<KPJ.210!KPJ.143> step to next SFD
+	SKIPN	gp1,@t2			;<KPJ.210!KPJ.143> get next SFD
+	 JRST	xdone			;<KPJ.210!KPJ.143> done?
+	PUSH	P,t2			;<KPJ.210> no, save away address
+	MOVEI	ch,","			;<KPJ.143> output comma
+	CALL	putch			;<KPJ.143>
+	CALL	prcin3			;<KPJ.143> output SFD name
+	JRST	xxlupe			;<KPJ.143> go for next level if any
+xdone:	MOVEI	ch,ppnend		;<KPJ.143> end of PPN
+	CALL	putch			;<KPJ.143> say so
+	
+xnoppn:	MOVE	gp1,xerror##		;<KPJ.143> get error code
+	CALL	badfil##		;<KPJ.143> output error message
+	CALL	preol##			;<KPJ.143> 
+	return
+>;T10
+
+T10,<
+;GRRBLC		save program spec in RUNBLK	<KPJ.212>
+;accepts	GP1/	pointer to FILOP. argument block
+;returns	+1 always, with
+;			RUNBLK/ RUN block
+;			GP1/	pointer to RUNBLK
+
+grrblc::MOVE	t,.FODEV(gp1)		;copy device name
+	MOVEM	t,runblk##+0		;. . .
+	HRRZ	t2,.FOLEB(gp1)		;get LOOKUP block address
+	MOVE	t,.RBNAM(t2)		;copy file name
+	MOVEM	t,runblk##+1		;. . .
+	MOVE	t,.RBEXT(t2)		;copy extension
+	MOVEM	t,runblk##+2		;. . .
+	SETZM	runblk##+3		;always zero
+	MOVEI	t,xpath##		;copy PATH. pointer
+	MOVEM	t,runblk##+4		;. . .
+	SETZM	runblk##+5		;no core assignment
+	SETZM	xpath##+0		;clear PATH. flags
+	SETZM	xpath##+1		;. . .
+	HRRZ	t2,.FOPAT(gp1)		;get PATH. pointer
+	ADDI	t2,2			;skip two first words
+	HRLZ	t2,t2			;from,,0
+	HRRI	t2,xpath##+2		;from,,to
+	BLT	t2,xptend##		;copy path
+	SETZM	xptend##		;end of list
+	MOVEI	gp1,runblk##		;return pointer
+	return
+>;T10
+
+
+T10,<
+;GRRBLK		save program spec in RUNBLK	<KPJ.210>
+;accepts	GP1/	pointer to 6-word RUN/GETSEG block
+;returns	+1 failed, with STR/ pointer to error message
+;		+2 success, with
+;			RUNBLK/ RUN block
+;			GP1/	pointer to RUNBLK
+
+grrblk::MOVS	t,gp1			;get blockaddress,,0
+	HRRI	t,runblk##		;merge in 0,,target
+	BLT	t,runblk##+3-1		;store device, file name and extension
+	SETZM	runblk##+3		;always zero
+	MOVEI	t,xpath##		;PATH. pointer
+	MOVEM	t,runblk##+4		;save in RUNBLK
+	SETZM	runblk##+5		;no core argument
+	SETZM	xpath##+0		;clear away any garbage
+	SETZM	xpath##+1		;. . . .
+	HLRZ	t,4(gp1)		;get LH of PPN or path pointer
+	JUMPN	t,[			;PPN?
+		MOVE	t,4(gp1)	;yes, store in RUN block
+		MOVEM	t,xpath##+2	;. . .
+		SETZM	xpath##+3	;no SFDs
+		JRST	grrbl8]		;done
+	HRRZ	t2,gp1			;get source path pointer
+	ADDI	t2,3			;. . . .
+	MOVEI	t3,xpath##+2		;get target path pointer
+grrbl1:	CAIN	t3,xptend##		;target PATH. block full?
+	 JRST[	MOVEI	str,zgrrbl##	;tell user we failed
+		JRST	grrbl9]		;yes, error
+	MOVE	t,0(t2)			;copy PATH. block
+	MOVEM	t,0(t3)			;. . . .
+	JUMPE	t,grrbl8		;end of SFD list?
+	ADDI	t2,1			;step to next word
+	AOJA	t3,grrbl1		;. . . .
+grrbl8:	skpret	
+	HRRI	gp1,runblk		;now point at real world
+grrbl9:	return
+>;T10
+
+T10,<	;*** NOTE: No SAVE macro here please --- we never return ***
+
+;GETX		routine to load in a new high segment (will dequeue data base
+;		to not get any spurious interrupts while in nowhere land).
+
+;accepts	GP1/	address of GETSEG argument block
+;returns	(1)	+1 if we fail to load in the new segment, but succeed
+;			to load back this (the original) segment (we return
+;			via GOBACK routine), or if we cannot save the RUN block
+;			in the low segment
+;		(2)	to top loop of new high segment, if succeed to load it
+;			(we return through SEGRET in that segment)
+;		(3)	to monitor with an error message if fails to load in
+;			both the new segment as well as the original one (we
+;			die in XXARGH routine)
+
+getx::	CALL	grrblk			;<KPJ.210> save program name in RUNBLK
+	 JRST[	CALL	errmsg##	;<KPJ.210> can't do that, tell user
+		JRST	getx9]		;<KPJ.210> and give up
+	CALL	takoff			;<KPJ.202> Preparing for launching, Sir
+	MOVEM	0,acblk##+0		;<KPJ.201> save away ACs
+	MOVE	0,[1,,acblk##+1]	;<KPJ.201> . . .
+	BLT	0,acblk##+^O17		;<KPJ.201> . . .
+	CALL	getxx##			;<KPJ.201> go to LOWSEG routine to
+					;<KPJ.202> kill this segment and try
+					;<KPJ.202> to load in a new one.
+	PORTAL	.+1			;<KPJ.207> entry point from low segment
+					;<KPJ.207> in case we are concealed
+
+;We come here when a GETSEG failed to load in a new high segment, and we did
+;succeed in getting back our original high segment.  Unfortunately, the JOBDAT
+;area is a mess, because GETSEG does not initialize it, but does clear away
+;some usefull information.  Put it back so we don't crash so often...
+
+	MOVE	t,[-2,,.GTUPM]		;<KPJ.202> us
+	GETTAB	t,			;<KPJ.202> get high segment start
+	 MOVEI	t,evec-.JBHDA		;<KPJ.202> failed, try this (gulp!)
+	HLRZ	t,t			;<KPJ.202> get origin
+	CAIN	t,0			;<KPJ.202> no start address??
+	 MOVEI	t,evec-.JBHDA		;<KPJ.202> failed, try this (gulp!)
+;	ADDI	t,.JBHSA		;<KPJ.202> use word word 0 (.JBHSA)
+	MOVE	t,0(t)			;<KPJ.202> restore RH(.JBSA) from this
+	HRRM	t,.JBSA			;<KPJ.201> . . .
+	MOVE	t,myree			;<KPJ.202> initialize .JBREN for us
+	MOVEM	t,.JBREN		;<KPJ.202> . . .
+	MOVE	0,[acblk##+1,,1]	;<KPJ.201> put back ACs
+	BLT	0,^O17			;<KPJ.201> . . .
+	MOVE	0,acblk##+0		;<KPJ.201> . . .
+					;<KPJ.202> stack pointer now points at
+					;<KPJ.202> the LOWSEG stack, hopefully
+	CALL	psiree			;<KPJ.202> turn on interrupts again
+	CALL	badprg			;<KPJ.203> tell user about trauma
+getx9:	return				;<KPJ.201> return from nasty experience
+>;T10
+
+
+T10,<	;This code is in the HIGH segment.
+
+;Turn off all interrupts, while we have no HIGH segment.
+
+takoff:	CALL	deque			;<KPJ.203> no data base interrupts...
+	SETOM	psifak##		;<KPJ.206> don't allow interrupts
+	return				;<KPJ.203> now then...
+
+>;T10
+
+T10,<	;This code is in the HIGH segment.	<KPJ.202>
+
+;This routine make the PSI vector right in the LOW segment, when we have made
+;a GETSEG to get a new HIGH segment.  The PSI vector points to locations in
+;the HIGH segment, and those addresses must be put right, or else...
+
+psibak:	MOVEI	t,trpout		;ho hum...
+	MOVEM	t,qqqout##
+	MOVEI	t,trpdat
+	MOVEM	t,qqqdat##
+	MOVEI	t,trpstp
+	MOVEM	t,qqqstp##
+	MOVEI	t,trptle
+	MOVEM	t,qqqtle##
+	MOVEI	t,trpcji##
+	MOVEM	t,qqqcji##
+	MOVEI	t,trppty##
+	MOVEM	t,qqqpty##
+	MOVEI	t,trpque
+	MOVEM	t,qqqque##
+	Fall	psiree			;<KPJ.203>
+
+psiree:	SETZM	psifak##		;<KPJ.206> allow interrupts again
+	return
+>;T10
+
+T10,<	;This code is in the HIGH segment.
+
+;We come here from a GETX call (via GETXX) which changed to this segment from
+;another using a GETSEG. This means that the JOBDAT area is in a mess. We must
+;initialize it to a correct state, as well as a lot of other stuff.
+
+segret:	MOVE	t,[-2,,.GTUPM]		;<KPJ.202> us
+	GETTAB	t,			;<KPJ.202> get high segment start
+	 MOVEI	t,evec-.JBHDA		;<KPJ.202> failed, try this (gulp!)
+	HLRZ	t,t			;<KPJ.202> get origin
+	CAIN	t,0			;<KPJ.202> no start address??
+	 MOVEI	t,evec-.JBHDA		;<KPJ.202> failed, try this (gulp!)
+;	ADDI	t,.JBHSA		;<KPJ.202> use word 0 (.JBHSA)
+	MOVE	t,0(t)			;<KPJ.202> restore RH(.JBSA) from this
+	HRRM	t,.JBSA			;<KPJ.202> . . .
+	MOVE	t,myree			;<KPJ.202> put back REENTER address
+	MOVEM	t,.JBREN		;<KPJ.202> . . .
+	MOVE	0,[acblk##+1,,1]	;<KPJ.201> restore ACs
+	BLT	0,^O17			;<KPJ.201> . . .
+	MOVE	0,acblk##+0		;<KPJ.201> . . .
+	MOVE	P,stackp##		;<KPJ.201> get an empty stack
+	MOVEI	t,tercon##		;<KPJ.201> restore consumer
+	MOVEM	t,consum##		;<KPJ.201> . . .
+	MOVEI	t,terpro##		;<KPJ.201> restore producer
+	MOVEM	t,produc##		;<KPJ.201> . . .
+	CALL	matbak##		;<KPJ.231> restore match routines
+	CALL	psibak			;<KPJ.202> restore interrupt vectors
+	CALL	copslf			;<KPJ.210> remember segment name
+	 CALL	errmsg##		;<KPJ.210> failed, tell user
+	JRST	toploo##		;<KPJ.201> "return" to top loop
+>;T10
+
+T10,<
+;We come here when a RUN command fails, but we succeed to load
+;back our original high segment.  This means that a number of JOBDAT area
+;variables are in an incorrect state.  Try to restore them, so we don't crash
+;so often.
+
+xxback:	PORTAL	.+1			;<KPJ.143> in case we are concealed
+	MOVE	t,[-2,,.GTUPM]		;<KPJ.202> us
+	GETTAB	t,			;<KPJ.202> get high segment start
+	 MOVEI	t,evec-.JBHDA		;<KPJ.202> failed, try this (gulp!)
+	HLRZ	t,t			;<KPJ.202> get origin
+	CAIN	t,0			;<KPJ.202> no start address??
+	 MOVEI	t,evec-.JBHDA		;<KPJ.202> failed, try this (gulp!)
+;	ADDI	t,.JBHSA		;<KPJ.202> use word 0 (.JBHSA)
+	MOVE	t,0(t)			;<KPJ.202> restore RH(.JBSA) from this
+	HRRM	t,.JBSA			;<KPJ.143> . . .
+	MOVE	t,myree			;<KPJ.202> get REENTER address
+	MOVEM	t,.JBREN		;<KPJ.202>
+	MOVE	0,[acblk##+1,,1]	;<KPJ.143> put back ACs
+	BLT	0,^O17			;<KPJ.143> . . .
+	MOVE	0,acblk##+0		;<KPJ.202> . . .
+
+;We are now back in original high segment, and have to tell the user that the
+;RUN command failed (we must open up I/O and so on, first, because the RUN UUO
+;does kill off all open files etc).
+
+	CALL	initty			;<KPJ.143> initialize terminal
+	CALL	badprg			;<KPJ.203> say whe couldn't run prog
+	rstreg				;<KPJ.143> restore ACs saved
+	print	zrun99##		;<KPJ.143> "--- starting "
+	CALL	prcinm			;<KPJ.143> display our own name
+	print	zrun98##		;<KPJ.143> " ---"
+	CALL	preol##			;<KPJ.143>
+	CALL	toutpu			;<KPJ.143> 
+	JRST	start##			;<KPJ.143> restart us
+>;T10
+
+T10,<
+;+
+;COPSLF		remember name of current high segment	<KPJ.210>
+;accepts	RUNBLK/	GETSEG/RUN block
+;		XPATH/	PATH. block
+;returns	+1 failure, with
+;			STR/	error message
+;			XMYSLF/	-1
+;			SAMNES/	-1
+;		+2 success, with
+;			XMYSLF/	GETSEG/RUN block
+;			XMYPTH/	PATH. block
+;			SAMNES/	=0  if high segment and program names differ
+;				=-1 otherwise
+;-
+
+copslf:	MOVE	t,[runblk##,,xmyslf##]	;from,,to
+	BLT	t,xmyslf##+3-1		;copy device, file name and extension
+	MOVE	t,[-2,,.GTDEV]		;<KPJ.211> get segments device
+	GETTAB	t,			;<KPJ.211> . . .
+	 TRNA				;<KPJ.211> failed, use maybe-logical
+	  MOVEM	t,xmyslf##+0		;<KPJ.211> now we have a physical one
+	MOVE	t,[-2,,.GTPRG]		;<KPJ.211> get segment name
+	GETTAB	t,			;<KPJ.211> . . .
+	 TRNA				;<KPJ.211> failed, use defined one
+	  MOVEM	t,xmyslf##+1		;<KPJ.211> now we have physical one
+	SETZM	xmyslf##+3		;always zero
+	MOVEI	t,xmypth##		;PATH. pointer
+	MOVEM	t,xmyslf##+4		;. . .
+	SETZM	xmypth##+0		;clear PATH. block
+	SETZM	xmypth##+1		;. . .
+	SETZM	xmyslf##+5		;no core assignment specified
+	HLRZ	t,runblk##+4		;get PPN or PATH. pointer
+	JUMPN	t,[			;PPN?
+		MOVE	t,runblk##+4	;yes, copy PPN
+		MOVEM	t,xmypth##+2	;. . .
+		SETZM	xmypth##+3	;no SFDs
+		JRST	copsl8]		;done, +2 return
+	HRRZ	t2,runblk##+4		;<KPJ.211> no, get PATH. pointer
+	ADDI	t2,2			;skip two first words
+	MOVEI	t3,xmypth##+2		;ditto, target PATH. block
+copsl1:	CAIN	t3,xmyend##		;target block full?
+	 JRST[	MOVEI	str,zcopsl##	;yes, return error message
+		SETOM	xmyslf##+0	;don't know segment name
+		JRST	copsl9]		;give up
+	MOVE	t,0(t2)			;copy a word
+	MOVEM	t,0(t3)			;. . .
+	JUMPE	t,copsl8		;end of list?
+	ADDI	t2,1			;increment buffer pointers
+	AOJA	t3,copsl1		;. . .
+copsl8:	skpret				;+2 return means success
+	SETZM	samnes##		;<KPJ.211> assume unequal
+	HRROI	t,.GTRDV		;<KPJ.211> get "program run device"
+	GETTAB	t,			;<KPJ.211> . . .
+	 JRST	copsl9			;<KPJ.211> failed, give up
+	CAME	t,xmyslf##+0		;<KPJ.211> same device?
+	 JRST	copsl9			;<KPJ.211> no
+	HRROI	t,.GTRFN		;<KPJ.211> get "program run file name"
+	GETTAB	t,			;<KPJ.211> . . .
+	 JRST	copsl9			;<KPJ.211> failed, give up
+	CAME	t,xmyslf##+1		;<KPJ.211> same file name?
+	 JRST	copsl9			;<KPJ.211> no
+	HRROI	t,.GTRDI		;<KPJ.211> get "program run directory"
+	GETTAB	t,			;<KPJ.211> . . .
+	 JRST	copsl9			;<KPJ.211> failed, give up
+	CAME	t,xmypth##+2		;<KPJ.211> same PPN?
+	 JRST	copsl9			;<KPJ.211> no
+	PUSH	P,gp2			;<KPJ.211> GP1 is destroyed by SFDP
+	CALL	sfdp			;<KPJ.211> does monitor like SFDs?
+	 JRST[	POP	P,gp2		;<KPJ.211> no, restore destroyed AC
+		JRST	copsl7]		;<KPJ.211> same name
+	MOVE	t4,gp2			;<KPJ.211> copy max #SFDs (n)
+	POP	P,gp2			;<KPJ.211> restore destroyed AC
+	MOVN	t4,t4			;<KPJ.211> -nn
+	HRLZ	t4,t4			;<KPJ.211> -nn,,0
+copsl6:	HRROI	t,.GTRS0(t4)		;<KPJ.211> get "program SFD name"
+	GETTAB	t,			;<KPJ.211>
+	 JRST	copsl9			;<KPJ.211> failed, give up
+	CAME	t,xmypth##+3(t4)	;<KPJ.211> same?
+	 JRST	copsl9			;<KPJ.211> no
+	JUMPE	t,copsl7		;<KPJ.211> end of list? if so, equal
+	AOJA	t4,copsl6		;<KPJ.211>
+copsl7:	SETOM	samnes##		;<KPJ.211> equal
+copsl9:	return
+>;T10
+
+REPEAT	0,<			;<KPJ.210>
+T20,<					;run a program in a subfork
+runx:: 	MOVSI	1,(GJ%OLD!GJ%SHT)	;we must get a JFN
+	HRRO	2,gp1
+	GTJFN%
+	 ERJMP[	CALL	initty
+		print	zrun01##	;Sorry, luser...
+		CALL	jsyser##	;<KPJ.64>...system barfed
+		CALL	preol##		;new line
+		CALL	toutpu
+		JRST	start##]
+	MOVE	0,1		; save the JFN
+	HLL	0,gp1		; ..and the offset
+	HRLZI	1,run4ac
+	HRRI	1,4
+	BLT	1,15		; move code into the acs
+	JRST	4		; go there
+
+run4ac:	SETO	1,		; 4
+	HRLZI	2,.FHSLF	; 5
+	MOVE	3,[PM%CNT+1000]	; 6
+	PMAP%			; 7	; unmap all pages
+	HRRZ	1,0		; 10	; get back the jfn
+	HRLI	1,.FHSLF	; 11
+	GET%			; 12	; get the new file into memory
+	MOVEI	1,.FHSLF	; 13
+	HLRZ	2,0		; 14	; get back the offset
+	SFRKV%			; 15	; start somewhere in entry vector
+>;T20
+>;End REPEAT 0
+
+;+
+T20,<
+;RUNFRK		Run a program as a subfork:
+;		create a subfork and start something in it
+;accepts	GP1/	offset and addr of filename string
+;returns	+1	if access to the program is denied
+;		+2	when execution of the program is completed
+;-
+
+runfrk::			;*NOTE* no SAVE macro here please
+	SETZ	gp2,			;no fork, by default
+	CAIE	gp1,rnexec##		;is it Push to EXEC?
+	 JRST	rnfrk1			;no, create new fork
+	SKIPE	gp2,execfh##		;yes, do we have an EXEC fork?
+	 JRST[	HRRZ	1,execfh##	;[KPJ.32] 0,,fork handle
+		RFSTS%			;[KPJ.32] how is the fork?
+		 ERJMP	rner01		;failed
+		CAMN	1,[-1]		;<KPJ.124> no such fork?
+		 JRST	.+1		;<KPJ.124> somebody killed it...
+		JRST	rnfrk3]		;no problems, go start EXEC fork
+	MOVSI	1,(CR%CAP)
+	CFORK%				;no, create EXEC fork
+	 ERJMP	rner01			;...failed, go say we cannot
+	MOVEM	1,execfh##		;save EXEC fork handle
+	JRST	rnfrk2			;go get program into fork
+
+rnfrk1:	MOVSI	1,(CR%CAP)		;create fork for non-EXEC
+	CFORK%
+	 ERJMP	rner01			;...failed, go say we cannot
+
+rnfrk2:	MOVEM	1,gp2			;save our fork handle
+ 	MOVSI	1,(GJ%OLD!GJ%SHT)	;get a handle on the program
+	HRRO	2,gp1
+	GTJFN%
+	 ERJMP	rner01			;...failed, go say we cannot
+	HRL	1,gp2
+	GET%				;now load the program into that fork
+	 ERJMP	rner01			;...failed, go say we cannot
+
+rnfrk3:	CALL	reltty			;release TTY
+	MOVEI	1,.FHSLF		;for this fork
+	MOVSI	2,(1B<.TICCC>)		;only trap ^C now
+	STIW%
+
+	MOVE	1,gp2			;get fork handle
+	HLRZ	2,gp1			;run offset
+	SFRKV%				;start the program
+	 ERJMP	rner01			;no, die
+
+	WFORK%				;let's wait for the fork to finish
+	 ERJMP	rner01			;...failed, go say we cannot
+
+	CAME	1,execfh##		;EXEC fork?
+	 JRST[	KFORK%			;no, kill it
+		 ERCAL	rner03		;failed to kill fork, tough...
+		JRST	.+1]
+
+	CALL	initty			;restore terminal params
+	AOS	0(P)
+	RET			;no RETURN macro please
+>;T20
+
+
+;+
+T20,<
+;RNER03		say we could not kill fork and why
+;-
+
+rner03:	print	zrun03##		;cannot get rid of fork
+	CALL	preol##
+	print	zrun02##		;say reason is...
+	CALL	jsyser##		;<KPJ.64>...whaterever it is
+	CALL	preol##
+	CALL	toutput			;output buffer
+	RET
+>;T20
+
+;+
+T20,<
+;RNER01		(not documented)
+;-
+
+rner01:	print	zrun01##		;"Cannot run "
+	HRRZ	str,gp1			;pointer to ASCIZ
+	CALL	prstr##			;type file name
+	CALL	preol##
+	print	zrun02##		;"That's because system says:"
+	CALL	jsyser##		;<KPJ.64> output latest JSYS error
+	CALL	preol##
+
+rnferr:	CALL	toutpu			;empty buffer
+	JUMPN	gp2,[			;if there is any fork,
+		MOVE	1,gp2		;get fork handle
+		KFORK%			;slaughter it
+		 ERCAL	rner03		;...failure, sigh
+		JRST	.+1]
+	RET				;failure, +1 return
+>;T20
+
+
+
+
+
+
+;+
+;SLEEPT		sleep for some time
+;accepts	GP1/	sleep time, in ms
+;returns	+1 if input given
+;		+2 if no input
+;-
+
+sleept::save	<gp1,t>
+
+T10,<	HRLI	gp1,(HB.RTL!HB.RWJ)		;[TEQ] get wake-up bits
+	HIBER	gp1,				; go to sleep
+	 error	<sleept monito>			; error 
+	SKPINL					; input given? +1 return
+>;T10
+T20,<	MOVEI	1,.FHSLF			;this fork
+	MOVE	2,[1B<typchn>]
+	AIC%					; activate channel 1
+	MOVE	1,gp1
+	DISMS%					; sleep for a while
+	MOVEI	1,.FHSLF			;this fork
+	MOVE	2,[1B<typchn>]
+	DIC%
+	MOVEI	1,.PRIIN
+	SIBE%
+	 CAIA					;input given, +1 return
+>;T20
+	  skpret
+	return
+
+T20,<
+ttyint:	EXCH	1,lev2pc##
+	TLO	1,(PC%USR)		;user mode
+	EXCH	1,lev2pc##
+	DEBRK%
+>;T20
+
+
+
+
+
+;+
+T10,<
+;RSET		reset routine
+;		[BDQ] on Twenex don't reset, it just complicates things.
+;-
+
+rset::	RESET
+	return
+>;T10
+
+
+;SLEEPN		sleep for some time
+;accepts	GP1/	time, in seconds
+
+
+sleepn::
+T10,<	SLEEP	gp1,>
+T20,<	MOVE	1,gp1			;<KPJ.46!BDQ> get sleep time in ms
+	DISMS%
+>;T20
+	return
+
+
+;+
+;XIT		exit routine
+;returns	starts at entry vector location 0 (never returns to caller)
+;		(KOM login: logs out job)	<KPJ.55>
+;-
+
+xit::
+T10,<	SETZM	sema##			;not critical any more, so clear
+	CALL	qlogin			;[BCQ] are we logged in?
+	 JRST	xit1			;<KPJ.217!BCQ> yes, just leave
+	SKIPE	detflg##		;<KPJ.217> detached?
+	 OUTSTR[ASCIZ !
+.LOGOUT
+.!]					;<KPJ.217> no, tell user we die now
+	LOGOUT				;<KPJ.217> and die
+xit1:	EXIT	1,			;exit quietly
+>;T10
+T20,<	CALL	toutpu			;force out TTY buffer
+	HALTF%				;return to superior
+>;T20
+	JSP	5,mordor		;<KPJ.55> call special fascist code
+	JRST	ree##			;restart
+;-----------------------------------
+;+
+auslog::comhed	0,runarg##,killme,ccmark##,zzraus##	;logout [KPJ.15]
+;-
+				;<KPJ.136> *** No SAVE macros ***
+killme:	CALL	deque		;dequeue all requests
+	SETZM	lfcnt##		; clear line feed count
+	CALL	tcbeg##		; terminal output
+	print	zleaco##	;"Bye bye" message
+	CALL	updbeg##	; start update
+	CALL	updlse##	; update last seen entry count
+	CALL	endpre##	; clear present list
+	CALL	updend##	; end of update
+	CALL	deque		; dequeue all pending requests
+	print	zwelba##
+	CALL	colwhi##
+	CALL	preol##
+T10,<				;<KPJ.172>
+QZIF,<	CALL	costpr>		;<KPJ.172> inform about session charge
+>;T10
+	CALL	toutpu		;output old text
+T10,<	CALL	kjob		;<KPJ.217> initialize logoff
+	 JRST[	CALL	errmsg##;<KPJ.217> failed, tell user
+		JRST	killm9]	;<KPJ.217> give up
+	PUSH	P,gp1		;<KPJ.217> save address
+>;T10
+	CALL	leave##		;<KPJ.217> leave program
+	CALL	reltty	;<KPJ.217> release terminal
+T10,<	POP	P,gp1		;<KPJ.217> get back RUNBLK address
+	CALL	runx		;<KPJ.217> call STD:LOGOUT.EXE
+>;T10
+T20,<	MOVE	t,selffl##	;<KPJ.217> personal flags
+	Txne	t,logpfl	;<KPJ.217> disconnect after logout?
+	 DTACH%			;<KPJ.217> no, detach first
+	MOVNI	1,1		;<KPJ.217> this job
+	LGOUT%			;<KPJ.217> logout
+	ERJMP	.+1		;<KPJ.217> failed
+	HRROI	1,zsorry##	;<KPJ.217> "Cannot logout. Solly!"
+	PSOUT%			;<KPJ.217> . . .
+	Tmsg	<- ?>		;<KPJ.217> display JSYS error message
+	MOVEI	1,.PRIOUT	;<KPJ.217> to terminal
+	HRLOI	2,.FHSLF	;<KPJ.217> our latest message
+KL10,<	MOVEI	3,0>		;<KPJ.217> no length limit
+KL10N,<	SETZ	3,>		;<KPJ.217> . . .
+	ERSTR%			;<KPJ.217> display it
+	 ERJMP[	Tmsg	<(ERSTR% failed 1)>
+		JRST	.+2]	;<KPJ.217>
+	 ERJMP[	Tmsg	<(ERSTR% failed 2)>
+		JRST	.+1]	;<KPJ.217>
+	JRST	evec		;<KPJ.217> restart
+>;T20
+T10,<
+killm9:
+>;T10
+	return			;<KPJ.217>
+
+;+
+T10,<
+;LOGTMP		generate TMPCOR file for LMENU		[KPJ.22]
+;		it contains either
+;		/SHORT			short menus
+;		/NOSHORT
+;		/DISCONNECT		disconnect after logout
+;		/NODISCONNECT
+;returns	+1 failed to write TMP:LME
+;		+2 success
+;-
+
+logtmp::save	<consum##,nr,ch,chpt##>
+	HRROI	t,.GTPTR		;this job,,program to run
+	GETTAB	t,			;get the info
+	 TRNA				;error, try to write TMP:LME anyway
+	  JUMPE	t,logtm8		;<KPJ.210> no program, no TMP:LME, OK
+	MOVSI	t,'lme'			;<KPJ.65!KPJ.54> file TMP:LME
+	MOVEM	t,tmcnam##		;<KPJ.65> use that name
+	CALL	tmcbeg##		;start of tempcore
+	 JRST	logtm9			;<KPJ.65> no core for buffer
+	MOVEI	ch,"/"			;<KPJ.54> start of switch
+	CALL	putch			;<KPJ.54> output slash
+	MOVE	t,selffl##		;get our personal flags
+	MOVEI	str,[ASCIZ !no!]	;<KPJ.216>
+	Txne	t,logpfl		;disconnect after logout?
+	 CALL	prstr##			;<KPJ.216!KPJ.54> no, don't disconnect
+	print[	ASCIZ !disconnect/!]	;<KPJ.61!KPJ.54> tell LMENU that
+	MOVE	t,selffl##		;<KPJ.61> get my flags
+	MOVEI	str,[ASCIZ !no!]	;<KPJ.216>
+	Txnn	t,shopfl		;<KPJ.61> short menus?
+	 CALL	prstr##			;<KPJ.216!KPJ.61> no, long
+	print[	ASCIZ /short
+/]					;<KPJ.61> tell LMENU, end with CRLF
+	CALL	tmcend##		;end of TMPCOR
+	 $skipa				;<KPJ.216> failed, +1 return
+logtm8:   skpret			;<KPJ.216> success, +2 return
+logtm9:	return
+>;T10
+
+;+
+T10,<					;<KPJ.172>
+QZIF,<					;<KPJ.172>
+;COSTPR		output session charge	[KPJ.21]
+;-
+
+costpr:	print	zsessi##		;"Session cost: "
+	SETZ	1,			;for self
+	CHARGE	1,			;get charge cost in local currency
+	HRROI	2,.GTQPP		;royalty
+	GETTAB	2,			;get it
+	 JRST[	print[	ASCIZ  !??.??!]	;<KPJ.61> we don't know, say so
+		JRST	costp9]		;<KPJ.61> exit fast
+	ADD	1,2			;add costs
+	IDIVI	1,^D100			;make SEK
+	MOVE	nr,1			;shuffle
+	PUSH	P,2			;save .01's
+	CALL	prnum##			;output number
+	print	zzzdot##		;currency dot
+	POP	P,nr			;get .01's
+	CAIL	nr,^D100		;too large?
+	 JRST[	print[	ASCIZ !??!]	;<KPJ.61> something went wrong
+		JRST	costp9]		;<KPJ.61> indicate that
+	CAIGE	nr,^D10			;just one digit?
+	 JRST[	PUSH	P,nr		;<KPJ.61> save precious data
+		MOVEI	ch,"0"		;[KPJ.37] yep, output leading zero
+		CALL	putch		;[KPJ.37]
+		POP	P,nr		;<KPJ.61> restore fraction
+		JRST	.+1]		;[KPJ.37]
+	 CALL	prnum##			;output number
+costp9:	CALL	preol##			;<KPJ.61> looks nicer with a CRLF
+	return
+>;QZIF
+>;T10
+	
+
+
+;+
+;QLOGIN		check if logged in
+;returns	+1 if logged in
+;		+2 if not logged in
+;-
+
+qlogin::
+T10,<	PJOB	t,>		;[SEE] get job number
+T20,<	GJINF%>			;[KPJ.6] get job number
+T10,<	MOVN	t,t		;[SEE] make JOBSTS understand job number
+	JOBSTS	t,		;[SEE] get job status
+	 error	<qlogin monito>	;[KPJ.41!SEE] "impossible..."
+	TLNN	t,(JB.ULI)	;[SEE] are we logged in ? (+1 return)
+>;T10
+T20,<	SKIPN	1>		;[KPJ.6] are we logged in? (+1 return)
+	 skpret			;[SEE] no, +2 return
+	return			;[SEE] yes
+
+
+;+
+T10,<				;[KPJ.5] Tops-10 only
+;PAGIN		page in or create a block of memory. [SEE]
+;		if the requested area doesn't exist on disk, create it.
+;accepts	GP1/	length, in pages
+;		GP2/	first page number
+;returns	+1 failure to create new page, 
+;		   with T/ error code, one of:
+;				PAGLE%	core limit exceeded
+;				PAGNS%	no swap space left
+;				PAGNX%	virtual limit is zero
+;		+2 success
+;-
+
+pagin::	save	<gp1,gp2>
+	MOVN	gp1,gp1			;make negative repeat count
+	TLZ	gp2,(PA.GAF)		;[KPJ.37] swap in
+	MOVE	t,[.PAGIO,,gp1]		;swap page
+	PAGE.	t,			;
+	 TRNA				;argh!
+	  JRST	pagin8			;+2 return - success
+	CAIN	t,PAGCI%		;[BCQ] page already in memory?
+	 JRST	pagin8			;[BCQ] yes, just return
+	CAIE	t,PAGME%		;no such page?
+	 error	<pagin-2 monito>	;no, some other ghastly error
+	MOVE	t,[.PAGCD,,gp1]		;ok, create them
+	PAGE.	t,			; this can't fail
+	 TRNA				;too bad SEE, it did any way...
+	  JRST	pagin8			;page created, +2 return
+	CAIE	t,PAGNX%		;<KPJ.65> virtual limit zero?
+	 CAIN	t,PAGLE%		;<KPJ.65> or, no more core?
+	  JRST	pagin9			;<KPJ.65> yes, +1 return
+	CAIN	t,PAGNS%		;<KPJ.65> no swap space left?
+	 JRST	pagin9			;<KPJ.65> yes, +1 return
+	error	<pagin-1 monito>	;<KPJ.65> no, REAL error...
+
+pagin8:	skpret				;+2 return (success)
+pagin9:	return				; done
+>;T10
+
+
+;+
+T10,<				;[KPJ.5] Tops-10 only
+;PAGOUT		throw a block of memory out on the disk [SEE]
+;accepts	GP1/	length, in pages
+;		GP2/	first page number
+;-
+
+pagout::MOVN	gp1,gp1			;make negative repeat count
+	TLO	gp2,(PA.GAF)		;page out
+	MOVE	t,[.PAGIO,,gp1]		;swap in or out
+	PAGE.	t,
+	 error	<pagout monito>		;should not fail...
+	return
+>;T10
+
+
+;+
+T10,<				;[KPJ.5] Tops-10 only
+;PAGDEL		delete a block of memory [SEE]
+;accepts	GP1/	length, in pages
+;		GP2/	first page number
+;-
+
+pagdel::MOVN	gp1,gp1			;make negative repeat count
+	TLO	gp2,(PA.GAF)		;delete
+	MOVE	t,[.PAGCD,,gp1]		;create or delete page
+	PAGE.	t,
+	 JRST[	CAIN	t,PAGME%	;no such page?
+		 JRST	.+1		;ok, we got rid of it
+		error <pagdel monito>]
+	return
+>;T10
+
+
+;+
+;PRCINM		write exact file spec. for this program <SEE>
+;		if high segment name is not same as program name, show both
+;-
+
+prcinm::save	<ch,gp1,gp2>
+T10,<	HRROI	gp1,.GTRDV		;<KPJ.210> get "run device"
+	GETTAB	gp1,			;<KPJ.210> . . .
+	 MOVE	gp1,[SIXBIT !??????!]	;<KPJ.210>
+	CALL	prcin3			;write it
+	MOVEI	ch,":"			;end with colon
+	CALL	putch
+	HRROI	gp1,.GTRFN		;<KPJ.210> get "run file name"
+	GETTAB	gp1,			;<KPJ.210> . . .
+	 MOVE	gp1,[SIXBIT !??????!]	;<KPJ.210>
+	CALL	prcin3			;write it
+	print[	ASCIZ !.exe!]		;<KPJ.121> assume .EXE extension
+	MOVEI	ch,.CHLBR
+	CALL	putch			;[KPJ.35]
+	HRROI	gp1,.GTRDI		;<KPJ.210> get "run directory"
+	GETTAB	gp1,			;<KPJ.210> . . .
+	 JRST[	print[	ASCIZ !?,?!]	;<KPJ.210> unknown
+		JRST	.+2]		;<KPJ.210>
+	  CALL	prippn##		;if known, output it
+	CALL	sfdp			;[KPJ.37] SFDs on this system?
+	 JRST	prcin2			;[KPJ.37] no SFDs
+	MOVN	gp2,gp2			;[KPJ.37] make a negative counter
+	HRLZ	gp2,gp2			;[KPJ.37] -nn,,0
+prcin1:	HRROI	gp1,.GTRS0(gp2)		;<KPJ.210> get SFD name
+	GETTAB	gp1,			;<KPJ.210> . . .
+	 MOVE	gp1,[SIXBIT !??????!]	;<KPJ.210> unknown
+	JUMPE	gp1,prcin2		;<KPJ.210>
+	MOVEI	ch,","			;get comma
+	CALL	putch			;output it
+	CALL	prcin3			;write SFD name
+	AOBJN	gp2,prcin1		;loop for next SFD
+
+prcin2:	MOVEI	ch,.CHRBR
+	CALL	putch
+	SKIPE	samnes##		;<KPJ.205> same program name?
+	 JRST	prcin9			;<KPJ.205> yes, exit
+	print[	ASCIZ ! + !]		;<KPJ.205>
+	MOVE	gp1,xmyslf##+0		;<KPJ.210!KPJ.210> get segment device
+	CALL	prcin3			;<KPJ.205> write it
+	MOVEI	ch,":"			;<KPJ.205> end with colon
+	CALL	putch			;<KPJ.205>
+	MOVE	gp1,xmyslf##+1		;<KPJ.210!KPJ.205> segment file name
+	CALL	prcin3			;<KPJ.205> write it
+	MOVEI	ch,"."			;<KPJ.211> "." starts extension
+	CALL	putch			;<KPJ.211>
+	SKIPN	gp1,xmyslf##+2		;<KPJ.210> segment extension
+	 MOVE	gp1,[SIXBIT !exe!]	;<KPJ.210> default is EXE
+	CALL	prcin3			;<KPJ.210>
+	MOVEI	ch,.CHLBR		;<KPJ.205>
+	CALL	putch			;<KPJ.205>
+	MOVE	gp1,xmypth##+2		;<KPJ.210> segment PPN
+	CALL	prippn##		;<KPJ.205> write PPN
+	CALL	sfdp			;<KPJ.205> monitor likes SFDs?
+	 JRST	prcix2			;<KPJ.205> no, done
+	MOVN	gp2,gp2			;<KPJ.205> make a negative counter
+	HRLZ	gp2,gp2			;<KPJ.205> -nn,,0
+prcix1:	SKIPN	gp1,xmypth##+3(gp2)	;<KPJ.210> get SFD name
+	 JRST	prcix2			;<KPJ.210!KPJ.205> no more SFDs
+	MOVEI	ch,","			;<KPJ.205> get comma
+	CALL	putch			;<KPJ.205> output it
+	CALL	prcin3			;<KPJ.205> write SFD name
+	AOBJN	gp2,prcix1		;<KPJ.205> loop for next SFD
+
+prcix2:	MOVEI	ch,.CHRBR		;<KPJ.205> end of PPN part
+	CALL	putch			;<KPJ.205>
+>;T10
+T20,<	MOVEI	1,evec			;<KPJ.132> get entry vector address
+	LSH	1,-9			;<KPJ.132> make page#
+	HRLI	1,.FHSLF		;<KPJ.132> this fork
+	RMAP%				;<KPJ.132> get page map
+	HLRZ	1,1			;<KPJ.132> get handle
+	CAIE	1,.FHSLF		;<KPJ.132> private page?
+	 JRST[	MOVE	2,1		;<KPJ.132> no, shuffle
+		HRROI	1,jfnsit##	;<KPJ.132> put result here
+		SETZ	3,.CHNUL	;<KPJ.132> end on NUL
+		JFNS%			;<KPJ.132> get file name
+		ERJMP	.+1		;<KPJ.132> failed, do dirty way
+		SETZ	2,.CHNUL	;<KPJ.132> get NUL
+		IDPB	2,1		;<KPJ.132> make ASCIZ
+		MOVEI	str,jfnsit##	;<KPJ.132> point at name buffer
+		CALl	prstr##		;<KPJ.132> output name
+		JRST	prcin9]		;<KPJ.132> done
+	MOVE	gp1,[SIXBIT !kom:!]	; [BDQ] quick & dirty -- fix this later
+	CALL	prcin3
+	GETNM%
+	SKIPN	gp1,1
+	 MOVSI	gp1,'kom'
+	CALL	prcin3
+>;T20
+prcin9:	return
+
+;+
+;PRCIN3		outputs sixbit word as ASCII
+;accepts	GP1/	sixbit word
+;-
+
+prcin3::MOVE	t4,[POINT 6,gp1]	;<KPJ.47> point at source
+	MOVE	t3,[POINT 6,t2]		;<KPJ.47> point at temp
+	SETZ	t2,			;<KPJ.47> clear temporary word
+	MOVEI	t,6			;<KPJ.47> max #chars in a word
+prcin4:	ILDB	ch,t4			; no, get next character
+	IDPB	ch,t3			;<KPJ.47> save copy
+	ADDI	ch,"A"-'A'		; make it ASCII
+	PUSH	P,t			;<KPJ.47> save counter
+	CALL	putch			; write it
+	POP	P,t			;<KPJ.47> restore counter
+	CAME	t2,gp1			;<KPJ.47> written all of it?
+	 SOJG	t,prcin4		;<KPJ.47> if more, continue
+	return				; come here when done with word
+
+;+
+T10,<
+;SFDP	test if SFDs exist on this system
+;return	+1 if SFD feature not in this system, with GP2/ 0
+;	+2 if SFDs enabled, with GP2/ max level of SFDs
+;-
+
+sfdp::	MOVE	gp2,[%FTSTR]		;<KPJ.37!KPJ.67> get feature info
+	GETTAB	gp2,			;[KPJ.37]
+;	 warn	<monito sfdp gettab ftstr>
+	 SETZ	gp2,			;<KPJ.167!KPJ.41!KPJ.37> argh...
+	TRNN	gp2,<F%SFD&777777>	;[KPJ.37] SFD feature enabled?
+	 JRST[	SETZ	gp2,		;[KPJ.37] no, no SFDs
+		JRST	sfdp9]		;
+	MOVE	gp2,[%LDSFD]		;[KPJ.37] get max number of SFDs
+	GETTAB	gp2,			;[KPJ.37]
+	 TDZA	gp2,gp2			;<KPJ.245!KPJ.167!KPJ.37> argh...
+	  skpret			;<KPJ.167>
+sfdp9:	return
+>;T10
+;-----------------------------------
+;KJOB		initialize Job Terminator	<KPJ.217>
+;returns	+1 failed, STR/ error message
+;		+2 success, GP1/ pointer to RUNBLK
+
+T10,<
+kjob:	MOVE	t,selffl##		;get our personal flags
+	MOVEI	gp1,[EXP 'std   ','logout','exe   ',0,0,0]
+					;STD:LOGOUT.EXE
+	Txne	t,logpfl		;disconnect after logout ?
+	 HRLI	gp1,1			;yes, /RUNOFFSET:1
+	CALL	grrblk			;save name in RUNBLK
+	 $skipa				;failed, +1 return
+	   skpret			;success, +2 return
+	return
+>;T10
+;-----------------------------------
+T10,<	END	evec>
+T20,<	END	evclen,,evec>
+	PRINTX	?Error: missing END or macros screwed up in MONITO module
+>	PRINTX	?Error: missing END or macros screwed up in MONITO module
+>	PRINTX	?Error: missing END or macros screwed up in MONITO module
+]	PRINTX	?Error: missing END or macros screwed up in MONITO module
+]	PRINTX	?Error: missing END or macros screwed up in MONITO module
+	PRINTX	<Aborting...>
+	PASS2
+	END
+..and no more

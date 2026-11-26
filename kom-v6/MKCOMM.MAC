@@ -1,0 +1,301 @@
+;Oden::DSKG:MKCOMM.MAC<62,7777,MAC> 1987-01-04 07:34:33, Edit by KPJ @ H.HOLE
+;14	CHKORI changed to CHKOIR to avoid name clash.
+;Oden::DSKD:MKCOMM.MAC<62,7777,MAC> 1985-10-04 19:26:37, Edit by K P J
+;13	Introduced PROLOG macro. Use that "SILFLG" to implement Torgny mode.
+;Oden::DSKD:MKCOMM.MAC<62,7777,MAC> 1985-08-16 07:17:03, Edit by KPJ @ DECGR
+;12	Don't yell about ORIGINAL CONFERENCEs when COMMENTing an entry and
+;	the link is a SINGLE COPY, since we will not be sending anything
+;	to that CONFERENCE anyway.
+;Oden::DSKD:MKCOMM.MAC<62,7777,MAC> 1985-08-14 15:47:53, Edit by KPJ @ DECGR
+;11	Fixed bug which made KOM crash when giving PERSONAL or COMMENT commands
+;	while already writing a text.
+;Oden::DSKD:MKCOMM.MAC<62,7777,MAC> 1985-07-17 10:17:01, Edit by KPJ @ L89
+;10	Integrated MKCOM and MAKANS routine with WRICOM, which is deleted.
+;	Corrected documentation of these routines and CHKORI.
+;	Sanitized code.
+;Oden::DSKD:MKCOMM.MAC<62,7777,MAC> 1985-05-11 02:37:22, Edit by KPJ @ Semester
+;7	Make COMMENT and PERSONAL be more restrictive.
+;DSKD:MKCOMM.MAC[62,7777] 1985-01-07 23:43:49, Edit by KPJ @ L89
+;6	Obey personal flag COMMENT UNMARKS NOTICE. If ON (default), marked
+;	notice is UNMARKed if COMMENTed by marker. Search MACTEN.
+;Oden::DSKD:MKCOMM.MAC[62,7777] 1984-11-29 03:52:15, Edit by KPJ @ UPSALA
+;5	Get rid of read access test on "get last entry" (GTLAST).
+;Oden::Dskd:Mkcomm.Mac[62,7777] 1984-05-23 05:31:19, Edit by KPJ Jaakkola
+;4	Updated copyright notice. SEARCH UUOSYM only on Tops-10.
+;Oden::Dskd:Mkcomm.Mac[62,7777] 1984-03-29 13:29:35, Edit by T Tholerus
+;Oden::Dskd:Mkcomm.Mac[62,7777] 1984-03-21 13:00:38, Edit by T Tholerus
+;2,3	[1014] Hacked GTANRE, and some other things.
+;Oden::Dsk:Mkcomm.New[1116,134] 1982-03-02 21:20:48, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(mkcomm)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-23 05:29:56
+
+;	D A T A   A R E A
+
+
+comlis::0			; comment list
+perflg:	0			; personal flag
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+mkcomm::comhed	qentse,gtcoar,mkcom,ccmkco##,zcomhl## 	;Comment
+mkansw::comhed	qentse,gtcoar,makans,ccmkan##,zanshl##	;Personal (answer)
+;-
+
+;+
+;QENTSE		check if anything just is seen
+;returns	+1 if nothing seen
+;		+2 if something seen
+;-
+
+qentse:	SKIPE	lastnr##	; anything seen ?
+	 skpret			; yes
+	return
+
+
+;+
+;GTCOAR		get comment argument
+;returns	ARGLIS/	comment numbers
+;		ERRFL/	on if error
+;-
+
+gtcoar:	save	<quest##>
+	SKIPGE	wriflg##		;writing ?
+	 JRST[	SETOM	errfl##		;yes, error
+		MOVEI	str,zgtcox##	;"Cancel or Enter current entry first"
+		SKIPN	silflg##	;<KPJ.13> Torgny mode?
+		 CALL	errmsg##	;no, give error message
+		JRST	gtcoa9]
+	MOVEI	t,askcom		;ask for entry to comment
+	MOVEM	t,quest##
+	CALL	gtlast			;get last seen entry
+gtcoa9:	return
+
+
+
+;+
+;ASKCOM  --  ask for entry to comment
+;-
+
+askcom::save	<str>
+	CALL	enthlp		; entry help
+	print	zascom##	;"Comment what entry?"
+	branch	prher##		; print herald
+
+
+
+
+
+
+;+
+;ENTHLP		give entry number help
+;-
+
+enthlp::save	<str>
+	ifoff	hlpflg##,enthl1	; help wanted ?
+	print	zhlcom##	;"Give number of entry or letter"
+enthl1:	branch	preol2##	; blank line
+
+
+;+
+;GTLAST		get number of last seen entry
+;accepts	QUEST/	prompt question
+;returns	ARGLIS/	numbers got
+;		ERRFL/	on if no number got
+;-
+
+gtlast::save	<nr,tp>
+	SETZM	arglis##		;clear argument list
+	MOVEI	tp,arglis##		;get comment list
+	SKIPE	lastnr##		;get last seen entry
+	 JRST	gtlas2			;number got
+	CALL	read##			;read number
+	 JRST	gtlas8			;no reply
+	CALL	mannum##		;get entry number
+	 JRST	gtlas8			;wrong number
+	JRST	gtlas4
+
+gtlas3:	MOVE	nr,lastnr##		;get last number
+	CALL	addlis##		;put this in list
+	JRST	gtlas9
+
+gtlas2:	CALL	mannum##		;other number given ?
+	 JRST	gtlas3			;no, get last
+gtlas4:	MOVE	nr,@arglis##		;get first comment
+	CALL	qrirea##		;right to read ?
+	 JRST[	CALL	sanori##	;<KPJ.7> no, say so
+		JRST	gtlas8]		;<KPJ.7> get lost
+	 TRNA				;<KPJ.7> yes, return success
+gtlas8:	  SETOM	errfl##			;error
+gtlas9:	return
+
+
+
+
+
+;+
+;MKCOM		make a comment
+;MAKANS		make an answer
+;accepts	ARGLIS/	comment numbers
+;		NAMLIS/	Receiver: numbers
+;		KNOLST/	Information copy: numbers
+;-
+
+mkcom::	TDZA	t,t			;<KPJ.10> public answer
+makans:	 SETO	t,			;<KPJ.10> personal answer
+	MOVEM	t,perflg		;<KPJ.10>
+	MOVE	t,arglis##		;get comment numbers
+	MOVEM	t,comlis
+	CALL	cleent##		;clear entry
+	CALL	gtanre			;add receivers to name list
+	CALL	begent##		;write entry
+	SKIPE	entnr##			;comment written ?
+	 CALL[	MOVE	t,selffl##	;<KPJ.6> yes, get personal flags
+		Txne	t,avmpfl	;<KPJ.6> COMMENT UNMARKS NOTICE?
+		 RET			;<KPJ.6> no
+		JRST	cunmar##]	;yes, unmark commented entries
+	return
+
+
+;+
+;GTANRE		get answer receiver
+;returns	NAMLIS/	receiver
+;-
+
+gtanre:	save	<nr,bfp,gp1,authnr##>
+	MOVE	nr,@comlis		;get first entry
+	CALL	adagli##		;add to again list
+	CALL	getobj##		;get entry
+	 error	<gtanre mkcomm>
+	CALL	gesume			;get sub conference
+	CALL	gesubj			;get subject
+	ifoff	perflg,gtanr7		;personal ?
+	MOVE	nr,objcre(bfp)		;get author
+	MOVEM	nr,authnr##		;save it
+	JUMPE	nr,gtanr8		;defined ?
+	CAMN	nr,selfnr##		;self ?
+	 JRST	gtanr8			;yes
+	CALL	chkrec##		;check receiver
+	CALL	adnali##		;add to name list
+	JRST	gtanr9
+
+gtanr8:	SETZM	perflg			;send to all
+	MOVE	nr,@comlis		;get entry again
+gtanr7:	CALL	adrena			;send to receivers
+gtanr9:	return
+
+
+;+
+;GESUME		get sub conference
+;accepts	BFP/	entry
+;returns	SUBJEC/	subject
+;-
+
+gesume:	save	<nr,bfp,gp1>
+	SETZM	subjec##		;clear subject
+	MOVE	nr,dirsub(bfp)		;get subject
+	CALL	getobj##		;get it
+	 JRST	gesum9			;no subject
+	CAIN	gp1,lnk			;link ?
+	 MOVE	nr,lnkrec(bfp)		;yes, get subject
+	MOVEM	nr,subjec##		;save it
+gesum9:	return
+
+
+;+
+;GESUBJ		get subject
+;accepts	BFP/	entry
+;-
+
+gesubj:	save	<consum##,gp2,quest##,wriflg##>
+	CALL	ecbeg##			;start entry
+	MOVE	t,dirtex(bfp)		;get text part
+	MOVEM	t,savdtx##
+	SETZM	savdcn##		;clear count
+	MOVEI	gp2,1			;just first line
+	SETOM	firflg##		;<KPJ.3> from beginning
+	CALL	dbpro##			;display text
+	CALL	ecend##			;end of entry
+	return
+
+
+;+
+;ADRENA		add receivers to name list
+;accepts	NR/	entry
+;returns	NAMLIS/	Receiver: list
+;		KNOLST/	Information copy: list
+;-
+
+adrena:	save	<gp1,bfp,nr>
+	CALL	getobj##		;get entry
+	 JRST	adren9			;error
+	MOVE	t,objcre(bfp)		;save author
+	MOVEM	t,authnr##
+	MOVE	nr,objlfr+2(bfp)	;get first receiver
+adren1:	JUMPN	nr,[			;more receivers ?
+		CALL	getobj##	;yes, get link
+		 error	<adrena mkcomm>
+		MOVE	nr,lnklfr+2(bfp) ;get next receiver
+		CALL	adrece		;add receiver
+		JRST	adren1]
+
+adren9:	return
+
+
+;+
+;ADRECE		add receiver
+;accepts	BFP/	link object
+;-
+
+adrece:	save	<nr,gp1,bfp>
+	SKIPG	0(bfp)			;link deleted ?
+	 JRST	adrec9			;yes, dont add receiver
+	MOVE	nr,lnkrec(bfp)		;get receiver
+	MOVE	gp1,lnktyp(bfp)		;get link type
+	CAIE	gp1,typexc		;<KPJ.12> single copy?
+	 CALL	chorre			;no, check original receiver
+	CAIN	gp1,typrec		;receiver ?
+	 CALL	adname##		;add receiver to name list
+	CAIN	gp1,typkno		;info copy receiver ?
+	 CALL	adknli##		;yes, add name to info copy list
+adrec9:	return
+
+
+;+
+;CHORRE		check original receiver and change
+;accepts	NR/	receiver
+;returns	NR/	new receiver
+;-
+
+chorre:	CALL	chkoir			;original conference ?
+	 TRNA				;no
+	  CALL[	CALL	chkorg##	;yes, organizer ?
+		 CALL	repwpr##	;no, say protected and change
+		RET]
+	return
+
+
+;+
+;CHKOIR		check if original conference
+;accepts	NR/	object
+;returns	+1 if not original
+;		+2 if original
+;-
+
+chkoir:	save	<gp1,bfp>
+	CALL	getobj##		;get conference
+	 JRST	chkoi9			;conference not found
+	MOVE	t,objtyp(bfp)		;get conference type
+	TRNE	t,oriofl		;original ?
+	 skpret				;yes, +2 return
+chkoi9:	return
+
+	END
+..and no more

@@ -1,0 +1,311 @@
+;Oden::DSKD:CHAPRE.MAC<62,7777,MAC> 1985-10-08 02:54:42, Edit by K P J
+;6	Fixed typo in code.
+;Oden::DSKD:CHAPRE.MAC<62,7777,MAC> 1985-09-25 07:07:19, Edit by K P J
+;5	Introduced PROLOG macro. Changed format of PRINT macros.
+;Oden::DSKD:CHAPRE.MAC<62,7777,MAC> 1985-06-20 02:43:46, Edit by KPJ @ GR\N
+;4	GETANO localized.
+;Oden::DSKD:CHAPRE.MAC[62,7777] 1984-11-19 17:10:49, Edit by K.JAAKKOLA
+;3	SEARCH correct universals. Moved language texts to TEXTER.MAC
+;Oden::Dskd:Chapre.Mac[62,7777] 1984-05-14 12:04:33, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dsk:Chapre.New[1116,134] 1982-03-02 19:58:49, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(chapre)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 12:04:12
+
+;	D A T A   A R E A
+
+preobj::0			;presented object
+savtel:	0			;save area for telephone
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+chapre::comhed	0,achpre,chpres,ccchpr##,zcprhl##	;change presentation
+chatel::comhed	0,achtel,cchtel,ccchte##,zctell##	;change phone number
+chaadr::comhed	0,achadr,cchadr,ccchad##,zcadhl##	;change address
+;-
+
+;+
+;ACHPRE		argument for CHANGE PRESENTATION
+;returns	NUMBER/	argument
+;-
+
+achpre::save	<nr,quest##>
+	MOVEI	t,askcpr		;ask for conference
+	MOVEM	t,quest##
+	CALL	gtobnr##		;get object number
+	CALL	qchana##		;check right
+	return
+
+
+
+
+
+;+
+;ASKCPR		ask for conference
+;-
+
+askcpr:	save	<str>
+	CALL	meehlp##		;give conference help
+	print	zascpr##		;"for what change the presentation?"
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+;+
+;CHPRES		change presentation
+;accepts	NUMBER/	argument
+;-
+
+chpres::save	<nr,str>
+	MOVE	nr,number##		;get object
+	CALL	getano			;get anouncement conference
+	CALL	preol2##		;blank lines
+	print	zgetpr##		;"give presentation"
+	CALL	preol##			;new line
+	CALL	cleent##		;clear entry
+	CALL	insnam			;insert name
+	MOVEM	nr,preobj		;set presented object
+	branch	begent##		;go write new presentation
+
+
+
+
+;+
+;GETANO		get anouncement conference
+;accepts	NR/	conference
+;-
+
+getano:	save	<nr,quest##,foalfu##>
+	CALL	chkper##		;person ?
+	 JRST	getan1			;no
+	SKIPE	nr,perpre##		;any presentation conference ?
+getan2:	 CALL	getobj##		;existing object ?
+	  JRST	getan3			;no
+	CALL	adnali##		;add to name list
+	JRST	getan9			;ready
+
+getan1:	SKIPE	nr,anounc##		;any anouncement conference ?
+	 JRST	getan2			;yes
+getan3:	MOVEI	t,askano		;ask for anouncement
+	MOVEM	t,quest##
+	CALL	gtname##		;get conference
+	MOVEI	t,adname##		;add name to name list
+	MOVEM	t,foalfu##
+	CALL	faname##		;for all names
+getan9:	return
+
+
+
+
+
+;+
+;ASKANO		ask for presentation
+;-
+
+askano:	save	<str>
+	CALL	meehlp##		;conference help
+	print	zasano##		;"place presentation where?"
+	CALL	preol##			;new line
+	branch	prher##			;prompt and return
+
+
+
+;+
+;INSNAM		insert name
+;accepts	NR/	meeting
+;-
+
+insnam:	save	<consum##,wriflg##,str>
+	CALL	ecbeg##			;start entry
+	print	ziname##		;say name
+	print	zcolon##		;add colon
+	CALL	prname##		;print name
+	CALL	preol##			;end of line
+	CALL	ecend##			;end of entry
+	return
+
+
+
+;+
+;ACHTEL		argument for CHANGE TELEPHONE number
+;returns	SAVTEL/	number
+;-
+
+achtel:	save	<quest##>
+	SKIPGE	silflg##		;dont allow text command
+	 JRST	achte1
+	MOVEI	t,asktel		;ask for telephone
+	MOVEM	t,quest##
+	CALL	read##			;read one line
+achte1:	 SETOM	errfl##			;empty line
+	MOVE	t,chpt##		;save input
+	MOVEM	t,savtel
+	MOVE	t,[POINT 7,[0]]		;clear input
+	MOVEM	t,chpt##
+	return
+
+
+
+
+
+;+
+;ASKTEL		ask for number
+;-
+
+asktel:	save	<str>
+	CALL	preol2##		;blank line
+	print	zastel##		;"give phone number"
+	CALL	preol2##		;blank line
+	print	ztelep##		;prompt telephone
+	return
+
+
+
+;+
+;CCHTEL		change phone number
+;accepts	SAVTEL/	number
+;-
+
+cchtel:	save	<nr,gp1,bfp,consum##>
+	CALL	updbeg##		;start update
+	CALL	credir##		;create entry head
+	CALL	dcbeg##			;start data base consumer
+	MOVE	t,savtel		;get number
+	MOVEM	t,chpt##
+	CALL	prcoli##		;print it
+	MOVE	t,[POINT 7,[0]]		;clear input
+	MOVEM	t,chpt##
+	CALL	dcend##			;text ready
+	MOVE	t,crenr##		;get presentation object
+	MOVEM	t,preobj
+	CALL	adtepo##		;add text pointer
+	MOVE	nr,crenr##		;get person
+	CALL	updobj##		;get person
+	 Bug(hlt,<cchtel chapre>,<crenr##>)
+	SKIPE	nr,pertel(bfp)		;any old number ?
+	 CALL	delobj##		;yes, delete it
+	MOVE	t,dirnr##		;save telephone
+	MOVEM	t,pertel(bfp)
+	branch	updend##		;end of update
+
+
+
+
+
+;+
+;GETTEL		get phone number
+;accepts	CRENR/	person
+;-
+
+gettel::save	<nr,bfp,gp1>
+	MOVE	nr,crenr##		;get self
+	CALL	getobj##		;get you
+	 Bug(hlt,<gettel chapre>,<crenr##>)
+	SKIPE	pertel(bfp)		;telephone got ?
+	 JRST	gette9			;yes
+	CALL	achtel			;ask for number
+	SKIPL	errfl##			;number given ?
+	 CALL	cchtel			;yes, set it
+gette9:	return
+
+
+
+;+
+;ACHADR		argument for CHANGE ADDRESS
+;returns	SAVTEL/	address
+;-
+
+achadr:	save	<quest##>
+	SKIPGE	silflg##		;dont allow text command
+	 JRST	achad1
+	MOVEI	t,askadr		;ask for address
+	MOVEM	t,quest##
+	CALL	read##			;read one line
+achad1:	 SETOM	errfl##			;empty line
+	MOVE	t,chpt##		;save input
+	MOVEM	t,savtel
+	MOVE	t,[POINT 7,[0]]		;clear input
+	MOVEM	t,chpt##
+	return
+
+
+
+
+;+
+;ASKADR		ask for address
+;-
+
+askadr:	save	<str>
+	CALL	preol2##		;blank line
+	print	zasadr##		;"give adress"
+	CALL	preol2##		;blank line
+	print	zaddre##		;prompt for address
+	return
+
+
+
+;+
+;CCHADR		change address
+;accepts	SAVTEL/	address
+;-
+
+cchadr:	save	<nr,gp1,bfp,consum##,namlis##>
+	MOVE	nr,perpre##		;get presentation conference
+	CALL	adnali##		;add to receiver list
+	CALL	updbeg##		;start update
+	CALL	credir##		;create entry head
+	CALL	dcbeg##			;start data base consumer
+	MOVE	t,savtel		;get address
+	MOVEM	t,chpt##
+	CALL	prcoli##		;print it
+	MOVE	t,[POINT 7,[0]]		;clear input
+	MOVEM	t,chpt##
+	CALL	dcend##			;text ready
+	MOVE	t,crenr##		;get presentation object
+	MOVEM	t,preobj
+	CALL	adtepo##		;add text pointer
+	MOVE	nr,crenr##		;get person
+	CALL	updobj##		;get person
+	 Bug(hlt,<cchadr chapre>,<crenr##>)
+	SKIPE	nr,peradr(bfp)		;any old address ?
+	 CALL	delobj##		;yes, delete it
+	fromto	dirnr##,peradr(bfp)	;save address
+	CALL	putent##		;send addr to presentation conference
+	branch	updend##		;end of update
+
+
+
+
+
+;+
+;GETADR		get address
+;accepts	CRENR/	person
+;-
+
+getadr::save	<nr,bfp,gp1>
+	MOVE	nr,crenr##		;get self
+	CALL	getobj##		;get you
+	 bug(hlt,<getadr chapre>,<crenr##>)
+	SKIPN	nr,peradr(bfp)		;address got ?
+	 JRST	getad1			;no
+	CALL	chkdir##		;entry ?
+	 TRNA				;no
+	  JRST	getad9
+
+getad1:	CALL	achadr			;ask for address
+	SKIPGE	errfl##			;address given ?
+	 JRST	getad9
+	CALL	cchadr			;yes, set it
+getad9:	return
+
+	END
+..and no more

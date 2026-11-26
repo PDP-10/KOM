@@ -1,0 +1,86 @@
+;Oden::DSKG:ADDLIS.MAC<62,7777,MAC> 1987-01-03 21:52:19, Edit by KPJ @ H.HOLE
+;5	Moved low segment areas to IMPURE.
+;Oden::DSKD:ADDLIS.MAC<62,7777,MAC> 1985-10-08 02:39:59, Edit by KPJ
+;4	CELSIZ renamed SIZCEL due to name collision.
+;Oden::DSKD:ADDLIS.MAC<62,7777,MAC> 1985-10-01 10:29:25, Edit by KPJ
+;3	Moved list cell area size to KOMMAC.
+;Oden::DSKD:ADDLIS.MAC<62,7777,MAC> 1985-10-01 01:20:18, Edit by KPJ
+;2	Introduced PROLOG macro. Sanitized code.
+;Oden::Dskd:Addlis.Mac[62,7777] 1984-05-11 16:13:49, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(addlis)
+	CODE
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-11 16:14:54
+
+
+
+;+
+;ADDLIS		add a new list element
+;accepts	TP/	list pointer
+;		NR/	value to add to list
+;returns	+1 always
+;-
+
+addlis::save	<tp>
+	JUMPE	nr,addli9		;dont add object zero
+addli1:	SKIPN	t,0(tp)			;<KPJ.5> end of list ?
+	 JRST	addli8			;yes
+	MOVE	tp,t			;<KPJ.5> no, get list element
+	CAMN	nr,0(tp)		;element already in list ?
+	 JRST	addli9			;yes, dont add again
+	AOJA	tp,addli1		;<KPJ.5> no, get next element
+
+addli8:	MOVE	t,lisfre##		;<KPJ.5> point to new element
+	MOVEM	t,0(tp)
+	MOVE	tp,t			;<KPJ.5> get free area
+	MOVEM	nr,0(tp)		;save value
+	SETZM	1(tp)			;end mark
+	CALL	alllis			;allocate new list cell
+addli9:	return
+
+
+
+
+
+;+
+;ALLLIS		allocate new list element
+;accepts	LISFRE/	last list element
+;returns	+1 always
+;-
+
+alllis:	MOVE	t,lisfre##		;<KPJ.5> get old free pointer
+	ADDI	t,2			;get next free area
+	CAIL	t,lisend##		;<KPJ.5> end of list ?
+	 MOVEI	t,lisare##		;<KPJ.5> yes, get start of area
+	MOVEM	t,lisfre##		;<KPJ.5> save new free pointer
+	return
+
+
+
+
+
+;+
+;SUBLIS		subtract (first occurrence of) name from list
+;accepts	TP/	pointer to start of list
+;		NR/	object to subtract
+;-
+
+sublis::save	<tp>
+subli1:	SKIPN	0(tp)			;more names?
+	 JRST	subli9			;no
+	CAMN	nr,@0(tp)		;right name?
+	 JRST	subli8			;yes, ready
+	MOVE	tp,0(tp)		;get next name
+	AOJA	tp,subli1		;get next pointer
+
+subli8:	MOVE	t,0(tp)			;get pointer
+	MOVE	t,1(t)
+	MOVEM	t,0(tp)			;remove pointer
+subli9:	return
+
+	END
+..and no more

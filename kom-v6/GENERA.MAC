@@ -1,0 +1,350 @@
+;Oden::DSKG:GENERA.MAC<62,7777,MAC> 1987-01-02 04:18:34, Edit by KPJ @ H.HOLE
+;25	Use ERRMSG for error message.
+;Oden::DSKG:GENERA.MAC<62,7777,MAC> 1986-12-11 18:28:59, Edit by KPJ @ L89
+;24	PUTCH is macro.
+;Oden::DSKG:GENERA.MAC<62,7777,MAC> 1986-10-14 16:29:58, Edit by KPJ @ L89
+;23	Employee support under FTEMPL.
+;Oden::DSKG:GENERA.MAC<62,7777,MAC> 1986-09-11 14:51:44, Edit by KPJ @ SEMESTER
+;22	Confirm GENERATE command.
+;Oden::DSKG:GENERA.MAC<62,7777,MAC> 1986-09-08 02:10:33, Edit by KPJ @ H.HOLE
+;21	Fixed problem with outputting of names of data base object types.
+;Oden::DSKG:GENERA.MAC<62,7777,MAC> 1986-09-07 13:55:47, Edit by KPJ @ L89
+;20	Add parameter to GENERATE command.
+;Oden::DSKG:GENERA.MAC<62,7777,MAC> 1986-06-03 09:49:43, Edit by KPJ @ L89
+;17	Moved to TEXTER: ZFIL,GENDZ1,GENDZ7,GENDZ8,GENDZ9,GENMZ1
+;Oden::DSKG:GENERA.MAC<62,7777,MAC> 1986-03-05 16:05:02, Edit by KPJ @ L89
+;16	Deleted XXX routine (cf edit#11)
+;Oden::DSKD:GENERA.MAC<62,7777,MAC> 1985-11-28 06:12:41, Edit by KPJ
+;15	Deleted call to PUTBEL (this is done in TERCON now) which was
+;	introduced in edit#11.
+;Freja::QS:<KOM.6-SOURCES>GENERA.MAC.2 16-Nov-85 22:36:41,Editor:KPJ-JAAKKOLA
+;14	".JSYSER" call changed to ".JSERR" which was meant.
+;Oden::DSKD:GENERA.MAC<62,7777,MAC> 1985-10-17 15:12:10, Edit by KPJ
+;13	Corrected call to .NOUT (NOUT%) handler.
+;Oden::DSKD:GENERA.MAC<62,7777,MAC> 1985-10-08 04:36:17, Edit by KPJ
+;12	Added ZFIL, which was forgotten.
+;Oden::DSKD:GENERA.MAC<62,7777,MAC> 1985-10-03 11:09:00, Edit by KPJ
+;11	Introduced PROLOG macro. Make GENERATE command document what it does.
+;	Disabled DIGGER (NOSHIP), and XXX (unused).
+;Oden::DSKD:GENERA.MAC<62,7777,MAC> 1985-08-19 05:51:53, Edit: KPJ @ Loud Room
+;10	Corrected and rewrote documentation of some routines.
+;Oden::DSKD:GENERA.MAC<62,7777,MAC> 1985-08-07 16:35:47, Edit by KPJ @ DECGR
+;7	Added a file name parameter to the GENERATE command.
+;Oden::DSKD:GENERA.MAC<62,7777,MAC> 1985-03-12 13:03:17, Edit by KPJ @ L89
+;6	Sanitized code. Moved language dependent texts to TEXTER module.
+;Oden::DSKD:GENERA.MAC[62,7777] 1984-10-08 19:38:06, Edit by K.JAAKKOLA
+;5	General code cleanup. Got rid of useless macros.
+;Oden::DSKD:GENERA.MAC[62,7777] 1984-07-11 15:02:35, Edit by B.CARLSSON
+;4	Corrected bug, discovered by KPJ, that made COM generate approximately
+;	500 000 meta records.
+;Oden::Dskd:Genera.Mac[62,7777] 1984-07-10 09:09:30, Edit by KPJ Jaakkola
+;3	Made the META-buffers use MAXINF/MAXTEX/MAXDIR/MAXLNK/MAXMAR (did
+;	use obscure magical numbers). These are defined in KOMMAC.MAC like
+;	the rest of the numbers.
+;Oden::Dskd:Genera.Mac[62,7777] 1984-05-14 17:56:13, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dskd:Genera.Mac[62,7777] 1984-04-12 18:50:22, Edit by T Tholerus
+;1	[1016] corrected error in data base increase program
+
+	SEARCH	kommac
+	PROLOG	(genera)
+	ENTRY	censiz
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 17:56:12
+
+;	D A T A   A R E A
+
+rcdsiz:	EXP	0			;record size
+
+	.metnr==firblk			;start at first block
+
+metbas::meta	met,maxmet		;[BCQ,4] MET file
+	meta	inf,1_maxinf		;INF file
+	meta	tex,1_maxtex		;TEX file
+	meta	dir,1_maxdir		;DIR file
+	meta	pna,1_maxper		;PNA file
+	meta	per,1_maxper		;PER file
+	meta	pac,1_maxper		;PAC file (PER)
+	meta	mna,1_maxmee		;MNA file
+	meta	mee,1_maxmee		;MEE file
+	meta	num,1_maxmee		;NUM file (MEE)
+	meta	lnk,1_maxlnk		;LNK file
+	meta	pre,1_maxpre		;PRE file
+	meta	loc,1_maxloc		;LOC file
+	meta	lac,1_maxloc		;LAC file (LOC)
+	meta	mar,1_maxmar		;MAR file
+IFN	ftemp2,<			;<KPJ.23>
+	meta	ena,1_maxemp		;ENA file
+	meta	emp,1_maxemp		;EMP file
+>;ftemp2
+	meta	sub,1_maxsub		;SUB file
+	meta	sac,1_maxsub		;SAC file
+metend:
+
+	censiz==.metnr			;central file size
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+genera::comhed	0,genarg,gendat,ccgeda##,zgenhl## ;Generate (new data base)
+					;<KPJ.20>
+;-
+
+;+
+;ASKGEN		ask for data base name
+;-
+
+askgen:	save	<str>
+	SKIPGE	hlpflg##		;<KPJ.20> help wanted?
+	 JRST[	print	zhlnew##	;<KPJ.20> yes, ask for data base
+		JRST	.+1]		;<KPJ.20>
+	CALL	preol2##		;<KPJ.20> new line
+	print	zasnew##		;<KPJ.20> ask for file name
+	branch	prher##			;<KPJ.20> and prompt
+
+;+
+;GENARG		argument to GENERATE (NEW DATA BASE) command
+;-
+
+genarg::save	<quest##,str,gp1,bfp>
+	SKIPL	silflg##		;<KPJ.20> silent?
+	 CALL	delcom##		;<KPJ.20> delayed?
+	  JRST	genar8			;<KPJ.20> yeah, get lost
+	MOVEI	t,askgen		;<KPJ.20> handle question
+	MOVEM	t,quest##		;<KPJ.20>
+	CALL	read##			;<KPJ.20> get file name
+	 JRST	genar8			;<KPJ.20> no name given
+	CALL	genfil##		;<KPJ.20> parse file name
+	SKIPE	errfl##			;<KPJ.20> error?
+	 JRST	genar8			;<KPJ.20> yes, exit
+				;...test for expansion-p
+	CALL	prfina##		;<KPJ.20> output file name
+	 JRST	genar8			;<KPJ.20> error return
+	CALL	preol##			;<KPJ.20> and end of line
+	CALL	qsure##			;<KPJ.22> are you sure?
+	TRNA				;<KPJ.20>
+genar8:	 SETOM	errfl##			;<KPJ.20> error return
+	return				;<KPJ.20>
+
+
+;+
+;GENDAT		GENERATE command
+;-
+
+gendat:	save	<gp1,bfp,nr,txt>
+
+	CALL	updbeg##		;start update
+	SETZ	gp1,			;get new file
+	CALL	getbuf##		;set channel
+	MOVEI	nr,censiz		;get central file size
+	CALL	newdsk##		;get a new data base
+	MOVEI	gp1,1			;get first file
+	MOVEI	bfp,metbas		;get meta pointer
+	CALL	genmet			;generate meta data base
+	CALL	preol##			;<KPJ.11>
+	print	gendz1##		;<KPJ.11> "Copying the existent data"
+	CALL	toutpu##		;<KPJ.11> empty buffer	
+	JRST	genda2
+
+genda1:	CALL	preol##			;<KPJ.11>
+	CALL	corfil			;correct file ?
+	 JRST	genda9			;no, ready
+	print	zfil##			;<KPJ.11> "File "
+	MOVEI	1,.PRIOUT		;<KPJ.23!KPJ.11> on terminal
+	MOVE	2,gp1			;<KPJ.11> number
+	MOVEI	3,<FLD(^D10,NO%RDX)>	;<KPJ.11> in decimal
+	CALL	.nout##			;<KPJ.11> output number
+	 JRST[	print[	ASCIZ !???!]	;<KPJ.23> display error
+		JRST	.+1]		;<KPJ.23>
+	print[	ASCIZ !: !]		;<KPJ.11> ": "
+	MOVEI	str,-1(gp1)		;<KPJ.21> get file#, range 0..18
+	LSH	str,1			;<KPJ.21> multiply by 2
+	HLRZ	str,objtab##+1(str)	;<KPJ.21> get pointer to name of file
+	CALL	prstr##			;<KPJ.11> output it
+	CALL	toutpu##		;<KPJ.11> empty buffer
+	CALL	copold			;copy old data base
+genda2:	SETZM	newbuf##+bufblk		;clear buffer
+	ADDI	bfp,metsiz		;get next meta record
+	AOJA	gp1,genda1		;get next file
+
+genda9:	CALL	preol##			;<KPJ.11>
+	print	gendz7##		;<KPJ.11> "Closing data file"
+	CALL	toutpu##		;<KPJ.11> empty buffer
+T10,<	RELEASE	newcha,>		;release new channel
+T20,<	MOVE	1,newjfn##
+	CLOSF%
+	 ERJMP[	MOVEI	str,gendz8##	;<KPJ.11> "Couldn't close data base - "
+		CALL	.jserr##	;<KPJ.14> append error message
+		CALL	errmsg##	;<KPJ.11> output it
+		JRST	endko8##]	;<KPJ.11> curl up and die
+>;T20
+	CALL	updend##		;end of update
+	CALL	preol##			;<KPJ.11>
+	print	gendz9##		;<KPJ.11>
+	MOVEI	ch,.CHBEL		;<KPJ.15!KPJ.11> bing, bong
+	CALL	putch			;<KPJ.24!KPJ.15!KPJ.11>
+genda0:	return				;<KPJ.7>
+
+
+
+;+
+;GENMET		generate meta data base
+;accepts	GP1/	meta file
+;-
+
+genmet:	save	<gp1,txt,nr,bfp,gp2>
+	CALL	preol##			;<KPJ.11>
+	print	genmz1##		;<KPJ.11> "Creating META file"
+	CALL	toutpu##		;<KPJ.11> empty buffer
+	CALL	gemere##		;get old meta record
+	MOVE	t,metsi(bfp)		;get record size
+	MOVEM	t,rcdsiz
+	MOVEI	nr,maxmet		;get last file
+	MOVEI	gp2,metend		;get last meta record
+genme1:	SUBI	gp2,metsiz		;get meta record
+	SETZ	gp1,			;get the new file
+	MOVEI	bfp,metbas		;get meta record
+	CALL	getrec##		;get new meta record
+	MOVE	txt,bfp			;get meta record
+	MOVE	gp1,nr			;get file
+	CALL	gemere##		;get old meta record
+	CALL	coprec			;copy record
+	MOVE	t,metsi(gp2)		;set new record size
+	MOVEM	t,metsi(txt)
+	MOVE	t,metmax(gp2)		;set new record number
+	MOVEM	t,metmax(txt)
+	MOVE	t,metrpb(gp2)		;set new records per block
+	MOVEM	t,metrpb(txt)
+	MOVE	t,metbeg(gp2)		;set new file start
+	MOVEM	t,metbeg(txt)
+	SETOM	newbuf##+bufwri		;buffer written
+	SOJG	nr,genme1		;get next file
+	SETZ	gp1,			;get new file
+	CALL	outblk##		;output new meta file
+	return
+
+
+
+					;<KPJ.10>
+;+
+;CORFIL		test if input is a legal file#
+;accepts	GP1/	data base file number (1:maxfile#)
+;returns	+1 if file# is out of bounds
+;		+2 if file# is in in bounds
+;-
+
+corfil::JUMPLE	gp1,corfi9		;negative or zero?
+	CAIG	gp1,maxmet		;or larger than max file# ?
+	 skpret				;no, it's a legal file#
+corfi9:	return
+
+
+
+
+
+;+
+;COPOLD		copy old data base to the new
+;accepts	GP1/	file number
+;		BFP/	new meta pointer
+;-
+
+copold:	save	<bfp,gp2,nr,gp1,txt>
+	MOVE	gp2,bfp			;get new meta record
+	CALL	gemere##		;get old meta record
+	MOVE	t,metsi(bfp)		;get record size
+	MOVEM	t,rcdsiz
+	MOVE	nr,metmax(gp2)		;get last new record
+	CALL	getbuf##		;get buffer
+	SETZM	bufwri(txt)		;file not written
+copol1:	CALL	finold			;get old record
+	SKIPN	0(bfp)			;non existent record ?
+	 JRST	copol2			;yes, skip it
+	CALL	finnew			;get new record
+	SETOM	newbuf##+bufwri		;buffer written
+	CALL	coprec			;copy record
+copol2:	SOJG	nr,copol1		;get next record
+	SKIPL	newbuf##+bufwri		;block written
+	 JRST	copol9
+	SETZ	gp1,			;new file
+	CALL	outblk##		;output last block
+copol9:	return
+
+
+
+
+
+;+
+;FINNEW		find new record
+;accepts	NR/	record number
+;		GP2/	new meta record
+;returns	TXT/	record pointer
+;-
+
+finnew:	save	<bfp,gp1>
+	MOVE	bfp,gp2			;get meta record
+	SETZ	gp1,			;new file
+	CALL	getrec##		;get record
+	MOVE	txt,bfp			;get record
+	return
+
+
+
+
+
+;+
+;FINOLD		find old record
+;accepts	NR/	record number
+;		GP1/	file number
+;returns	BFP/	record
+;-
+
+finold:	save	<nr>
+	CALL	gemere##		;get old meta record
+	SUBI	nr,1			;subtract one
+	MOVN	t,metmax(bfp)		;get number of objects
+	ANDCM	nr,t			;get place
+	ADDI	nr,1			;add one
+	CALL	getrec##		;get record
+	return
+
+
+
+
+
+;+
+;COPREC		copy old record to new record
+;accepts	BFP/	old record
+;		TXT/	new record
+;		RCDSIZ/	record size
+;		NR/	new record number
+;		GP2/	new meta record
+;-
+
+coprec:	save	<txt,nr,gp1>
+	MOVEM	nr,0(txt)		;save new record number
+	MOVM	nr,0(bfp)		;get record number
+	CALL	splpoi##		;split pointer
+	SUBI	nr,1			;subtract one
+	MOVN	t,metmax(gp2)		;get number of objects
+	ANDCM	nr,t			;get place
+	ADDI	nr,1			;add one
+	SUB	nr,0(txt)		;get difference
+	JUMPE	nr,copre8		;right place ?
+	SKIPGE	nr			;<TTQ.1> positive ?
+	 ADD	nr,metmax(gp2)		;<TTQ.1> no, make it
+	MOVM	t,0(bfp)		;<TTQ.1> get old number
+	SUB	t,nr			;get place number
+	MOVNM	t,0(txt)		;set record head
+	JRST	copre9
+
+copre8:	MOVE	t,txt			;get new record
+	ADD	t,rcdsiz		;get record end
+	HRL	txt,bfp			;get old record
+	BLT	txt,-1(t)		;move record
+copre9:	return
+
+	END
+..and no more

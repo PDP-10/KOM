@@ -1,0 +1,86 @@
+;Oden::DSKD:DEFSPE.MAC<62,7777,MAC> 1985-09-30 22:38:39, Edit by K P J
+;6	Introduced PROLOG macro. Sanitized code.
+;Oden::DSKD:DEFSPE.MAC<62,7777,MAC> 1985-04-03 19:23:14, Edit by KPJ @ L89
+;5	Moved macros to KOMMAC. Fixed bug introduced in edit #4.
+;Oden::DSKD:DEFSPE.MAC[62,7777] 1984-12-17 09:36:20, Edit by KPJ @ L89
+;4	Moved language dependent code to TEXTER. Brush up code.
+;	Rewrote DESPME routine totally, thus getting rid of 50% of the
+;	code of this source file...
+;Oden::Dskd:Defspe.Mac[62,7777] 1984-09-12 09:59:26, Edit by K.Jaakkola
+;3	Changed DEFSPE to include a message writer warning conference.
+;Oden::Dskd:Defspe.Mac[62,7777] 1984-05-14 16:25:03, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dskd:Defspe.New[1116,134] 1982-03-02 19:23:32, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(defspe)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 16:25:02
+
+;	D A T A   A R E A
+
+defptr:	BLOCK	1			;[KPJ.4] DEFTAB pointer
+meeman:	BLOCK	1			;conference announcement conf
+meeppr:	BLOCK	1			;person presentation conf
+meecad:	BLOCK	1			;administrator conf
+meelap:	BLOCK	1			;message writer warnings conf
+
+	CODE
+
+;+
+defspe::comhed	0,noarg##,despme,ccdesp##,zdsmhl##  ;define special conferences
+;-
+
+;DEFTAB		list of special conferences	[KPJ.4]
+
+deftab:	defque	meeman,zasman##		;conference announcement conf
+	defque	meeppr,zasppr##		;person presentation conf
+	defque	meecad,zascad##		;administrator conf
+	defque	meelap,zaslap##		;message writer warnings conf
+	0				;end of table
+
+;+
+;DESPME		(undocumented)
+;-
+
+despme:	save	<quest##,namfun##>
+	MOVEI	t,joinam##		;conference names
+	MOVEM	t,namfun##
+	MOVEI	t,deftab		;[KPJ.4] initialize DEFTAB...
+	MOVEM	t,defptr		;[KPJ.4] ...pointer
+despm1:	HRRZ	t,@defptr		;[KPJ.4] get DEFTAB pointer
+	JUMPE	t,despm8		;[KPJ.4] end of DEFTAB
+	MOVEM	t,quest##		;[KPJ.4] store question handler
+	CALL	gtobnr##		;[KPJ.4] get object number
+	MOVE	t,number##		;[KPJ.4] get number got
+	HLRZ	t2,@defptr		;<KPJ.5!KPJ.4> get storage pointer
+	MOVEM	t,@t2			;<KPJ.5!KPJ.4> store object number
+	AOS	defptr			;[KPJ.4] increment DEFTAB pointer
+	JRST	despm1			;[KPJ.4] loop
+
+despm8:	CALL	updbeg##		; start update
+	CALL	sespme			; set special conferences
+	branch	updend##		; end of update
+
+
+
+;+
+;SESPME		set special conferences
+;accepts	MEEMAN, MEEPPR, MEECAD and MEELAP/	special confs
+;-
+
+sespme:	save	<nr>
+	SKIPE	nr,meeman		;get conference announcement
+	 MOVEM	nr,anounc##		;save it
+	SKIPE	nr,meeppr		;get person presentation
+	 MOVEM	nr,perpre##		;save it
+	SKIPE	nr,meecad		;get com administrator
+	 MOVEM	nr,comadm##		;save it
+	SKIPE	nr,meelap		;[KPJ.3] get message warnings
+	 MOVEM	nr,lappar##		;[KPJ.3] save it
+	return
+
+	END
+..and no more

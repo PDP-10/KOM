@@ -1,0 +1,487 @@
+;Oden::DSKG:ZAPOBJ.MAC<62,7777,MAC> 1986-12-11 19:08:50, Edit by KPJ @ L89
+;16	PUTCH is macro.
+;Oden::DSKG:ZAPOBJ.MAC<62,7777,MAC> 1986-06-23 01:03:42, Edit by KPJ @ AIDA
+;15	Moved texts to TEXTER. Use standard character names.
+;Oden::DSKD:ZAPOBJ.MAC<62,7777,MAC> 1985-10-09 02:51:06, Edit by KPJ
+;14	GECOCH@REFINA is external.
+;Oden::DSKD:ZAPOBJ.MAC<62,7777,MAC> 1985-10-08 02:29:20, Edit by KPJ
+;12	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:ZAPOBJ.MAC<62,7777,MAC> 1985-09-21 08:54:49, Edit by KPJ
+;11	REAOCT moved here, since only used here.
+;Oden::DSKD:ZAPOBJ.MAC<62,7777,MAC> 1985-08-19 02:20:20, Edit:KPJ @ Loud Room
+;10	ZAP command bugs crashed KOM data base @ ODEN. Fix them bugs and
+;	document the data base formats used.
+;Oden::DSKD:ZAPOBJ.MAC<62,7777,MAC> 1985-07-23 17:24:17, Edit by KPJ @ DECGR
+;7	Sanitized code.
+;Oden::DSKD:ZAPOBJ.MAC[62,7777] 1984-11-02 09:18:24, Edit by K.JAAKKOLA
+;6	Moved some magical numbers to KOMMAC (DIRLEN).
+;Freja::QS:<KOM.6-SOURCES>ZAPOBJ.MAC.3  5-Oct-84 16:10:46,Editor:KPJ-JAAKKOLA
+;5	Fixed misspelling.
+;Oden::Dskd:Zapobj.Mac[62,7777] 1984-09-17 19:28:45, Edit by K.Jaakkola
+;4	Included BCQs TOPS-20 hacks:
+;;;	;Freja::QS:<BJORN-CARLSSON.KOM-LOGIN>ZAPOBJ.MAC.2, 10-Sep-84 17:11:08,
+;;;	;						 Ed: BJORN-CARLSSON
+;;;	;1	Changed Give Ppn command for 20x to read a real directory!
+;Oden::Dskd:Zapobj.Mac[62,7777] 1984-09-05 12:32:23, Edit by K.Jaakkola
+;3	Updated (c) notice.
+;Oden::DSKD:ZAPOBJ.MAC[62,7777] 1984-03-29 16:27:46, Edit by THOLERUS T
+;2	(unknown)
+;DSK:ZAPOBJ.NEW[1116,134] 1982-03-02 18:16:50, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(zapobj)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ COmputing Centre, 1984-09-05 12:32:20
+
+;	D A T A   A R E A
+
+T20,<					;[KPJ.4]
+dirbuf:	BLOCK	<<dirlen/5>+1>		;user name
+>;T20
+objppn:	Z				;object PPN
+typeob:	Z				;object type
+zerost:	BLOCK	1			;<KPJ.7> string word here
+	EXP	0			;<KPJ.7> end of string
+starec:	Z				;start record
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+zapobj::comhed	0,staarg##,zapob,cczapo##,zzaphl## ;Zap (object)
+dump::	comhed	0,dmparg,dumpdb,ccdump##,zdmphl##  ;Dump (file)
+liscms::comhed	0,noarg##,licomm,cclicm##,zlicms## ;List comments
+givppn::comhed	0,agivpp,cgivpp,ccgipp##,zgiphl##  ;Give PPN
+
+
+;+
+;ZAPOB		zap object
+;accepts	ARGLIS/	list of objects
+;-
+
+zapob:	save	<tp,nr,tabstep##,intflg##,acrfl##>
+	SETOM	acrfl##			;do ACR
+	MOVEI	t,^D22			;set tab step
+	MOVEM	t,tabstep##
+	CALL	preol##			;blank line
+	MOVE	tp,arglis##		;get list of objects
+zapob1:	JUMPE	tp,zapob9		;ready ?
+	MOVE	nr,0(tp)		;get object
+	CALL	zappob			;zap it
+	MOVE	tp,1(tp)		;get next object
+	JRST	zapob1
+
+zapob9:	return
+
+
+;+
+;ZAPPOB		zap object
+;accepts	NR/	object number
+;-
+
+zappob:	save	<bfp,gp1,nr,gp2,str>
+	SETZM	intflg##		;clear interrupt
+	CALL	gudate##		;get current date
+	CALL	getobj##		;get object
+	 nop				;another object
+	MOVEI	nr,1			;get first field
+	MOVE	gp2,bfp			;get first field
+zappo1:	CALL	prnum##			;print number
+	print[	ASCIZ !: !]		;colon space
+	CALL	zapdis			; display field
+	ADDI	gp2,1			;get next field
+	ADDI	nr,1			;get next number
+	CALL	gemere##		;get meta record
+	CAMG	nr,metsi(bfp)		;end of record ?
+	 JRST[	CALL	prtab##		;no, print tab
+		JRST	zappo1]		;    and display next field
+	CALL	preol##			;yes, new line
+	rstreg				;<KPJ.10> restore ACs
+	JRST	chaobj			;<KPJ.10> change object
+
+
+;+
+;ZAPDIS		display field
+;accepts	GP2/	points to field
+;-
+
+zapdis:	save	<nr,gp1,ch,bfp>
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	zapdi9			;yes, exit
+
+	MOVE	nr,0(gp2)		;<KPJ.10> get field
+	JUMPE	nr,zapdi9		;<KPJ.10> if zero, output nothing
+	JUMPL	nr,[			;<KPJ.10> positive field?
+	 	MOVEI	ch,"-"		;no, output "-" sign
+		CALL	putch		;
+		MOVN	nr,nr		;make it positive
+		JRST	.+1]
+
+	CALL	splpoi##		;split pointer
+	JUMPG	nr,[			;possible record descriptor?
+		CALL	corfil##
+		 JRST	.+1		;no, forget the idea
+		MOVM	nr,0(gp2)	;yes, get contents
+		CALL	probnr##	;output as object number
+		JRST	zapdi9]
+
+	MOVM	nr,0(gp2)		;get contents again
+	MOVE	gp1,curdat##		;get current date
+	SUB	gp1,nr			;subtract contents
+	SKIPL	0(gp2)			;negative dates are not availble
+	 JUMPGE	gp1,[			;positive (possible date)?
+		HLRZ	gp1,gp1		;get number of days
+		CAILE	gp1,^D2000	;more than 2000 days ago ?
+		 JRST	.+1		;yes, probably no date
+		MOVM	gp1,0(gp2)	;no, get contents again
+		CALL	pdate##		;output as date
+		JRST	zapdi9]
+
+	MOVM	nr,0(gp2)		;get contents again
+	CAML	nr,[^O<007777,,777777>]	;first 8-byte is NUL?
+	 JRST[	MOVE	t,[POINT 7,0(gp2)]
+;REPEAT	5,<	ILDB	t1,t		;<KPJ.10>
+;		CAIE	t1,.CHDEL	;<KPJ.10> Rubout?
+;		 CAIGE	t1,.CHSPC	;<KPJ.10> or CTRL character?
+;		  JRST	.+1		;<KPJ.10> yes, probably not ASCII
+;>;REPEAT 5
+		MOVE	t,0(gp2)	;no, set up string
+		MOVEM	t,zerost
+		MOVEI	ch,.CHQUO	;<KPJ.10> quote
+		CALL	putch		;<KPJ.10>
+		print	zerost		;output as ASCIZ
+		MOVEI	ch,.CHQUO	;<KPJ.10> end quote
+		CALL	putch		;<KPJ.10>
+		JRST	zapdi9]
+
+	HRRZ	gp1,nr			;get RH
+	HLRZ	nr,nr			;get LH
+	JUMPN	nr,[			;LH not zero?
+		CALL	prnum##		;output it
+		MOVEI	ch,","		;append a comma
+		CALL	putch
+		JRST	.+1]
+	MOVE	nr,gp1			;get right part
+	CALL	prnum##			;print it
+zapdi9:	return
+
+
+;+
+;CHAOBJ		change object
+;accepts	NR/	object number
+;-
+
+chaobj:	save	<nr,tp,quest##,txt,gp2>
+	SKIPGE	intflg##		;interrupt ?
+	 JRST	chaob9			;yes, exit
+	MOVEM	nr,tp			;save record number
+chaob0:	setmem	quest##,askele		;ask for element number
+	CALL	read##			;read record number
+	 JRST	chaob9			;no reply
+	CALL	getnum##		;get number
+	 JRST	chaob9			;no number got
+	MOVE	txt,nr			;<KPJ.10> shuffle
+	SUBI	txt,1			;<KPJ.10> save elemnt number
+	MOVEI	t,asknva		;ask for new value
+	MOVEM	t,quest##
+	CALL	read##			;get new value
+	 JRST	chaob9			;no reply
+	CALL	getnum##		;get number
+	 JRST[	CALL	gtmana##	;no number, get matching name
+		 JRST	chaob9		;no object got
+		JRST	.+1]
+	MOVEM	nr,gp2			;save new value
+	MOVE	nr,tp			;get record number
+	CALL	updbeg##		;start update
+	CALL	zapdb##			;zap data base
+	CALL	updend##		;end of update
+	JRST	chaob0			;change next element
+
+chaob9:	return
+
+
+;+
+;ASKELE		ask for element number
+;-
+
+askele:	save	<str>
+	print	zeleme##		;"Element: "
+	return
+
+
+
+;+
+;ASKNVA		ask for new value
+;-
+
+asknva:	save	<str>
+	print	znewva##		;"New value: "
+	return
+
+
+
+;+
+;DMPARG		argument to DUMP command
+;returns	TYPEOB/	arguments
+;		NUMBER/	arguments
+;		STAREC/	arguments
+;-
+
+dmparg:	save	<gp1,quest##>
+	CALL	gettyp##		;get type
+	 JRST	dmpar8			;no type given
+	MOVEM	gp1,typeob		;save object type
+	MOVEI	t,askele		;ask for element number
+	MOVEM	t,quest##
+	CALL	read##			;get number
+	 JRST	dmpar8			;no reply
+	CALL	getnum##		;get number
+	 JRST	dmpar8			;no number
+	MOVEM	nr,number##		;save number
+	CALL	getnum##		;extra numeric argument ?
+	 MOVEI	nr,1			;no
+	CALL	gemere##		;get meta record
+	MOVN	t,metmax(bfp)		;get number of objects
+	SUBI	nr,1			;subtract one
+	ANDCM	nr,t			;get place
+	ADDI	nr,1			;add one
+	MOVEM	nr,starec		;save start record
+	TRNA
+dmpar8:	 SETOM	errfl##			;set error flag
+dmpar9:	return
+
+
+;+
+;DUMPDB		dump data base
+;accepts	TYPEOB \
+;		NUMBER - arguments
+;		STAREC /
+;-
+
+dumpdb:	save	<gp1,bfp,nr,str,tabstep##,acrfl##>
+	SETOM	acrfl##			;do ACR
+	MOVEI	t,^D22			;set tab step
+	MOVEM	t,tabste##
+	CALL	gudate##		;get current date
+	CALL	preol##			;blank line
+	MOVE	gp1,typeob		;get file
+	MOVE	nr,starec		;get start record
+dumpd1:	SKIPGE	intflg##		;interrupt ?
+	 JRST	dumpd9			;yes
+	CALL	find##			;get record
+	 JRST	dumpd9			;ready
+	CALL	prnum##			;print record number
+	print[	ASCIZ !: !]
+	MOVE	gp2,number##		;get field number
+	ADDI	gp2,-1(bfp)		;get field
+	CALL	zapdis			;display field
+	CALL	prtab##			;tab
+	ADDI	nr,1			;get next record
+	JRST	dumpd1
+
+dumpd9:	return
+
+
+
+
+;+
+;LICOMM		list all comments
+;-
+
+licomm:	save	<nr,gp1,bfp,tabstep##>
+	MOVEI	t,6			;set tab step
+	MOVEM	t,tabste##
+	MOVE	nr,laslnk##		;get last link
+licom1:	SKIPGE	intflg##		;interrupt ?
+	 JRST	licom9			;yes
+	CALL	getobj##		;get link
+	 JRST	licom9			;ready
+	MOVE	t,lnktyp(bfp)		;get link type
+	CAIN	t,typcom		;comment link ?
+	 CALL	lcomme			;list comment
+	SUBI	nr,1			;get previous link
+	JRST	licom1
+
+licom9:	return
+
+
+;+
+;LCOMME		list comment link
+;accepts	BFP/	link
+;-
+
+lcomme:	save	<nr,gp1,bfp>
+	CALL	preol##			;new line
+	MOVE	gp1,lnktim(bfp)		;get creation date
+	CALL	pdate##			;print it
+	CALL	prtab##			;tab
+	MOVE	nr,lnkcre(bfp)		;get creator
+	CALL	probnr##		;print person
+	CALL	prtab##			;tab
+	MOVE	nr,lnkobj(bfp)		;get comment
+	CALL	probnr##		;print comment number
+	CALL	prtab##			;tab
+	MOVE	nr,lnkrec(bfp)		;get commented entry
+	CALL	probnr##		;print its number
+	CALL	prtab##			;tab
+	CALL	getobj##		;get entry
+	 JRST	lcomm9			;error
+	MOVE	nr,objcre(bfp)		;get author
+	CALL	probnr##		;print author number
+lcomm9:	return
+
+
+;+
+T10,<				;<KPJ.11>
+;REAOCT		read an octal number
+;returns	NR/	number
+
+;[BDQ] REAOCT is unconditionally referenced in module ZAPOBJ
+;-
+
+reaoct::save	<ch>
+	SETZ	nr,			;clear number
+reaoc1:	CALL	gecoch##		;get character
+	CAIL	ch,'0'			;digit ?
+	 CAILE	ch,'7'			;octal digit ?
+	  JRST	reaoc9			;no
+	SUBI	ch,'0'			;yes, convert it to binary
+	LSH	nr,3			;save old number
+	ADD	nr,ch			;add new digit
+	CALL	nexsho##		;get next character
+	JRST	reaoc1
+
+reaoc9:	return
+>;T10
+
+
+;+
+;AGIVPP		argument for give PPN
+;returns	NUMBER/	object
+;		OBJPPN/	PPN
+;-
+
+agivpp:	save	<nr,gp1,quest##,namfun##>
+	MOVEI	t,askgip		;ask for object
+	MOVEM	t,quest##
+	MOVEI	t,joinam##		;conference names
+	MOVEM	t,namfun##
+	CALL	gtobnr##		;get it
+	SKIPGE	errfl##			;error ?
+	 JRST	agivp9			;yes
+	MOVEI	t,askppn		;ask for PPN
+	MOVEM	t,quest##
+	CALL	read##			;read PPN
+	 JRST	agivp8			;no reply
+T10,<					;[KPJ.4] PPNs are for Bottoms-10
+	CALL	reaoct			;read octal number
+	HRLM	nr,objppn		;save project
+	CALL	nexsho##		;skip comma
+	CALL	reaoct			;read octal number
+	HRRM	nr,objppn		;save programmer
+	MOVE	gp1,objppn		;get PPN
+	CALL	prippn##		;print it
+>;T10
+T20,<					;[KPJ.4] parse a TOPS-20 directory
+	CALL	getdir			;parse a directory
+	 JRST	agivp8			;failed...
+	MOVEM	nr,objppn		;save the directory number
+	MOVE	gp1,nr			;shuffle
+	CALL	priusr##		;output the user id
+>;T20
+	TRNA
+agivp8:	 SETOM	errfl##			; error
+agivp9:	return
+
+
+
+
+;+
+T20,<
+;GETDIR		parse a directory name [KPJ.4]
+;returns
+;	+1	failure
+;	+2	success, with NR/ directory number
+
+getdir:	HRROI	1,dirbuf		;point buffer
+	MOVE	2,chpt##		;[KPJ.5] source (command) string
+	MOVEI	3,dirlen		;max length
+	MOVEI	4,.CHRBR		;<KPJ.15> terminator
+	SOUT%				;put in buffer
+	 ERJMP	getdi9			;failure
+	MOVE	4,2			;save updated pointer
+	SETZ	2,.CHNUL		;make ASCIZ
+	IDPB	2,1			; string
+	MOVSI	1,(RC%PAR)		;allow partial recognition
+	HRROI	2,dirbuf		;point at directory name
+	SETZ	3,			;no wildcards nor stepping
+	RCDIR%				;translate name to number
+	 ERJMP	getdi9			;failed...
+	JUMPE	3,getdi9		;no number - illegal
+	HRRZ	nr,3			;get directory number
+	HRLI	nr,4			;make "4,,n" (why not? ***FOO***)
+	MOVEM	nr,chpt##		;save updated pointer
+	skpret				;+2 return
+getdi9:	return				;adios amigo
+>;T20
+
+
+;+
+;ASKGIP		ask for object
+;-
+
+askgip:	save	<str>
+	CALL	meehlp##		;give conference help
+	print	zasgip##		;"What object?"
+	CALL	prher##
+	return
+
+
+
+
+
+
+;+
+;ASKPPN		ask for PPN or directory [KPJ.4]
+;-
+
+askppn:	save	<str>
+	SKIPGE	hlpflg##		;help wanted?
+	 JRST[	print	zhlppn##	;"PPN on form mmmm,nnnn"
+		JRST	.+1]
+	CALL	preol2##		;blank line
+	print	zasppn##		;"What PPN?"
+	CALL	prher##
+	return
+
+
+
+
+;+
+;CGIVPP		give PPN or directory [KPJ.4]
+;accepts	NUMBER/	object
+;		OBJPPN/	PPN or directory number
+;-
+
+cgivpp:	save	<nr,bfp,gp1>
+	CALL	updbeg##		;start update
+	MOVE	nr,number##		;get object
+	CALL	updobj##		;get it
+	 JRST	cgivp8			;error
+	CAIE	gp1,mee			;conference ?
+	 JRST	cgivp1			;no
+	MOVE	t,objppn		;set PPN
+	MOVEM	t,meedeb(bfp)
+	JRST	cgivp8
+
+cgivp1:	CAIE	gp1,per			;person ?
+	 JRST	cgivp8			;no, error
+	MOVE	t,objppn		;set PPN
+	MOVEM	t,perdpp(bfp)
+cgivp8:	CALL	updend##		;end of update
+	return
+
+	END
+...and no more  

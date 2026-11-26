@@ -1,0 +1,1355 @@
+;Oden::DSKZ:REFINA.MAC<62,7777,MAC> 1987-10-29 07:22:56, KPJ @ H.HOLE <1,2>
+;42	Bug when checking extended argument list.
+;Oden::DSKG:REFINA.MAC<62,7777,MAC> 1987-04-12 20:26:26, KPJ @ H.HOLE <62,50>
+;41	Changed call of T10 file name parser (REFINA) as follows:
+;	(a)	GP1 = length,,address of FILOP. block
+;	(b)	BFP = length,,address of PATH. block
+;	New routine to check pointer validity.
+;	Moved some magical numbers to KOMMAC. Use CODE macro.
+;Oden::DSKG:REFINA.MAC<62,7777,MAC> 1987-04-03 15:37:45, KPJ @ L89 <1,2>
+;40	T10 SFD list was "sticky" and made subsequent file specifications
+;	fail in a random manner.  Be more paranoid about the blocks, and say
+;	goodbye to SEE's hopeful code.
+;Oden::DSKG:REFINA.MAC<62,7777,MAC> 1986-12-28 10:26:06, Edit by KPJ @ H.HOLE
+;37	Clear file length.
+;Oden::DSKG:REFINA.MAC<62,7777,MAC> 1986-12-11 18:49:52, Edit by KPJ @ L89
+;36	PUTCH is macro.
+;Oden::DSKG:REFINA.MAC<62,7777,MAC> 1986-10-20 16:43:47, Edit by KPJ @ L89
+;35	Ask monitor if it likes SFDs instead of assuming 5 levels.  Test for
+;	max.level of SFDs we have place for in call.
+;Oden::DSKG:REFINA.MAC<62,7777,MAC> 1986-08-22 18:58:47, Edit by KPJ @ L89
+;34	Allow .NOUT to output on terminal if .CTTRM given as JFN.
+;Freja::Qs:<Kom.6.Macro>Refina.Mac.5 860821-1941,KPJ-Jaakkola
+;33	Handle PRIFIL error return.
+;Freja::Qs:<Kom.6.Macro>Refina.Mac.3 860821-1806,KPJ-Jaakkola
+;32	.NOUT returns error message instead of error code (easier for KOM-10).
+;Oden::DSKG:REFINA.MAC<62,7777,MAC> 1986-05-07 16:23:11, Edit by KPJ @ L89
+;31	Fixed typo.
+;Oden::DSKG:REFINA.MAC<62,7777,MAC> 1986-03-18 23:54:27, Edit by KPJ @ T-ROOM
+;30	Don't allow protection code precede directory specification, file name
+;	or extension.
+;Freja::QS:<KOM.6-SOURCES>REFINA.MAC.4 17-Nov-85 00:48:57,Editor:KPJ-JAAKKOLA
+;27	Handle home brew "file designators" correctly.
+;Oden::DSKD:REFINA.MAC[62,7777,MAC] 1985-11-07 09:26:51, Edit by KPJ
+;26	Do edit#24 even if we have a protection code "<nnn>", which we might
+;	confuse with a directory specification. Don't allow "protection codes"
+;	on form "[nnn]"...
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-11-07 03:07:27, Edit by KPJ
+;25	Clear input on file name syntax errors. Don't eat up next character
+;	after directory specification. Test for double file name.
+;	Echo file name as written when syntactically incorrect.
+;	Make READIR eat up closing br*ket.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-11-01 02:19:50, Edit by KPJ
+;24	Sidestep a Bottoms-10 file system brain damage.
+;Scenario:
+;	(1)	your default path is a SFD
+;	(2)	FILOP. block word .FOLEB points out a LOOKUP/ENTER block.
+;	(3)	That LOOKUP/ENTER block is an extended argument list.
+;	(4)	That extended argument list word .RBPPN points at a path block.
+;	(5)	That path block is a PATH. argument block type 2
+;	(6)	That path block word 2 (.PTPPN) and forward are all zeroes.
+;	(7)	You execute a FILOP. UUO.
+;Result:Bottoms-10 gets confused, and will look for the file in the top level
+;	directory, ignoring the SFD levels of your default path.
+;	If the extended argument list contains no path block, Bottoms-10 will
+;	not get confused. Thus, we don't include the path block in that case.
+;
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-10-25 11:02:30, Edit by KPJ
+;23	Merged T10 and T20 versions of PRFINA.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-10-25 10:33:25, Edit by KPJ
+;22	Output Tops-10 protection codes with leading zeroes. Also, they are
+;	nine bits and not three..
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-10-19 16:55:14, Edit by KPJ
+;21	Allow space(s) and TAB(s) after file specification.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-10-17 14:00:20, Edit by KPJ
+;20	Save ACs when calling anything from inside NOUT% code.
+;	Make it crash much less often...
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-10-09 02:50:36, Edit by KPJ
+;17	GECOCH used from ZAPOBJ
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-10-04 18:29:57, Edit by KPJ
+;16	Introduced PROLOG macro.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-09-19 07:29:47, Edit by KPJ
+;15	Lo! and behold.. A bug has now left the code in SIXBIT field parser.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-09-18 03:33:20, Edit by KPJ
+;14	More bugs in T10 directory name parser.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-09-17 07:49:22, Edit by KPJ @ LOUD
+;13	Fixed bug in T10 directory name parser.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-09-14 19:25:31, Edit by KPJ
+;12	Fix Bottoms-10 file name parser once and for all. It's a disgrace!
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-09-10 10:09:32, Edit by KPJ
+;11	Use CASIFY flag.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-08-25 05:51:38, Edit by KPJ
+;10	FIRFL localized.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-07-15 19:54:52, Edit by KPJ
+;7	Make casification understand some names are not to be hacked.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-07-07 21:56:52, Edit by KPJ @ ORANGE
+;6	Sanitized code.
+;Oden::DSKD:REFINA.MAC<62,7777,MAC> 1985-04-03 15:44:41, Edit by KPJ @ L89
+;5	Major munging: include TOPS-20 number printer (NOUT%) code.
+;	PROCT6 and PROCTN number printer routines eliminated, and calls
+;	changed to call .NOUT general number printer.
+;Oden::DSKD:REFINA.MAC[62,7777,MAC] 1985-02-20 16:27:10, Edit by KPJ @ L89
+;4	Use standard names for characters. Rewrote code to see what it does.
+;	(This file name parser is rather useless, with lots of bugs.)
+;Oden::DSKD:REFINA.MAC[62,7777] 1984-12-14 13:33:10, Edit by KPJ @ TDB
+;3	Make device names w/o file names parse OK.
+;Oden::DSKD:REFINA.MAC[62,7777] 1984-09-18 20:08:52, Edit by B.CARLSSON
+;2	Avoid problem with macro expansion and "<",">"s at PRFIP1+2,14
+;Oden::Dskd:Refina.Mac[62,7777] 1984-09-04 10:16:32, Edit by K.Jaakkola
+;2	Made QZ file name format compile under FTQZ feature flag.
+;Oden::Dskd:Refina.Mac[62,7777] 1984-09-04 09:59:39, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(refina)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 09:59:36
+
+;	D A T A   A R E A
+
+
+saveac:	BLOCK	^O20			;<KPJ.20> AC block
+lsterr:	BLOCK	1			;.NOUT error code
+firfl:	0				;first time flag
+
+T10,<
+fstart::BLOCK	1			;file name start pointer
+maxsfd:	BLOCK	1			;max SFD level supported by us
+sfdlvl:	BLOCK	1			;max SFD level supported by monitor
+tokbrk:	BLOCK	1			;matching br*ket
+tokpth:	BLOCK	.PTMAX+1		;PATH. block
+toksiz:	BLOCK	1			;token size
+token:	BLOCK	1			;token built here
+tokbp:	BLOCK	1			;token byte pointer
+
+>;T10
+	CODE
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;	General file name parser routines.
+;
+;GECOCH		get converted character
+;PRFINA		output a file name
+;-
+
+;+
+;GECOCH		get converted character
+;accepts	CHPT/	character pointer
+;returns	CH/	converted character
+;-
+
+gecoch::CALL	gshort##		;get character
+T10,<	CALL	convc##>		;convert it
+	return
+
+
+;+
+;PRFINA		output a file name			<KPJ.23>
+;accepts	GP1/	T10: address of FILOP. block
+;			T20: address of JFN
+;		BFP/	T10: address of extended argument list
+;returns	+1 error
+;		+2 success
+;-
+
+prfina::save	<consum##>
+T20,<	SKIPN	.HMJFN(gp1)			;file defined ?
+	 JRST	prfinx				;no, dont print
+>;T20
+	CALL	qexpan##		;dont output name if not wanted
+	 JRST	prfinx			;. . .
+	CALL	tcbeg##			;output to terminal
+	CALL	prifil			;output file name
+	 JRST	prfin9			;<KPJ.33> error, quit
+	CALL	putbla##		;output space
+	CALL	tcend##			;end of TTY output
+prfinx:	skpret
+prfin9:	return
+
+T20,<
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;	TOPS-20 file name parser.
+;
+;REFINA		read a file name
+;REFINI		initialize file name reading
+;PRIFIL		output file name
+;-
+
+;+
+;REFINA		read a TOPS-20 file name
+;accepts	CHPT/	character pointer
+;		GP1/	home brew file descriptor
+;returns	+1 always, with
+;			ERRFL/	=0 success
+;				#0 failure
+;-
+
+refina::save	<gp2,ch,bp>
+	CALL	refini			;clear file area
+	 JRST	refinx			;<KPJ.41> give up
+refin1:	CALL	gecoch			;get character
+	JUMPE	ch,refin0		;<KPJ.41> end of input?
+	CAIE	ch,chabla		;<KPJ.41!KPJ.4> white space?
+	 CAIN	ch,^O33			;<KPJ.4> or semicolon?
+	  JRST	refin9			;<KPJ.4> yes
+	IDPB	ch,bp
+	CALL	nexsho##
+	JRST	refin1
+
+refin9:
+KL10,<	MOVEI	ch,.CHNUL>		;<KPJ.41> make ASCIZ
+KL10N,<	SETZ	ch,.CHNUL>		;<KPJ.41> make ASCIZ
+refin0:	IDPB	ch,bp
+	MOVE	1,.HMGTJ(gp1)		;<KPJ.41!KPJ.27> get GTJFN% flags
+	HRROI	2,.HMNAM(gp1)		;<KPJ.27> file name
+	GTJFN%
+	 ERJMP[	SETZM	.HMJFN(gp1)	;<KPJ.27> no JFN
+		MOVEI	str,.HMNAM(gp1)	;<KPJ.27> point at file name
+		CALL	prstr##		;<KPJ.27> spit it out
+		CALL	preol##		;<KPJ.27>
+		CALL	badfil##	;<KPJ.27> say what went wrong
+		SETOM	errfl##		;<KPJ.27> give up
+		JRST	refinx]		;[KPJ.4]
+	HRRZM	1,.HMJFN(gp1)		;<KPJ.27> save JFN
+refinx:	return
+
+
+;+
+;REFINI		initialize TOPS-20 file name reading
+;accepts	GP1/	homebrew file descriptor
+;		clears JFN word in file descpriptor
+;returns	+1 failure, invalid address
+;		+2 success
+;-
+
+refini:	HLRZ	t,gp1			;<KPJ.41> length of block
+	CAIGE	t,filmax5+4		;<KPJ.41> minimum length expected
+	 JRST[	BUG(CHK,<REFINI: Homebrew buffer too small>,<gp1>)
+		JRST	refix9]		;<KPJ.41>
+	HRRZ	t,gp1			;<KPJ.41> test this
+	CALL	adrchk			;<KPJ.41> is it valid?
+	 JRST	refix9			;<KPJ.41> no, address check
+	SETZM	.HMJFN(gp1)		;<KPJ.41> clear JFN
+	MOVE	bp,[POINT 7,.HMNAM(gp1)]
+	skpret				;<KPJ.41> happy return
+refix9:	return				;<KPJ.41>
+
+
+
+
+;+
+;PRIFIL		output TOPS-20 file name
+;accepts	BFP/	home brew file descriptor
+;returns	+1 error
+;		+2 success
+;-
+
+prifil::save	<1,2,3,ch>
+	HRROI	1,.HMNAM(gp1)
+	MOVE	2,.HMJFN(gp1)
+	SETZ	3,
+	JFNS%
+	ERJMP[	MOVEI	1,.FHSLF		;<KPJ.33> self
+		GETER%				;<KPJ.33> get error code
+		PUSH	P,2			;<KPJ.33> save error code
+		CALL	toutpu##		;<KPJ.33> output buffers
+		MOVEI	1,.PRIOUT		;<KPJ.33>
+		POP	P,2			;<KPJ.33> restore error code
+		MOVEI	3,0			;<KPJ.33>
+		ERSTR%				;<KPJ.33> display error code
+		 CALL[	HRROI	1,[ASCIZ !(undefined error code)!]
+			ESOUT%			;<KPJ.33>
+			AOS	0(P)		;<KPJ.33>
+			RET]			;<KPJ.33>
+		 CALL[	HRROI	1,[ASCIZ !(error in ERSTR%)!]
+			ESOUT%			;<KPJ.33>
+			RET]			;<KPJ.33>
+		JRST	prifi9]			;<KPJ.33>
+	MOVEI	3,.CHNUL
+	IDPB	3,1
+	MOVE	bp,[POINT 7,.HMNAM(gp1)]
+	MOVE	t3,selffl##		;<KPJ.11> personal flags
+	AND	t3,[caspfl]		;<KPJ.11> extract casify flag
+prifi3:	ILDB	ch,bp
+	JUMPE	ch,prifi9
+	JUMPE	t3,prifi2		;<KPJ.11> if no casify, skip that
+	CAIL	ch,"A"			;<KPJ.6> letter?
+	 CAILE	ch,"Z"			;<KPJ.6>
+	  SKIPA	t,[0]			;<KPJ.6> no letter
+	   CALL[CAIE	t,0		;<KPJ.6> not first?
+		 ADDI	ch,"a"-"A"	;<KPJ.6> casify
+		SETO	t,		;<KPJ.6>
+		RET]
+prifi2:	PUSH	P,t
+	CALL	putch
+	POP	P,t
+	JRST	prifi3
+
+prifi9:	skpret					;<KPJ.62>
+	return
+>;T20
+
+
+T10,<
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;	Tops-10 file name parser routines.
+;
+;REFINA		read a file specification
+;REFINI		initialize file name reading
+;READIR		read a directory specification
+;QEOS		test for end of command
+;QEODIR		test for end of directory name
+;REASIX		read sixbit name
+;-
+
+
+;+
+;GETSIX		get a sixbit field
+;accepts	TOKSIZ/	max size of buffer
+;		TOKBP/	byte pointer to buffer
+;returns	CH/	first character after field
+;		ERRFL/	error code (or 0):
+;			REF000	not a valid SIXBIT character
+;-
+
+getsix:
+getsi1:!CALL	qeos			;end of command?
+	 JRST	getsi9			;yes, exit
+	CAIN	ch,.CHCNV		;CTRL/V ?
+	 JRST[	CALL	nexsho##	;	increment pointer
+		CALL	gshort##	;	get next character
+		JUMPE	ch,getsi8	;	if end of ASCIZ, fail
+		CAIGE	ch,.CHSPC	;	must be SIXBITable
+		 JRST	getsi8		;	wasn't, fail
+		CAIL	ch,"a"		;	<special test for lower case>
+		 CAILE	ch,"z"		;	if it a lower case letter?
+		  TRNA			;	no
+		   SUBI	ch,"a"-"A"	;	yes, UPPERCASE it
+		CAILE	ch,^O137	;	is character SIXBITable?
+		 JRST	getsi8		;	no, fail
+		JRST	getsi2]		;	yes, append to current thing
+	CAIGE	ch,.CHSPC		;SIXBIT'able?
+	 JRST	getsi9			;no, exit
+	CAIL	ch,"a"			;lower case?
+	 CAILE	ch,"z"
+	  TRNA
+	   SUBI	ch,"a"-"A"		;yes, UPPER CASE it
+	CAIL	ch,"0"			;digit?
+	 CAILE	ch,"9"
+	  JRST[	CAIL	ch,"A"		;no, letter?
+		 CAILE	ch,"Z"
+		  JRST	getsi9		;no, exit
+		JRST	.+1]
+getsi2:	SKIPE	t,toksiz		;get space, if any
+	 JRST[	SUBI	ch,"A"-'A'	;<KPJ.15> make SIXBIT
+		IDPB	ch,tokbp	;<KPJ.15> store in buffer
+		SUBI	t,1		;<KPJ.15> count the character
+		MOVEM	t,toksiz	;<KPJ.15> save count
+		JRST	.+1]		;<KPJ.15> ho hum
+	CALL	nexsho##		;increment pointer
+	CALL	gshort##		;get next character
+	JRST	getsi1			;go for next character
+getsi8:	MOVEI	t,ref000##		;"not a SIXBIT cha. after CTRL/V"
+	MOVEM	t,errfl##
+getsi9:	return
+
+
+
+;+
+;QEODIR		test for end of directory
+;accepts	CH/	current character
+;		TOKBRK/	directory starting bracket
+;returns	+1 if end of directory
+;		+2 if not end of directory
+;-
+
+qeodir:	MOVE	t,tokbrk		;get opening bracket
+	ADDI	t,2			;convert to closing bracket
+	CAME	ch,t			;end of directory?
+	 AOS	0(P)			;no
+	RET
+	
+
+;+
+;QEOS		test for end of command
+;accepts	CH/	current character
+;returns	+1 if end of command
+;		+2 if not end of command
+;-
+
+qeos:	JUMPE	ch,[RET]
+	CAIE	ch,.CHSEM
+	 AOS	0(P)
+	RET
+
+;+
+;REFINA		parse a Bottoms-10 file name		<KPJ.12>
+;accepts	CHPT/	character pointer
+;		GP1/	FILOP. block address ("device block")
+;		BFP/	PATH. block address
+;returns	ERRFL/	<>0	file name syntax error
+;-
+
+refina::save	<gp2,ch,bp,f>
+	MOVE	t,chpt##		;<KPJ.25> get file name pointer
+	MOVEM	t,fstart		;<KPJ.25> save for error message print
+	SETZM	errfl##			;no errors yet
+	CALL	refini			;clear file area
+	 JRST	refin8			;<KPJ.41>
+	CALL	gshort##		;get a character
+	SETZ	f,			;nothing parsed yet
+	MOVEI	t,6			;expect a 6-character token
+;...................................
+;come here to start a new field
+
+refin0:	MOVEM	t,toksiz		;save max field size
+	CALL	qeos			;end of command?
+	 JRST[	SKIPN	t,token		;yes, any pending token?
+		 JRST	refin9		;no, exit
+		Txne	f,tokext	;yes, "." parsed?
+		 JRST[	MOVEM	t,.RBEXT(bfp)	;yes, save as extension
+			SETZM	token		;dispose of token
+			JRST	refin9]		;and exit
+		MOVEM	t,.RBNAM(bfp)		;no, save as file name
+		SETZM	token			;dispose of token
+		JRST	refin9]			;and exit
+	CAIN	ch,"."			;dot?
+	 JRST	refin3			;yes, test for extension-ness
+	CAIN	ch,":"			;colon?
+	 JRST	refin4			;yes, test for device-ness
+	CAIE	ch,.CHOBR		;left bracket?
+	 CAIN	ch,.CHLBR		;or left broket?
+	  JRST	refin5			;yes, test for PPN-ness
+	Txne	f,tokfpt		;<KPJ.25> file name part allowed?
+	 JRST[	MOVEI	str,ref022##	;<KPJ.25> "file name not OK here"
+		JRST	refin8]		;<KPJ.25> go to die
+	CAIG	ch,.CHSPC		;SIXBITable?
+	 JRST	refiny			;no
+	CAIL	ch,"a"			;lower case?
+	 CAILE	ch,"z"
+	  TRNA
+	   SUBI	ch,"a"-"A"		;make UPPER CASE
+	CAIGE	ch,"0"			;digit?
+	 JRST	refiny			;no
+	CAILE	ch,"9"
+	 JRST[	CAIGE	ch,"A"		;letter?
+		 JRST	refiny		;no
+		CAILE	ch,"Z"
+		 JRST	refiny
+		JRST	.+1]
+	SETZM	token			;clear new token
+	MOVE	t,[POINT 6,token]	;restore token pointer
+	MOVEM	t,tokbp
+	CALL	getsix			;get sixbit field
+	SKIPE	str,errfl##		;error?
+	 JRST	refin8			;yes, quit
+	MOVEI	t,6			;assume a default of 6 characters
+	JRST	refin0			;go look on next character
+refiny:	CAIN	ch,.CHTAB			;<KPJ.21> tab?
+	 CAIE	ch,.CHSPC			;<KPJ.21> space?
+	  TRNA					;<KPJ.21> yes
+	   JRST[MOVEI	str,ref666##		;<KPJ.21> "invalid character"
+		JRST	refin8]			;<KPJ.21> go and barf
+	CALL	nexsho##			;<KPJ.21> increment pointer
+	CALL	gshort##			;<KPJ.21> get next character
+	CALL	qeos				;<KPJ.21> end of command?
+	 JRST[	SKIPN	t,token			;<KPJ.21> yes, pending token?
+		 JRST	refin9			;<KPJ.21> no, exit
+		Txne	f,tokext		;<KPJ.21> parsing extension?
+		 JRST[	MOVEM	t,.RBEXT(bfp)	;<KPJ.21> save as extension
+			SETZM	token		;<KPJ.21> dispose of token
+			JRST	refin9]		;<KPJ.21> and exit
+		Txne	f,tokprt		;<KPJ.30> protection parsed?
+		 JRST[	MOVEI	str,ref668##	;<KPJ.30> yes, file name bad
+			JRST	refin8]		;<KPJ.30>
+		MOVEM	t,.RBNAM(bfp)		;<KPJ.21> no, save as file name
+		SETZM	token			;<KPJ.21> dispose of token
+		JRST	refin9]			;<KPJ.21> and exit
+	JRST	refiny				;better be a whitespace
+;...................................
+;come here when a dot (".") is found.
+;this signals start of extension
+
+refin3:	Txne	f,tokext		;extension already parsed?
+	 JRST[	Txne	f,tokprt	;<KPJ.30> protection parsed?
+		 SKIPA	str,[ref669##]	;<KPJ.30> "prot.code before extension"
+		  MOVEI	str,ref001##	;"double '.'"
+		JRST	refin8]
+	Txne	f,tokprt		;<KPJ.30> protection already parsed?
+	 JRST[	MOVEI	str,ref668##	;<KPJ.30> yes, file name bad
+		JRST	refin8]		;<KPJ.30>
+	MOVE	t,token			;get current token
+	MOVEM	t,.RBNAM(bfp)		;save file name
+	SETZM	token			;get rid of token
+	Txo	f,tokext!toknam		;extension started, file name done
+	CALL	nexsho##		;increment pointer
+	CALL	gshort##		;get next character
+	MOVEI	t,3			;extensions are max 3 characters
+	JRST	refin0			;go for next field
+;...................................
+;come here when a colon (":") is found.
+;this signals that the previous field is a device name.
+;the field must be non-empty.
+
+refin4:	SKIPN	t,token			;empty?
+	 JRST[	CAIN	f,0		;yes, parsed anything yet?
+		 SKIPA	str,[ref002##]	;"no device"
+		  MOVEI	str,ref003##	;yes, "stray colon"
+		JRST	refin8]
+	Txne	f,toknam!tokext!tokdir!tokprt ;<KPJ.30> is device legal here?
+	 JRST[	MOVEI	str,ref004##	;"device name misplaced"
+		JRST	refin8]
+	Txne	f,tokdev		;yes, already given?
+	 JRST[	MOVEI	str,ref005##	;"misplaced device name"
+		JRST	refin8]
+	MOVEM	t,.FODEV(gp1)		;save device
+	SETZM	token			;get rid of token
+	Txo	f,tokdev		;device parsed
+	CALL	nexsho##		;increment pointer
+	CALL	gshort##		;get next character
+	MOVEI	t,6			;expect a sixbit field
+	JRST	refin0			;go for next field
+;...................................
+;come here when a left br*ket is found.
+;this signals that a directory field or a protection code follows.
+
+refin5:	SKIPE	t,token				;name preceeds?
+	 JRST[	Txne	f,tokext		;yes, "." parsed?
+		 JRST[	MOVEM	t,.RBEXT(bfp)	;yes, save as extension
+			SETZM	token		;dispose of token
+			JRST	.+1]
+		Txne	f,tokprt		;<KPJ.30> protection parsed?
+		 JRST[	MOVEI	str,ref668##	;<KPJ.30> yes, file name bad
+			JRST	refin8]		;<KPJ.30>
+		Txo	f,toknam!tokext!tokfpt	;<KPJ.25> file name part done
+		MOVEM	t,.RBNAM(bfp)		;no, save as file name
+		SETZM	token			;dispose of token
+		JRST	.+1]
+	CALL	readir				;read directory specification
+	SKIPE	str,errfl##			;any error?
+	 JRST	refin8				;yes, quit
+	Txz	f,toknpr			;<KPJ.26> might be again
+	MOVEI	t,6				;expect a 6-character field
+	JRST	refin0				;go for next field
+
+refin8:	PUSH	P,consum##		;save consumer
+	PUSH	P,str
+	MOVEI	t,tercon##		;output to terminal
+	MOVEM	t,consum##
+	MOVE	str,fstart		;<KPJ.25> point at string
+	CALL	prstr##			;<KPJ.25> output string
+	CALL	preol##			;new line
+	print	filer1##		;"The file name is bad."
+	CALL	preol##
+	print	filer2##		;"Reason:"
+	POP	P,str
+	CALL	prstr##			;output the error message
+	CALL	preol##			;and a CRLF
+	POP	P,consum##		;restore consumer
+	SETOM	errfl##			;syntax error in file name
+	CALL	clear##			;<KPJ.25> error, clear input
+refin9:	return
+
+
+;+
+;GEPROJ		get project#
+;accepts	CH/	first character of project#
+;		TOKBRK/	opening br*ket of directory
+;returns	NR/	project#
+;		CH/	first character after project#
+;		ERRFL/	<>0 if error:
+;			REF009	project# too large
+;			REF011	project# or protection code too large
+;			REF014	decimal numbers not supported
+;-
+
+geproj:	CAIE	ch,"8"			;decimal digits?
+	 CAIN	ch,"9"
+	  JRST	gepro2
+	SETZ	nr,			;clear project#
+gepro1:	MOVE	t,ch			;get surrent character
+	SUBI	t,"0"			;make binary digit
+	LSH	nr,3			;multiply by 8
+	ADD	nr,t			;add digit
+	CAMLE	nr,[0,,^O377777]	;overflow?
+	 JRST[	MOVE	t,tokbrk	;yes, get directory starter
+		CAIN	t,.CHLBR	;was it a broket?
+		 SKIPA	t,[ref011##]	;yes, "project# or protection# bad"
+		  MOVEI	t,ref009##	;no, "project# too large"
+		JRST	gepro8]		;error bang
+	CALL	nexsho##		;increment the pointer
+	CALL	gshort##		;get next character
+	CAIL	ch,"0"			;octal digits?
+	 CAILE	ch,"7"
+	  TRNA
+	   JRST	gepro1			;yes, get them too
+	CAIN	ch,"."			;dot?
+	 JRST	gepro2			;yes
+	CAIE	ch,"8"			;decimal digits?
+	 CAIN	ch,"9"
+gepro2:	  JRST[	MOVEI	t,ref014##	;"decimal digits invalid"
+		JRST	gepro8]		;error bang
+	TRNA
+gepro8:	 MOVEM	t,errfl##
+gepro9:	return				;no, exit
+
+
+
+;+
+;GEPROG		get programmer#
+;accepts	CH/	first character of programmer# (a digit)
+;returns	NR/	programmer#
+;		CH/	next character after programmer#
+;		ERRFL/	<>0	error code:
+;			REF014	decimal numbers not supported
+;			REF015	programmer# too large
+;			REF016	programmer# must be non-zero
+;-
+
+geprog:	SETZ	nr,			;clear programmer#
+	CAIE	ch,"8"			;decimal digits?
+	 CAIN	ch,"9"
+	  JRST	geprg3			;yes
+geprg1:	MOVE	t,ch			;shuffle
+	SUBI	t,"0"			;make binary digit
+	LSH	nr,3			;multiply by 8
+	ADD	nr,t			;add to number
+	CAMLE	nr,[0,,^O377777]	;number too large?
+	 JRST[	MOVEI	t,ref015##	;"programmer# too large"
+		JRST	geprg8]		;error bang
+	CALL	nexsho##		;increment the pointer
+	CALL	gshort##		;get next character
+	CAIL	ch,"0"			;octal digit?
+	 CAILE	ch,"7"
+	  TRNA				;no
+	   JRST	geprg1			;yes
+	CAIE	ch,"8"			;decimal digit?
+	 CAIN	ch,"9"
+	  TRNA
+	   CAIN	ch,"."			;or dot?
+	    JRST[			;yes, error
+geprg3:		MOVEI	t,ref014##	;"decimal digits invalid"
+		JRST	geprg8]		;error bang
+	JUMPE	nr,[			;zero programmer#?
+		MOVEI	t,ref016##	;"programmerar# must be non-zero"
+		JRST	geprg8]		;error bang
+	TRNA
+geprg8:	 MOVEM	t,errfl##
+geprg9:	return
+
+
+
+;+
+;READIR		parse a Bottoms-10 directory specification
+;		or a protection code.
+;accepts	CH/	br*ket that marks beginning of directory
+;		GP2/	pointer into path block
+;returns	CH/	next character after directory field
+;			(closing br*ket is part of the directory field)
+;		ERRFL/	error code:
+;			REF008	octal digit, comma or "-" expected
+;			REF009	project# too large
+;			REF010	project# must be non-zero
+;			REF011	project# or protection code too large
+;			REF012	protection code too large
+;			REF013	project# not followed by a comma
+;			REF014	decimal numbers not supported
+;			REF015	programmer# too large
+;			REF016	programmer# must be non-zero
+;			REF017	bracket, comma or end of command expected
+;			REF018	null SFD name
+;			REF023	double protection code
+;			REF024	SFDs are not supported by monitor
+;			REF667	protection code precedes directory name
+;-
+
+readir:	MOVEM	ch,tokbrk		;save it for later
+	CAIN	ch,.CHOBR		;<KPJ.26> bracket?
+	 Txo	f,toknpr		;<KPJ.26> yes, cannot be protection
+	CALL	nexsho##		;increment the pointer
+	CALL	gshort##		;get next character
+	CAIN	ch,"-"			;[-] ?
+	 JRST[	CALL	dirokp		;<KPJ.26> directory legal here?
+		 JRST	readi8		;<KPJ.26> no
+		Txo	f,toknpr	;<KPJ.30> yes, cannot be protection
+		JRST	readi1]		;yes, means connected directory
+	CAIN	ch,","			;comma?
+	 JRST[	CALL	dirokp		;<KPJ.26> directory legal here?
+		 JRST	readi8		;<KPJ.26> no, yell
+		Txo	f,toknpr	;<KPJ.26> yes, no protection code
+		GETPPN	t,		;own project#
+		 nop			;ignore special return
+		HLLM	t,.PTPPN(gp2)	;<KPJ.14> save project#
+		JRST	readi2]
+	CAIL	ch,"0"			;digits?
+	 CAILE	ch,"9"
+	  JRST[	MOVEI	t,ref008##	;"expected proj#, comma or '-'"
+		JRST	readi8]		;error bang
+	CALL	geproj			;get project#/protection#
+	SKIPE	errfl##			;error?
+	 JRST	readi9			;yes, exit
+	Txne	f,toknpr		;<KPJ.26> definitely a directory?
+	 JRST[	CALL	dirokp		;<KPJ.26> yes, directory legal here?
+		 JRST	readi8		;<KPJ.26> nope, yell
+		JRST	readip]		;<KPJ.26> yes, go there to look at it
+	CALL	qeos			;<KPJ.26> no, end of command?
+	 JRST	readi7			;<KPJ.26> yes, then it is a protection
+	MOVE	t,tokbrk		;get starting br*ket
+	CAIN	t,.CHLBR		;was it a broket?
+	 CAIE	ch,.CHRBR		;yes, is this the closing broket?
+	  TRNA				;<KPJ.26> no
+	   JRST	readi7			;<KPJ.26> yes, then it is a protection
+	CALL	dirokp			;<KPJ.26> no, is directory legal here?
+	 JRST	readi8			;<KPJ.26> no, yell
+;...................................
+;We know now that we have beginning of a directory specification here.
+
+readip:	CAIN	nr,0			;no, zero project#?
+	 JRST[	MOVEI	t,ref010##	;"zero proj#"
+		JRST	readi8]		;error bang
+	HRLM	nr,.PTPPN(gp2)		;save project#
+	JRST	readi2			;end of project#
+;...................................
+;Come here when we have a protection code.
+
+readi7:	Txne	f,tokprt		;<KPJ.26> protection already parsed?
+	 JRST[	MOVEI	t,ref023##	;<KPJ.26> yes, "double prot.code"
+		JRST	readi8]		;<KPJ.26>
+	CAILE	nr,^O777		;no, protection code overflow?
+	 JRST[	MOVEI	t,ref012##	;"max 3 digits in protection code"
+		JRST	readi8]
+	Txo	f,tokprt		;<KPJ.26> protection code parsed
+	DPB	nr,[POINTR .RBPRV(bfp),RB.PRV] ;<KPJ.26> store protection code
+					;***FOO*** save the protection code
+	Fall	readix			;<KPJ.26> exit
+;...................................
+;Come here to exit from this cruel world.
+
+readix:	CALL	nexsho##		;increment the pointer
+	CALL	gshort##		;eat up closing broket
+	JRST	readi9			;and exit
+;...................................
+;come here when we know we have a PPN (and not a protection code).
+;CH contains the character after the project# (should be a comma).
+
+readi2:	Txo	f,tokdir!toknpr		;<KPJ.26> directory parsed
+	HRRZ	t,.FOPAT(gp1)		;<KPJ.26!KPJ.24> return path pointer
+	MOVEM	t,.RBPPN(bfp)		;<KPJ.26!KPJ.24> save path pointer
+	CAIE	ch,","			;<KPJ.13> comma?
+	 JRST[	MOVEI	t,ref013##	;"comma, bracket or broket expected"
+		JRST	readi8]
+	CALL	nexsho##		;increment the pointer
+	CALL	gshort##		;yes, get next character
+	CAIL	ch,"0"			;digits?
+	 CAILE	ch,"9"
+	  JRST[	GETPPN	t,		;no, get own PPN
+		 nop			;ignore special return
+		HRRM	t,.PTPPN(gp2)	;save PPN
+		JRST	readi3]
+	CALL	geprog			;get programmer#
+	SKIPE	errfl##			;error?
+	 JRST	readi9			;yes, exit
+	HRRM	nr,.PTPPN(gp2)		;save programmer#
+;...................................
+;come here when a PPN has been parsed.
+;either a SFD name, comma or br*ket is expected.
+
+readi3:	CALL	qeos			;end of command?
+	 JRST	readi9			;yes, exit
+	CAIN	ch,","			;comma?
+	 JRST	readi4			;yes, parse for SFDs
+	CALL	qeodir			;end of directory?
+	 JRST	readix			;yeah, go get next and exit
+	MOVEI	t,ref017##		;"br*ket, comma or end-line expected"
+	JRST	readi8			;error bang
+;...................................
+;come here to parse for SFDs
+;(when we found a comma after a PPN)
+
+readi4:	PUSH	P,gp2			;<KPJ.35> save this precious jewel
+	CALL	sfdp##			;<KPJ.35> what's the max SFD level?
+	 JRST[	POP	P,gp2		;<KPJ.35> put jewel back
+		MOVEI	t,ref024##	;<KPJ.35> no SFD support
+		JRST	readi8]		;<KPJ.35> give up
+	MOVEM	gp2,sfdlvl		;save max SFD level
+	POP	P,gp2			;<KPJ.35> restore jewelry
+	SKIPN	maxsfd			;<KPJ.35> we have place for SFDs?
+	 JRST[	MOVEI	t,ref025##	;<KPJ.25> no, give up
+		JRST	readi8]		;<KPJ.35>
+readiz:	CALL	nexsho##		;increment the pointer
+	CALL	gshort##		;get next character
+	CALL	qeos			;<KPJ.14> end of command?
+	 JRST[	MOVEI	t,ref018##	;<KPJ.14> yes, "missing SFD name"
+		JRST	readi8]		;<KPJ.14> quit
+	SETZM	token			;clear token
+	MOVEI	t,6			;max 6 characters in a SFD name
+	MOVEM	t,toksiz
+	MOVE	t,[POINT 6,token]	;initialize token pointer
+	MOVEM	t,tokbp
+	CALL	getsix			;get next sixbit field
+	SKIPE	errfl##			;error?
+	 JRST	readi9			;yes, exit
+	SKIPN	token			;null name?
+	 JRST[	MOVEI	t,ref018##	;no, "missing SFD name"
+		JRST	readi8]
+	SKIPN	sfdlvl			;too many levels for monitor?
+	 JRST[	MOVEI	t,ref019##	;yes, "too many SFD names"
+		JRST	readi8]
+	SOS	sfdlvl			;one SFD less
+	SKIPN	maxsfd			;<KPJ.35> too many levels for us?
+	 JRST[	MOVEI	t,ref025##	;<KPJ.35> yes, "too many SFD names"
+		JRST	readi8]		;<KPJ.35>
+	SOS	maxsfd			;<KPJ.35> speace for one SFD less
+	MOVE	t,token			;<KPJ.35> OK, we have place for it
+	MOVEM	t,.PTPPN+1(gp2)		;save SFD name
+	ADDI	gp2,1			;<KPJ.35> increment SFD pointer
+	SETZM	token
+	CALL	qeos			;<KPJ.14> end of command?
+	 JRST	readi9			;<KPJ.14> yes, exit
+	CALL	qeodir			;end of directory?
+	 JRST	readix			;yes, exit
+	CAIN	ch,","			;comma?
+	 JRST[	SKIPN	sfdlvl			;any levels left for monitor?
+		 JRST[	MOVEI	t,ref019##	;no, "too many SFD names"
+			JRST	readi8]		;error bang
+		JRST	readiz]			;yes, get next level
+	MOVEI	t,ref020##		;no, "br*ket or end-line expected"
+	JRST	readi8
+;...................................
+;here to parse "[-]" form of directory
+
+readi1:	Txo	f,tokprj!toknpr		;<KPJ.26> found a project# field
+	HRRZ	t,.FOPAT(gp1)		;<KPJ.26!KPJ.24> return path pointer
+	MOVEM	t,.RBPPN(bfp)		;<KPJ.26!KPJ.24> save path pointer
+	PJOB	t,			;get our job#
+	HRLZ	t,t			;shuffle
+	HRRI	t,.PTFRD		;read default path
+	MOVEM	t,tokpth		;save in argument block
+	MOVE	t,[.PTMAX+1,,tokpth]
+	PATH.	t,			;read the path
+	 JRST[	MOVEI	t,ref008##	;"expected proj#, comma or '-'"
+		JRST	readi8]		;error bang
+	MOVE	t,tokpth+.PTPPN		;get PPN
+	MOVEM	t,.PTPPN(gp2)		;save PPN
+	SKIPN	t,tokpth+.PTSFD		;any SFDs?
+	 JRST[	SETZM	.RBPPN(bfp)	;no, clear path pointer
+		JRST	refd1x]		;end of directory parsed
+		%foo==0
+REPEAT	5,<
+	MOVE	t,.PTSFD+%foo+tokpth	;get SFD word
+	MOVEM	t,.PTSFD+%foo(gp2)	;save SFD word
+	%foo==%foo+1			;step to next SFD
+>;END REPEAT 5
+	PURGE	%foo
+refd1x:	CALL	nexsho##		;increment pointer
+	CALL	gshort##		;get next character
+	CALL	qeodir			;end of directory?
+	 JRST	readix			;yes
+	MOVEI	t,ref021##		;no, "br*ket or end-line after '-'"
+	Fall	readi8
+;...................................
+;Here to exit from directory name parser.
+
+readi8:	MOVEM	t,errfl##		;return error
+readi9:	return
+
+
+
+;+
+;DIROKP		test if directory is legal here
+;accepts	F/	flags
+;returns	+1 if not legal, with T/ error message pointer
+;		+2 if legal
+;-
+
+dirokp:	Txne	f,tokprt		;<KPJ.30> protection already parsed?
+	 JRST[	MOVEI	t,ref667##	;<KPJ.30> "double prot.code"
+		JRST	dirok9]		;<KPJ.30> return
+	Txne	f,tokdir		;directory already parsed?
+	 SKIPA	t,[ref007##]		;yes, "double directory"
+	  skpret			;+2 return
+	Txo	f,tokdir		;directory parsing in progress
+dirok9:	return
+
+;+
+;REFINI		initialize Tops-10 file name reading
+;accepts	GP1/	address of FILOP. argument block
+;		BFP/	length,,address of PATH. block
+;returns	GP2/	address of PATH. block
+;		BFP/	address of extended LOOKUP/ENTER argument list
+;		BP/	0	("SFD pointer")
+
+;				* NOTE *
+;(i)	Ideally, we could simply accept the AC GP1 to point at the FILOP.
+;	block, and pick up the extended argument list and PATH. block
+;	from it, but the T10 gets confused if you have an "empty" PATH.
+;	block.  So we must clear it away from the FILOP. block when we
+;	don't have any explicit path specified.  Thus, we must have the
+;	PATH. block separately, as well as its length.
+;(ii)	The .FODEV word of the FILOP. block is to be initialized by the
+;	caller to the "default device", and should not be touched now.
+;(iii)	The .RBEXT word of extended argument list is to be initialized
+;	by the caller, and not to be touched now.
+;-
+
+refini:	HRRZ	t,gp1			;<KPJ.41> test FILOP. block address
+	CALL	adrchk			;<KPJ.41> is it valid?
+	 JRST[	BUG(CHK,<REFINI: Bad FILOP. block address>,<gp1>)
+		JRST	refix8]		;<KPJ.41>
+	HLRZ	t,gp1			;<KPJ.41> get FILOP. block length
+	CAIGE	t,.FOPPN+1		;<KPJ.41> enough?
+	 JRST[	BUG(CHK,<REFINI: Bad FILOP. block length>,<gp1>)
+		JRST	refix8]		;<KPJ.41>
+	HRRZ	gp1,gp1			;<KPJ.41> get rid of length
+	HRRZ	t,.FOLEB(gp1)		;<KPJ.41> get ENTER/LOOKUP pointer
+	CALL	adrchk			;<KPJ.41> is it valid?
+	 JRST[	BUG(CHK,<REFINI: Bad LOOKUP/ENTER block address>,<gp1,bfp>)
+		JRST	refix8]		;<KPJ.41>
+	HRRZ	t2,.FOLEB(gp1)		;<KPJ.42!KPJ.41> extended argument list
+	MOVE	t,.RBCNT(t2)		;<KPJ.41> expect "0,,argument count"
+	CAIL	t,.RBSIZ		;<KPJ.41> least this much
+	 CAILE	t,.RBMAX		;<KPJ.41> but valid length?
+	  JRST[	BUG(CHK,<REFINI: Bad LOOKUP/ENTER block length>,<gp1,bfp,t>)
+		JRST	refix8]		;<KPJ.41>
+
+	SETZM	.RBPPN(t2)		;<KPJ.41!KPJ.24> default no path block
+	SETZM	.RBNAM(t2)		;<KPJ.41> clear file name
+	SETZM	.RBPRV(t2)		;<KPJ.41> clear protection (returned)
+	SETZM	.RBSIZ(t2)		;<KPJ.41> clear size (returned)
+
+	HRRZ	gp2,bfp			;<KPJ.41> get PATH. block address
+	MOVE	t,gp2			;<KPJ.41> check PATH. block address
+	CALL	adrchk			;<KPJ.41> valid?
+	 JRST[	BUG(CHK,<REFINI: Bad PATH. block address>,<gp1,t>)
+		JRST	refix8]		;<KPJ.41>
+	HLRZ	t,bfp			;<KPJ.41> get PATH. block length
+	CAIL	t,.PTPPN		;<KPJ.41> at least PPN
+	 CAILE	t,.PTMAX		;<KPJ.41> but valid?
+	  JRST[	BUG(CHK,<REFINI: Bad PATH. block length>,<gp1,t>)
+		JRST	refix8]		;<KPJ.41>
+	MOVEM	bfp,.FOPAT(gp1)		;<KPJ.41!SEE> save as "return path" ptr
+	HRRZ	bfp,.FOLEB(gp1)		;<KPJ.41> extended argument list
+	SETZM	.PTPPN(gp2)		;clear PPN in path block
+	HLRZ	t3,.FOPAT(gp1)		;<KPJ.41> get length of PATH. block
+	SUBI	t3,.PTPPN		;<KPJ.41> compute #SFDs supported
+	MOVEM	t3,maxsfd		;<KPJ.41> save for future reference
+	JUMPE	t3,refix7		;<KPJ.41> none
+	SETZM	.PTSFD(gp2)		;clear SFD area in PATH. block
+	CAIN	t3,1			;<KPJ.41> just one SFD supported?
+	 JRST	refix7			;<KPJ.41> yes
+	MOVEI	t,.PTSFD(gp2)		;<KPJ.40> 0,,from
+	MOVE	t2,t			;<KPJ.40> 0,,from copied
+	HRL	t,t			;<KPJ.40> from,,from
+	ADDI	t,1			;<KPJ.40> from,,to
+	ADD	t2,t3			;<KPJ.40> from+maxsfd
+	BLT	t,0(t2)			;<KPJ.40> clear SFD area
+refix7:					;<KPJ.41>
+KL10,<	MOVEI	bp,0>			;<KPJ.40> clear SFD pointer
+KL10N,<	SETZ	bp,>			;clear SFD pointer
+	skpret
+	TRNA
+refix8:	 MOVEI	str,zrefix##		;"Internal error" error
+refix9:	return
+
+
+
+;+
+;REASIX		read sixbit name
+;returns	TXT/	name got
+;-
+
+reasix:	save	<ch,bp,nr>
+	MOVE	bp,[POINT 6,txt]	;get byte pointer
+	SETZ	txt,			;clear text
+	MOVEI	nr,6			;max six chars
+reasi1:	CALL	gecoch			; get char
+	JUMPE	ch,reasi9			; end of line
+	CAIN	ch,chabla		; end of name
+	 JRST	reasi9
+	CAIN	ch,33			; semicolon, end of name
+	 JRST	reasi9
+	CAIN	ch,'.'			; period ?
+	 JRST	reasi9
+	CAIN	ch,14			; comma ?
+	 JRST	reasi9
+	CAIN	ch,34			; left angle ?
+	 JRST	reasi9
+	CAIN	ch,73			; left bracket ?
+	 JRST	reasi9
+	CAIN	ch,':'			; colon ?
+	 JRST	reasi9
+	CAIN	ch,36			; right angle ?
+	 JRST	reasi9
+	CAIN	ch,75			; right bracket ?
+	 JRST	reasi9
+	SOJL	nr,reasi2		;no, more characters ?
+	IDPB	ch,bp			;yes, save character
+reasi2:	CALL	nexsho##		;get next character
+	JRST	reasi1
+reasi9:	return
+
+
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;	Tops-10 file name output routines:
+;
+;PRIFIL		output a file specification
+;PRSIXL		output a sixbit string
+;PRFIPR		output a protection "<nnn>"
+;PRFISF		output SFD name list ",foo,bar,bletch" etc.
+;PRFIPP		output directory specification (PPN,SFDs) "[m,n,foo,...]"
+;PRFIEX		output extension ".ext"
+;PRFINM		output file name "fname"
+;PRFIDE		output device name "dev:"
+
+
+
+
+
+;+
+;PRIFIL		output Tops-10 file name
+;accepts	BFP/	extended arg.list ("file block")
+;		GP1/	path pointer
+;returns	+1 error
+;		+2 success
+
+prifil::SKIPE	.FODEV(gp1)			;<KPJ.6> device present?
+	 CALL	prfide				;yes, output device
+	SKIPE	.RBNAM(bfp)			;<KPJ.6> file name present?
+	 CALL	prfinm				;yes, output name
+	SKIPE	.RBEXT(bfp)			;<KPJ.11> any extension?
+	 CALL	prfiex				;yes, output extension
+	CALL	prfipp				;output PPN
+	LDB	t,[POINT 9,.RBPRV(bfp)]		;<KPJ.22> get protection code
+	SKIPE	t				;<KPJ.22> 000 means none
+	 JRST[	CALL	prfipr			;<KPJ.33> output protection
+		 JRST	prfli9			;<KPJ.33> error
+		JRST	.+1]			;<KPJ.33>
+	skpret					;<KPJ.33>
+prfli9:	return
+
+
+;+
+;PRSIXL		output sixbit string
+;accepts	NR/	length
+;		BP/	sixbit byte pointer
+;-
+
+prsixl:	save	<ch>
+	SETZ	t,			;<KPJ.6>
+	SETO	t2,			;<KPJ.6>
+	MOVE	t3,selffl##		;<KPJ.11> get personal flags
+	AND	t3,[caspfl]		;<KPJ.11> extract CASIFY flag
+prsix1:	ILDB	ch,bp			;get sixbit character
+	JUMPN	ch,[			;[KPJ.4] more to output?
+		ADDI	ch,"A"-'A'	;<KPJ.6> yes, make it ASCII
+		JUMPE	t3,prsix2	;<KPJ.11> if no casify, skip that
+		CAIL	ch,"A"		;<KPJ.6> letter?
+		 CAILE	ch,"Z"		;<KPJ.6>
+		  SKIPA	t,[0]		;<KPJ.6> no letter
+		   CALL[CAIE	t,0		;<KPJ.6> not first?
+			 ADDI	ch,"a"-"A"	;<KPJ.6> casify
+			SETO	t,		;<KPJ.6>
+			RET]
+prsix2:		PUSH	P,t		;<KPJ.6> save status
+		CALL	putch		;output it
+		POP	P,t		;<KPJ.6> restore status
+		SOJG	nr,prsix1	;check if more char's
+		JRST	.+1]		;no more
+	return
+
+
+;+
+;PRFIPR		output protection as "<nnn>"
+;accepts	BFP/	points at extended arg.list ("LOOKUP block")
+;returns	+1 error, 1/ error code
+;		+2 success
+;-
+
+prfipr:	save	<ch,bp,nr>
+	MOVEI	ch,.CHLBR			;[KPJ.4] left broket
+	CALL	putch				;[KPJ.4] output it
+	MOVEI	1,.PRIOUT			;<KPJ.5> standard output
+	LDB	2,[POINT 9,.RBPRV(bfp)]		;<KPJ.22!KPJ.7> get protection
+	MOVE	3,[NO%LFL!NO%ZRO!FLD(3,NO%COL)!FLD(8,NO%RDX)] ;<KPJ.22!KPJ.7>
+	CALL	.nout				;<KPJ.7> output it
+	 JRST	prfir9				;<KPJ.32> failure, +1 return
+	MOVEI	ch,.CHRBR			;[KPJ.4] right broket
+	CALL	putch				;[KPJ.4] output it
+	skpret					;<KPJ.32> +2 return
+prfir9:	return
+
+;+
+;PRFISF		output SFD name
+;accepts	GP2/ path pointer
+;-
+
+prfisf:	save	<gp2,ch,bp,nr>
+	MOVEI	gp2,.PTSFD(gp2)		;get SFD name
+prfis1:	SKIPN	0(gp2)			;end of SFD name ?
+	 JRST	prfis9			;yes
+	MOVEI	ch,","			;comma
+	CALL	putch			;output it
+	MOVE	bp,[POINT 6,(gp2)]	;get start of SFD name
+	MOVEI	nr,6			;max 6 chars
+	CALL	prsixl			;output SFD name
+	ADDI	gp2,1			;get next SFD
+	JRST	prfis1
+prfis9:	return
+
+
+;+
+;PRFIPP		output PPN
+;accepts	BFP/	address of file block
+;		GP1/	path pointer
+;-
+prfipp:	save	<ch,bp,gp1,gp2>		;<KPJ.5>
+	HRRZ	gp2,.FOPAT(gp1)		;get path pointer
+	SKIPN	gp2
+	 JRST	prfip9			;<KPJ.7> default path
+	SKIPN	.PTPPN(gp2)		;PPN defined ?
+	 JRST[	SKIPN	.PTSFD(gp2)	;no, SFD defined ?
+		 JRST	prfip9		;no, no PPN nor SFD
+		JRST	.+1]
+	MOVEI	ch,ppnbeg		;<KPJ.4> character to start PPN field
+	CALL	putch			;<KPJ.4> output it
+	MOVE	gp1,.PTPPN(gp2)		;<KPJ.5> get PPN
+	CALL	prippn##		;<KPJ.5> output PPN
+	CALL	prfisf			;output SFD
+	MOVEI	ch,ppnend		;[KPJ.4] character to end PPN field
+	CALL	putch			;[KPJ.4] output it
+prfip9:	return
+
+
+;+
+;PRFIEX		output extension
+
+prfiex:	save	<ch,bp,nr>
+	MOVEI	ch,"."			;dot
+	CALL	putch			;output dot
+	MOVE	bp,[POINT 6,.RBEXT(bfp)] ; get start of extension
+	MOVEI	nr,3			;max 3 chars
+	CALL	prsixl			;output extension
+prfie9:	return
+
+;+
+;PRFINM		output sixbit file name
+;accepts	BFP/	address of file name block
+;-
+
+prfinm:	save	<bp,nr>
+	MOVE	bp,[POINT 6,.RBNAM(bfp)] ; get start of name
+	MOVEI	nr,6			; at most 6 char's
+	CALL	prsixl			;output the name
+	return
+
+
+;+
+;PRFIDE		output device name
+;accepts	GP1/	device block
+;-
+
+prfide:	save	<ch,bp,nr>
+	MOVE	bp,[POINT 6,.FODEV(gp1)] ; get start of device
+	MOVEI	nr,6			; at most 6 char's
+	CALL	prsixl			;output device name
+	MOVEI	ch,":"			;[KPJ.4] colon
+	CALL	putch			;[KPJ.4] output it
+	return
+>;T10
+
+;======================================================================
+;			  NOUT     JSYS 224
+;
+;   Outputs an integer number.
+;
+;   ACCEPTS IN AC1: destination designator
+;		    ***** KOM restriction *******
+;		    *	either .PRIOUT		*
+;		    *	or	byte pointer	*
+;		    *****************************
+;
+;	      AC2:  number to be output
+;
+;	      AC3:  B0(NO%MAG) output the magnitude.  That is, output the
+;			       number as an unsigned 36-bit number (e.g.,
+;			       output -1 as 777777 777777).
+;
+;		    B1(NO%SGN) output a plus sign for a positive number.
+;
+;		    B2(NO%LFL) output leading filler.  If this bit is not
+;			       set,  trailing  filler  is output, and bit
+;			       3(NO%ZRO) is ignored.
+;
+;		    B3(NO%ZRO) output 0's as the leading  filler  if  the
+;			       specified   number   of  columns  (NO%COL)
+;			       allows filling.  If this bit is  not  set,
+;			       blanks are output as leading filler if the
+;			       number of columns allows filling.
+;
+;		    B4(NO%OOV) output on column overflow  and  return  an
+;			       error.	If  this  bit  is not set, column
+;			       overflow is not output.
+;
+;		    B5(NO%AST) output asterisks on column  overflow.   If
+;			       this  bit is not set and bit 4 (NO%OOV) is
+;			       set, all necessary digits  are  output  on
+;			       column overflow.
+;
+;		    B11-B17    number of columns (including  sign column)
+;		    (NO%COL)   to output.  If this field is  0,  as  many
+;			       columns as necessary are output.
+;
+;		    B18-B35    radix (2-36) of number being output
+;		    (NO%RDX)
+;
+;   RETURNS     +1:  failure, error code in AC3
+;
+;	       +2:  success, updated byte pointer in AC1, if pertinent
+;
+;   NOUT ERROR MNEMONICS:
+;
+;   NOUTX1:   Radix is not in range 2 to 36
+;
+;   NOUTX2:   Column overflow
+;======================================================================
+.nout::	save	<0,7,ch>		;might be used
+	SETZM	lsterr
+	HRRZ	4,3			; Get radix
+	CAIL	4,2			; If radix is less than 2,
+	 CAILE	4,^D36			;  or greater than 36,
+	  JRST[;MOVEI	1,NOUTX1	;   "Radix is not in range 2 to 36"
+		MOVEI	1,[ASCIZ !Radix is not in range 2 to 36!]
+		JRST	nout9]		; +1 (failure) return - get lost
+	HLL	4,3			; Get rest of flags
+	LDB	0,[POINTR 4,NO%COL]	; Get number of columns
+	MOVEI	7,1
+	TLNN	4,(NO%MAG)
+	 CAIL	2,0
+	  TLZA	4,(1B6)			; Clear flag (bit 6)
+	   TLO	4,(NO%SGN!1B6)		; Set flag bit
+	TLNE 4,(1B6)
+	 MOVMS	0,2
+
+	TLNE	4,(NO%SGN)
+nout1:	 AOS	7
+	LSHC	2,-43
+	LSH	3,-1
+	DIVI	2,0(4)
+	PUSH	P,3
+	JUMPN	2,nout1
+
+	CAIN	0,0
+	 MOVE	0,7
+	TLNE	4,(NO%LFL)		; If leading filler was wanted,
+nout2:	 CAML	7,0			;   and there is place for it,
+	  JRST	nout3			;    then output, else do not.
+
+	TLNE	4,(NO%ZRO)
+	 CALL	sgnout			; Output sign
+	MOVEI	2,.CHSPC		; Space
+	TLNE	4,(NO%ZRO)		;  or
+	 MOVEI	2,"0"			; Digit zero
+	CALL	bouta			; Output the character
+	SOJA	nout2
+
+nout3:	CAML	0,7			; Column overflow?
+	 JRST	nout4			; No - continue
+
+;	MOVEI	2,NOUTX2		; "Column overflow"
+	MOVEI	2,[ASCIZ !Column overflow!]
+	MOVEM	2,lsterr		; returned to user
+	TLNN	4,(NO%OOV)		; Output on column overflow?
+	 JRST	nout7			; No - just die
+	TLNN	4,(NO%AST)		; Output asterisks?
+	 JRST	nout4			; No - just goon
+
+	MOVEI	2,"*"			; Yes - output field of asterisks
+nout6:	SOJL	nout7			; End of field? Yes - jump
+	CALL	bouta			; Output asterisk or space
+	JRST	nout6			; and continue
+
+nout7:	TLNE	4,(NO%SGN)
+	 SOS	7
+nout71:	SOJL	7,[	MOVE	1,lsterr ; +1 (failure) return
+			JRST	nout9]	;tough shit
+	POP	P,2
+	JRST	nout71
+
+nout4:	CALL	sgnout			; Output sign
+nout5:	SOJL	7,nout8			; End of field? Yes - jump
+	POP	P,2			; Pop a digit to output
+	ADDI	2,"0"			; Make ASCII
+	CAILE	2,"9"			; Number now?
+	 ADDI	2,7			; Convert to letter (A,...)
+	CALL	bouta			; Output character
+	SOJA	nout5
+
+nout8:	SKIPL	0,0
+	 skpret				; +2 return
+	MOVEI	2,.CHSPC		;get a space
+	JRST	nout6			; Go output trailing spaces
+;-----------------------------------
+;	SGNOUT	Routine to output sign
+;-----------------------------------
+sgnout:	TLZN	4,(NO%SGN)		; Sign wanted?
+	 RET				; No - forget it
+	MOVEI	2,"-"			; Negative
+	TLNN	4,(1B6)			; Was number negative?
+	 MOVEI	2,"+"			; No, make positive sign
+	CALL	bouta			; Output it
+	SOS	7
+	SOS	0
+	RET
+;-----------------------------------
+;	BOUTA	Output the character
+;-----------------------------------
+bouta:	TLNN	1,-1
+	 JRST[	CAIN	1,.CTTRM	;<KPJ.34> controlling terminal?
+		 JRST[			;<KPJ.34> yes, display on TTY
+T10,<			OUTCHR	2>	;<KPJ.34> display on terminal
+T20,<			EXCH	1,2	;<KPJ.34> display on terminal
+			PBOUT%		;<KPJ.34> . . .
+			EXCH	1,2	;<KPJ.34> . . .
+>;T20
+			RET]		;<KPJ.34> character is output, return
+		MOVEM	0,saveac+0	;<KPJ.20> start by saving AC 0
+		MOVE	0,[1,,saveac+1]	;<KPJ.20> save here
+		BLT	0,saveac+17	;<KPJ.20> save all ACs
+		MOVE	ch,2		;shuffle
+		CALL	putch		; Output character to destination
+		MOVE	0,[saveac+1,,1]	;<KPJ.20> restore from here
+		BLT	0,17		;<KPJ.20> restore all ACs except AC 0
+		MOVE	0,saveac+0	;<KPJ.20> restore AC 0, too
+		RET]		
+	TLC	1,-1			; Make a byte pointer
+	TLCN	1,-1
+	 HRLI	1,(POINT 7,)
+	IDPB	2,1			; Output character to destination
+	SETZ	2,.CHNUL		; And a NUL to end it
+	IDPB	2,1
+	RET
+nout9:	return
+
+;+
+;ADRCHK		address validity check (read/write)
+;accepts	T/ pointer to test
+;returns	+1 failure, with error message to controlling terminal
+;		+2 success
+;-
+
+adrchk::TLNN	t,(-1,,0)		;18-bit quantity?
+	 CAIGE	t,.JBDA			;yes, outside JOBDAT area?
+	  JRST	adrch1			;failed, address check
+T20,<	MOVE	t2,0(t)			;try to read
+	ERJMP	adrch1			;failed, address check
+	MOVEM	t2,0(t)			;try to write
+	ERJMP	adrch1			;failed, address check
+>;T20
+	JRST	adrch8			;success, happy +2 return
+adrch1:	BUG(INF,<adrchk refina>,<t>)
+	TRNA				;give up
+adrch8:	 skpret
+adrch9:	return
+
+	END
+..and no more

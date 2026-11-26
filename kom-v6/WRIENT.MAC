@@ -1,0 +1,453 @@
+;Freja::Qs:<Kom.6.Macro>Wrient.Mac.23 870421-2244,Kpj-Jaakkola
+;26	WHERE is a Bottoms-10 UUO, so rename subroutine WHERE to WHORE.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1987-03-09 13:43:18, KPJ @ L89 <1,2>
+;25	Edit #22 had nasty effects, make it work.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1987-03-09 13:12:48, KPJ @ L89 <1,2>
+;24	PRECLI renamed PRSCLI, because PRECLI already used in PRIREC module.
+;Freja::Qs:<Kom.6.Macro>Wrient.Mac.11 870223-1745,KPJ-Jaakkola
+;23	Fixed T20 typo.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1987-02-03 14:21:07, Edit by KPJ @ L89
+;22	Display with receivers in !(RE-)TYPE command.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1986-12-28 05:43:04, Edit by KPJ @ H.HOLE
+;21	When commenting several TEXTs, display author of all the TEXTs, not
+;	just the first.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1986-12-11 19:08:07, Edit by KPJ @ L89
+;20	PUTCH is macro.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1986-07-23 12:04:41, Edit by KPJ @ L89
+;17	Moved forgotten texts to TEXTER.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1986-07-22 10:31:34, Edit by KPJ @ L89
+;16	Moved ENTTAB and OENTAB to ALLTAB module.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1986-07-14 16:30:29, Edit by KPJ @ L89
+;15	Added SED editor (used on T10@OREGON) support.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1986-06-24 12:01:32, Edit by KPJ @ L89
+;14	Moved texts to TEXTER. Added EMACS, EDT and TV editors.
+;Oden::DSKG:WRIENT.MAC<62,7777,MAC> 1986-05-12 14:56:06, Edit by KPJ @ L89
+;13	Security problem eliminated.
+;Oden::DSKD:WRIENT.MAC<62,7777,MAC> 1985-11-01 08:07:09, Edit by KPJ
+;12	Make sure entry type is OPEN.
+;Oden::DSKD:WRIENT.MAC<62,7777,MAC> 1985-10-08 02:22:47, Edit by KPJ
+;11	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:WRIENT.MAC<62,7777,MAC> 1985-10-03 07:23:27, Edit by KPJ
+;10	FILPRO@MONFIL renamed FILPRX@MONFIL. Introduced PROLOG macro.
+;Oden::DSKD:WRIENT.MAC<62,7777,MAC> 1985-08-25 06:03:30, Edit by KPJ
+;7	RLINCW localized.
+;Oden::DSKD:WRIENT.MAC<62,7777,MAC> 1985-06-27 16:02:02, Edit by KPJ @ L89
+;6	Added KERMIT support.
+;Oden::DSKD:WRIENT.MAC<62,7777,MAC> 1985-06-27 08:54:05, Edit by KPJ @ L89
+;5	Use CMDCHR for command character. Sanitized code.
+;Oden::DSKD:WRIENT.MAC[62,7777] 1984-12-12 19:04:10, Edit by KPJ @ L89
+;4	Make PRRELI understand the EDIFLG@CALVID flag, which signals that
+;	'editor mode' is on. If on, use numbers instead of names (used in
+;	the editor calling commands, in KOM temporary files (or TMPCORs).
+;Oden::DSKD:WRIENT.MAC[62,7777] 1984-10-04 17:36:19, Edit by K.JAAKKOLA
+;3	AMIS is now QZ hack. Stub for EMACS installed.
+;Oden::Dskd:Wrient.Mac[62,7777] 1984-09-05 12:17:43, Edit by K.Jaakkola
+;2	Updated (c) notice. Added (USE) EDITOR EMACS to editor commands.
+;Oden::DSKD:WRIENT.NEW[1116,657] 1982-03-02 21:03:44, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(wrient)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-05 12:17:40
+
+;	D A T A   A R E A
+
+
+enttyp::BLOCK	1			;<KPJ.12> entry type
+entflg::0				; inside entry flag
+pwrflg::0				; prompter written flag
+exclmf::0				;<KPJ.5!BDQ> `output-command-character'
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;BEGENT		begin new TEXT
+;		outputs heading first
+;-
+
+begent::save	<obtype##>
+	MOVEI	t,opnofl		;type "OPEN"
+	MOVEM	t,enttyp		;<KPJ.12> make that the object type
+	MOVEM	t,obtype##		;make that the object type
+	CALL	prihed			;output heading
+	CALL	wrient			;write entry
+	return
+
+;+
+;WRIENT		write entry
+;accepts	ENTRY/	start of entry
+;-
+
+wrient::save	<quest##,menuq##,hdmenu##,consum##>
+	SKIPGE	entflg			;inside entry ?
+	 JRST	wrien9			;yes, return immediately
+	SETOM	entflg			;no, get entry
+	CALL	ecbeg##			;start entry
+	CALL	@produc##		;get entry
+	CALL	ecend##			;ready
+	SETZM	entflg			;leave entry
+	CALL	cleacr##		;clear ACR
+wrien9:	return
+
+
+
+
+
+;+
+;PRIHED		output entry heading
+;-
+
+prihed::save	<str,tp>
+	CALL	prrecl			;output receiver list
+	CALL	prknli			;output inco copy list
+	CALL	prscli			;<KPJ.24> output single copy list
+	CALL	prcomm			;output comment line
+	CALL	prsten			;output start of entry
+	return
+
+;+
+;PRRECL		output receiver list
+;accepts	NAMLIS/	receivers
+;-
+
+prrecl:	save	<str,tp>
+	MOVE	tp,namlis##		;get receivers
+	MOVEI	str,zzlrec##		;"Receiver: "
+	CALL	prreli			;output heading
+	return
+
+
+
+
+;+
+;PRKNLI		output "For information" list
+;accepts	KNOLST/	name list
+;-
+
+prknli:	save	<str,tp>
+	MOVE	tp,knolst##		;get list
+	MOVEI	str,zzlkno##		;"For information: "
+	CALL	prreli			;output name list
+	return
+
+
+
+;+
+;PRSCLI		output "Single copy:" list	<KPJ.24>
+;accepts	EXCLIS/	name list
+;-
+
+prscli:	save	<str,tp>		;<KPJ.24>
+	MOVE	tp,exclis##		;get list
+	MOVEI	str,zzlexc##		;"Extra copy: "
+	CALL	prreli			;output name list
+	return
+
+
+
+
+;+
+;PRRELI		output name list
+;accepts	TP/	name list
+;		STR/	heading text
+;-
+
+prreli:	save	<nr,tp>
+prrel0:	CALL	fircom##		;get first name
+	 JRST	prrel9			;end of list
+	MOVE	nr,0(tp)		;get receiver
+	CALL	preol##			;new line
+	MOVEI	ch,cmdchr		;<KPJ.5!BDQ> get command character
+	SKIPE	exclmf			;<KPJ.5!BDQ> need command character?
+	 CALL	putch			;[BDQ] yes
+	CALL	prstr##			;output heading
+	SKIPE	ediflg##		;[KPJ.4] editor mode on?
+	 JRST[	CALL	probnr##	;[KPJ.4] yes, use object number
+		CALL	qnamed##	;[KPJ.4] named object?
+		 JRST	prrel1		;[KPJ.4] no, we're done
+		CALL	putbla##
+		MOVEI	ch,.CHLPR	;<KPJ.5!KPJ.4> a left parenthesis
+		CALL	putch		;<KPJ.5>
+		CALL	prname##	;[KPJ.4] the name
+		MOVEI	ch,.CHRPR	;<KPJ.5!KPJ.4> a closing parenthesis
+		CALL	putch		;<KPJ.5>
+		JRST	prrel1]		;[KPJ.4] back to work
+	CALL	prname##		;print its name
+	MOVE	nr,0(tp)		;<KPJ.21> get object#
+	LDB	t,[POINT 9,nr,8] 	;<KPJ.21> get file#
+	CAIE	t,dir			;<KPJ.21> is it a TEXT?
+	 JRST	prrel1			;<KPJ.21> no
+	PUSH	P,str			;<KPJ.21> save heading
+	print[	ASCIZ ! (!]		;<KPJ.21>			]
+	print	zby##			;<KPJ.21> "by"
+	POP	P,str			;<KPJ.21> restore heading
+	CALL	putbla##		;<KPJ.21> " "
+	CALL	getobj##		;<KPJ.21> yes, get object
+	 JRST	prrel1			;<KPJ.21> not found, forget
+	MOVE	nr,objcre(bfp)		;<KPJ.21> get creator of TEXT
+	CALL	prname##		;<KPJ.21> output its name
+	MOVEI	ch,.CHRPR		;<KPJ.21> closing parenthesis
+	CALL	putch			;<KPJ.21> . . .
+prrel1:	CALL	necoel##		;get next name
+	SKIPL	intflg##		;interrupt ?
+	 JRST	prrel0			;no, output next
+prrel9:	return
+
+
+
+
+
+;+
+;PRCOMM		output "Comment on:" line
+;accepts	COMLIS/	comment numbers
+;-
+
+prcomm:	save	<str,nr,tp,gp1,bfp>
+	SKIPN	tp,comlis##		;get list
+	 JRST	prcom9			;no comments
+	MOVEI	str,zzlcom##		;"Comment on:"
+	CALL	prreli			;output name list
+prcom9:	return
+
+
+
+
+
+;+
+;PRSTEN		output start of entry
+;accepts	ENTRY/	entry
+;-
+
+prsten:	save	<nr>
+	CALL	preol##			;new line
+	SETZ	nr,			;whole entry
+	CALL	outtxt##		;output current entry
+	return
+
+
+
+
+
+
+
+
+;+
+rlincw::comhed	0,noarg##,conwri,cccowr##,zcwrhl## ;Continue (writing)
+;-
+
+
+
+
+
+;+
+;CONWRI		continue writing
+;-
+
+conwri:	save	<nr,tp,quest##,menuq##,hdmenu##,consum##>
+	SKIPGE	wriflg##		;writing an entry ?
+	 JRST[	CALL	whore		;<KPJ.26> say where we are
+		CALL	wrient		;write entry
+		JRST	conwr9]
+
+conwr1:	SKIPN	nr,lastnr##		;any current entry ?
+	 JRST	conwr9			;no
+	CALL	qrirea##		;<KPJ.13> allowed?
+	 JRST[	CALL	preol##		;<KPJ.13> no, start message
+		CALL	sanori##	;<KPJ.13> solly!
+		JRST	conwr9]		;<KPJ.13> refuse
+	MOVEI	tp,arglis##		;get argument list
+	CALL	addlis##		;add to list
+	CALL	mkcom##			;make comment
+conwr9:	return
+
+
+
+
+
+;+
+;WHORE		output the line above		<KPJ.26>
+;accepts	LINPTR/	line pointer
+;-
+
+whore::	save	<str,nr,gp1,consum##,intflg##> ;<KPJ.26>
+	SKIPGE	intflg##		;finished entry?
+	 JRST	whore9			;<KPJ.26> yes, return immediately
+	MOVE	t,produc##		;get producer
+	CAIN	t,filpro##		;file input ?
+	 JRST	whore9			;<KPJ.26> yes, dont say anything
+
+	CALL	tcbeg##			;start terminal output
+	MOVE	gp1,linptr##		;get current line
+	CAIN	gp1,entry##		;at the top ?
+	 JRST[	CALL	preol##		;yes, a new line
+		print	zyabeg##	;	"You are at the top"
+		CALL	preol##		;	new line
+		JRST	whore8]		;<KPJ.26> exit
+	HRRZ	t,0(gp1)		;no, get next line
+	CAIN	t,entry##		;at the bottom ?
+	 JRST[	SKIPGE	pwrflg		;yes, prompter written ?
+		 JRST	whore8		;<KPJ.26> yes, exit quitely
+		CALL	preol##		;	a new line
+		print	zyaend##	;	"You are at the end"
+		JRST	whore7]		;<KPJ.26> say where, and exit
+	CALL	preol##			;no, nicer with CRLF
+	print	zcurli##		;"You are on this line:"
+
+whore7:	CALL	preol##			;<KPJ.26> new line
+	MOVEI	nr,1			;one line to output
+	CALL	outtxt##		;output current line
+whore8:	CALL	tcend##			;<KPJ.26> end terminal output
+whore9:	return				;<KPJ.26>
+
+
+
+
+
+;+
+;PRCURR		output current line
+;accepts	LINPTR/	line
+;-
+
+prcurr::save	<str>
+	MOVE	str,linptr##		;pointer to line
+	CALL	prprst			;output it
+	return
+
+
+
+
+
+;+
+;PRPRST		output prompter and a line
+;accepts	STR/	line
+;-
+
+prprst::save	<str>
+	SETZM	pwrflg			;clear flag
+	CAMN	str,linptr##		;prompter ?
+	 SETOM	pwrflg			;yes, set prompter written flag
+	MOVEI	str,1(str)		;pointer to text part (len and ASCIZ)
+	CALL	colyel##		;yellow colour
+	ADDI	str,1
+	CALL	prstr##			;output the line
+	return
+
+
+
+
+;+
+rlinwr::comhed	0,whoarg,typwho,cctywh##,zwhohl## ;(Re-)type (the text)
+;-
+
+
+
+
+
+;+
+;WHOARG		get numeric argument
+;returns	NUMBER/	number (zero if no number got)
+;-
+
+whoarg::save	<str,nr>
+	SKIPL	hlpflg##		;help wanted?
+	 JRST	whoar1			;no
+	print	zhlnum##		;"Give a number:"
+	SETOM	errfl##
+whoar1:	CALL	getnum##		;get number of lines
+	 SETZ	nr,			;default all
+	MOVEM	nr,number		;save number
+	return
+
+
+
+
+;+
+;TYPWHO		execution part of "(Re-)type (whole text)" command
+;-
+
+typwho:	save	<nr,consum##,entmax##>
+	SKIPL	wriflg##		;writing an entry ?
+	 JRST	typwh3			;no
+	CALL	tcbeg##			;output to terminal, not to entry
+	SKIPN	nr,number##		;limited ?
+	 JRST	typwh1			;no
+	CALL	outtxt##		;output it
+	JRST	typwh2
+
+typwh1:	CALL	prihed			;output text heading
+typwh2:	CALL	tcend##			;end of terminal output
+	JRST	typwh9
+
+typwh3:	SKIPN	nr,lastnr##		;get current entry
+	 JRST	typwh9			;no current entry
+	CALL	delcom##		;delayed command ?
+	 JRST	typwh9			;yes, dont do it
+	MOVE	t,number##
+	MOVEM	t,entmax##		;set limit
+	SOS	entmax##		;decrease limit
+	MOVEI	t,1			;<KPJ.25> with receivers, thank you
+	MOVEM	t,recflg##		;<KPJ.25!KPJ.22>
+	CALL	displa##		;display it
+typwh9:	return
+
+
+
+
+
+;+
+deleen::comhed	0,noarg##,delent,ccdeen##,zdelhl## ;Cancel (it)
+;-
+
+
+
+
+
+;+
+;DELENT		delete written text
+;-
+
+delent:	save	<str,nr>
+	SKIPL	wriflg##		;writing and entry ?
+	 JRST	delen1			;no
+	SETZM	entnr##			;yes, clear entry number
+	print	ztxdel##		;"Text deleted."
+	CALL	leawri			;not writing any more
+	SETOM	intflg##		;interrupt any listing
+	JRST	delen9
+
+delen1:	SKIPN	nr,lastnr##		;get last seen entry
+	 JRST	delen9			;no entry seen
+	CALL	chkorg##		;own entry ?
+	 JRST	delen9			;no, dont delete
+	CALL	qsure##			;ask if sure
+	SKIPGE	errfl##			;sure ?
+	 JRST	delen9			;no
+	MOVEM	nr,number##		;yes, save entry
+	call	erase##			;delete it
+delen9:	return
+
+
+
+
+
+;+
+; LEAWRI  --  leave write status
+;-
+
+leawri::SETZM	wriflg##		;not writing any more
+	SETZM	entflg			;not inside entry any more
+	SETZM	namlis##		;clear receivers
+	SETZM	knolst##		;clear receivers
+	SETZM	exclis##		;clear receivers
+	SETZM	comlis##		;clear comment
+	SETZM	subjec##		;clear subject
+	CALL	zerent##		;clear text
+	CALL	cleacr##		;clear ACR
+	return
+
+	END
+..and no more   

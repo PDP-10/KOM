@@ -1,0 +1,335 @@
+;Oden::DSKG:FILCON.MAC<62,7777,MAC> 1986-12-11 18:27:49, Edit by KPJ @ L89
+;16	PUTCH is a macro.
+;Oden::DSKG:FILCON.MAC<62,7777,MAC> 1986-11-18 16:11:55, Edit by KPJ @ L89
+;15	(REASSIGN) OUTPUT (TO) PRINTER bug made it impossible to output to
+;	any printer.
+;Oden::DSKG:FILCON.MAC<62,7777,MAC> 1986-03-19 02:04:18, Edit by KPJ @ T-ROOM
+;14	Handle FCBEG error return.
+;Oden::DSKD:FILCON.MAC<62,7777,MAC> 1985-10-03 06:49:31, Edit by KPJ
+;13	Introduced PROLOG macro.
+;11:12	(expunged)
+;Oden::DSKD:FILCON.MAC<62,7777,MAC> 1985-08-25 05:53:14, Edit by KPJ
+;10	GTOFIL localized.
+;Oden::DSKD:FILCON.MAC<62,7777,MAC> 1985-06-27 08:26:23, Edit by KPJ @ L89
+;7	Use CMDCHR for command character.
+;Oden::DSKD:FILCON.MAC[62,7777] 1985-01-18 17:41:04, Edit by KPJ @ VENUS
+;6	When calling an editor, and ADMINISTRATOR MODE is on,
+;	we have to save those in the text on Tops-10, since the image is
+;	overwritten with the editor image in memory.
+;Oden::DSKD:FILCON.MAC[62,7777] 1985-01-17 12:25:04, Edit by KPJ @ L89
+;5	Use standard names for parentheses (less trouble with editors).
+;	Brush up code.
+;Oden::DSKD:FILCON.MAC[62,7777] 1985-01-16 00:41:46, Edit by KPJ @ GRAV
+;4	Moved language dependent texts to module TEXTER. Use standard names
+;	for characters.
+;Oden::DSKD:FILCON.MAC[62,7777] 1984-12-12 19:00:16, Edit by KPJ @ L89
+;3	Make OUTFIL reset the EDIFLG@CALVID flag after it has been used by
+;	PRRELI@WRIENT routine.
+;Oden::Dskd:Filcon.Mac[62,7777] 1984-10-02 10:28:40, Edit by K.Jaakkola
+;2	Make OUTFIL also output modes for editors to look at.
+;	EDITXT contains a pointer to the editor modes
+;Oden::Dskd:Filcon.Mac[62,7777] 1984-05-14 17:22:14, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(filcon)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computer Centre, 1984-05-14 17:22:13
+
+;	D A T A   A R E A
+
+flgflg::0			; flag flag
+recobj::Z			; receiver
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;	C O M M A N D   T A B L E S
+
+mkfile::comhed	0,gtofil,makefi,ccmafi##,zsavhl## ;output entry to a file
+reaout::comhed	0,gtofil,reoufi,ccrofi##,zrofhl## ;reassign output
+reoupr::comhed	0,aroupr,reoufi,ccropr##,zrophl## ;Reassign output printer
+arcent::comhed	0,aarcen,carcen,ccaren##,zarchl## ;Print entries
+
+;+
+;GTOFIL		get output file
+;returns	ERRFL/	on if no file was opened
+;-
+
+gtofil:	CALL	geoufi		;get output file
+	SKIPL	errfl##		;error ?
+	 CALL	oofile##	;open output file
+	return
+
+
+;+
+;GEOUFI		get output file
+;returns	OFIOPN/	file
+;-
+
+geoufi::save	<quest##>
+	SETZM	flgflg			;clear flag flag
+	MOVEI	t,askfil##		;ask for file name
+	MOVEM	t,quest##
+	SETOM	errfl##			;set error
+	CALL	read##			;get file name
+	 TRNA				;empty reply
+	  JRST[	SETZM	errfl##		;clear error
+		CALL	gofnam##	;get output file name
+		JRST	.+1]
+	return
+
+;+
+;NOTWRF		say not allowed to write on file
+;-
+
+notwrf::save	<str>
+	CALL	preol##		;new line
+	print	zntwfi##	;"you are not allowed to write on that file."
+	return
+
+;+
+;FILCON		consume a char and put it in the file buffer
+;accepts	CH/	character
+;-
+
+filcon::SKIPGE	flgflg			;flag wanted ?
+	 JRST[	SETZM	flgflg		; yes, clear flag
+		CALL	mkflag		; make flag
+		JRST	.+1]
+	CALL	inclpo##		; increase line position
+	CALL	fput##			; put char in buffer
+	return
+
+;+
+;MKFLAG		make a flag
+;accepts	RECOBJ/	receiver
+;		SELFNR/	sender
+;-
+
+mkflag:	save	<str,ch,nr>
+	MOVEI	ch,.CHFFD		;[KPJ.4] form feed
+	CALL	putch			;makes a new page
+	CALL	pstlin			;print star line
+	CALL	preol##			;empty line
+	print	zaname##		;"Name:"
+	MOVE	nr,recobj		;get receiver
+	CALL	prname##		;print name
+	CALL	preol##			;blank line
+	CALL	pridat			;print date
+	CAMN	nr,selfnr##		;sender same as receiver ?
+	 JRST	mkfla8			;yes
+	CALL	preol##			;blank line
+	print	zasend##		;"Sender:"
+	MOVE	nr,selfnr##		;get sender
+	CALL	prname##		;print name
+	CALL	preol##			;blank line
+	CALL	pstlin			;print star line
+	CALL	preol2##		;many blank lines
+	CALL	preol2##
+	CALL	preol2##
+	CALL	preol2##
+	print	zfrcom##		;"PRINTOUT FROM COM SYSTEM"
+	CALL	preol##			; new line
+	JRST	mkfla9
+
+mkfla8:	CALL	pstlin			;print star line
+mkfla9:	MOVEI	ch,.CHFFD		;[KPJ.4] form feed
+	CALL	putch			;makes a new page
+	return
+
+
+
+;+
+;PSTLIN		print star line
+;-
+
+pstlin:	save	<str>
+	CALL	preol##			;new line
+	print[	ASCIZ !******************************!]
+	print[	ASCIZ !******************************!]
+;		       0        1         2         3
+;		       123456789012345678901234567890
+	branch	preol##			; new line
+
+
+;+
+;PRIDAT		print date
+;-
+
+pridat:	save	<str,gp1>
+	CALL	preol##			;new line
+	CALL	gudate##		;get date
+	print	zdatum##		;"Date: "
+	CALL	ptoday##		;print todays date
+	CALL	preol2##		;empty line
+	print	zatime##		;"Time: "
+	SETOM	secflg##		;get seconds
+	CALL	ptime##			;print time
+	branch	preol##
+
+
+;+
+;MAKEFI		output entry on a file
+;-
+
+makefi:	save	<str>
+	CALL	filout			;output text on file
+	print	ztxsav##		;"Text saved"
+	return
+
+;+
+;FILOUT		output current entry on a file
+;-
+
+filout:	save	<nr,consum##>
+	SKIPGE	wriflg##		;writing ?
+	 JRST[	SETZM	editxt##	;[KPJ.2] yes, but no editor modes
+		CALL	outfil		;[KPJ.2] yes, output the text
+		JRST	filou9]
+	SKIPE	nr,lastnr##		;get current entry
+	 JRST[	CALL	fcbeg##		;found entry, start file output
+T10,<		 JRST	.+1>		;<KPJ.14> failed, exit
+		CALL	displa##	;display it
+		CALL	preol##		;blank line
+		CALL	fcend##		;close file
+		JRST	.+1]
+	MOVE	t,oldnex##		;keep next entry flag
+	MOVEM	t,nexflg##
+filou9:	return
+
+
+;+
+;OUTFIL		output the text of the entry on a file
+;accepts	EDITXT/	pointer to ASCIZ to output as editor mode text
+;			= 0: no editor modes
+;-
+
+outfil::save	<consum##,exclmf##>
+	CALL	fcbeg##			;start file output
+T10,<	 JRST	outfi9>			;<KPJ.14> failed, exit
+	SETOM	exclmf##		;[BDQ] print exclamation marks
+	SKIPE	editxt##		;[KPJ.2] any editor modes wanted?
+	 JRST[	MOVEI	ch,cmdchr	;<KPJ.7!KPJ.2> get command character
+		CALL	putch		;[KPJ.2] output it
+		MOVEI	ch,.CHLPR	;[KPJ.2,5] left parenthesis
+		CALL	putch		;[KPJ.2] output it
+		MOVE	str,editxt##	;[KPJ.2] get editor modes to use
+		CALL	prstr##		;[KPJ.2] output them
+		MOVEI	ch,.CHRPR	;[KPJ.2,5] end of ignored text
+		CALL	putch		;[KPJ.2] output it
+		CALL	chkadm##	;[KPJ.6] administrator mode on?
+		 TRNA			;[KPJ.6] no
+		  CALL[	CALL	preol##		;[KPJ.6] yes, end of line
+			MOVEI	ch,cmdchr 	;<KPJ.7!KPJ.6> command char
+			CALL	putch		;[KPJ.6] output it
+			MOVEI	str,zzuadm##	;[KPJ.6] "use administrator"
+			CALLRET	prstr##]	;[KPJ.6] output it
+		JRST	.+1]		;[KPJ.2]
+	CALL	prihed##		;print out the text
+	SETZM	ediflg##		;[KPJ.3] restore editor mode
+	CALL	fcend##			;close file
+outfi9:	return				;<KPJ.14>
+
+;+
+;REOUFI		reassign output to file
+;-
+
+reoufi:	save	<consum##,quest##>
+	CALL	fcbeg##			;start file output
+T10,<	 JRST	reouf9>			;failed, exit
+	MOVEI	t,prmenu##		;command prompter
+	MOVEM	t,quest##
+	MOVEI	t,zmenu##		;menu question
+	MOVEM	t,menuq##
+	CALL	topcom##		;do top level command
+	CALL	fcend##			;file output ready
+reouf9:	return				;<KPJ.14>
+
+;+
+;AROUPR		argument to REASSIGN OUTPUT (TO) PRINTER
+;returns	OFIOPN/	wanted file
+;-
+
+aroupr:	save	<gp1,bfp,nr>
+	CALL	priarg			;get printer
+	SKIPGE	errfl##			;error ?
+	 JRST	aroup9			;yes
+	MOVE	nr,locpri##		;get printer
+	CALL	updbeg##		;start update
+	CALL	actact##		;activate printer
+	CALL	updend##		;end of update
+	CALL	getobj##		;get it
+	 $Skipa				;error
+	  CAIE	gp1,mee			;printer ?
+	   JRST	aroup8			;no, error
+	MOVE	nr,recfil(bfp)		;get output file
+	CALL	unpfil##		;unpack file name
+	SKIPL	errfl##			;error ?
+	 JRST[	MOVE	t,crenr##	;no, set receiver
+		MOVEM	t,recobj
+		SETOM	flgflg		;flag wanted
+		JRST	.+1]
+	$Skipa
+aroup8:	 SETOM	errfl##			;set error
+aroup9:	return
+
+
+
+
+
+;+
+;PRIARG		get local printer
+;returns	LOCPRI/	printer
+;-
+
+priarg::save	<quest##,namfun##,number##>
+	MOVEI	t,askpri		;ask for printer
+	MOVEM	t,quest##
+	MOVEI	t,joinam##		;get printer name
+	MOVEM	t,namfun##
+	CALL	gtobnr##		;get printer
+	MOVE	t,number##		;get it
+	MOVEM	t,locpri##
+	return
+
+
+;+
+;ASKPRI		ask for a local printer
+;-
+
+askpri:	save	<str,obtype##>
+	CALL	preol2##		;blank line
+	print	zaspri##		;"List where?"
+	MOVEI	t,priofl		;get printers
+	MOVEM	t,obtype##
+	CALL	prmeli##		;print printer list
+	return
+
+;+
+;AARCEN		argument to ARCHIVE command
+;-
+
+aarcen:	CALL	revarg##		;review argument
+	SKIPGE	errfl##			;error ?
+	 JRST	aarce9
+	SETOM	seqflg##		;always in sequence
+	CALL	aroupr			;get printer
+aarce9:	return
+
+
+;+
+;CARCEN		archive entries
+;-
+
+carcen:	save	<consum##>
+	CALL	fcbeg##			;start file output
+T10,<	 JRST	carce9>			;<KPJ.14> failed, exit
+	CALL	nexrev##		;get entries
+	CALL	fcend##			;file output ready
+carce9:	return				;<KPJ.14>
+
+	END
+..and no more  

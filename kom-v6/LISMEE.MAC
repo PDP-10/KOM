@@ -1,0 +1,463 @@
+;Oden::DSKG:LISMEE.MAC<62,7777,MAC> 1987-05-13 16:30:03, KPJ @ L89 <10,50>
+;20	Handle GTTYTA error code.
+;Oden::DSKG:LISMEE.MAC<62,7777,MAC> 1987-03-27 14:25:27, KPJ @ L89 <1,2>
+;17	Add LIST ORGANIZERS
+;Oden::DSKG:LISMEE.MAC<62,7777,MAC> 1986-12-11 18:30:13, Edit by KPJ @ L89
+;16	PUTCH is a macro.
+;Oden::DSKG:LISMEE.MAC<62,7777,MAC> 1986-12-11 13:18:21, Edit by KPJ @ L89
+;15	Fixed bug in LIST CONFERENCES.
+;Oden::DSKG:LISMEE.MAC<62,7777,MAC> 1986-06-03 15:40:49, Edit by KPJ @ L89
+;14	Moved texts to TEXTER:	ZLMEHL,ZHDLAC,ZHDENT,ZHDMEM,ZSTMEM
+;Oden::DSKG:LISMEE.MAC<62,7777,MAC> 1986-03-05 17:17:45, Edit by KPJ @ L89
+;13	SUBJECT type conferences under FTSUBJ conditional.
+;Oden::DSKD:LISMEE.MAC<62,7777,MAC> 1985-10-04 19:04:29, Edit by KPJ
+;12	Introduced PROLOG macro.
+;Oden::DSKD:LISMEE.MAC<62,7777,MAC> 1985-09-05 07:50:36, Edit by KPJ
+;11	Display "O" for organizer and "*" for member, and handle overlapping
+;	cases.
+;Oden::DSKD:LISMEE.MAC<62,7777,MAC> 1985-06-12 14:46:56, Edit by KPJ @ L89
+;10	LISTME changed since SORACT changed to return error when cannot create
+;	sorting area.
+;Oden::DSKD:LISMEE.MAC<62,7777,MAC> 1985-05-02 14:07:11, Edit by KPJ @ L89
+;7	Changed administrator test to organizer.
+;Oden::DSKD:LISMEE.MAC<62,7777,MAC> 1985-04-11 13:40:09, Edit by KPJ @ L89
+;6	Save member list pointer in PRNATY, since QISMBR destroys it.
+;Oden::DSKD:LISMEE.MAC<62,7777,MAC> 1985-04-10 17:34:22, Edit by KPJ @ L89
+;5	Handle protected names in LIST CONFERENCES
+;Oden::DSKD:LISMEE.MAC[62,7777] 1984-12-11 00:20:10, Edit by KPJ @ NADJA
+;4	Save and restore left margin settings.
+;Oden::DSKD:LISMEE.MAC[62,7777] 1984-12-05 05:34:37, Edit by KPJ @ NADJA
+;3	Make LMARG do its work. Get rid of calls to SETLMA.
+;	Make standard crash error messages.
+;Oden::Dskd:Lismee.Mac[62,7777] 1984-09-14 10:24:34, Edit by K.Jaakkola
+;2	Moved PAGDEL under T10-conditional, since memory management is not
+;	necesary under Twenex.
+;Oden::Dskd:Lismee.Mac[62,7777] 1984-08-31 06:35:33, Edit by K.Jaakkola
+;1	Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(lismee)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-31 06:35:30
+
+;	D A T A   A R E A
+
+
+IFN	ftsubj,<			;<KPJ.13>
+subflg::0				;list subject flag
+>;ftsubj
+sument:	0				;sum of entries
+summem:	0				;sum of members
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+
+;+
+lismee::comhed	qlisme,alisme,listme,cclime##,zlmehl##	;List conferences
+lisorg::comhed	0,joiarg##,listor,cclime##,zlorhl##	;List organizers
+;-
+
+
+
+
+;+
+;QLISME		check if to include LIST CONFERENCES command
+;-
+
+qlisme:	SKIPN	nrred##			;anything read yet ?
+	 skpret				;yes, skip command
+	return
+
+
+
+
+;+
+;ALISME		argument to LIST CONFERENCE command
+;returns	+1 always
+;		ERRFL/	-1 invalid reply
+;			-2 no reply
+;			 0 OK, with
+;		OBTYPE/	wanted conference type
+;-
+
+alisme:	save	<nr,tp,menuq##>
+	MOVEI	t,meeofl		;get all conferences
+	MOVEM	t,obtype##
+	SKIPL	hlpflg##		;help wanted ?
+	 JRST	alism1
+	MOVEI	t,zastyp##		;yes, ask for type
+	MOVEM	t,menuq##
+	JRST	alism2
+
+alism1:	CALL	getlet##		;any argument ?
+	 JRST	alism9			;no ready
+alism2:	MOVE	tp,otytab##		;get all conference types
+	CALL	gttyta##		;get wanted type
+	SKIPL	t,errfl##		;<KPJ.20> any error?
+	 JRST	alism8			;<KPJ.20> no
+	CAMN	t,[-2]			;<KPJ.20> no answer?
+	 JRST	alism9			;<KPJ.20> none
+	CAMN	t,[-3]			;<KPJ.20> ambiguous?
+	 JRST[	CALL	ambcom##	;<KPJ.20> yes, say so
+		JRST	alism9]		;<KPJ.20>
+	MOVEI	str,zflaar##		;<KPJ.20> "no such keyword"
+	CALL	errcom##		;<KPJ.20>
+	$Skipa				;<KPJ.20>
+alism8:	 MOVEM	nr,obtype##		;<KPJ.20> none, save conference type
+alism9:	return
+
+
+
+
+
+;+
+;LISTOR		list all organizers
+;-
+
+listor:	save	<nr,bfp,gp1,gp2>
+IFN	ftsubj,<
+	SETZM	subflg			;clear subject flag
+	MOVE	t,obtype##		;get conference type
+	Txne	t,subofl		;subject?
+	 SETOM	subflg			;no, give short printout
+>;ftsubj
+	CALL	preol##			;new line
+	print	zzorga##		;output heading
+	CALL	preol##			;end of line
+	MOVEI	gp1,mee			;get conference file
+	CALL	soract##		;sort active file
+	 JRST[	print	zzlisz##	;"no more core"
+		JRST	listo9]
+	JUMPE	gp2,[			;empty file?
+		print	zzlizm##	;"no conferences"
+		JRST	listo8]
+listo1:	SKIPGE	intflg##		;interrupt ?
+	 JRST	listo8			;sure
+	MOVE	nr,1(gp2)		;get most active conference
+	MOVEI	gp1,num			;get number file
+	CALL	find##			;get type
+	 JRST	listo9			;no conference got
+	SETCM	t,numtyp(bfp)		;get conference type
+	TDNN	t,obtype##		;wanted conference ?
+	 CALL	prorin			;output organizer information
+listo2:	SKIPE	gp2,2(gp2)		;get next conference
+	 JRST	listo1			;conference got
+listo8:	CALL	preol##
+T10,<	MOVEI	gp1,sorasz##		;[KPJ.2] Tops-10 only
+	MOVEI	gp2,sorare##/1K
+	CALL	pagdel##		;[SEE] delete sorting area
+>;T10
+listo9:	return
+
+
+
+
+;+
+;LISTME		list all conferences
+;-
+
+listme:	save	<nr,bfp,gp1,gp2>
+IFN	ftsubj,<			;<KPJ.13>
+	SETZM	subflg			;clear subject flag
+	MOVE	t,obtype##		;get conference type
+	Txne	t,subofl		;subject?
+	 SETOM	subflg			;no, give short printout
+>;ftsubj
+	CALL	limehe			;print heading
+	MOVEI	gp1,mee			;get conference file
+	CALL	soract##		;sort active file
+	 JRST[	print	zzlisz##	;<KPJ.10> "no more core"
+		JRST	listm9]		;<KPJ.10>
+	JUMPE	gp2,[			;<KPJ.15> empty file?
+		print	zzlizm##	;<KPJ.15> "no conferences"
+		JRST	listm8]		;<KPJ.15>
+listm1:	SKIPGE	intflg##		;<KPJ.10> interrupt ?
+	 JRST	listm8			;<KPJ.10> sure
+	MOVE	nr,1(gp2)		;get most active conference
+	MOVEI	gp1,num			;get number file
+	CALL	find##			;get type
+	 JRST	listm9			;no conference got
+;	SKIPN	0(bfp)			;<KPJ.15> conference deleted ?
+;	 JRST	listm2			;yes, skip it
+	SETCM	t,numtyp(bfp)		;get conference type
+	TDNN	t,obtype##		;wanted conference ?
+	 CALL	prmein			;print conference info
+listm2:	SKIPE	gp2,2(gp2)		;get next conference
+	 JRST	listm1			;conference got
+listm8:	CALL	prmesu			;print conference sum
+T10,<	MOVEI	gp1,sorasz##		;[KPJ.2] Tops-10 only
+	MOVEI	gp2,sorare##/1K
+	CALL	pagdel##		;[SEE] delete sorting area
+>;T10
+listm9:	return
+
+
+
+
+
+;+
+;LIMEHE		output heading for LIST CONFERENCES command
+;-
+
+limehe:	save	<str>
+	SETZM	sum##			;clear sum of conferences
+	SETZM	sument			;clear sum of entries
+	SETZM	summem			;clear sum of members
+	CALL	preol##			;blank line
+IFN	ftsubj,<			;<KPJ.13>
+	SKIPGE	subflg			;subject ?
+	 JRST	limeh1			;yes
+>;ftsubj
+	print	zstmem##		;"(* marx conf.s UR not member of)"
+	CALL	preol##			;new line
+IFN	ftsubj,<			;<KPJ.13>
+limeh1:>
+	print	zhdlac##		;"Last active: "
+	print	zhdent##		;"Entr"
+IFN	ftsubj,<			;<KPJ.13>
+	SKIPGE	subflg			;subject ?
+	 JRST	limeh2			;yes
+>;ftsubj
+	print	zhdmem##		;"Memb"
+	print[	ASCIZ !* !]
+IFN	ftsubj,<			;<KPJ.13>
+limeh2:>
+	print	ziname##		;name
+IFN	ftsubj,<			;<KPJ.13>
+	SKIPGE	subflg			;subject ?
+	 JRST	limeh9			;yes
+>;ftsubj
+	print	zhdtyp##		;" (Type)"
+limeh9:	branch	preol2##		;blank line
+
+
+
+
+
+;+
+;PRORIN		output organizer information
+;accepts	NR/	conference number
+;-
+
+prorin:	save	<nr,gp2>
+	MOVEI	gp1,mee			;conference file
+	CALL	find##			;get conference
+	 Bug(hlt,<prorin lismee>,<nr>)
+	MOVE	gp2,bfp			;copy conference pointer
+	SKIPN	nr,0(bfp)		;existing conference ?
+	 JRST	prori9			;no, get next
+	MOVEI	t,.PRIOUT		;output conference#
+	MOVE	t2,nr			;get conference#
+KL10,<	DMOVE	t3,[EXP FLD(^D10,NO%RDX)!NO%LFL!FLD(8,NO%COL),0]>
+KL10N,<	MOVE	t3,[FLD(^D10,NO%RDX)!NO%LFL!FLD(8,NO%COL)]
+	SETZ	t4,			;. . .
+>;KL10N
+	DPB	t4,[POINT 9,t2,8]	;. . .
+	CALL	.nout##			;output it
+	 CALL	prstr##			;failed
+	print[	ASCIZ !  !]
+	PUSH	P,objcre(bfp)		;save organizer
+	CALL	prinam##		;output conference name
+	MOVEI	t,^D40			;"tab step" of 40
+	MOVEM	t,tabste##		;. . .
+ 	PUSH	P,lmarg			;save old lmarg
+	MOVE	t,linpos##		;test if space for more text
+	MOVEM	t,lmarg			;. . .
+	CAML	t,tabste##		;. . .
+	 CALL	preol##			;no, make space
+	CALL	prtab##			;go there
+	POP	P,lmarg			;[KPJ.4] restore lmarg
+	MOVE	nr,0(P)			;get organizer
+	CALL	prinam##		;output name
+	print[	BYTE (7).CHSPC, .CHLPR,.CHNUL]	;left parenthesis
+	MOVEI	t,.PRIOUT		;to primary output (where else ;-)
+	POP	P,t2			;get conference#
+KL10,<	DMOVE	t3,[EXP FLD(^D10,NO%RDX),0]>
+KL10N,<	MOVE	t3,[FLD(^D10,NO%RDX)]
+	SETZ	t4,			;. . .
+>;KL10N
+	DPB	t4,[POINT 9,t2,8]	;. . .
+	CALL	.nout##			;output it
+	 CALL	prstr##			;failed
+	print[	BYTE (7) .CHRPR,.CHNUL]
+prori8:	CALL	preol##			;end of message
+prori9:	return
+
+
+
+
+;+
+;PRMEIN		output conference information
+;accepts	NR/	conference number
+;-
+
+prmein:	save	<nr,gp1,bfp,gp2>
+	MOVEI	gp1,mee			;conference file
+	CALL	find##			;get conference
+	 Bug(hlt,<prmein-1 lismee>,<nr>)
+	MOVE	gp2,bfp			;[TEQ] copy pointer to conference
+	SKIPN	0(bfp)			;<KPJ.15!TEQ> existing conference ?
+	 JRST	prmei9			;no, get next
+	MOVEI	gp1,num			;get number file
+	CALL	find##			;get conference
+	 Bug(hlt,<prmein-2 lismee>,<nr>)
+	MOVM	nr,0(gp2)		;<KPJ.15> get conference number
+	CALL	pracen			;print active and entries
+	MOVE	gp1,cursta##		;[BCQ] get the current status
+	CAIN	gp1,sa			;[BCQ] air force prompter?
+	 CALL[	SKIPN	gp1,meedeb(gp2)	;[BCQ] get the PPN
+		 RET			;no PPN
+		CALL	putbla##	;one blank
+T10,<		CALL	prippn## >	;output PPN
+T20,<		CALL	priusr## >	;print user name
+		RET]
+IFN	ftsubj,<			;<KPJ.13>
+	SKIPGE	subflg
+	 JRST	prmei3			;dont print members if subject
+>;ftsubj
+	CALL	prnrmb			;print number of members
+IFN	ftsubj,<			;<KPJ.13>
+prmei3:>
+	print[	ASCIZ !   !]		;<KPJ.11> three spaces
+IFN	ftsubj,<			;<KPJ.13>
+	SKIPL	subflg			;short ?
+>;ftsubj
+	 CALL	prifme			;print if member
+ 	PUSH	P,lmarg			;[KPJ.4] save old lmarg
+	MOVE	t,linpos##		;[KPJ.3] tabstop...
+	MOVEM	t,lmarg			;[KPJ.3] ...for long lines
+	CALL	prnaty			;print name and type
+	POP	P,lmarg			;[KPJ.4] restore lmarg
+	CALL	preol##			;new line
+	AOS	sum##			;one more conference
+prmei9:	return
+
+
+
+
+
+;+
+;PRIFME		output if member
+;accepts	NR/	conference number
+;-
+
+prifme:	save	<str,gp2>
+	CALL	qismbr##		;member ?
+	 SKIPA	ch,[.CHSPC]		;<KPJ.11> yes, space
+	  MOVEI	ch,"*"			;<KPJ.11> no, star
+	CALL	putch			;<KPJ.11> output it
+	CALL	chkorg##		;organizer ?
+	 SKIPA	ch,[.CHSPC]		;<KPJ.11> no, space
+	  MOVEI	ch,"O"			;<KPJ.11> yes, organizer
+	CALL	putch			;<KPJ.11> output it
+	CALL	putbla##		;<KPJ.16> space
+	return
+
+
+
+
+
+;+
+; PRACEN  --  print last active time and number of entries
+; gets number record in BFP
+;-
+
+pracen:	save	<nr,gp1>
+	MOVE	gp1,numtim(bfp)	; get last active time
+	call	pdatum##	; print date
+	MOVE	nr,numnum(bfp)	; get number of entries
+	call	prnum6##	; print it
+	addm	nr,sument	; increase sum of entries
+	return
+
+
+
+
+
+;+
+;PRNRMB		output number of members
+;accepts	NR/	object
+;-
+
+prnrmb:	save	<bfp,gp1,nr>
+	CALL	getobj##		;get conference
+	 Bug(hlt,<prnrmb lismee>,<nr>)
+	MOVE	nr,meemem(bfp)		;get number of members
+	CALL	prnum6##		;output it
+	ADDM	nr,summem		;increase sum of members
+	return
+
+
+
+
+
+;+
+;PRNATY		output name and type
+;accepts	NR/	object
+;-
+
+prnaty::save	<bfp,gp1,str,lmarg##,obtype##>
+	CALL	getobj##		;get object
+	 Bug(hlt,<prnaty lismee>,<nr>)
+	CALL	setoty##		;set object type
+	CALL	chkorg##		;<KPJ.7> organizer?
+	 TRNA				;<KPJ.5> no
+	  JRST	prnat1			;<KPJ.5> yes, skip this nonsense
+	PUSH	P,gp2			;<KPJ.6> save member list pointer
+	CALL	qismbr##		;<KPJ.5> member?
+	 JRST[	POP	P,gp2		;<KPJ.6> restore member list pointer
+		JRST	prnat1]		;<KPJ.5> not protected ever
+	POP	P,gp2			;<KPJ.6> restore member list pointer
+	CALL	chprot##		;<KPJ.5> protected?
+	 TRNA				;<KPJ.5> yes, skip name
+prnat1:	  CALL	prinam##		;output name
+IFN	ftsubj,<			;<KPJ.13>
+	SKIPGE	subflg			;short form ?
+	 JRST	prnat9
+>;ftsubj
+	CALL	putbla##		;space
+	MOVEI	ch,.CHLPR		;parenthesis
+	CALL	putch
+	CALL	prtype##		;output object type
+	MOVEI	ch,.CHRPR
+	CALL	putch
+prnat9:	return
+
+
+
+
+
+;+
+; PRMESU  --  print conference sum
+;-
+
+prmesu:	save	<nr,str>
+	SETZM	intflg##		;clear interrupt
+	CALL	preol##			;blank line
+	print	zsum##			;say sum
+	print[	ASCIZ !   !]		;three spaces
+	MOVE	nr,sument		;get sum of entries
+	CALL	prnum6##		;print it
+IFN	ftsubj,<			;<KPJ.13>
+	SKIPGE	subflg			;subject ?
+	 JRST	prmes1
+>;ftsubj
+	MOVE	nr,summem		;get sum of members
+	CALL	prnum6##		;print it
+IFN	ftsubj,<			;<KPJ.13>
+prmes1:>
+	print[	ASCIZ !   !]		;three spaces
+	MOVE	nr,sum##		;get sum of conferences
+	call	prnum6##	; print it
+	return
+
+
+
+
+
+
+	END
+..and no more

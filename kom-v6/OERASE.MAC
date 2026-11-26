@@ -1,0 +1,315 @@
+;Oden::DSKG:OERASE.MAC<62,7777,MAC> 1986-12-11 18:46:37, Edit by KPJ @ L89
+;11	PUTCH is macro.
+;Oden::DSKG:OERASE.MAC<62,7777,MAC> 1986-06-25 07:28:10, Edit by KPJ @ 1SKEDE
+;10	Make DICE routine skip unnecessary rolls, when it is apparent he lost.
+;Oden::DSKG:OERASE.MAC<62,7777,MAC> 1986-04-25 11:52:33, Edit by KPJ @ L89
+;7	Get rid of OPDEFed funny macros. Use standard character names.
+;Oden::DSKD:OERASE.MAC<62,7777,MAC> 1985-10-04 22:23:42, Edit by KPJ @ ORANGE
+;6	Introduced PROLOG macro.
+;Oden::DSKD:OERASE.MAC<62,7777,MAC> 1985-09-04 14:20:39, Edit by KPJ
+;5	Make QYESNO calling routines barf on anything except YES and NO.
+;Oden::DSKD:OERASE.MAC[62,7777] 1984-12-12 20:54:44, Edit by KPJ @ L89
+;4	Split up QSURE in two routines, QSURE and QYESNO. QYESNO just
+;	asks the question, gets an answer and returns.
+;Oden::DSKD:OERASE.MAC[62,7777] 1984-12-11 03:36:57, Edit by KPJ @ NADJA
+;3	Make up people's minds by rolling a die when needed.
+;	Rewrote it for MAYBE, and made it runnable on TOPS-20 too.
+;Oden::Dskd:Oerase.Mac[62,7777] 1984-09-04 05:01:00, Edit by K.Jaakkola
+;2	Updated (c) notice
+;Oden::Dsk:Oerase.New[1116,134] 1982-03-02 21:29:43, Edit by Lars Enderin
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(oerase)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 05:00:44
+
+;	D A T A   A R E A
+
+diced:	0			;never say die...
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+oerase::comhed	0,eraarg,erase,cceras##,zerahl## ;Erase (object)
+;-
+
+
+
+
+
+;+
+; ERAARG  --  argument to erase
+;-
+
+eraarg:	save	<quest##>
+	setmem	quest##,askera	; ask for object to erase
+	CALL	gtobnr##	; get object
+	ifon	errfl##,eraar9	; error ?
+	CALL	qerase		; right to erase ?
+eraar9:	return
+
+
+
+
+
+;+
+; ASKERA  --  ask for object to erase
+;-
+
+askera:	save	<str>
+	ifoff	hlpflg##,asker1		;help wanted ?
+	print	zhlera##		;"Gimme an object, like."
+asker1:	CALL	preol2##		;blank line
+	print	zasera##		;"Kill who or what?"
+	CALL	preol##			;new line
+	branch	prher##			;print herald
+
+
+
+
+;+
+; QERASE  --  check if you have right to erase object
+; gets number of object in NUMBER
+; returns ERRFL on if not right
+;-
+
+qerase:	save	<nr>
+	MOVE	nr,number##	; get object
+	CALL	chkorg##	; own object ?
+	 JRST	qeras8		; no, not right
+	CALL	qsure		; ask if sure
+	JRST	qeras9
+
+qeras8:	CALL	saynot##	; say not right
+qeras9:	return
+
+
+
+
+
+;+
+; QSURE  --  ask if you are sure
+; returns ERRFL on if not sure
+;-
+
+qsure::	save	<menuq##,nr>
+	MOVEI	t,zsure##		;"Are you sure?"
+	MOVEM	t,menuq##
+	CALL	qyesno			;[KPJ.4] ask yes-no question
+	SKIPE	errfl##			;<KPJ.5> something undecodable?
+	 JRST[	print	zunsur##	;<KPJ.5> "I don't understand you."
+		JRST	.+2]		;<KPJ.5> take "NO" return
+	CAIG	nr,0			;[KPJ.4] was it "yes"?
+	 SETOM	errfl##			;[KPJ.4] no, no
+	return
+
+;+
+;QYESNO		routine for yes-no answer	[KPJ.4]
+;accepts	MENUQ/	menu question string pointer
+;returns	ERRFL/	<0, invalid answer
+;			>0, empty reply
+;			=0, one of the following:
+;		NR/	>0	yes
+;			<0	no
+;			=0	maybe
+;-
+
+qyesno::save	<tp>
+	MOVE	tp,notab		; get yes-no tab
+	CALL	gttyta##		; get answer
+	SKIPGE	t,errfl##		;[KPJ.3] problems?
+	 JRST[	CAMN	t,[-2]		;<KPJ.7> no answer?
+		 MOVMM	t,errfl##	;<KPJ.7> yes, mark empty reply
+		JRST	qyesn9]		;[KPJ.3] no, invalid reply
+	JUMPG	nr,qyesn9		;        "yes" answer ?
+	JUMPL	nr,qyesn9		;[KPJ.3] "no" answer?
+	CALL	dice			;[KPJ.3] "maybe"... OK, roll a die
+	 JRST[	print	zyes##		;[KPJ.3] OK, you ARE sure
+		MOVEI	nr,1		;[KPJ.3] make it YES
+		JRST	qyesn9]		;[KPJ.3] won, "yes"
+	print	zno##			;[KPJ.3] lost, "no"
+	$Movx	nr,-1			;[KPJ.3] make it NO
+qyesn9:	return
+
+
+
+
+
+;+
+;NOTAB		no-yes table
+
+notab::	table	sn,[EXP 0,+1],zyes##
+	table	sn,[EXP 0,-1],zno##
+	table	sn,[EXP 0,0],zperha##
+IFE	ftlan-.eng,<
+	table	sn,[EXP 0,0],zmaybe##
+>;ftlan=English
+	endtab
+
+
+
+
+;+
+; ERASE  --  erase an object
+; gets number of object in NUMBER
+;-
+
+erase::	save	<nr,str>
+	MOVE	nr,number##		;get object
+	CALL	chkdir##		;entry ?
+	 CALL	prname##		;no, print name
+	print[	ASCIZ ! (!]	;]
+	CALL	probnr##		;print number of object
+	MOVEI	ch,.CHRPR
+	CALL	putch
+	CALL	updbeg##		;start update
+	CALL	delobj##		;delete object
+	CALL	updend##		;end of update
+	print	zisera##		;" is now eliminated."
+	CALL	preol##			;new line
+	CAME	nr,selfnr##		;erasing self ?
+	 JRST	erase9			;no
+	SETZM	selfnr##		;clear self
+	JRST	endkom##		;leave
+
+erase9:	return
+
+
+
+
+
+;+
+recrea::comhed	0,rcrarg,recre,ccrecr##,zrcrhl## ;Recreate (object)
+;-
+
+
+
+
+;+
+; RCRARG  --  argument to recreate
+; returns number of object in NUMBER
+;-
+
+rcrarg:	save	<quest##>
+	setmem	quest##,askrcr	; ask for object to recreate
+	CALL	gtobnr##	; get object number
+	CALL	qrecre		; right to recreate
+	return
+
+
+
+
+
+;+
+; ASKRCR  --  ask for object to recreate
+;-
+
+askrcr:	save	<str>
+	SKIPGE	hlpflg##		;help wanted ?
+	 JRST[	print	zhlrcr##	;"Give object number"
+		JRST	.+1]
+	CALL	preol2##		;blank line
+	print	zasrcr##		;"Recreate who or what?"
+	branch	prher##			;print herald
+
+
+
+
+
+
+;+
+; QRECRE  --  check if you have the right to recreate the object
+; gets object number in NUMBER
+; returns ERRFL on if not right
+;-
+
+qrecre:	save	<nr>
+	MOVE	nr,number##	; get object
+	CALL	chkdir##	; entry
+	 JRST	qrecr9		; no, everybody has the right
+	CALL	chkorg##	; own entry ?
+	 CALL	saynot##	; no, not right
+qrecr9:	return
+
+
+
+
+
+;+
+; RECRE  --  recreate an object
+; gets number of object in NUMBER
+;-
+
+recre:	save	<nr,str,gp1>
+	MOVE	nr,number##		;get object number
+	CALL	updbeg##		;start update
+	CALL	rcrobj##		;recreate object
+	CALL	updend##		;end of update
+	CALL	prname##		;print	name
+	print	zisrcr##		;" is back again."
+	return
+
+
+;DICE		make up somebody's mind, by rolling dice
+;		(Extracted this from ODEN::DSKD:JOINMT.MAC<10,6104,KOM>,
+;		written by B.Carlsson during a dark night in 1984 for AMIS.)
+;returns	+1 won
+;		+2 lost
+
+dice::	save	<1,2,gp1,gp2,nr,ch,str>
+	CALL	preol##			;get a new line
+	CALL	preol##			;...and one more
+	SETZM	diced			;clear old junk
+	print	zterif##		;"OK, let's let the die decide..."
+	CALL	preol##			;more lines
+	MOVEI	gp2,3			;three times...
+tloop:	print	zdice##			;"The die is rolling..."
+	CALL	toutpu##
+	MOVEI	gp1,3			;three times
+dloop:
+T10,<	MOVEI	t,1			;sleep for one sec
+	SLEEP	t,			;yeah, that's nice
+>;T10
+T20,<	MOVEI	t,^D1000		;sleep for one sec
+	DISMS%				;yeah, that's nice
+>;T20
+	MOVEI	ch,.CHBSP		;output a backspace
+	CALL	tput##
+	MOVEI	ch,.CHSPC		;space
+	CALL	tput##
+	MOVEI	ch,.CHBSP		;back again
+	CALL	tput##
+	CALL	toutpu##
+	SOJG	gp1,dloop		;back again
+T10,<	MSTIME	1,>		;get time in ms
+T20,<	TIME%>			;get time in ms
+T10,<	TIMER	2,>		;and in jiffies
+T20,<	PUSH	P,1		;save away some stuff
+	GTAD%			;get time
+	MOVE	2,1		;shuffle
+	POP	P,1		;restore some stuff
+>;T20
+	XOR	1,2		;twiddle some bits
+	TLZ	1,400000	;make sure it's positive
+	IDIVI	1,6		;make it a number in range 1-6.
+	ADDI	2,1		;...
+	MOVE	nr,2			;get the number
+	ADDM	nr,diced		;save the value
+	print	zdiced##		;", and is is "
+	CALL	prnum##			;print the number
+	CALL	preol##			;and get a new line
+	CALL	toutpu##
+	MOVE	t,diced			;<KPJ.10> get situation so far...
+	CAIG	t,9			;<KPJ.10> he lost?
+	 SOJG	gp2,tloop		;yeah, I LIKE this, back again
+	MOVE	nr,diced		;get the value computed
+	CAILE	nr,9			;he win?
+	 skpret				;no! YEAH! HiiiHihiHahaHehe
+	return				;from this "routine"..
+	
+	END
+...quoth the Raven: "nothing more"

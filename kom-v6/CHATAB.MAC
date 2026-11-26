@@ -1,0 +1,410 @@
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1987-05-13 14:43:24, KPJ @ L89 <1,2>
+;42	Correct error message for sub-menu questions.
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1987-05-06 19:33:02, KPJ @ H.HOLE <10,50>
+;41	Move CHATAB to ALLTAB and rename it to TJATAB.  Make CHATAB a dummy.
+;	Globalize NORMOD, PTYMOD, ADMMOD, ZETON, ZETOFF and PRMOBJ.
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1987-04-16 14:02:05, KPJ @ L89 <62,50>
+;40	Added NAME CACHE personal flag.  Make NETWORK BUG FLAG not be QZ
+;	specific any more.
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1987-02-03 14:24:06, Edit by KPJ @ L89
+;37	Incorrect code made personal flags get stuffed.
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1987-01-13 15:28:28, Edit by KPJ @ L89
+;36     Disallow USE ADMINISTRATOR (MODE) on remote lines if FTREMO non-zero.
+;DEC20::KM:<6C-KOM.SOURCES>CHATAB.MAC.2, 26-Nov-86 12:55:01,KPJ.JAAKKOLA
+;36	Added personal switch NEWS CONTROL (NEWPFL)
+;Oden::DSKG:CHATAB.MAC[62,7777,MAC] 1987-01-06 16:54:34, Edit by KPJ @ H.HOLE
+;35	Personal flag "(BECOME) MEMBER implies JOIN".
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1986-10-29 13:50:27, Edit by KPJ @ L89
+;34	Use QZIF.
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1986-07-28 13:50:13, Edit by KPJ @ L89
+;33	QUIPFL used for other stuff, renamed to QUXPFL.
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1986-07-24 13:22:38, Edit by KPJ @ L89
+;32	Personal flag "Obey QUIT command always".
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1986-07-22 13:46:35, Edit by KPJ @ QZKTH
+;31	Re-implemented edit#25.
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1986-04-25 17:35:48, Edit by KPJ
+;30	SETOFF,SETON changed to ZETOFF,ZETON, due to name collisions.
+;Oden::DSKG:CHATAB.MAC<62,7777,MAC> 1986-02-13 19:15:12, Edit by KPJ
+;27	PTY mode put inside FTPTYM assembly switch.
+;Oden::DSKD:CHATAB.MAC<62,7777,MAC> 1986-01-20 18:56:48, Edit by KPJ
+;26	Unimplemented edit#25.
+;Oden::DSKD:CHATAB.MAC[62,7777,MAC] 1986-01-13 01:41:59, Edit by KPJ
+;25	Implemented personal flag "(Show) why (text) not shown".
+;Oden::DSKD:CHATAB.MAC<62,7777,MAC> 1985-10-08 02:59:48, Edit by KPJ
+;24	Fixed typo in code.
+;Oden::DSKD:CHATAB.MAC<62,7777,MAC> 1985-10-01 19:14:05, Edit by KPJ
+;23	Sanitized code.
+;Oden::DSKD:CHATAB.MAC<62,7777,MAC> 1985-09-25 07:09:45, Edit by KPJ
+;22	Introduced PROLOG macro. Changed format of PRINT macro.
+;Oden::DSKD:CHATAB.MAC<62,7777,MAC> 1985-09-05 07:36:42, Edit by KPJ
+;21	Implemented personal flag "CASIFY".
+;Oden::DSKD:CHATAB.MAC<62,7777,MAC> 1985-08-12 23:20:20, Edit by KPJ @ DECGR
+;20	Implemented personal flag "MARKS (ARE) SECRET".
+;Oden::DSKD:CHATAB.MAC<62,7777,MAC> 1985-06-20 02:48:05, Edit by KPJ @ GR\N
+;17	NWPFLG localized.
+;Oden::DSKD:CHATAB.MAC<62,7777,MAC> 1985-05-08 13:54:20, Edit by KPJ @ L89
+;16	Personal flags IDLE TIMER and LETTER PRIORITY.
+;Oden::DSKD:CHATAB.MAC[62,7777,MAC] 1985-03-08 03:07:48, Edit by KPJ @ NADJA
+;15	Get rid of QACR routine.
+;Oden::DSKD:CHATAB.MAC[62,7777] 1985-02-04 16:52:50, Edit by KPJ @ L89
+;14	New variables NWPFLG and OLPFLG, used to compare personal flags.
+;Oden::DSKD:CHATAB.MAC[62,7777] 1985-01-30 11:56:36, Edit by KPJ @ L89
+;13	Routine QPRESE deleted.
+;Oden::DSKD:CHATAB.MAC[62,7777] 1985-01-07 20:54:46, Edit by KPJ @ L89
+;12	Deleted QDISCO, QDEFER, QCHEAD, QLFECH, QSHCOM, QSHREC, QQUIFI,
+;	QLISUB, QREDIS and QSAPSW routines.	
+;	Added new personal flags COMMENT UNMARKS NOTICE and LOGIN QUESTION.
+;	LOGIPF stored into LOGIC at startup.
+;Oden::DSKD:CHATAB.MAC[62,7777] 1984-12-03 12:47:01, Edit by KPJ @ L89
+;11	Implement personal flag "DISCONNECT AFTER LOGOUT": EXPTAB,QDISCO
+;Oden::DSKD:CHATAB.MAC[62,7777] 1984-12-03 10:05:31, Edit by KPJ @ L89
+;10	Make SWITCH ON/OFF routines understand the logic sense flag.
+;Oden::DSKD:CHATAB.MAC[62,7777] 1984-11-29 07:18:12, Edit by KPJ @ UPSALA
+;7	Personal flag DEFERRED COMMANDS. Routine QDEFER to allow test.
+;Oden::DSKD:CHATAB.MAC[62,7777] 1984-11-27 03:57:02, Edit by KPJ @ NADJA
+;6	Introduced personal flag "short headings", settable/resettable
+;	with SWITCH ON and SWITCH OFF. New routine QCHEAD to see if set.
+;Oden::DSKD:CHATAB.MAC[62,7777] 1984-11-19 17:26:55, Edit by K.JAAKKOLA
+;5	Search correct universals. Moved language texts to TEXTER.MAC
+;Oden::DSKD:CHATAB.MAC[62,7777] 1984-10-03 23:57:22, Edit by K.JAAKKOLA
+;4	Deleted NRFLAG. 
+;Oden::Dskd:Chatab.Mac[62,7777] 1984-05-23 06:44:00, Edit by KPJ Jaakkola
+;3	Implemented door bell.
+;Oden::Dskd:Chatab.Mac[62,7777] 1984-05-14 12:10:04, Edit by KPJ Jaakkola
+;2	Merged T20 and T10 versions. Updated copyright notice.
+;Oden::Dskd:Chatab.Mac[62,7777] 1984-03-28 13:06:57, Edit by T Tholerus
+;1	TXNN macros included.
+
+	SEARCH	kommac
+	PROLOG	(chatab)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 12:08:47
+
+;	D A T A   A R E A
+
+olpflg::BLOCK	1		;[KPJ.14] old personal flags
+nwpflg:	BLOCK	1		;<KPJ.17!KPJ.14> new personal flags
+logic::	BLOCK	1		;[KPJ.12] logic sense flag
+flag:	0			;wanted flag
+IFN	ftptym,<		;<KPJ.27>
+ptyflg::			;PTY flag
+>;ftptym
+	0
+
+;	P R O G R A M   C O D E
+
+	CODE
+chatab::			;<KPJ.41>
+
+normod::comhed	0,noarg##,nomode,ccnomo##,zunmhl##	;use normal mode
+IFN	ftptym,<					;<KPJ.41!KPJ.27>
+ptymod::comhed	0,noarg##,ptmode,ccptmo##,zupthl##	;use PTY mode
+>;ftptym
+admmod::comhed	0,qadmod,admode,ccadmo##,zuamhl##	;use administrator mode
+zeton::	comhed	0,flaarg,seonfl,ccseon##,zzseon##   ;switch on (personal flag)
+zetoff::comhed	0,flaarg,seoffl,ccseof##,zzseof##   ;switch off (personal flag)
+prmobj::comhed	0,prmarg,prmob,ccprmo##,zprmhl##	;make object permanent
+;-
+
+;+
+;NOMODE		use normal mode
+;-
+
+nomode:	MOVEI	t,sn			;set normal mode
+	MOVEM	t,cursta##
+IFN	ftptym,<			;<KPJ.27>
+	SETZM	ptyflg			;clear PTY flag
+>;ftptym
+	return
+
+
+
+;+
+IFN	ftptym,<			;<KPJ.27>
+;PTMODE		use PTY mode
+;-
+
+ptmode:	SETOM	ptyflg			;set PTY flag on
+	return
+>;ftptym
+
+;+
+;QADMOD		check if you are allowed to use the privileged command
+;returns	+1 always
+;		ERRFL/	.LT. 0 if not allowed
+;-
+
+qadmod:	save	<gp2,nr,gp1,bfp>
+	SETZM	errfl##			;clear error
+	MOVE	nr,comadm##		;get administrator conference
+	CALL	getobj##		;get it
+	 JRST	qadmo7			;not defined, all have right
+	CAIE	gp1,mee			;conference ?
+	 JRST	qadmo7			;no, all have right
+	SKIPG	meemem(bfp)		;any member list?
+	 JRST	qadmo7			;no, all have right
+	CALL	qismbr##		;are you member ?
+	 JRST	qadmo7			;yes, you have the right
+	JRST	qadmo8			;no, you lose
+IFN	ftremo,<			;<KPJ.36> security check enabled?
+qadmo7:
+T10,<	MOVE	t,[2,,[EXP .TORMT,-1]]	;<KPJ.36> get "remote bit"
+	TRMOP.	t,			;<KPJ.36> . . .
+	 JRST	qadmo8			;<KPJ.36> failed, you lose
+	TRNN	t,1B35			;<KPJ.36> remote?
+	 JRST	qadmo9			;<KPJ.36> no, OK
+>;T10
+T20,<	MOVEI	1,.CTTRM		;<KPJ.36> controlling terminal
+	MOVEI	2,.MORSP		;<KPJ.36> get speeds and remoteness
+	MTOPR%				;<KPJ.36> . . .
+	 ERJMP	qadmo8			;<KPJ.36> failed, no access
+	TLNN	2,(MO%RMT)		;<KPJ.36> remote line?
+	 JRST	qadmo9			;<KPJ.36> no, OK
+>;T20
+>;ftremo
+qadmo8:	CALL	saynot			;say not right
+IFE	ftremo,<
+qadmo7:
+>;ftremo=0
+qadmo9:	return
+
+
+
+
+
+;+
+;SAYNOT		say you don't have the right
+;-
+saynot::save	<str>
+	SKIPL	silflg##		;silent ?
+	 JRST[	CALL	preol##		;no, new line
+		print	zntrig##	;"you are not allowed to do that"
+		JRST	.+1]
+	SETOM	errfl##			;set error flag
+	return
+
+
+
+;+
+;ADMODE		use the privileged commands
+;-
+admode:	MOVE	t,cursta##		;get current status
+	ANDCMI	t,sa			;clear expert flag
+	ORI	t,sa			;set administrator flag
+	MOVEM	t,cursta##		;save new status
+	return
+
+
+;+
+;FLAARG		get flag argument
+;returns	FLAG/	flag
+;		ERRFL/	0  OK
+;			-1 invalid reply
+;			-2 no reply
+;-
+
+flaarg:	save	<nr,tp,menuq##>
+	MOVEI	t,zgflag##		;<KPJ.24> "which flag?"
+	MOVEM	t,menuq##
+	MOVE	tp,exptab		;get all flags
+	CALL	gttyta##		;get flag
+	SKIPL	t,errfl##		;<KPJ.42> any error?
+	 JRST	flaar8			;<KPJ.42> no
+	CAMN	t,[-2]			;<KPJ.42> no answer?
+	 JRST	flaar9			;<KPJ.42> yes, exit
+	CAMN	t,[-3]			;<KPJ.42> ambiguous?
+	 JRST	flaar7			;<KPJ.42> yes, tell luser
+
+;	(assume error code -2)
+
+	MOVEI	str,zflaar##		;<KPJ.42> "?Does not match keyword:"
+	CALL	errcom##		;<KPJ.42> display keyword
+	JRST	flaar9			;<KPJ.42>
+flaar7:	CALL	ambcom##		;<KPJ.42> "?Ambiguous command"
+	$Skipa				;<KPJ.42>
+flaar8:	 MOVEM	nr,flag			;<KPJ.42> no, save it
+flaar9:	return
+
+;+
+;EXPTAB		table for own status flags
+
+exptab::table	sn,[EXP 0,shopfl],zzxsho## ;Short menus
+	table	sn,[EXP 0,rdapfl],zzxrda## ;Report of disk accesses
+	table	sn,[EXP 0,quipfl],zzxqfi## ;Quit first in menu
+	table	sn,[EXP 0,sarpfl],zzxsha## ;Show (all) receivers
+	table	sn,[EXP 0,spapfl],zzxspa## ;Save password
+	table	sn,[EXP 0,nbrpfl],zzxenf## ;Empty line finishes
+	table	sn,[EXP 0,nexpfl],zzxnex## ;Expansion of abbreviations
+	table	sn,[EXP 0,ncopfl],zzxnco## ;Command interpretation of text
+	table	sn,[EXP 0,nlipfl],zzxnli## ;Line of dashes below subject line
+	table	sn,[EXP 0,acrpfl],zzxacr## ;Automatic new line
+	table	sn,[EXP 0,lfepfl],zzxlfe## ;Line feed echo
+	table	sn,[EXP 0,sacpfl],zzxsac## ;Show (all) comments
+	table	sn,[EXP 0,prepfl],zzxpre## ;Presence report
+	table	sn,[EXP 0,sispfl],zzxsis## ;[BCQ]Dates (in) ISO format
+	table	sn,[EXP 0,avmpfl],zzxavm## ;[KPJ.12] Comment unmarks notice
+	table	sn,[EXP 0,netpfl],zzxnet## ;[BCQ]Network (bug) flag
+	table	sn,[EXP 0,belpfl],zzxbel## ;[KPJ]Door bell
+	table	sn,[EXP 0,hedpfl],zzxhed## ;[KPJ.6] short headings
+	table	sn,[EXP 0,dfrpfl],zzxdfr## ;[KPJ.7] delayed commands
+	table	sn,[EXP 0,logpfl],zzxlog## ;[KPJ.11] disconnect after logout
+	table	sn,[EXP 0,huhpfl],zzxhuh## ;[KPJ.12] login question
+	table	sn,[EXP 0,idlpfl],zzxidl## ;<KPJ.16> idle timer
+	table	sn,[EXP 0,ltrpfl],zzxltr## ;<KPJ.16> letter priority
+	table	sn,[EXP 0,mrxpfl],zzxmrx## ;<KPJ.20> marks (are) secret
+	table	sn,[EXP 0,caspfl],zzxcas## ;<KPJ.21> casify
+	table	sn,[EXP 0,whypfl],zzxwhy## ;<KPJ.25> (Show) why not shown
+	table	sn,[EXP 0,quxpfl],zzxqui## ;<KPJ.33> Obey QUIT command always
+	table	sn,[EXP 0,becpfl],zzxbec## ;<KPJ.35> MEMBER implies JOIN
+	table	sn,[EXP 0,newpfl],zzxnew## ;<KPJ.36> news control
+IFN	ftcach,<
+	table	sn,[EXP 0,matpfl],zzxmat## ;<KPJ.40> name cache
+>;ftcach
+	endtab
+;-
+
+;+
+;SEONFL		set flag on
+;accepts	FLAG/	wanted flag
+;		LOGIC/	logic bits:
+;			0: normal logic (0=off, 1=on)
+;			1: negative logic (0=on, 1=off)
+;-
+
+seonfl:	save	<str,nr,tp,gp2>
+	MOVE	nr,crenr##		;get self
+	MOVE	gp2,flag		;get flag
+	CALL	updbeg##		;start update
+	CALL	seflon##		;set flag on
+	CALL	updend##		;end of update
+	CAME	nr,selfnr##		;self ?
+	 JRST	seonf9			;no, ready
+	MOVE	t,logic			;[KPJ.10!12] get logic sense flag
+	AND	t,gp2			;[KPJ.10] isolate interesting bit
+	CAIN	t,0			;[KPJ.10] normal logic?
+	 ORM	gp2,selffl##		;set flag on (bit=1)
+	CAIE	t,0			;[KPJ.10] reversed logic?
+	 ANDCAM	gp2,selffl##		;[KPJ.10] yes, set flag on (bit=0)
+	MOVE	t,selffl##		;[KPJ.14] get new flags
+	MOVEM	t,nwpflg		;[KPJ.14] save them
+	CALL	setsta##		;set own status
+seonf9:	MOVE	tp,exptab		;get flag table
+	CALL	ptype##			;output flag name
+	print	zseton##		;"switched on"
+	MOVE	t,olpflg		;[KPJ.14] get old personal flags
+	XOR	t,nwpflg		;[KPJ.14] compare with new flags
+	MOVEI	str,zwasis##		;<KPJ.23> default "no change"
+	CAIE	t,0			;[KPJ.14] same?
+	 MOVEI	str,zwasof##		;<KPJ.23> no, "was OFF"
+	CALL	prstr##			;<KPJ.23> output message
+	return
+
+;+
+;SEOFFL		set flag off
+;accepts:	FLAG/	flag
+;		LOGIC/	logic bits:
+;			0: normal logic (0=off, 1=on)
+;			1: negative logic (0=on, 1=off)
+;-
+seoffl:	save	<str,nr,tp,gp2>
+	MOVE	nr,crenr##		;get self
+	MOVE	gp2,flag		;get flag
+	CALL	updbeg##		;start update
+	CALL	seflof##		;set flag off
+	CALL	updend##		;end of update
+	MOVE	tp,exptab		;get flag table
+	CALL	ptype##			;output flag name
+	print	zsetof##		;"switched off"
+	CAME	nr,selfnr##		;self ?
+	 JRST	seoff9			;no, ready
+	MOVE	t,logic			;[KPJ.10!12] get logic sense flag
+	AND	t,gp2			;[KPJ.10] isolate interesting bit
+	CAIN	t,0			;[KPJ.10] normal logic?
+	 ANDCAM	gp2,selffl##		;[KPJ.10] yes, set flag on (bit=0)
+	CAIE	t,0			;[KPJ.10] reversed logic?
+	 ORM	gp2,selffl##		;[KPJ.10] set flag on (bit=1)
+	MOVE	t,selffl##		;[KPJ.14] get new flags
+	MOVEM	t,nwpflg		;[KPJ.14] save them
+	CALL	setsta##		;set own status
+seoff9:	MOVE	t,olpflg		;[KPJ.14] get old flags
+	XOR	t,nwpflg		;[KPJ.14] compare with new flags
+	MOVEI	str,zwasis##		;<KPJ.23> default "no change"
+	CAIE	t,0			;[KPJ.14] same?
+	 MOVEI	str,zwason##		;<KPJ.23> no, "was ON"
+	CALL	prstr##			;<KPJ.23> output message
+	return
+
+
+;+
+;QACR		check if ACR (automatic new line)	<KPJ.15>
+;returns	+1 if ACR
+;		+2 if not ACR
+;-
+;
+;qacr::	MOVE	t,selffl##		;get own flags
+;	Txnn	t,acrpfl		;ACR?
+;	 skpret				;no,  +2 return
+;	return				;yes, +1 return
+
+;+
+;PRMARG		argument to (SET) PERMANENT command	<BCQ>
+;returns	NUMBER/	object#
+;-
+
+prmarg:	save	<nr,quest##>
+	MOVEI	t,askprm		;<BCQ> ask for the conference/person
+	MOVEM	t,quest##		;<BCQ> . . .
+	CALL	gtobnr##		;<BCQ> get the object number
+	CALL	qchana##		;<BCQ> check right
+	return
+
+
+;+
+;ASKPRM		ask for conference to make <BCQ>
+;-
+
+askprm:	save	<str>
+	CALL	meehlp##		;<BCQ> give conference help
+	print	zprmah##		;"what conference make permanent?"
+	CALL	preol##
+	branch	prher##
+
+
+;+
+;PRMOB		(SET) PERMANENT command routine	<BCQ>
+;accepts	NUMBER/	object#
+;-
+
+prmob:	save	<gp1,nr,str>
+	MOVE	nr,number##		;<BCQ> get the number
+	CALL	updbeg##		;<BCQ> start update
+	CALL	setprm			;<BCQ> set the permanent flag
+	CALL	updend##		;<BCQ> end of update
+	CALL	prname##		;<BCQ> print the name of conf/person
+	MOVEI	str,zpmon##		;<KPJ.23> "is now permanent"
+	CAIN	gp1,0			;<KPJ.23>
+	 MOVEI	str,zpmoff##		;<KPJ.23> "is no longer permanent"
+	CALL	prstr##			;<KPJ.23> output message
+	return
+
+
+;+
+;SETPRM		will set the permanent flag <BCQ>
+;accepts	NR/	object#
+;returns	GP1/	= 0	no longer permanent
+;			=-1	is now permanent
+;-
+
+setprm:	save	<bfp>
+	CALL	updobj##		;<BCQ> get the object
+	 JRST	setpr9			;<BCQ> not found?
+	SETZ	gp1,			;<BCQ> assume we'll clear it
+	MOVE	t,objtyp(bfp)		;<BCQ> get the object type
+	Txcn	t,noclfl		;<BCQ> set/clear flag
+	 SETO	gp1,			;<BCQ> we just set the bit
+	MOVEM	t,objtyp(bfp)		;<BCQ> save again
+setpr9:	return
+
+	END
+..and no more 

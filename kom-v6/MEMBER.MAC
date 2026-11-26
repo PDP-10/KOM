@@ -1,0 +1,516 @@
+;Oden::DSKG:MEMBER.MAC<62,7777,MAC> 1987-01-06 17:04:04, Edit by KPJ @ H.HOLE
+;14	BECPFL to govern if (BECOME) MEMBER also does a JOJN (CONFERENCE)
+;Oden::DSKG:MEMBER.MAC<62,7777,MAC> 1986-11-10 16:04:18, Edit by KPJ @ L89
+;13	Handle +2 return from ISLURP.
+;Oden::DSKG:MEMBER.MAC<62,7777,MAC> 1986-06-08 04:46:31, Edit by KPJ @ 1SKEDE
+;12	Moved texts to TEXTER.
+;Oden::DSKG:MEMBER.MAC<62,7777,MAC> 1986-04-25 16:56:29, Edit by KPJ @ L89
+;11	Get rid of OPDEFed funny macros.
+;Oden::DSKG:MEMBER.MAC<62,7777,MAC> 1986-03-03 16:43:16, Edit by KPJ @ L89
+;10	Update member list immediately.
+;Oden::DSKD:MEMBER.MAC<62,7777,MAC> 1986-02-12 14:03:18, Edit by KPJ
+;7	JOIN-class commands gave up without any error messages if object not
+;	found in data base. Give appropriate errormessage.
+;Oden::DSKD:MEMBER.MAC<62,7777,MAC> 1985-10-04 19:18:52, Edit by KPJ
+;6	Introduced PROLOG macro.
+;Oden::DSKD:MEMBER.MAC<62,7777,MAC> 1985-05-02 15:29:33, Edit by KPJ @ L89
+;5	Don't display protected names of organizers of un-open conferences.
+;Oden::Dskd:Member.Mac[62,7777] 1984-09-20 17:12:16, Edit by KPJ Jaakkola
+;4	SAYWDR said "You is not a member of". ZYOU changed.
+;Oden::Dskd:Member.Mac[62,7777] 1984-09-12 12:31:19, Edit by K.Jaakkola
+;3	Moved SUBMEM routine here from DEAMON module, since it was only
+;	called from here. Changed WITHDRAW command say if passive or totally
+;	withdrawn.
+;Oden::Dskm:Member.Mac[62,7777] 1984-04-03 10:31:25, Editor: KPJ Jaakkola
+;2	Updated copyright notice.
+;DSK:BECMEM.NEW[1116,134] 1982-03-02 19:20:39, Edit by ENDERIN LARS
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(member)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-03-13 06:06:44
+
+;	D A T A   A R E A
+
+passiv:	BLOCK	1		;[KPJ.3] say if passive or totally withdrawn
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+member::comhed	0,amembe,cmembe,ccmemb##,zmemhl## ;(Become) member
+;-
+
+;+
+; AMEMBE  --  argument to member command
+; returns persons in ARGLIS
+;-
+
+amembe:	save	<quest##,tp,namfun##>
+	setmem	quest##,askmem		;ask for conferences
+	setmem	namfun##,joinam##	;get conference names
+	CALL	gtname##		;get the names
+	return
+
+
+
+
+
+;+
+; ASKMEM  --  ask which conference to become member of
+;-
+
+askmem:	save	<str>
+	CALL	meehlp##		;give conference help
+	print	zasmem##		;"What conference?"
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+
+;+
+; CMEMBE  --  become member
+;-
+
+cmembe:	save	<foalfu##>
+	setmem	foalfu##,become		;become member
+	CALL	faname##		;all conferences
+	return
+
+
+
+
+
+;+
+; BECOME  --  become member
+; gets conference in NR
+;-
+
+become:	save	<gp2,nr>
+	CALL	getobj##		;get conference
+	 JRST[	CALL	preol##		;<KPJ.7> newline
+		CALL	prname##	;<KPJ.7> object name
+		print	znosuc##	;<KPJ.7> " does not exist"
+		JRST	becom9]		;<KPJ.7> not defined
+	CALL	qismbr			;are you member ?
+	 JRST	becom7			;yes
+	CALL	qrigmb			;have you right to become member ?
+	JUMPE	nr,becom9		;no
+	CALL	becmem			;become member
+	MOVE	t,selffl##		;<KPJ.14> get my personal flags
+	Txnn	t,becpfl		;<KPJ.14> also JOIN?
+	 CALL	join##			;yes, JOIN (CONFERENCE)
+	JRST	becom9
+
+becom7:	CALL	preol##			;new line
+	print	zalmem##		;"You are already member of "
+	CALL	prname##		;print name
+becom9:	return
+
+
+
+
+
+
+;+
+;QISMBR		check if self is member of a conference
+;accepts	NR/	conference object#
+;returns	+1 if self is a member
+;		+2 if not
+;		GP2/	member element
+;-
+
+qismbr::MOVE	gp2,mbrbeg##		;get start of member register
+qismb1:	SKIPN	meltim(gp2)		;end of register ?
+	 JRST	qismb8			;yes, not member
+	CAME	nr,melmee(gp2)		;is this our conference ?
+	 JRST[	ADDI	gp2,melsiz	;no, get next element
+		JRST	qismb1]
+	SKIPG	meltim(gp2)		;yes, are we a passive member?
+qismb8:	 skpret				;yes, treat as not member
+	return
+
+
+
+
+
+;+
+;QRIGMB		see if you have the right to become member
+;accepts	NR/	conference number
+;		GP2/	member element
+;returns	NR/	=0 if you don't have the right
+;-
+
+qrigmb::save	<str>
+	MOVEI	str,znotme##		;" is not a conference."
+	CALL	chkmee			;conference ?
+	 JRST	qrigm7			;no, tell luser it isn't
+	SKIPGE	0(gp2)			;yes, passive member ?
+	 JRST	qrigm9			;yes, you have right
+	CALL	chkfro			;no, allowed ?
+	JRST	qrigm9
+
+qrigm7:	CALL	preol##			;blank line
+	CALL	prname##		;output name of object
+	CALL	prstr##			;output error message
+	SETZ	nr,			;clear conference
+qrigm9:	return
+
+
+
+
+
+
+;+
+;CHKMEE		check if object number is of type CONFERENCE
+;accepts	NR/	object number
+;returns	+1 if not conference
+;		+2 if conference
+;-
+
+chkmee::save	<nr,gp1>
+	CALL	splpoi##		;split pointer
+	CAIN	gp1,mee			;conference ?
+	 skpret				;yes
+	return
+
+
+
+
+
+;+
+; CHKFRO  --  check if you have right to make a from link
+; gets object in NR
+; returns NR zero if not right
+;-
+
+chkfro::save	<str,gp1,bfp>
+	CALL	chkorg##		;are you organizer ?
+	 TRNA				;no, must check more
+	  JRST	chkfr9			;yes, you have the right
+	CALL	chkpub			;pubic conference ?
+	 TRNA				;no, must check more
+	  JRST	chkfr9			;yes, you have the right
+	CALL	chrstr			;restricted conference ?
+	 JRST	chkfr9			;<KPJ.5> no, can join it
+	CALL	getobj##		;get conference object
+	 JRST	chkfr8			;error
+	CALL	preol##			;<KPJ.5> start message on new line
+	CALL	prname##		;type name of object
+	print	zclme1##		;<KPJ.5> " is a "
+	CALL	setoty##		;<KPJ.5> set object type
+	CALL	prtype##		;<KPJ.5> display the type
+	MOVE	nr,objcre(bfp)		;get organizer of conference
+	CALL	chkorg##		;<KPJ.5> full access over organizer?
+	 TRNA				;<KPJ.5>
+	  JRST	chkfr5			;<KPJ.5> yes, skip protect check
+	CALL	chprot##		;<KPJ.5> no, a protected fellow?
+	 JRST[	print	zclme2##	;<KPJ.5> yes, say so
+		JRST	chkfr6]		;<KPJ.5>
+chkfr5:	print	zclmee##		;<KPJ.5> un-protected organizer
+	CALL	prname##		;<KPJ.5> display organizer name
+chkfr6:	CALL	preol##			;<KPJ.5> new line
+chkfr8:	SETZ	nr,			;clear conference
+chkfr9:	return
+
+
+
+
+
+
+;+
+; CHKPUB  --  check if public conference
+; gets conference in NR
+; returns at call + 1 if closed conference
+; returns at call + 2 if open conference
+;-
+
+chkpub::save	<gp1,bfp>
+	CALL	getobj##	; get conference
+	 JRST	chkpu9		; error, closed
+	MOVE	t,objtyp(bfp)	; get object type
+	Txnn	t,cloofl	; closed conference ?
+	 skpret			; no
+chkpu9:	return
+
+
+
+
+
+;+
+;CHRSTR		check if restricted conference
+;accepts	NR/	conference
+;returns	+1	if conference open for you
+;		+2	if conference closed
+;-
+
+chrstr:	save	<gp2,nr,gp1,bfp>
+	CALL	chkmee			;conference ?
+	 JRST	chrst8			;no
+	CALL	islurp##		;yes, get its LOCAL's
+	 JRST	chrst8			;<KPJ.13> failed, closed
+	MOVE	nr,selfnr##		;get self
+	CALL	getobj##		;get you
+	 JRST	chrst8			;error
+	MOVE	t,perdeb(bfp)		;get own organization
+	MOVEM	t,orgnr##		;. . .
+	MOVE	gp1,gp2			;get start of register
+chrst1:	SKIPN	0(gp1)			;end of register ?
+	 JRST	chrst8			;yes
+	MOVE	nr,mbrper(gp1)		;get member
+	CALL	chkper##		;person ?
+	 JRST	chrst3			;no
+	CAMN	nr,selfnr##		;already member ?
+	 JRST	chrst9			;yes
+chrst2:	ADDI	gp1,mbrsiz		;get next element
+	JRST	chrst1
+
+chrst3:	CAMN	nr,orgnr##		;own organization ?
+	 JRST	chrst9			;yes, open conference
+	CALL	qismbr			;member ?
+	 JRST	chrst9			;yes, open conference
+	JRST	chrst2
+
+chrst8:	skpret				;conference closed
+chrst9:	return
+
+
+
+
+
+;+
+; BECMEM  --  become member of a conference
+; gets conference in NR
+; gets end of member list in GP2
+; returns member element in GP2
+;-
+
+becmem::CALL	bememb		; become member
+	AOS	nrmemb##	; one more conference
+	CALL	updbeg##	;<TTQ.10> start update
+	MOVE	t,selfnr##
+	MOVEM	t,toobj##	;<TTQ.10> set self as TO object
+	MOVEM	nr,froobj##	;<TTQ.10> set conf as FROM object
+	CALL	addmem##	;<TTQ.10> add member
+	CALL	updend##	;<TTQ.10> end of update
+	branch	saymbr		; say you are member
+
+
+
+
+
+;+
+; SAYMBR  --  say you are now member
+; gets conference in NR
+;-
+
+saymbr:	save	<str>
+	ifon	intflg##,saymb9		;interrupt ?
+	CALL	preol##			;blank line
+	print	zyamem##		;"You are now member of "
+	CALL	prname##		;print its name
+saymb9:	return
+
+
+
+
+
+;+
+; BEMEMB  --  become member of a conference
+; gets member record in GP2
+; gets conference in NR
+;-
+
+bememb::save	<gp1,bfp,nr>
+	CALL	gudate##	; get current date
+	SKIPL	0(gp2)		; old element ?
+	 JRST	bemem1		; no
+	MOVEM	gp1,meltim(gp2)	; activate it
+	JRST	bemem9
+
+bemem1:	MOVEM	gp1,meltim(gp2)	; save it
+	MOVEM	nr,melmee(gp2)	; save conference
+	SETZM	mellnk(gp2)	; clear last seen link
+	SETZM	melnum(gp2)	; clear number of seen entries
+	SETZM	melsiz(gp2)	; end mark
+bemem9:	return
+
+
+
+
+
+;+
+withdr::comhed	0,wdrarg,witdra,ccwidr##,zwdrhl## ;Withdraw (from)
+;-
+
+
+
+
+;+
+; WDRARG  --  argument for withdraw command
+; returns argument got in ARGLIS
+;-
+
+wdrarg:	save	<quest##,namfun##>
+	CALL	delcom##	; delayed command ?
+	 JRST	wdrar9		; yes, dont do it
+	setmem	quest##,askwdr	; ask for conferences
+	setmem	namfun##,joinam##	; conference names
+	CALL	gtname##	; get the names
+wdrar9:	return
+
+
+
+
+
+;+
+; ASKWDR  --  ask which conference to withdraw from
+;-
+
+askwdr:	save	<str>
+	CALL	meehlp##		;give conference help
+	print	zaswdr##		;"Withdraw from what conference?"
+	CALL	preol##			;new line
+	branch	prher##
+
+
+
+
+
+;+
+; WITDRA  --  withdraw from a conference
+;-
+
+witdra:	save	<foalfu##>
+	setmem	foalfu##,widraw	; withdraw conference
+	CALL	faname##	; withdraw from all conferences
+	return
+
+
+
+
+
+;+
+; WIDRAW  --  withdraw from a conference
+; gets conference in NR
+;-
+
+widraw:	save	<errfl##>
+	SETOM	errfl##			;initiliaze
+	CALL	updbeg##		;<KPJ.10> start update
+	CALL	remmem			;<KPJ.10> remove from member list
+	CALL	updlse##		;leave current conference
+	SETZM	conf##			;clear current conference
+	SETZM	curmbr##
+	SETZM	nxennr##		;clear next entry
+	SETZM	nxoenr##		;clear next other entry
+	CALL	crepre##		;change present list
+	CALL	submem			;<KPJ.3> remove from conf member list
+	CALL	updend##		;end of update
+	CALL	saywdr			;say you have withdrawn
+	return
+
+;+
+;SUBMEM		remove from conference member list [KPJ.3]
+;accepts	NR/	conference
+;returns	ERRFL/	#0	if was not member
+;			=0	if was member
+;		PASSIV/	= -1	if now passive member
+;			=  0	if now totally withdrawn
+;-
+
+submem:	save	<gp1,gp2,txt>
+	SETZM	passiv			;[KPJ.3] assume passive
+	CALL	islurp##		;slurp in register
+	 JRST	subme9			;<KPJ.13> failed, not member
+	MOVEM	gp2,txt			;save start of register
+	MOVE	gp1,selfnr##		;get self
+	CALL	seaper##		;search for self
+	 JRST	subme9			;not member
+	SKIPG	t,0(gp2)		;active member ?
+	 JRST	subme1			;no
+	MOVNM	t,0(gp2)		;passivate
+	CALL	onleme			;[KPJ.3] one less member
+	JRST	subme8
+
+subme1:	CALL	sqreli##		;squeese register
+	SETOM	passiv			;<KPJ.3> bye for ever
+subme8:	CALL	endcon##		;get end of conference register
+	CALL	oslurp##		;slurp out new register
+	SETZM	errfl##			;withdrawn
+subme9:	return
+
+
+
+
+;+
+;REMMEM		remove from person member list
+;accepts	NR/	conference
+;-
+
+remmem:	save	<gp2,gp1>
+	MOVE	gp2,mbrbeg##		;get start of member register
+	MOVE	gp1,nr			;get conference
+	CALL	seacon##		;search conference
+	 JRST	remme9			;not member
+	SETZM	errfl##			;member
+	SKIPG	t,0(gp2)		;get member element
+	 JRST	remme8			;passive member
+	MOVNM	t,0(gp2)		;passivate
+	SOSGE	nrmemb##		;one less conference
+	 SETZM	nrmemb##		;error
+	TRNA				;<KPJ.10>
+remme8:	 CALL	sqowli##		;squeese own member list
+remme9:	return
+
+
+
+
+
+;+
+; ONLEME  --  one less member
+; gets conference in NR
+;-
+
+onleme::save	<bfp,gp1>
+	CALL	updobj##	; get conference
+	 BUG(HLT,<onleme member>,<nr>)
+	SOSGE	meemem(bfp)	; one less member
+	 SETZM	meemem(bfp)	; error
+	return
+
+
+
+
+
+;+
+; SAYWDR  --  say you have withdrawn
+;accepts
+;	NR/	conference
+;	ERRFL/	on if was not member
+;	PASSIV/	= -1	if passive member now  [KPJ.3]
+;		=  0	if totally withdrawn now
+;
+;-
+
+saywdr:	save	<str>
+	ifon	intflg##,saywd9		; interrupt ?
+	CALL	preol##			; blank line
+	SKIPGE	errfl##			; were we member ?
+	 JRST[	print	zyou##		;[KPJ.4] You ARE not member
+		JRST	saywd8]
+	SKIPGE	passiv			;[KPJ.3] yes, now passive member?
+	 JRST[	print	zyhwdr##	;[KPJ.3] no, bye for ever
+		JRST	saywd8]		;[KPJ.3] and type conference name
+	print	zpassv##		;"You are now a passive member of "
+	JRST	saywd8			;[KPJ.3] and type the conference name
+
+saywd8:	CALL	prname##		; print its name
+saywd9:	return				; and return
+
+	END
+...and no more

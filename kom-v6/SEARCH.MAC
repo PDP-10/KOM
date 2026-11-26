@@ -1,0 +1,629 @@
+;Oden::DSKG:SEARCH.MAC<62,7777,MAC> 1987-06-25 16:27:42, KPJ @ DK <10,50>
+;15	Insert a PORTAL for T10 when we return from low segment during Martin
+;	NILsson's funny search code.
+;Oden::DSKG:SEARCH.MAC<62,7777,MAC> 1986-11-11 04:29:50, Edit by KPJ @ H.HOLE
+;14	Handle +2 return from BEGLIN and GETSTR.
+;Oden::DSKG:SEARCH.MAC<62,7777,MAC> 1986-07-22 21:07:43, Edit by KPJ @ 1SKEDE
+;13	Moved forgotten texts to TEXTER.
+;Oden::DSKG:SEARCH.MAC<62,7777,MAC> 1986-06-25 02:19:09, Edit by KPJ @ 1SKEDE
+;12	Moved texts to TEXTER.
+;Oden::DSKD:SEARCH.MAC<62,7777,MAC> 1985-10-08 01:09:54, Edit by KPJ
+;11	New format of PRINT macro. Introduced PROLOG macro.
+;Oden::DSKD:SEARCH.MAC<62,7777,MAC> 1985-06-20 01:02:25, Edit by KPJ @ GR\N
+;10	DISCAR localized.
+;Oden::DSKD:SEARCH.MAC[62,7777,MAC] 1985-03-08 09:00:10, Edit by KPJ @ NADJA
+;7	Fixed another bug introduced in edit #4.
+;Oden::DSKD:SEARCH.MAC[62,7777,MAC] 1985-02-13 14:32:28, Edit by KPJ @ L89
+;6	Fixed bug introduced in edit #4.
+;Oden::DSKD:SEARCH.MAC[62,7777] 1984-12-22 07:54:43, Edit by KPJ @ Home
+;5	Fixed misspelling introduced in edit #4.
+;Oden::DSKD:SEARCH.MAC[62,7777] 1984-12-17 13:04:32, Edit by KPJ @ L89
+;4	Got rid of Martin NILsson's LISP-like MACRO code.
+;	Brushed up code.
+;Oden::Dskd:Search.Mac[62,7777] 1984-09-04 12:25:25, Edit by K.Jaakkola
+;3	Updated (c) notice. SEARCH correct universals.
+;Oden::DSKD:SEARCH.MAC[62,7777] 1984-03-19 12:50:48, Edit by THOLERUS T
+;2	(unknown)
+;Oden::DSK:SEARCH.NEW[1116,134] 1982-03-02 20:30:05, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+;Oden::DSK:SEARCH.MAC	198x, Edit by Martin Nilsson
+;0	Original LISP-like code.
+
+	SEARCH	kommac
+	PROLOG	(search)
+search:!
+
+; (c) Swedish National Defense Research Institute 1972
+;	(c) QZ Computing Centre, 1984-09-04 12:25:22
+
+
+
+
+;	C O N S T A N T   D E F S
+
+	large==17*ormarg		; a number much larger than ORMARG
+	delsiz=200			;DELTA1 table size
+
+;	D A T A   A R E A
+
+sbslen:	Z				; length of arg in buffer
+srcbuf:	BLOCK	<ormarg+4>/5		; search arg buffer
+
+patlen:	Z				; length of pattern
+patend:	Z				; end ptr into pattrn
+pattrn:	BLOCK	ormarg			; table for pattern
+delta1:	BLOCK	delsiz			; delta1 index table
+
+srctyp:	Z				; 0 if nothing
+					; 1 if search
+					; 2 if substitute
+
+;			*NOTE*
+;			======
+; The following code is in the low segment. When we change high segments,
+; the old low segment suddently does not have access to JRST back into the
+; new high segment. Thus, we have to insert a PORTAL at FSUNDO to say that
+; we allow LUPE to JRST back to us...
+;
+; Central search loop ******************************************
+lupe:	LDB	ch,0(gp1)	;***FOO** (modified) get char from text
+	ADD	gp1,delta1(ch)		; add offset
+	JUMPL	gp1,lupe		; cont if not in pattern
+	JRST	fsundo			; end or match!
+; Central search loop ******************************************
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+	x==0				; Byte pointer table	
+	bplace==6
+	XLIST			;don't expand this cruft ....
+bytptr:	REPEAT	2*ormarg,<
+		POINT	7,x(str),bplace
+		bplace==bplace+7
+		IFG	bplace-42,<
+			bplace==6
+			x==x+1
+		>
+	>;End REPEAT
+	LIST			;.... back to Reality
+
+;+
+; STSRCH  --  initialize search
+; base address for pattern text in STR
+; beginning pos in GP1 (first pos is 0),
+; length of pattern text in NR.
+;  PATLEN is set to the length of pattern,
+;  PATEND points to the last word of pattern in the table:
+;  PATTRN which is a table of the chars (lower and upper case) of pattern,
+;  DELTA1 is an index table with one entry for each ASCII char.
+; If NR-GP1 is less or equal than zero, STSRCH is a no-op.
+;-
+
+stsrch:	save	<gp1,gp2,nr,ch>
+	SUB	nr,gp1			; length of pattern text
+					; less or eq to zero?
+	JUMPG	nr,..0001
+	JRST	stsret			; yes keep old setup
+..0001:	MOVEM	nr,patlen		; - pattern pos = PATLEN
+	MOVEM	nr,delta1		; fill the DELTA1 table
+	MOVE	gp2,[delta1,,delta1+1]	; with NR
+	BLT	gp2,delta1+delsiz-1	; fill block
+
+	MOVEI	gp2,patend		; set up for
+	SOJLE	nr,snklar		; loop thru pattern
+stsr01:	CALL	shftcs			; save char in tables
+	SOJG	nr,stsr01		; loop through pattern
+
+snklar:	MOVEI	nr,large		; for last char in pattern
+	CALL	shftcs			; save offset LARGE
+	MOVEM	gp2,patend		; save end ptr to pattern
+stsret:	return
+
+
+
+
+
+;+
+; SHFTCS  --  shift case and save char, and update DELTA1
+; CH is destroyed
+; GP1 and GP2 are incremented
+;-
+
+shftcs:	LDB	ch,bytptr(gp1)		; load next char
+	HRL	ch,ch			; combine cases
+	CALL	qalbet			; letter?
+	 JRST	notlet			; no
+	XORI	ch,40			; shift case
+	MOVEM	nr,delta1(ch)		; save offset
+	MOVS	ch,ch			; swap chars
+notlet:	MOVEM	nr,delta1(ch)		; save offset
+	ADDI	gp2,1			; ptr to next empty place
+	MOVEM	ch,0(gp2)		; save in table
+	ADDI	gp1,1			; ptr to next char
+	return
+
+
+
+
+
+;+
+; QALBET  --  check if char is alphabetic
+; gets unnormalized char in right half of CH
+; returns at call + 1 if not alphabetic
+; returns at call + 2 if alphabetic
+;-
+
+qalbet:	HLRZ	t,chrtab##(ch)	; get char type
+	ANDI	t,ctylet	; alphabetic ?
+	JUMPE	t,qalbe9
+	skpret			; yes
+qalbe9:	return
+
+
+
+
+
+;+
+; FSRCH  --  fast search for pattern previously set up by STSRCH
+; base address for text in STR
+; beginning pos in GP1 (first pos is 0),
+; length of text in NR.
+; destroys GP1, GP2, CH
+; returns at call+1 if not fnd
+; returns at call+2 if fnd
+;-
+
+;****************************************
+; NOTE: The search code is modifying	*
+;	itself (YEACH!). BEWARE!!!	*
+;****************************************
+fsrch:	SUBI	gp1,1(nr)		; set up ptr to text
+	ADD	gp1,patlen		; match with last pos of pattern
+	JUMPGE	gp1,notfnd		; quit if pattern longer than text
+	HRLI	t,bytptr(nr)		; set up byte pointer address in lupe
+	HLRM	t,lupe		;***FOO*** self modifying code!!!
+	JRST	lupe			; and here we go...
+
+fsundo:	PORTAL	.+1		;<KPJ.15> allow low segment to return to us..
+	CAIGE	gp1,ormarg		; ... and here we come back
+	 JRST	notfnd			; text exhausted if gp1 too small
+	SUBI	gp1,large+1		; undo and backoff
+	MOVE	gp2,patend		; get end of PATTRN table
+slow:	SUBI	gp2,1			; ptr to previous pattern char
+	CAIGE	gp2,pattrn		; matched whole pattern?
+	 AOJA	gp1,fnd			; yes return matching pos
+	LDB	ch,@lupe		; get char from text
+	HRRZ	t,(gp2)			; get char from pattern
+	CAMN	ch,t			; equal?
+	 SOJA	gp1,slow		; yes cont
+	HLRZ	t,(gp2)			; get char from pattern
+	CAMN	ch,t			; equal?
+	 SOJA	gp1,slow		; yes cont
+	SUB	gp2,patend		; get a new
+	SUB	gp1,gp2			; GP1-ptr
+	AOJL	gp1,lupe		; go on searching
+	JRST	notfnd			; false alarm
+
+fnd:	ADD	gp1,nr			; justify back
+	skpret				; return at call+2 if fnd
+notfnd:	return				; return at call+1 if not fnd
+
+
+
+
+;+
+; SRCARG  --  search argument reader
+;-
+
+srcque:	save	<str>
+	CALL	preol##			;print a CR
+	print	zassea##		;"What do you want to search for?"
+	CALL	preol##			;print a CR
+	return
+
+srcarg:	save	<str,ch,nr,quest##>
+	SKIPE	hlpflg##		;help?
+	 JRST[	print	srctxt##	;yes
+		JRST	srcerr]
+	SETZM	number##		; zero counter
+	CALL	skblan##		; skip blanks
+	CALL	gshort##		; get next char
+	MOVEI	t,"0"			; numerical arg?
+	CAMLE	t,ch
+	 JRST	..0003
+	MOVEI	t,"9"
+	CAMGE	t,ch
+	 JRST	..0003
+	CALL	numarg##		; yes read it
+	CALL	discar			; empty after?
+	 JRST	srcerr			; no, error
+	JRST	srcret			; yes, OK
+
+..0003:	MOVEI	str,srcbuf		; where to put the pattern
+	MOVEI	t,srcque		; arg question
+	MOVEM	t,quest##
+	CALL	eatsrc			; get chars from command to SRCBUF
+	 JRST	srcerr			; error: arg not finished
+	CALL	nexsho##		; get next char
+	CALL	discar			; discard last delimiter
+	 JRST	srcerr			; error: extra chars after arg
+
+	MOVE	t,sbslen		; anything to search for?
+	JUMPN	t,..0004
+	JRST	srcerr			; no, error
+
+..0004:	SETZ	gp1,			; start pos of pattern
+	CALL	stsrch			; set up tables
+	MOVEI	t,1			; now we know arg is ok
+	MOVEM	t,srctyp
+	JRST	srcret			; OK, ready to go
+
+srcerr:	SETZM	srctyp			; arg not ok
+	SETOM	errfl##			; error
+srcret:	return
+
+
+
+
+;+
+; SBSARG  --  substitute argument reader
+;-
+
+sbsque:	save	<str>
+	print	zassbt##		;"Whst to change it to?"
+	call	preol##			;print a CR
+	return
+
+
+sbsarg:	save	<str,ch,nr,quest##>
+	SKIPE	hlpflg##		;help?
+	 JRST[	print	sbstxt##	;yes, explain
+		JRST	sbserr]
+	SETZM	number##		; zero counter
+	CALL	skblan##		; skip blanks
+	CALL	gshort##		; get next char
+	MOVEI	t,"0"			; numerical arg?
+	CAMLE	t,ch
+	 JRST	..0006
+	MOVEI	t,"9"
+	CAMGE	t,ch
+	 JRST	..0006
+	CALL	numarg##		; yes, read it
+	CALL	discar			; empty after?
+	 JRST	sbserr			; no, error
+	JRST	sbsret			; yes, OK
+
+..0006:	MOVEI	str,srcbuf		; where to put the pattern
+	MOVEI	t,srcque		;[KPJ.5] search question
+	MOVEM	t,quest##
+	CALL	eatsrc			; get chars from command to SRCBUF
+	 JRST	sbserr			; error: arg not finished
+	MOVE	t,sbslen		;[KPJ.6] anything to search for?
+	JUMPN	t,..0007
+	JRST	sbserr			; no, error
+
+..0007:	SETZ	gp1,			; start pos of pattern
+	CALL	stsrch			; set up tables
+	MOVEI	t,sbsque		; search question
+	MOVEM	t,quest##
+	CALL	eatsrc			; get chars from command to SRCBUF
+	 JRST	sbserr			; error: arg not finished
+	CALL	nexsho##		; get next char
+	CALL	discar			; discard last /
+	 JRST	sbserr			; error: extra chars after arg
+	MOVEI	t,2			; now we know arg is ok
+	MOVEM	t,srctyp
+	JRST	sbsret			; ok ready to go
+
+sbserr:	SETZM	srctyp			; arg no ok
+	SETOM	errfl##			; error
+sbsret:	return
+
+
+
+
+
+;+
+;DISCAR		discard last character
+;returns	+1 if extra characters and SILFLG is on
+;		+2 if SILFLG is non-zero,
+;		   or if character not last (i.e. NUL)
+;-
+
+discar:	save	<ch>			;<KPJ.10>
+	CALL	skblan##		; skip over blanks
+	CALL	gshort##		; get next char
+	SKIPE	silflg##		;<KPJ.10> silent?
+	 SKIPN	ch			;<KPJ.10> end of string?
+	  skpret			;+2 return
+	return
+
+
+
+
+;+
+; EATSRC  --  eat a search chars
+; and put them in buffer pointed to by STR. Number of
+; chars is returned in NR and SBSLEN.
+; question prompter in QUEST
+; Returns at call+1 if error (erroneous end of text),
+;	  at call+2 otherwise.
+;-
+
+eatsrc:	save	<ch,gp1>
+	SETZ	nr,			; init counter
+	CALL	gshort##		; get first char
+	JUMPN	ch,..0010		; empty?
+	CALL	eatlin			;yes, read arg from a line
+	skpret
+	JRST	..0011
+
+..0010:	MOVEI	t,"/"			; slash?
+	CAMN	t,ch
+	 JRST	..0012
+	MOVEI	t,.CHQUO		;or quote?
+	CAMN	t,ch
+	 JRST	..0012
+	JRST	..0011
+
+..0012:	MOVE	gp1,ch			; yes, save delimiter
+..0015:	CALL	nexsho##		; get next char
+	CALL	gshort##		; load it
+	CAME	ch,gp1			; found ending delimiter?
+	 JRST	..0013
+
+	SETZ	ch,			; yes, end buffer
+	DPB	ch,bytptr(nr)		; deposit it
+	MOVEM	nr,sbslen		; save length
+	skpret				; yes, +2 return
+	JRST	..0014
+
+..0013:	JUMPLE	ch,..0014		;<KPJ.7> other non-null?
+	DPB	ch,bytptr(nr)		; yes save in buffer
+	AOJA	nr,..0015		; increment nr and loop
+
+..0014:
+..0011:	return
+
+
+
+
+
+;+
+;EATLIN		read argument from a separate line
+;		place to put it in STR at index NR
+;-
+
+eatlin:	save	<str,txt,bp>		
+	PUSH	P,str
+	CALL	getstr##		;get a line
+	 JRST[	POP	P,str		;<KPJ.14> failed, restore
+		JRST	eatli9]		;<KPJ.14> give up
+	CALL	mkbp##			;make a byte pointer
+	MOVEM	bp,chpt##		;store it
+	POP	P,str
+
+eatli1:	CALL	gshort##		;get character
+	JUMPN	ch,[			;finished?
+		DPB	ch,bytptr(nr)	;no, deposit
+		CALL	nexsho##	;get next character
+		AOJA	nr,eatli1]	;loop
+	DPB	ch,bytptr(nr)		;make ASCIZ
+	MOVEM	nr,sbslen		;store length
+eatli9:	return				;<KPJ.14>
+
+
+
+
+
+;+
+srched::comhed	0,srcarg,src,ccsear##,zseahl## ;Search
+;-
+
+
+
+;+
+sbshed::comhed	0,sbsarg,sbs,ccrepl##,zsbthl## ;Replace
+;-
+
+
+
+;+
+;SRC		search for a string
+; pattern should have been set up by STSRCH.
+; If a match is found, LINPTR is set to that line.
+;-
+
+src:	save	<str>
+	MOVEI	t,1			;have an argument?
+	CAME	t,srctyp
+	 JRST[	print	znsear##	;no, output message
+		CALL	preol##		;and a newline
+		JRST	src9]
+	CALL	srcaux			;yes, go on
+src9:	return
+
+
+
+
+;+
+;SBS		substitutes a string
+; pattern should have been set up by STSRCH.
+; If a match is found, LINPTR is set to that line.
+;-
+
+sbs:	save	<str>
+	MOVEI	t,2			;have an argument?
+	CAME	t,srctyp
+	 JRST[	print	znsbar##	;"No replace argument given"
+		CALL	preol##		;output to terminal
+		JRST	sbs9]
+	CALL	srcaux			;yes, go on
+sbs9:	return
+
+
+
+
+
+;+
+; SRCAUX  --  auxiliary routine for SEARCH and SUBSTITUTE
+; assumes that pattern has been set up by STSRCH
+;-
+
+srcaux:	save	<nr,gp1,gp2,str,txt>
+	MOVE	txt,linptr##		; pointer to succ lines
+
+srcau1:	MOVEI	t,entry##		; empty?
+	CAMN	t,txt
+	 JRST	srcau2
+	MOVEI	str,2(txt)		; no address of text
+	MOVE	nr,1(txt)		; number of chars
+	SETZ	gp1,			; start looking at first pos
+	CALL	fsrch			; search
+	 JRST	srcau2			; not found - try next
+	SOS	number##		; decr counter
+	MOVEI	t,1			; search?
+	CAME	t,srctyp
+	 JRST	..0021			; no, substitute all in this line
+	HRL	t,txt			; yes, change line
+	HLRM	t,linptr##
+	JRST	..0022
+..0021:	CALL	sbslin			; no, substitute all in this line
+
+..0022:	MOVE	t,number		; more search?
+	JUMPL	t,..0023
+	HLR	txt,0(txt)		; get next line
+	JRST	srcau1			; yes
+..0023:	JRST	..0024
+
+srcau2:	HLR	txt,0(txt)		; get next line
+	CAMN	txt,linptr##		; finished?
+	 JRST	..0025			;yes
+	JRST	srcau1			; no, get next line
+
+..0025:	print	znomtc##		;"No line contains that text"
+	CALL	preol##			;output to terminal
+..0024:	return
+
+
+
+
+
+;+
+; SBSLIN  --  make all substitutions in a line but
+; save current line first
+; ptr to text in STR
+; matching pos in GP1
+; line ptr in TXT
+;-
+
+sbslin:	CAME	txt,linptr##		; if match at current line
+	 JRST	..0026
+	CALL	sbsln1			; nothing special
+	JRST	..0027			; else
+
+..0026:	PUSH	P,linptr##		; save current line and
+	CALL	sbsln1			; substitute and
+	SETZM	pwrflg##		; clear prompt flag
+	POP	P,linptr##		; restore current line
+..0027:	return				; and return
+
+
+
+
+
+;+
+;SBSLN1		make all substitutions in a line
+;accepts	STR/	pointer to text
+;		GP1/	matching position
+;returns	TXT/	line pointer
+;-
+
+
+sbsln1:	save	<str,txt,gp1,gp2,bp>
+	MOVEM	txt,linptr		;new LINPTR
+	CALL	gremli##		;remove old line
+	MOVE	txt,str			;save pointer
+	CALL	beglin##		;make new line
+	 JRST	sbsln9			;<KPJ.14> failed, give up
+	MOVE	str,txt			;put back STR
+	SETZ	bp,			;pick chars from beginning of STR
+sbsln2:	MOVE	gp2,gp1			;end of pick area
+	CALL	movchs			;move chars up to match
+	MOVEI	str,srcbuf		;move substitute
+	SETZ	bp,			;from beginning of string
+	MOVE	gp2,sbslen		;all SBSLEN chars
+	CALL	movchs			;we move
+	ADD	gp1,patlen		;next search pos
+	MOVE	str,txt			;search for any more
+	MOVE	bp,gp1			;occurences
+	CALL	fsrch
+	 TRNA				;no match move rest
+	  JRST	sbsln2			;match move more
+	MOVE	gp2,nr			;end of the rest
+	CALL	movchs			;move chars
+	CALL	sbspri			;<NIL.0> print the result
+sbsln9:	return
+
+
+
+
+
+
+;+
+; MOVCHS  --  move chars
+; from text pointed to by STR
+; at index in BP
+; to index in GP2
+; to text at LINPTR (might be changed)
+;-
+
+movchs:	save	<ch,bp>
+nxmov:	CAML	bp,gp2			; finished?
+	 JRST	..0028
+	LDB	ch,bytptr(bp)		; no
+	CALL	depch			; deposit character
+	ADDI	bp,1			; increment pointer
+	JRST	nxmov
+..0028:	return
+
+
+
+
+
+
+;+
+; SBSPRI  --  print substituted line
+; line in LINPTR
+;-
+
+sbspri:	save	<str>
+	print	zsychg##		;"Changed to:"
+	CALL	preol##			;new line
+	CALL	prcurr##		;print the line
+	return
+
+
+
+
+;+
+;DEPCH		deposit character in LINPTR line
+;accepts	CH/	character
+;-
+
+depch:	save	<str>
+	MOVE	str,linptr		;base address for BYTPTR table
+	MOVEI	t,ormarg		;line full?
+	CAMG	t,1(str)
+	 JRST[	CALL	sbspri		;output it
+		CALL	beglin##	;yes, make new line
+		 JRST	depch9		;<KPJ.14> failed, give up
+		JRST	.+1]		;<KPJ.14>
+	IDPB	ch,-1(str)		;deposit it
+	AOS	1(str)			;increment counter
+depch9:	return				;<KPJ.14>
+
+	END
+..and no more

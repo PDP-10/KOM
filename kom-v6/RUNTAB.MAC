@@ -1,0 +1,539 @@
+;Oden::DSKZ:RUNTAB.MAC<62,7777,MAC> 1988-01-27 00:22:23, KPJ @ H.HOLE <10,50> 
+;40	Eliminate TOUCH, TJTID, REPRINT, GERCOM, NORCOM and TALNOR.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-12-19 16:44:17, Edit by KPJ @ L89
+;37	CRUN can't call GRRBLK, use GRRBLC instead.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-12-17 14:48:06, Edit by KPJ @ L89
+;36	Call GRRBLK before calling RUNX, and error return from GRRBLK.
+;	Leave KOM program when starting a program.  Optimized CRUN code.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-11-20 16:15:20, Edit by KPJ @ L89
+;35	TALK SWEDISH, TALK ENGLISH and TALK NORWEGIAN run QOM-program if FTQOM.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-10-30 15:05:53, Edit by KPJ @ L89
+;34	FTQOM is under QZIF.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-10-29 15:04:11, Edit by KPJ @ L89
+;33	Use QZIF/FOAIF/RUNIF.
+;Freja::Qs:<Kom.6.Macro>Runtab.Mac.4 860821-1938,KPJ-Jaakkola
+;32	Handle PRFINA error return.
+;DSKG:RUNTAB.MAC<62,7777,MAC> 1986-07-22 13:20:11, Edit by KPJ @ QZKTH
+;31	Moved RUNTAB to ALLTAB under name RYNTAB. Dummy RUNTAB added.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-07-16 20:44:04, Edit by KPJ @ L89
+;30	"Anropa FOA-skrivare" is under FTFOA.
+;Freja::Qs:<Kom.6.Macro>Runtab.Mac.3 860715-0039,KPJ-Jaakkola
+;27	Need RNEXEC which is used in RUNFRK.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-06-26 22:43:11, Edit by KPJ @ L89
+;26	Moved RUN blocks here from SITE.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-06-19 12:29:04, Edit by KPJ @ L89
+;25	Add PUSH command for T10 (available from Tops-10 V7.03), and "CALL
+;	MONITOR" command for TOPS-20.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-06-19 12:21:44, Edit by KPJ @ L89
+;24	Use DEFAULT-EXEC: for PUSH command (introduced in TOPS-20 V6.0)
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-06-18 17:43:37, Edit by KPJ @ L89
+;23	Moved RUNBLK to MONITO where used.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-06-18 15:50:10, Edit by KPJ @ L89
+;22	Use FOAPPN subroutine, instead of hardwired PPN.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-06-16 20:21:03, Edit by KPJ @ L89
+;21	Added TALK NORWEGIAN (sigh... this *is* a mess...)
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-05-07 16:31:55, Edit by KPJ @ L89
+;20	Disallowed delayed RUN PROGRAM. Corrected error message in DELCOM.
+;Freja::Qs:<Kom.6-Sources>Runtab.Mac.7  7-Apr-86 18:52:25,Editor:KPJ-Jaakkola
+;17	FTQOM is T10 only.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-03-19 03:46:25, Edit by KPJ @ T-ROOM
+;16	Added RUN (PROGRAM) command.
+;Oden::DSKG:RUNTAB.MAC<62,7777,MAC> 1986-02-13 19:33:57, Edit by KPJ
+;15	PTY mode inside FTPTYM conditional.
+;Oden::DSKD:RUNTAB.MAC[62,7777,MAC] 1986-01-11 17:16:42, Edit by KPJ
+;14	"Speak swedish" had no swedish name, made "Speak English" become
+;	doubly defined.
+;Oden::DSKD:RUNTAB.MAC<62,7777,MAC> 1986-01-08 05:36:28, Edit by KPJ
+;13	Added ODEN "Call QOM" command (FTQOM switch)
+;Oden::DSKD:RUNTAB.MAC<62,7777,MAC> 1985-12-05 17:12:32, Edit by KPJ
+;12	Deleted "Call Super-KOM" command.
+;Oden::DSKD:RUNTAB.MAC<62,7777,MAC> 1985-10-08 00:36:37, Edit by KPJ
+;11	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;	Use .SWE symbol instead of "0" for Swedish language.
+;Oden::DSKD:RUNTAB.MAC<62,7777,MAC> 1985-08-09 12:07:17, Edit by KPJ @ DECGR
+;10	Make edit #3 (on FTRUN) take effect.
+;Oden::DSKD:RUNTAB.MAC<62,7777,MAC> 1985-04-24 19:11:24, Edit by KPJ @ HOME
+;7	3RIP code deleted.
+;Oden::DSKD:RUNTAB.MAC<62,7777,MAC> 1985-04-08 04:56:40, Edit by KPJ @ NADJA
+;6	Make 3RIP call write the name of our program.
+;Oden::DSKD:RUNTAB.MAC[62,7777,MAC] 1985-03-10 00:38:00, Edit by KPJ @ AIDA
+;5	Sanitized code.
+;Oden::DSKD:RUNTAB.MAC[62,7777] 1984-12-21 19:35:48, Edit by KPJ @ HOME
+;4	Make norwegian version at PRMEPL
+;Oden::DSKD:RUNTAB.MAC[62,7777] 1984-11-19 09:23:30, Edit by K.JAAKKOLA
+;3	Included SEND MESSAGE command into table. Don't SEARCH UUOSYM on
+;	TOPS-20. Sidestep file if not FTRUN set. General code cleanup to see
+;	what this code really tries to do.
+;Oden::Dskd:Runtab.Mac[62,7777] 1984-06-19 12:23:31, Edit by KPJ Jaakkola
+;2	Changed CALL MONITOR command to PUSH (TO) EXEC on TOPS-20.
+;Oden::Dsk:Runtab.New[1116,134] 1982-03-02 20:09:31, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(runtab)
+runtab::				;<KPJ.31>
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-06-19 12:17:27
+
+;	D A T A   A R E A
+
+runpek:	BLOCK	1			;<KPJ.16> file spec pointer
+
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;	R U N   B L O C K S	(copied, can be in high segment to save space)
+
+RUNIF,<				;<KPJ.33>
+T10,<
+runnew:
+IFE	ftlan-.swe,<EXP	'kom   ','komnew','exe   ',0,0,0> ;SWEdish
+IFE	ftlan-.nor,<EXP	'kom   ','nornew','exe   ',0,0,0> ;NORwegian
+IFE	ftlan-.eng,<EXP	'kom   ','comnew','exe   ',0,0,0> ;ENGlish
+IFE	ftlan-.ger,<EXP	'kom   ','gernew','exe   ',0,0,0> ;GERman
+IFE	ftlan-.fre,<EXP	'kom   ','frenew','exe   ',0,0,0> ;FREnch
+runold:
+IFE	ftlan-.swe,<EXP	'kom   ','komold','exe   ',0,0,0> ;SWEdish
+IFE	ftlan-.nor,<EXP	'kom   ','norold','exe   ',0,0,0> ;NORwegian
+IFE	ftlan-.eng,<EXP	'kom   ','comold','exe   ',0,0,0> ;ENGlish
+IFE	ftlan-.ger,<EXP	'kom   ','gerold','exe   ',0,0,0> ;GERman
+IFE	ftlan-.fre,<EXP	'kom   ','freold','exe   ',0,0,0> ;FREnch
+runkom:
+IFE	ftlan-.swe,<EXP	'kom   ','kom   ','exe   ',0,0,0> ;SWEdish
+IFE	ftlan-.nor,<EXP	'kom   ','komnor','exe   ',0,0,0> ;NORwegian
+IFE	ftlan-.eng,<EXP	'kom   ','komeng','exe   ',0,0,0> ;ENGlish
+IFE	ftlan-.ger,<EXP	'kom   ','komger','exe   ',0,0,0> ;GERman
+IFE	ftlan-.fre,<EXP	'kom   ','komfre','exe   ',0,0,0> ;FREnch
+runnor:
+IFE	ftlan-.swe,<EXP	'kom   ','norswe','exe   ',0,0,0> ;SWEdish
+IFE	ftlan-.nor,<EXP	'kom   ','nor   ','exe   ',0,0,0> ;NORwegian
+IFE	ftlan-.eng,<EXP	'kom   ','noreng','exe   ',0,0,0> ;ENGlish
+IFE	ftlan-.ger,<EXP	'kom   ','norger','exe   ',0,0,0> ;GERman
+IFE	ftlan-.fre,<EXP	'kom   ','norfre','exe   ',0,0,0> ;FREnch
+runeng:
+IFE	ftlan-.swe,<EXP	'kom   ','comswe','exe   ',0,0,0> ;SWEdish
+IFE	ftlan-.nor,<EXP	'kom   ','comnor','exe   ',0,0,0> ;NORwegian
+IFE	ftlan-.eng,<EXP	'kom   ','com   ','exe   ',0,0,0> ;ENGlish
+IFE	ftlan-.ger,<EXP	'kom   ','comger','exe   ',0,0,0> ;GERman
+IFE	ftlan-.fre,<EXP	'kom   ','comfre','exe   ',0,0,0> ;FREnch
+runtsw:
+IFE	ftdb-.swe,< EXP	'kom   ','kom   ','exe   ',0,0,0> ;SWEdish
+IFE	ftdb-.nor,< EXP	'kom   ','norswe','exe   ',0,0,0> ;NORwegian
+IFE	ftdb-.eng,< EXP	'kom   ','comswe','exe   ',0,0,0> ;ENGlish
+IFE	ftdb-.ger,< EXP	'kom   ','gerswe','exe   ',0,0,0> ;GERman
+IFE	ftdb-.fre,<
+NQZIF,<		    EXP	'kom   ','freswe','exe   ',0,0,0> ;FREnch
+QZIF,<		    EXP	'kom   ','qom   ','exe   ',0,0,0> ;QOM
+>;ftdb=.fre
+runtno:
+IFE	ftdb-.swe,< EXP	'kom   ','komnor','exe   ',0,0,0> ;SWEdish
+IFE	ftdb-.nor,< EXP	'kom   ','nor   ','exe   ',0,0,0> ;NORwegian
+IFE	ftdb-.eng,< EXP	'kom   ','comnor','exe   ',0,0,0> ;ENGlish
+IFE	ftdb-.ger,< EXP	'kom   ','gernor','exe   ',0,0,0> ;GERman
+IFE	ftdb-.fre,<
+NQZIF,<		    EXP	'kom   ','frenor','exe   ',0,0,0> ;FREnch
+QZIF,<		    EXP	'kom   ','qomnor','exe   ',0,0,0> ;QOM
+>;ftdb=.fre
+runten:
+IFE	ftdb-.swe,< EXP	'kom   ','komeng','exe   ',0,0,0> ;SWEdish
+IFE	ftdb-.nor,< EXP	'kom   ','noreng','exe   ',0,0,0> ;NORwegian
+IFE	ftdb-.eng,< EXP	'kom   ','com   ','exe   ',0,0,0> ;ENGlish
+IFE	ftdb-.ger,< EXP	'kom   ','gereng','exe   ',0,0,0> ;GERman
+IFE	ftdb-.fre,<
+NQZIF,<		    EXP 'kom   ','freeng','exe   ',0,0,0> ;FREnch
+QZIF,<		    EXP	'kom   ','qomeng','exe   ',0,0,0> ;QOM
+>;ftdb=.fre
+>;T10
+>;RUNIF
+;-----------------------------------
+RUNIF,<				;<KPJ.33>
+T10,<
+newcom::comhed	0,runarg,cnewco,ccneco##,runhlp## ;Call new KOM
+oldcom::comhed	0,runarg,coldco,ccolco##,runhlp## ;Call old KOM
+
+komcom::comhed	0,runarg,ckomco,cckomc##,runhlp## ;Call Swedish KOM
+REPEAT	0,<				;<KPJ.40> eliminate this
+norcom::comhed	0,runarg,cnorco,ccnoco##,runhlp## ;Call Norwegian KOM
+>;END REPEAT 0
+engcom::comhed	0,runarg,cengco,ccenco##,runhlp## ;Call English KOM
+						  ;etc...
+talswe::comhed	0,runarg,ctalsw,cccamo##,zhltal## ;Speak Swedish
+taleng::comhed	0,runarg,ctalen,cccamo##,zhltal## ;Speak English
+REPEAT	0,<				;<KPJ.40> eliminate this
+talnor::comhed	0,runarg,ctalno,cccamo##,zhltal## ;Speak Norwegian
+						  ;etc...
+>;END REPEAT 0
+>;T10
+runprg::comhed	0,rynarg,crun,cccamo##,zhlrun##	;<KPJ.16> Run (program)
+T10,<calmon::	comhed	0,whoarg##,callmo,cccamo##,runhlp##> ;Make PTY subjob
+T20,<puzhit::	comhed	0,whoarg##,pushit,cccamo##,pshhlp##> ;Push
+QZIF,<
+T10,<
+REPEAT	0,<			;<KPJ.40> eliminate Germans
+gercom::comhed	0,runarg,cgerco,ccgeco##,runhlp## ;Call German KOM
+>;END REPEAT 0
+IFN	ftqom,<
+qomcom::comhed	0,runarg,cqomco,ccqoco##,runhlp## ;<KPJ.13> Call QOM
+>;ftqom
+>;T10
+REPEAT	0,<			;<KPJ.40> eliminate these
+IFE	ftlan-.swe,<
+touch::	comhed	0,runarg,ctouch,cctouc##,runhlp## ;Anropa maskinskrivningskurs
+T10,<
+tjtid::	comhed	0,runarg,ctjtid,cctjti##,runhlp## ;Anropa tj{nsteresetill{gg }}
+FOAIF,<
+reprin::comhed	0,runarg,crepri,ccrepr##,runhlp## ;Anropa FOA-skrivare
+>;FOAIF
+>;T10
+>;ftlan=.swe
+>;END REPEAT 0
+>;QZIF
+>;RUNIF
+;-
+
+;+
+;RUNARG		argument to CALL (and a number of other) commands
+;-
+
+runarg::CALL	delcom			;delayed command ?
+	 TRNA				;<KPJ.7> yes, not allowed
+	  CALL	noarg##			;no argument
+	return
+
+
+;+
+;DELCOM		check if this command legal now
+;returns	+1 no,  illegal (illegal as delayed command)
+;		+2 yes, legal
+;-
+
+delcom::save	<str>			;<KPJ.20>
+	ifoff	delflg##,delco8		;delayed command ?
+IFN	ftptym,<			;<KPJ.15>
+	SKIPGE	ptyflg##		;allow in PTY mode
+	 JRST	delco8
+>;ftptym
+	SKIPL	silflg##		;<KPJ.20> silent ?
+	 JRST[	CALL	preol##		;<KPJ.20> no, new line
+		print	zntrik##	;<KPJ.20> "not allowed as delayed"
+		JRST	.+1]		;<KPJ.20>
+	SETOM	errfl##			;<KPJ.20> set error flag
+	TRNA				;<KPJ.20>
+delco8:	 skpret				;not delayed command
+	return
+
+;+
+RUNIF,<				;<KPJ.33>
+T10,<
+;CKOMCO		Call Swedish KOM	(T10 only)
+;-
+
+ckomco:	MOVEI	gp1,runkom		;Swedish KOM
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, tell user
+		JRST	ckomc9]		;<KPJ.36> give up
+	CALL	leave##			;leave program
+	CALL	reltty##		;release terminal
+	CALL	runx##			;call it
+ckomc9:	return				;<KPJ.36>
+>;T10
+
+;+
+T10,<
+;CNEWCO		Call new Swedish KOM	(T10 only)
+;-
+
+cnewco:	MOVEI	gp1,runnew		;new version
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, give error message
+		JRST	cnewc9]		;<KPJ.36>
+	CALL	leave##			;leave program
+	CALL	reltty##		;release terminal
+	CALL	runx##			;call it
+cnewc9:	return
+>;T10
+
+;+
+T10,<
+;COLDCO		Call old KOM	(T10 only)
+;-
+
+coldco:	MOVEI	gp1,runold		;old version
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, give error message
+		JRST	coldc9]		;<KPJ.36>
+	CALL	leave##			;leave program
+	CALL	reltty##		;release terminal
+	CALL	runx##			;call it
+coldc9:	return				;<KPJ.36>
+>;T10
+
+
+;+
+T10,<
+;CENGCO		Call COM	(T10 only)
+;-
+
+cengco:	MOVEI	gp1,runeng		;English COM
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't give error message
+		JRST	cengc9]		;<KPJ.36> give up
+	CALL	leave##			;leave program
+	CALL	reltty##		;release terminal
+	CALL	runx##			;call it
+cengc9:	return				;<KPJ.36>
+>;T10
+
+;+
+REPEAT	0,<				;<KPJ.40> eliminate this
+T10,<
+;CTALNO		Speak Norwegian		(T10 only)
+;-
+
+ctalno:	MOVEI	gp1,runtno		;talk Norwegian (change high segment)
+	CALL	getx##			;call it
+	return
+>;T10
+>;END REPEAT 0
+
+;+
+T10,<
+;CTALSW		Speak Swedish		(T10 only)
+;-
+
+ctalsw:	MOVEI	gp1,runtsw		;talk Swedish (change high segment)
+	CALL	getx##			;call it
+	return				;foo? failed
+>;T10
+
+;+
+T10,<
+;CTALEN		Speak English	(T10 only)
+;-
+
+ctalen:	MOVEI	gp1,runten		;talk English (change high segment)
+	CALL	getx##			;call it
+	return
+>;T10
+
+
+
+
+;+
+T10,<
+;CALLMO		make a PTY subjob	(Tops-10 only)
+;-
+
+callmo:	CALL	ptykom##		;call PTY
+	return
+>;T10
+
+
+;+
+T20,<
+;PUSHIT		push to lower level
+;-
+
+pushit:	CALL	updbeg##		;start update
+	CALL	updlse##		;update last seen count
+	CALL	updend##		;end of update
+	CALL	deque##			;deque all requests
+	CALL	preol##
+	SKIPN	execfh##		;[BDQ] give message only first time
+	 JRST[	print	popmsg##	;<KPJ.25> "use POP command to return"
+		CALL	preol##
+		JRST	.+1]
+	CALL	toutpu##		;output old text
+;T10,<	OUTSTR[	ASCIZ	!
+;?This feature is available from Tops-10 V7.03 - not available now!]
+;>;T10
+;T20,<
+	MOVEI	gp1,rnexec		;<KPJ.27> run EXEC
+	CALL	runfrk##
+	 JRST	cmon9
+;>;T20
+	print	grtmsg##		;"You are back in "
+	CALL	prcinm##		;output our name
+cmon9:	return
+
+rnexec::ASCIZ	!default-exec:!		;<KPJ.27>
+>;T20
+
+;+
+REPEAT	0,<				;<KPJ.40> eliminate this
+T10,<
+;CNORCO		Call Norwegian KOM	(T10 only)
+;-
+
+cnorco:	MOVEI	gp1,runnor		;Norwegian KOM
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, tell user
+		JRST	cnorc9]		;<KPJ.36> give up
+	CALL	leave##			;leave program
+	CALL	reltty##		;release terminal
+	CALL	runx##			;call it
+cnorc9:	return				;<KPJ.36>
+>;T10
+>;END REPEAT 0
+
+;+
+T10,<
+QZIF,<
+IFN	ftqom,<
+;CQOMCO		Call QOM		<KPJ.13>
+;-
+
+cqomco:	MOVEI	gp1,[EXP 'kom   ','qom   ','exe   ',0,0,0]
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, tell user
+		JRST	cqomc9]		;<KPJ.36>
+	CALL	leave##			;leave program
+	CALL	reltty##		;release terminal
+	CALL	runx##			;call it
+cqomc9:	return				;<KPJ.36>
+>;ftqom
+>;QZIF
+>;T10
+
+;+
+REPEAT	0,<			;<KPJ.40> eliminate this
+T10,<
+;CGERCO		Call German KOM
+;-
+
+cgerco:	MOVEI	gp1,[EXP 'kom   ','ger   ','exe   ',0,0,0]
+					;German KOM
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, tell user
+		JRST	cgerc9]		;<KPJ.36> give up
+	CALL	leave##			;leave program
+	CALL	reltty##		;release terminal
+	CALL	runx##			;call it
+cgerc9:	return				;<KPJ.36>
+>;T10
+>;END REPEAT 0
+
+;+
+REPEAT	0,<			;<KPJ.40> eliminate this
+T10,<
+IFE	ftlan-.swe,<
+;CTJTID		Anropa tj{nsteresetill{gg		}}
+;-
+
+ctjtid:	MOVEI	gp1,[EXP 'foa   ','tjtid ','exe   ',0,0,0]
+					;program FOA:TJTID.EXE
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, tell user
+		JRST	ctjti9]		;<KPJ.36> give up
+	CALL	leave##			;leave program
+	CALL	relase##		;release terminal
+	CALL	runx##			;call it
+ctjti9:	return				;<KPJ.36>
+>;ftlan=.swe
+>;T10
+>;END REPEAT 0
+
+;+
+REPEAT	0,<			;<KPJ.40> eliminate this
+T10,<
+FOAIF,<
+;CREPRI		run reprint
+;-
+
+crepri:	MOVEI	gp1,[EXP 'dskd  ','reprin','exe   ',0,fooppn,0]
+					;run reprint
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, tell user
+		JRST	crepr9]		;<KPJ.36> give up
+	CALL	leave##			;leave program
+	CALL	relase##		;release terminal
+	CALL	runx##
+crepr9:	return				;<KPJ.36>
+>;FOAIF
+>;T10
+>;END REPEAT 0
+
+;+
+REPEAT	0,<			;<KPJ.40> eliminate this
+IFE	ftlan-.swe,<
+;CTOUCH		Anropa maskinskrivningskurs	<Swedish only>
+;-
+ctouch:
+T10,<	MOVEI	gp1,[EXP 'pub   ','touch ','exe   ',0,0,0] ;TOUCH program
+	CALL	grrblk##		;<KPJ.36> save name in low segment
+	 JRST[	CALL	errmsg##	;<KPJ.36> can't, tell user
+		JRST	ctouc9]		;<KPJ.36> give up
+>;T10
+	CALL	leave##			;leave program
+T10,<	CALL	relase##		;release terminal
+	CALL	runx##			;call it
+>;T10
+T20,<	MOVEI	gp1,[ASCIZ !pub:touch.exe!]
+	CALL	runfrk##
+	 nop
+>;T20
+T10,<
+ctouc9:					;<KPJ.36>
+>;T10
+	return
+>;ftlan=.swe
+>;END REPEAT 0
+
+;+
+;RYNARG		argument to RUN command
+;-
+
+rynarg:	save	<quest##,str,gp1,bfp>
+	SKIPL	silflg##		;silent?
+	 CALL	delcom			;<KPJ.20> delayed?
+	  JRST	rynar8			;<KPJ.20> yeah, get lost
+	MOVEI	t,askfil##		;ask for file name
+	MOVEM	t,quest##
+	CALL	read##			;get file name
+	 JRST	rynar8			;no name given
+	CALL	rynfil##		;parse file name
+	SKIPE	errfl##			;error?
+	 JRST	rynar8			;yes, exit
+	MOVEM	gp1,runpek		;save pointer
+	CALL	prfina##		;display file name
+	 JRST	rynar8			;<KPJ.32> error return
+	CALL	preol##			;and end of line
+	TRNA
+rynar8:	 SETOM	errfl##			;error return
+	return
+
+
+;+
+;CRUN		execute RUN command
+;-
+
+crun:	save	<gp1,bfp>
+T10,<
+QZIF,<				;<KPJ.33>
+FOAIF,<				;<KPJ.33>
+	CALL	foappn##		;<KPJ.22> FOA PPN?
+	  JRST[	MOVEI	str,zcryn##	;<KPJ.16> GroBfuhrer says FOAs don't...
+		CALL	errmsg##	;<KPJ.16> ...so they don't RUN away!
+		JRST	crun9]		;<KPJ.16>
+>;FOAIF
+>;QZIF
+>;T10
+T10,<	MOVE	gp1,runpek		;<KPJ.16> get pointer
+	CALL	grrblc##		;<KPJ.37!KPJ.26> save name in low segm.
+>;T10
+	CALL	leave##			;<KPJ.26> leave program
+T10,<	CALL	reltty##		;<KPJ.26> release terminal
+	CALL	runx##			;<KPJ.16> go there
+>;T10
+T20,<	MOVE	gp1,runpek		;<KPJ.16> get pointer
+	CALL	runfrk##		;<KPJ.16> start a subfork
+	 SETOM	errfl##			;<KPJ.16> +1, failed to start
+					;<KPJ.16> +2, successful return
+>;T20
+crun9:	return				;<KPJ.16>
+
+>;RUNIF
+	END
+..and no more

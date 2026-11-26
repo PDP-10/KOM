@@ -1,0 +1,262 @@
+; Aida::Ss:<Kom.6C.Src>Strpro.Mac.3, 16-Sep-87 14:08:47, Ed: Zot
+; 11?	Added external .JBSA
+;Oden::DSKG:STRPRO.MAC<62,7777,MAC> 1987-04-30 13:16:51, KPJ @ DK <62,50>
+;10	Generate stop code PRSTR STRPRO when PRSTR gets invalid pointer.
+;Oden::DSKG:STRPRO.MAC<62,7777,MAC> 1986-04-25 12:59:18, Edit by KPJ @ L89
+;7	Get rid of OPDEFed funny macros. Use standard character names.
+;Oden::DSKD:STRPRO.MAC<62,7777,MAC> 1985-11-07 04:47:56, Edit by KPJ
+;6	Make PRSTR understand byte pointers.
+;Oden::DSKD:STRPRO.MAC<62,7777,MAC> 1985-10-08 01:33:42, Edit by KPJ
+;5	New format of PRINT and STRING macros. Introduced PROLOG macro.
+;Oden::DSKD:STRPRO.MAC<62,7777,MAC> 1985-08-25 05:59:49, Edit by KPJ
+;4	PRNUM4, PRNUM5 and PRNUMX localized.
+;Oden::DSKD:STRPRO.MAC<62,7777,MAC> 1985-08-05 21:19:14, Edit by KPJ @ DECGR
+;3	Moved PRFLOA and friends to COMPUT since only used there.
+;Oden::DSKD:STRPRO.MAC<62,7777,MAC> 1985-07-26 xx:xx:xx, Edit by KPJ @ ORANGE
+;2	Prepared for "string" zero word deletion (PRSTR).
+;Oden::Dskd:Strpro.Mac[62,7777] 1984-09-04 13:05:45, Edit by K.Jaakkola
+;1	Updated (c) notice.
+
+	SEARCH	kommac
+	PROLOG	(strpro)
+	external .jbsa  ;/Zot
+strpro:!
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 13:05:39
+
+;	D A T A   A R E A
+
+
+bpstr:	Z			; string byte pointer
+tabste::1			; tab step
+
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;PRSTR		output a string
+;accepts	STR/	0,,n	(word pointer)
+;			m,,n	(byte pointer)
+;returns	+1 always, with string written to consumer
+;		(Generate stop code PRSTR STRPRO when invalid pointer)
+;-
+
+prstr::	save	<ch,bpstr>
+	MOVE	t,str			;<KPJ.10> copy pointer
+	TLNE	str,(-1,,0)		;<KPJ.10> byte pointer?
+	 JRST	prstr0			;<KPJ.10> yes, no testing
+	CAIGE	str,.JBSA		;<KPJ.10> no, invalid word pointer?
+	 Bug(hlt,<prstr strpro>,<str>)	;<KPJ.10> yes, die
+	HRLI	t,(POINT 7,)		;<KPJ.6> make byte pointer
+prstr0:					;<KPJ.10>
+	MOVEM	t,bpstr
+prstr1:	SKIPGE	intflg##		;interrupt?
+	 JRST	prstr9			;yes
+	ILDB	ch,bpstr		;get character
+	JUMPE	ch,prstr9		;end of string ?
+	CALL	putch			;no, output character
+	JRST	prstr1
+
+prstr9:	return
+
+
+
+
+
+;+
+; PREOL2  --  print blank line
+;-
+
+preol2::CALL	preol		; print new line
+	branch	preol		; print blank line
+
+
+
+
+
+;+
+; PREOL  --  print end of line, CR-LF
+;-
+
+preol::	save	<ch>
+	ifon	intflg##,preol9		;interrupt ?
+	MOVEI	ch,.CHCRT		;carriage return
+	CALL	putch
+	MOVEI	ch,.CHLFD		;line feed
+	CALL	putch
+preol9:	return
+
+
+
+
+
+;+
+; PRTAB  --  print tab
+; gets tab step in TABSTE
+;-
+
+prtab::	save	<gp1,gp2>
+	ifon	intflg##,prtab9	; interrupt ?
+	MOVE	gp1,linpos##	; get line position
+	IDIV	gp1,tabste	; tab position reached ?
+	SUB	gp2,tabste	; get number of blanks
+	MOVE	t,crmarg##	; get margin
+	SUB	t,linpos##	; get left to margin
+	ADD	t,gp2		; get new left
+	CAIL	t,^D20		; at least 20 ?
+	 JRST	prtab1		; yes, do tab
+	CALL	getlma##	; no, new line
+	JRST	prtab9
+
+prtab1:	CALL	putbla##	; always print one blank
+	AOJL	gp2,prtab1	; ready ?
+prtab9:	return
+
+
+
+
+
+;+
+; PRNUM  --  print a decimal integer
+; gets the integer in NR
+;-
+
+prnum::	save	<gp1,ch>
+	ifon	intflg##,prnu9		; interrupt ?
+	JUMPGE	nr,prnum2		; negative number ?
+	MOVEI	ch,"-"			; yes, print hyphen
+	CALL	putch
+	MOVN	gp1,nr			; make it positive
+	JRST	prnum3
+
+prnum2:	MOVE	gp1,nr		; get number
+prnum3:	CALL	prnum1		; print number
+prnu9:	return
+
+
+prnum1:	save	<gp1,gp2,ch>
+	IDIVI	gp1,^D10		;divide by ten
+	PUSH	P,gp2			;save remainder
+	SKIPE	gp1			;if not end of number
+	 CALL	prnum1			;then print quote
+	POP	P,ch			;get remainder
+	ADDI	ch,"0"			;make it ASCII
+	CALL	putch			;print it
+	return
+
+
+
+
+
+;+
+; PR3NUM  --  print a decimal number in three positions
+; leading zeros printed
+; gets number in NR
+;-
+
+pr3num::save	<ch>
+	CAIL	nr,^D100
+	 JRST	pr3nu8
+	MOVEI	ch,"0"			; zero
+	CALL	putch
+	CAIL	nr,^D10
+	 JRST	pr3nu8
+	MOVEI	ch,"0"			; zero
+	CALL	putch
+pr3nu8:	CALL	prnum			; print number
+	return
+
+
+
+
+
+;+
+; PRNUMX  --  print a decimal number right justified
+; gets number in GP1
+; gets positions in NR
+;-
+
+prnumx:	save	<gp1,gp2,ch,nr>
+	IDIVI	gp1,^D10		;divide by ten
+	SOJLE	nr,prnux1		;one less position
+	CALL	prnumx			;print first part of number
+prnux1:	MOVE	ch,gp2			;get last digit
+	ADDI	ch,"0"			;make it ASCII
+	ADD	gp1,gp2			;get sum of parts
+	SKIPN	gp1			;check if zero
+	 MOVEI	ch,.CHSPC		;get space
+	CALL	putch			;print it
+	return
+
+
+
+
+
+;+
+; PRNUM6  --  print a decimal number in six positions
+; right justified
+; gets number in NR
+;-
+
+prnum6::save	<ch>
+	CAIL	nr,^D100000
+	 JRST	prnu68
+	CALL	putbla##	; blank
+	CALL	prnum5
+	JRST	prnu69
+
+prnu68:	CALL	prnum		; print number
+prnu69:	return
+
+
+
+
+
+;+
+; PRNUM5  --  print a decimal number in five positions
+; right justified
+; gets number in NR
+;-
+
+prnum5:	save	<ch>
+	CAIL	nr,^D10000
+	 JRST	prnu58
+	CALL	putbla##	; blank
+	CALL	prnum4
+	JRST	prnu59
+
+prnu58:	CALL	prnum		; print number
+prnu59:	return
+
+
+
+
+
+;+
+; PRNUM4  --  print a decimal number in four positions right justified
+; gets number in NR
+;-
+
+prnum4:	save	<ch>
+	CAIL	nr,^D1000
+	 JRST	prnum8
+	CALL	putbla##	; blank
+	CAIL	nr,^D100
+	 JRST	prnum8
+	CALL	putbla##	; blank
+	CAIL	nr,^D10
+	 JRST	prnum8
+	CALL	putbla##	; blank
+	CAIL	nr,1
+	 JRST	prnum8
+	CALL	putbla##	; blank
+	JRST	prnum9
+
+prnum8:	CALL	prnum		; print number
+prnum9:	return
+
+	END
+...and no more

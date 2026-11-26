@@ -1,0 +1,227 @@
+;Oden::DSKG:ONLYRE.MAC<62,7777,MAC> 1987-01-06 06:17:40, Edit by KPJ @ H.HOLE
+;7	Make TOOMAN global (called from NEXCOM)
+;Oden::DSKG:ONLYRE.MAC<62,7777,MAC> 1986-06-13 18:09:30, Edit by KPJ @ L89
+;6	Moved texts to TEXTER. ZFROM changed to ZFROMM (name collision).
+;Oden::DSKG:ONLYRE.MAC<62,7777,MAC> 1986-06-12 16:02:55, Edit by KPJ @ L89
+;5	Moved magic number to KOMMAC.
+;Oden::DSKG:ONLYRE.MAC<62,7777,MAC> 1986-04-25 11:57:13, Edit by KPJ @ L89
+;4	Get rid of OPDEFed funny macros.
+;Oden::DSKD:ONLYRE.MAC<62,7777,MAC> 1985-10-04 22:25:30, Edit by KPJ @ ORANGE
+;3	Introduced PROLOG macro.
+;Oden::Dskd:Onlyre.Mac[62,7777] 1984-09-04 05:05:07, Edit by K.Jaakkola
+;2	Updated (c) notice.
+;Oden::DSK:ONLYRE.NEW[1116,134] 1982-03-02 18:10:31, Edit by ENDERIN LARS
+;1	Added an ENTRY statement.
+
+	SEARCH	kommac
+	PROLOG	(onlyre)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-09-04 05:05:04
+
+;	D A T A   A R E A
+
+
+oldnr::	0			; old link number
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+onlyre::comhed	qonlyr,onlarg,conlyr,cconly##,zonlhl## ;Only (last)
+;-
+
+
+
+
+;+
+; QONLYR  --  check if to add only command
+;-
+
+qonlyr:	ifoff	firflg##,qonly9	; if not first time, skip command
+	CALL	tooman		; too many unseen entries ?
+	 skpret			; yes, add command
+qonly9:	return			; no, skip command
+
+
+
+
+
+;+
+;TOOMAN		check if too many unseen entries
+;returns	+1 if too many (more than MANYEN)
+;		+2 if not too many
+;-
+
+tooman::save	<gp2,nr>
+	SKIPN	gp2,curmbr##		;get member record
+	 JRST	tooma8			;not present in any conference
+	CALL	getuns##		;get number of unseen entries
+	CAIG	nr,manyen		;<KPJ.5> too many unseen entries?
+tooma8:	 skpret				;no
+	return
+
+
+
+
+
+;+
+; ONLARG  --  argument for only command
+;-
+
+onlarg:	save	<quest##>
+	ifon	silflg##,onlar8	; dont accept silent command
+	CALL	delcom##	; delayed command ?
+	 JRST	onlar8		; yes, error
+	setmem	quest##,askonl	; ask for where to begin
+	CALL	gtsinu		; read number of entry
+	JRST	onlar9
+
+onlar8:	SETOM	errfl##		; set error
+onlar9:	return
+
+
+
+
+
+;+
+; ASKONL  --  ask where to begin to read
+;-
+
+askonl:	save	<str>
+	CALL	numhlp		; give number help
+	CALL	preol##		; blank line
+	print	zhmsee##	;"How many?"
+	branch	prher##		; print herald
+
+
+
+
+;+
+; NUMHLP  --  give number help
+;-
+
+numhlp::save	<str>		; save regs
+	ifoff	hlpflg##,numhl9	; help wanted ?
+	print	zlahlp##	;"Give entry number, or FROM number"
+numhl9:	branch	preol##		; new line
+
+
+
+
+
+;+
+; GTSINU  --  get single numeric argument
+; gets prompt question in QUEST
+; returns argument got in NUMBER
+; returns minus one in no number got
+;-
+
+gtsinu:	save	<nr,tp>
+	CALL	read##		; read number
+	 JRST	gtsin8		; no reply
+	CALL	getnum##	; get number
+	 TRNA			;[BCQ] not a number
+	  JRST	gtsin7		;[BCQ] got a number so continue
+	MOVE	tp,frmtab	;[BCQ] load table
+	CALL	allarg##	;[BCQ] look for a match
+	 JRST	gtsin9		;[BCQ] got a match
+gtsin8:	SETOM	errfl##		; no number got
+gtsin7:	MOVEM	nr,number##	; save number
+gtsin9:	return
+;+
+frmtab:	table	sn,[EXP 0,frmhlp],zzhelp## ;"Help"
+	table	sn,[EXP 0,getfrm],zfromm## ;"from"	<KPJ.6!BCQ>
+	endtab
+;-
+
+;+
+;GETFRM		(not documented)
+;-
+
+getfrm:	save	<nr>
+	CALL	getnum##	;[BCQ] get "from n" argument
+	 MOVEI	nr,1		;[BCQ] didn't get anything
+	MOVNS	nr		;[BCQ] make it negative
+	MOVEM	nr,number##	;[BCQ] and save it away
+	return			;[BCQ] ok, to return
+
+;+
+;FRMHLP		(not documented)
+;-
+frmhlp:	save	<tp>
+	MOVE	tp,frmtab	;[BCQ] point to commands
+	CALL	pcomma##	;[BCQ] print'em
+	SETOM	errfl##
+	return
+
+
+;+
+; CONLYR  --  only read last entries
+; gets argument in NUMBER
+;-
+
+conlyr:	save	<nr>
+	MOVE	nr,number##	;[BCQ] get the number
+	CALL	gtwaen		; get wanted entry
+	SETZM	nxennr##	; clear next entry
+	SETZM	nxconr##	; clear next comment
+	SETZM	cursub##	; clear sub meeting
+	SETZM	nxoenr##	; clear next other entry
+	SETZM	nxlenr##	; clear next letter
+	CALL	setlse##	; set new last seen entry
+	CALL	chknew##	; check for more news
+	SKIPE	conf##		; present in any conference?
+	 CALL	readnx##	; read next entry
+	return
+
+
+
+
+
+;+
+; GTWAEN  --  get wanted entry
+; gets number of entries in NR
+; returns new last seen link in NR
+;-
+
+gtwaen:	save	<gp1,bfp,gp2>
+	SETZM	oldnr		; clear old link number
+	MOVE	gp2,nr		; get counter
+	MOVE	nr,conf##	; get current meeting
+	CALL	getobj##	; get meeting
+	 JRST	gtwae3		; not present
+	JRST	gtwae0
+
+gtwae3:	MOVE	nr,crenr##		;get self
+	CALL	getobj##		;get you
+	 Bug(hlt,<gtwaen onlyre>,<crenr##>)
+gtwae0:	MOVE	nr,objlto(bfp)		;get last link
+	JUMPL	gp2,gtwae4		;[BCQ] special processing if negative
+gtwae1:	CALL	getobj##		;get it
+	 JRST	gtwae9			;no more links
+	SKIPG	0(bfp)			;link deleted ?
+	 JRST	gtwae2			;yes, dont count it
+	SOJL	gp2,gtwae9		;right link got
+	MOVEM	nr,oldnr		;save old link number
+gtwae2:	MOVE	nr,lnklto(bfp)		;get previous link
+	JRST	gtwae1
+
+gtwae4:	MOVNS	gp2		;[BCQ] make it positive
+	SOJ	gp2,		;[BCQ] compensate to get the entry
+gtwae5:	CALL	getobj##	;[BCQ] get it
+	 JRST	gtwae9		;[BCQ] no more links
+	SKIPG	0(bfp)		;[BCQ] link deleted?
+	 JRST	gtwae7		;[BCQ] yes, dont count it
+	CAML	gp2,objlto+1(bfp) ;[BCQ] this link?
+	 JRST	gtwae9		;[BCQ] yes, found it!
+	MOVEM	nr,oldnr	;[BCQ] save old link number
+gtwae7:	MOVE	nr,lnklto(bfp)	;[BCQ] get previous link
+	JRST	gtwae5		;[BCQ] test next link
+	
+gtwae8:	MOVE	nr,oldnr	; get old link
+gtwae9:	return
+
+	END
+..and no more

@@ -1,0 +1,481 @@
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1987-05-15 21:21:13, KPJ @ H.HOLE <10,50>
+;32	Save our password when we use CHANGE PASSWORD on ourselves.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1987-05-13 12:23:04, KPJ @ L89 <1,2>
+;31	Fixed bug in edit #27.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1987-05-13 11:34:06, KPJ @ L89 <10,50>
+;30	ENCRYP rename ENKRYP to avoid name clash.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1987-05-08 17:07:02, KPJ @ L89 <62,50>
+;27	Save PASBEG too, to make edit #26 work.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1987-05-06 19:53:19, KPJ @ H.HOLE <62,50>
+;26	Don't CHANGE (OWN) PASSWORD if we have CHANGEd IDENTITY.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1987-04-30 14:39:06, KPJ @ DK <62,50>
+;25	CHANGE IDENTITY fails because UPDLSE destroys the new user number.
+;Freja::Qs:<Kom.6.Macro>Newnam.Mac.10 870414-1959,KPJ-Jaakkola
+;24	Change behaviour when unknown user attempts to enter: ask her if she
+;	is a NEW user or want to enter the name AGAIN.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1987-04-01 13:52:22, KPJ @ L89 <1,2>
+;23	Make CHANGE IDENTITY update your present record.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1986-12-11 16:36:06, Edit by KPJ @ L89
+;22	Handle +2 return from GELAMA.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1986-10-30 10:19:39, Edit by KPJ @ L89
+;21	Don't allow new users via LOGIN module if FTUSER#0, except when we all
+;	are administrators (INFO 1 word 12 is zero).
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1986-10-30 08:47:20, Edit by KPJ @ L89
+;20	User QZIF/FOAIF/RUNIF.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1986-10-20 14:53:25, Edit by KPJ @ L89
+;17	Employee support under FTEMPL.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1986-08-28 13:10:13, Edit by KPJ @ L89
+;16	CHANGE PASSWORD should behave as other password input on text phones.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1986-06-05 15:57:28, Edit by KPJ @ L89
+;15	Anonymity under FTANON.
+;Oden::DSKG:NEWNAM.MAC<62,7777,MAC> 1986-04-25 11:40:51, Edit by KPJ @ L89
+;14	Delete OPDEFed funny macros.
+;Oden::DSKD:NEWNAM.MAC<62,7777,MAC> 1985-10-04 19:41:59, Edit by KPJ
+;13	Introduced PROLOG macro.
+;Oden::DSKD:NEWNAM.MAC<62,7777,MAC> 1985-08-25 05:56:00, Edit by KPJ
+;12	MYSELF localized.
+;Oden::DSKD:NEWNAM.MAC<62,7777,MAC> 1985-06-20 07:00:15, Edit by KPJ @ GR\N
+;11	Global routine FOAEMP, global variable MYPASS unused. Deleted.
+;Oden::DSKD:NEWNAM.MAC<62,7777,MAC> 1985-06-19 20:48:05, Edit by KPJ @ Nadja
+;10	Made code introduced in edit#7 display minimum length as well.
+;Oden::DSKD:NEWNAM.MAC<62,7777,MAC> 1985-06-04 01:47:18, Edit by KPJ @ NADJA
+;7	Implemented password length testing code.
+;Oden::DSKD:NEWNAM.MAC<62,7777,MAC> 1985-03-15 11:20:52, Edit by KPJ @ L89
+;6	A new bunch of variables to store current user in. This necessary
+;	since KOM forgets person information as soon as we refer to some
+;	other person, e.g. when we CREATE a new one.
+;Oden::DSKD:NEWNAM.MAC[62,7777] 1984-11-12 17:25:20, Edit by K.JAAKKOLA
+;5	Make the dialogue for "new names" point out the possibility of
+;	spelling errors. Make KOM also stop saying "too short" when it
+;	means "too few words". SEARCH UUOSYM only on Tops-10.
+;Oden::DSKD:NEWNAM.MAC[62,7777] 1984-10-08 18:44:16, Edit by K.JAAKKOLA
+;4	ZNEWN3, ZNEWN4 and CHKNAM now global (used in CREATM module)
+;Oden::Dskd:Newnam.Mac[62,7777] 1984-09-20 20:18:34, Edit by K.Jaakkola
+;3	Make GETPAS set PWDILL=0 to signal unfaked password check.
+;Oden::Dskd:Newnam.Mac[62,7777] 1984-06-12 17:37:45, Edit by KPJ Jaakkola
+;2	Changed CHAPAS to set IGNPWD flag, thus making mismatched passwords
+;	given to the CHANGE PASSWORD not wait 5 seconds.
+;Oden::Dskd:Newnam.New[1116,657] 1982-03-02 19:28:02, Edit by Lars Enderin
+;1	(unknown)
+
+	SEARCH	kommac
+	PROLOG	(newnam)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-06-12 17:37:30
+
+;	D A T A   A R E A
+
+IFG	<pasmin>,<		;<KPJ.7> is code enabled?
+pasfoo:	BLOCK	1		;<KPJ.7> times we hustled John E. Luser
+>;pasmin
+myself:	0			;<KPJ.6> my personal number
+
+crenr::	0			;creator number
+newper::0			;new person
+nrred::	0			;number of read entries
+selffl::0			;personal flags
+selfnr::0			;own person number
+selfpw::Z			;encrypted password
+tmiflg::0			;tempcore input
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;NEWNAM		login a new user
+;returns	+1	if no password was given
+;		+2	if password got
+;		NR/	person number
+;-
+
+newnam::save	<str,gp1>
+	SKIPGE	tmiflg			;tempcore input ?
+	 JRST	newna9			;yes
+
+FOAIF,<	CALL	chkfoa##		;<KPJ.20> check if FOA PPN
+	 JRST	newna9			;yes, get new name
+>;FOAIF
+IFN	ftuser,<			;<KPJ.21> are we paranoid about users?
+	SKIPE	comadm##		;<KPJ.21> administrator defined?
+	 JRST[	CALL	preol##		;<KPJ.21> yes, refuse
+		print	zgrrrr##	;<KPJ.21> "Get lost, unregistered user"
+		JRST	newna9]		;<KPJ.21>
+>;ftuser
+	CALL	preol##			;new line
+	print	znewn1##		;"The name '"
+	CALL	prcoli##		;print new name
+	CALL	chknam			;[SEE] legal name?
+	 JRST	newna1			;[SEE] no, it contained bad characters
+	 JRST	newna2			;[SEE] no, it was just one word
+	print	znewn2##		;"' isn't. Haw-haw, I say."
+	PUSH	P,tp			;<KPJ.24>
+newna3:	MOVE	t,[POINT 7,[BYTE (7) .CHNUL]] ;<KPJ.24> consume name
+	MOVEM	t,chpt##		;<KPJ.24>
+	MOVEI	t,zmenu##		;<KPJ.24>
+	MOVEM	t,menuq##		;<KPJ.24>
+	MOVE	tp,newtab		;<KPJ.24> "NEW, or AGAIN?" menu
+	CALL	gttyta##		;<KPJ.24>  . . .
+	SKIPE	errfl##			;<KPJ.24> valid answer?
+	 JRST[	MOVEI	str,znyign##	;<KPJ.24> no, grr...
+		CALL	errmsg##	;<KPJ.24> . . .
+		JRST	newna3]		;<KPJ.24> no, ask again
+	POP	P,tp			;<KPJ.24>
+	JUMPN	nr,newna9		;<KPJ.24> AGAIN
+	SETZM	torgny##		;<KPJ.32> save password in PUSBEG
+	MOVE	t,[POINT 7,pusbeg##]	;<KPJ.32> . . .
+	MOVEM	t,pusptr##		;<KPJ.32> . . .
+	CALL	getpas			;ask for a new password for ourself
+	SETOM	torgny##		;<KPJ.32> restore Torgny's world
+	SKIPGE	errfl##
+	 JRST	newna9			;no password given
+	MOVE	t,paswor##		;<KPJ.31> save our password
+	MOVEM	t,puswor##		;<KPJ.31> . . .
+IFN	ftempl,<			;<KPJ.17>
+	SETZM	empnr##			;clear employee number
+>;ftempl
+	SETZM	orgnr##			;clear debiting organisation
+	CALL	manepe			;make new person
+	skpret				;person logged in
+	JRST	newna9			;[SEE] return
+
+newna1:	print	znewn3##		;[SEE] say name had bad characters
+	JRST	newna9
+
+newna2:	print	znewn4##		;[SEE] say that name was too short
+
+newna9:	return
+
+
+
+
+
+
+
+
+;+
+;NEWTAB		"AGAIN or NEW" menu	<KPJ.24>
+;-
+newtab:	table	sn,[EXP 0,0],zny##	;<KPJ.24> NEW (user)
+	table	sn,[EXP 0,666],zagain##	;<KPJ.24> AGAIN
+	endtab
+;+
+
+;CHKNAM		check if legal new name given <SEE>
+;accepts	CHPT/	name string pointer
+;returns	+1 if name contains invalid (CTRL) characters
+;		+2 if name is just one word
+;		+3 if acceptable name
+;-
+
+chknam::save	<chpt##,ch,gp1>
+	$Setz	gp1,		;<KPJ.30> reset "space" count and flags
+chkna1:	ILDB	ch,chpt##	;get one character
+	JUMPE	ch,chkna8	;end of string?
+	CAIGE	ch,.CHSPC	;control character?
+	 JRST	chkna9		;yes, return +1
+	CAIN	ch,.CHSPC	;no, is it space?
+	 JRST	chkna2		;yes, go process it
+	TLZE	gp1,(1,,0)	;<KPJ.30> any space seen before?
+	 ADDI	gp1,1		;<KPJ.30> yes, one more word seen then
+	TLO	gp1,(2,,0)	;<KPJ.30> remember that we've seen a non-space
+	JRST	chkna1		;loop for next character
+
+chkna2:	TLNE	gp1,(2,,0)	;<KPJ.30> have we seen any non-space before?
+	 TLO	gp1,(1,,0)	;<KPJ.30> yes, then remember this space
+	JRST	chkna1		;no, ignore leading spaces
+
+chkna8:	skpret			;we haven't seen any control characters
+	TLZ	gp1,(-1,,0)	;reset any flags that may be on
+	CAIL	gp1,1		;less than two words given in name?
+	 skpret			;no, then it's a good name
+chkna9:	return			;done
+
+
+;+
+;GETPAS		get a new password
+;returns	+1 always
+;		PASWOR/	encrypted password
+;		ERRFL/	on if no password was given
+;-
+
+getpas:	save	<nr,str,quest##>
+	CALL	echoff##		;turn off echoing
+	SETOM	errfl##			;set error flag on
+IFG	<pasmin>,<			;<KPJ.30>
+	SETZM	pasfoo			;<KPJ.30> clear counter
+>;pasmin
+getpa1:	MOVEI	t,asknpw		;ask for new password
+	MOVEM	t,quest##		;. . .
+IFN	ftphon,<			;<KPJ.16> if text phone support...
+	SKIPE	phone##			;<KPJ.16> is this a text phone?
+	 SETOM	pasflg##		;<KPJ.16> yes, get character oriented
+>;ftphon
+	CALL	read##			;get info
+IFE	ftphon,<JRST	getpa9>		;empty reply
+IFN	ftphon,<			;<KPJ.16> if text phone support...
+	 JRST[	SETZM	pasflg##	;<KPJ.16> not reading password no more
+		JRST	getpa9]		;<KPJ.16>
+	SETZM	pasflg##		;<KPJ.16> not reading password no more
+>;ftphon
+	MOVE	t,[POINT 7,pusbeg##]	;<KPJ.32> put stuff here
+	MOVEM	t,pusptr##		;<KPJ.32> . . .
+	MOVE	t,crenr			;<KPJ.32> get person
+	CAMN	t,selfnr		;<KPJ.32> self ?
+	 SETZM	torgny##		;<KPJ.32> yep, no stupidity then
+	CALL	enkryp##		;<KPJ.30> encrypt the password
+	SETOM	torgny##		;<KPJ.32> back to Middle Age
+	JUMPE	nr,getpa9		;empty reply
+IFG	<pasmin>,<			;<KPJ.7> code enabled?
+	MOVE	t,pasfoo		;<KPJ.7> yes, user hustled enuff?
+	CAIN	t,3			;<KPJ.7> is this 4th time?
+	 JRST[	print	ztoos2##	;<KPJ.7> OK, OK, you are persistent...
+		JRST	getpa2]		;<KPJ.7>
+	MOVE	t,paslen##		;<KPJ.7> get password length
+	CAIGE	t,pasmin		;<KPJ.7> enuff?
+	 JRST[	print	ztoosh##	;<KPJ.7> no, barf
+		CALL	shopwd##	;<KPJ.10> display minimum length
+		AOS	pasfoo		;<KPJ.7> count how many times he tries
+		JRST	getpa1]		;<KPJ.7> and ask for longer one
+getpa2:
+>;pasmin
+	MOVEM	nr,paswor##		;save password
+	MOVEI	t,asknpa		;ask for password again
+	MOVEM	t,quest##		;. . .
+	SETOM	ignpwd##		;<KPJ.2> Don't wait 5s if mismatch
+	SETZM	pwdill##		;<KPJ.3> really check password
+	CALL	chkpas##		;check password
+	 JRST	getpa1			;wrong, ask for password again
+	SETZM	errfl##			;password given
+getpa9:	CALL	echon##			;turn on echoing again
+	return
+
+
+;+
+;ASKNPW		ask for a new password
+;-
+
+asknpw:	save	<str>
+	SKIPL	hlpflg##		;<KPJ.30> help wanted ?
+	 JRST	asknp1			;<KPJ.30> no
+	print	zgphlp##		;"gimme a password, will ya."
+asknp1:	CALL	preol2##		;new line
+	print	zasnpw##		;"Password:"
+	rstreg				;<KPJ.30> restore saved stuff
+	CALLRET	prher##			;<KPJ.30> output "herald"
+
+
+
+
+
+
+
+;+
+;ASKNPA		ask for a new password again
+;-
+
+asknpa:	save	<str>
+	SKIPL	hlpflg##		;<KPJ.30> help wanted ?
+	 JRST	asknp2			;<KPJ.30> no
+	print	zgphlp			;give help
+	CALL	preol##			;new line
+asknp2:	CALL	preol##			;new line
+	print	zpwchk##		;"Gimme it again, Sam!"
+	rstreg				;<KPJ.30>
+	CALLRET	prher##			;<KPJ.30> output "herald"
+
+
+
+
+
+;+
+;MANEPE		make new person
+;accepts	EMPNR/	employee record
+;		ORGNR/	debiting organisation
+;returns	SELFNR/	number of person
+;		CRENR/	number of person
+;-
+
+manepe::MOVE	t,paswor##		;save own password
+	MOVEM	t,selfpw		;. . .
+	CALL	crnepe			;create new person
+	MOVE	t,pernr##		;save own number
+	MOVEM	t,selfnr		;. . .
+	MOVEM	t,crenr			;. . .
+	SETZM	nrred			;clear statistics
+	SETOM	newper			;new person
+	SETZM	agrval##		;no special command
+	return
+
+
+
+
+
+;+
+;CRNEPE		create new person
+;accepts	NAMPTR/	name pointer
+;		PASWOR/	encrypted password
+;		SELFPP/	own PPN
+;		ORGNR/	organisation
+;		EMPNR/	employee record
+;returns	PERNR/	number of new person
+;-
+
+crnepe:	CALL	updbeg##		;start update
+	CALL	creper##		;create a person record
+	rstreg				;<KPJ.27>
+	CALLRET	updend##		;<KPJ.27> end of update
+
+
+
+
+
+;+
+chapas::comhed	0,getpas,cchapa,ccchpw##,zcpwhl##	;Change password
+;-
+
+
+
+
+
+;+
+;CCHAPA		CHANGE (OWN) PASSWORD command
+;accepts	PASWOR/	new password
+;		CRENR/	person
+;-
+
+cchapa:	save	<nr>
+	MOVE	nr,crenr		;get person
+	MOVE	t,paswor##		;get encrypted password
+	CAMN	nr,selfnr		;<KPJ.26> self ?
+	 MOVEM	t,selfpw		;<KPJ.31> yes, save password
+	CALL	updbeg##		;start update
+	CALL	chpawo##		;change password
+	rstreg				;<KPJ.30>
+	CALLRET	updend##		;<KPJ.30> end of update
+
+
+
+
+
+;+
+cident::comhed	0,cidarg,chiden,ccchid##,zcidhl## ;Change identity
+					;(The Remo Trick)
+;-
+
+
+
+
+;+
+; CIDARG  --  change identity argument
+; returns new identity in NUMBER
+;-
+
+cidarg:	save	<quest##>
+	MOVEI	t,askcid		;<KPJ.30> ask for new identity
+	MOVEM	t,quest			;<KPJ.30> . . .
+	CALL	gtobnr##		;get object number
+	return
+
+
+
+
+
+;+
+;ASKCID		ask for a new identity
+;-
+
+askcid:	save	<str>
+	SKIPL	hlpflg##		;<KPJ.30> help ?
+	 JRST	askci1			;<KPJ.30> no
+	print	zhlcid##		;"Gimme a person name, will ya?"
+askci1:	CALL	preol2##		; blank line
+	print	zascid##		;"Who do you want to crack in as?"
+	rstreg				;<KPJ.31>
+	CALLRET	prher##			;<KPJ.31> print "herald"
+
+
+
+
+
+
+;+
+;CHIDEN		change identity
+;accepts	NUMBER/	wanted identity
+;-
+
+chiden:	save	<str,nr>
+	PUSH	P,number##		;<KPJ.25> save new object#
+	CALL	updbeg##		;<KPJ.23> start update
+IFE	ftenq,<				;<KPJ.23>
+	CALL	updlse##		;<KPJ.23> update last seen entry count
+>;ftenq=0
+IFN	ftenq,<				;<KPJ.23>
+	CALL	updcou##		;<KPJ.23> update last seen entry count
+>;ftenq
+	CALL	updend##		;<KPJ.23> end of update
+IFN	ftenq,<				;<KPJ.23>
+	CALL	upmeli##		;<KPJ.23> update member lists
+>;ftenq
+	POP	P,crenr			;<KPJ.25> change identity
+	print	znewid##		;"Your new identity is "
+	MOVE	nr,crenr		;<KPJ.25> get new identity
+	CALL	prname##		;print name
+	SETZM	nxlenr##		;clear next letter
+	CALL	gelama##		;get last marked
+	 nop				;<KPJ.22> ***FOO*** failed, ignore
+	return
+
+
+
+
+
+;+
+IFN	ftanon,<			;<KPJ.15>
+anonym::comhed	0,noarg##,anony,ccanon##,zanohl## ;(Become) anonymous
+>;ftanon
+;-
+
+
+
+
+;+
+;ANONY		Become anonymous
+;-
+
+IFN	ftanon,<			;<KPJ.15>
+anony:	MOVEI	str,zluse1##		;<KPJ.30> default is becoming anonymous
+	SKIPGE	crenr			;<KPJ.30> is already anonymous?
+	 MOVEI	str,zluse2##		;<KPJ.30> yes: OK, you become yourself
+	CALL	prstr##			;<KPJ.30> say whatever
+	MOVE	t,crenr
+	MOVNM	t,crenr			;make or unmake you anonymous
+	return
+>;ftanon
+
+
+
+
+;+
+creatp::comhed	0,crpear,crnepe,cccrpe##,zcrphl##	;Create person
+;-
+
+
+
+
+;+
+;CRPEAR		argument to create person command
+;-
+
+crpear:	save	<quest##>
+	MOVEI	t,asknam##		;ask for name
+	MOVEM	t,quest##		;. . .
+	CALL	genena##		;get a new name
+	SKIPGE	errfl##			;error ?
+	 JRST	crpea9			;yes
+	CALL	getpas			;no, get password
+crpea9:	return
+
+	END
+..and no more

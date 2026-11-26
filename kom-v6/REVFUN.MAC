@@ -1,0 +1,711 @@
+;Oden::DSKG:REVFUN.MAC<62,7777,MAC> 1986-12-11 16:38:04, Edit by KPJ @ L89
+;12	Handle +2 return from GELAMA.
+;Oden::DSKG:REVFUN.MAC<62,7777,MAC> 1986-09-23 14:27:18, Edit by KPJ @ DK @ DK
+;11	Test for missing object in REVIEW BY.
+;Oden::DSKG:REVFUN.MAC<62,7777,MAC> 1986-09-16 14:48:04, Edit by KPJ @ H.HOLE
+;10	Display entry number without parentheses.
+;Oden::DSKG:REVFUN.MAC<62,7777,MAC> 1986-07-25 09:38:19, Edit by KPJ @ L89
+;7	Unfatalize "chalre revfun" and explain the problem.
+;Oden::DSKG:REVFUN.MAC<62,7777,MAC> 1986-04-25 17:47:25, Edit by KPJ
+;6	Get rid of OPDEFed funny macros.
+;Oden::DSKD:REVFUN.MAC<62,7777,MAC> 1985-10-08 00:28:38, Edit by KPJ
+;5	New format of PRINT macro. Introduced PROLOG macro.
+;Oden::DSKD:REVFUN.MAC<62,7777,MAC> 1985-07-24 16:12:51, Edit by KPJ @ DECGR
+;4	FINEEN restructured. GNXLNK and GNXENT rewritten. Expunged deleted code
+;	in CHKENT. Fixed bug in CHKENT (if subject search, then ignored search
+;	on receiver). Moved texts to TEXTER module.
+;Oden::DSKD:REVFUN.MAC<62,7777,MAC> 1985-05-11 02:58:50, Edit by KPJ @ Semester
+;3	Make SANORI global.
+;Oden::DSKD:REVFUN.MAC[62,7777] 1984-12-12 17:18:45, Edit by KPJ @ L89
+;2	Make REVIEW not show entry heading for entries which the user
+;	has not read access.
+;Oden::Dskd:Revfun.Mac[62,7777] 1984-08-15 10:43:35, Edit by K.Jaakkola
+;1	Corrected REVIEW AGAIN to not allow reading of entries to which we
+;	have no read access.
+
+	SEARCH	kommac
+	PROLOG	(revfun)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	(c) QZ Computing Centre, 1984-08-15 10:28:32
+
+;	D A T A   A R E A
+
+afttim::BLOCK	1		;after time
+bfrtim::BLOCK	1		;before time
+
+agacur:	0			; current again list pointer
+curlis::hdtoob##		; current list
+nxreln:	0			; last seen link
+revfun::0			; review function
+
+;	P R O G R A M   C O D E
+
+	CODE
+
+;+
+;ENLIFU		entry list function
+;accepts	ENTLIS/	list of entries
+;-
+
+enlifu::MOVEI	t,revlis		;review list
+	MOVEM	t,nexfun##
+	CALL	revlis			;get first entry
+	return
+
+
+;+
+;REVLIS		review list of entries
+;accepts	ENTLIS/	argument
+;		NEXFUN/	function
+;-
+
+revlis:	save	<tp,nr>
+revli1:	SKIPN	tp,entlis##		;get entry list
+	 JRST	revli8			;end of list
+	MOVE	nr,0(tp)		;get first entry in list
+	MOVEM	nr,nxrenr##		;save it
+	MOVE	t,1(tp)			;save rest of list
+	MOVEM	t,entlis##
+	CALL	qrirea			;right to read ?
+	 JRST	revli7			;no
+	SETOM	nexflg##		;more entries
+	JRST	revli9
+
+revli7:	CALL	preol##			;blank line
+	CALL	sanori			;say no right to read
+	JRST	revli1
+
+revli8:	SETZM	nxrenr##		;clear next entry
+	SETZM	nexflg##		;clear next flag
+revli9:	return
+
+
+
+
+;+
+;QRIREA		check if you have the right to read an entry
+;accepts:	NR/	entry
+;returns:	+1 if not right
+;		+2 if right
+;-
+
+qrirea::save	<bfp,gp1,nr,gp2>
+	MOVEM	nr,gp2			;save entry
+	CALL	getobj##		;get entry
+	 JRST	qrire9			;error
+	CAIE	gp1,dir			;is it a TEXT ?
+	 JRST	qrire8			;no, always OK to read the "entry"
+	MOVE	nr,objcre(bfp)		;no, get author
+	CAMN	nr,crenr##		;are we the author ?
+	 JRST	qrire8			;yes, OK to read own stuff
+	SKIPLE	dirobj(bfp)		;is the text a presentation ?
+	 JRST	qrire8			;yes, always OK to read presentations
+					;no, are we receiver of it, perhaps...?
+	MOVE	nr,objlfr+2(bfp)	;get first receiver
+qrire1:	CALL	getobj##		;get link
+	 JRST	qrire9			;no more, not allowed to read it
+	CAME	gp2,lnkobj(bfp)		;link ?
+	 JRST	qrire9			;no, not allowed
+	SKIPG	0(bfp)			;is this link deleted ?
+	 JRST	qrire2			;yes, then it is not a link
+	MOVM	nr,lnkrec(bfp)		;get receiver
+	CAMN	nr,crenr##		;is it a letter to us ?
+	 JRST	qrire8			;yes, OK to read it
+	CALL	qclome			;is it in an open conference ?
+	 JRST	qrire8			;yes, OK to read it
+	CALL	qmembe			;no, member of closed conference ?
+	 JRST	qrire8			;yes, OK to read it
+					;no, forget that link then
+qrire2:	MOVE	nr,lnklfr+2(bfp)	;get next receiver
+	JRST	qrire1
+
+qrire8:	skpret				;+2 return: OK to read it
+qrire9:	return
+
+
+;+
+;QCLOME		check if non-PUBLIC meeting
+;accepts	NR/	conference
+;returns	+1 if public conference
+;		+2 if non-public
+;-
+
+qclome:	save	<nr,bfp,gp1>
+	CALL	chkmee##		;conference ?
+	 JRST	qclom8			;no, closed
+	CALL	obtoac##		;get number file
+	CALL	getobj##		;get record
+	 JRST	qclom8			;error
+	MOVE	t,numtyp(bfp)		;get type
+	Txne	t,cloofl		;closed ?
+qclom8:	 skpret				;closed
+qclom9:	return
+
+
+;+
+;QMEMBE		check if you are member of a conference
+;accepts	NR/	conference
+;returns	+1 if member
+;		+2 if not
+;-
+
+qmembe::save	<gp2>
+	CALL	qismbr##		;member ?
+	 TRNA				;yes, +1 return
+	  skpret			;no, +2 return
+	return
+
+
+;+
+;SANORI		say you dont have the right to read
+;accepts	NR/	entry
+;-
+
+sanori::save	<str,gp1,bfp>	;<KPJ.3>
+	CALL	getobj##	;get entry
+	 JRST	sanor9		;error
+	CALL	preol##		;[KPJ.2] new line
+	CALL	prentn##	;<KPJ.10!KPJ.2> output entry number
+	print	znorir##	;"You are not entitled to read this"
+sanor9:	return
+
+
+;+
+;GELAEN		get last entry
+;-
+
+gelaen::save	<nr>
+	SKIPE	nr,tonr##		;receiver defined ?
+	 JRST	gelae1			;yes
+	CALL	alrefu			;no get all entries
+	JRST	gelae9
+
+gelae1:	SKIPGE	bacfl##			;backwards ?
+	 JRST	gelae2			;yes
+	CALL	ditofu			;no, get all
+	JRST	gelae9
+
+gelae2:	MOVEI	t,gnxlis		;review backwards
+	MOVEM	t,nexfun##
+;	SETZM	tonr##			;clear receiver
+	MOVE	nr,curmbr##		;get current member element
+	MOVE	nr,mellnk(nr)		;get last link
+	CALL	genere			;get last entry
+gelae9:	return
+
+
+;+
+;ALREFU		REVIEW ALL function
+;-
+
+alrefu:	save	<nr,gp1,bfp>
+	MOVE	nr,lasdir##		;get last entry
+	CALL	geplac##		;get place
+	 JRST	alref8			;no entries yet
+	CALL	find##			;get entry
+	 JRST	alref8			;not found...
+	SKIPGE	bacfl##			;backwards ?
+	 JRST	alref1			;yes
+	CALL	geforw			;no, get next entry
+alref1:	CALL	chalre			;check entry
+	MOVEI	t,allrev		;review all
+	MOVEM	t,nexfun##
+	JRST	alref9
+
+alref8:	SETOM	errfl##			;error
+alref9:	return
+
+
+;+
+;GEFORW		get next forward
+;accepts	NR/	current number
+;		GP1/	file
+;return		NR/	
+;		BFP/	 next
+;-
+
+geforw:	AOJA	nr,gefor1		;get next forward
+gefor4:	MOVEI	nr,1			;get first entry
+gefor1:	CALL	find##			;get entry
+	 JRST	gefor4			;end of file
+	return
+
+
+;+
+;CHALRE		check REVIEW ALL entry
+;accepts	BFP/	entry
+;		NR/	entry
+;returns	+1 error
+;		+2 OK
+;-
+
+chalre:	save	<nr,bfp,gp1>
+	SETOM	nexflg##		;next entry got
+chalr2:	SKIPG	0(bfp)			;entry deleted ?
+	 JRST	chalr1			;yes
+	MOVE	nr,0(bfp)		;get entry number
+	CALL	qrirea			;right to read ?
+	 JRST	chalr3			;no, get next
+	MOVEM	nr,nxrenr##		;save entry number
+	JRST	chalr9
+
+chalr3:	CALL	geplac##		;split pointer again
+	 JRST[	PUSH	P,consum##	;<KPJ.7> save consumer
+		MOVEI	t,tercon##	;<KPJ.7> output to terminal
+		MOVEM	t,consum##	;<KPJ.7> . . .
+		CALL	preol##		;<KPJ.7>
+		print	zdberr##	;<KPJ.7> "Data base error:"
+		MOVM	nr,0(bfp)	;<KPJ.7> get entry#
+		CALL	probnr##	;<KPJ.7> output object#
+		POP	P,consum##	;<KPJ.7> restore consumer
+		SETZM	nexflg##	;<KPJ.7> no next entry
+		JRST	chalr9]		;<KPJ.7> exit
+chalr1:	CALL	fineen			;find next entry
+	SKIPGE	nexflg##		;any next entry ?
+	 JRST	chalr2
+chalr9:	return
+
+
+;+
+;FINEEN		find next entry
+;accepts	NR/	number of entry
+;		GP1/	number of entry
+;returns	BFP/	next entry
+;		NR/	next entry
+;-
+
+fineen:	SKIPGE	bacfl##			;backwards ?
+	 JRST[	CALL	geback		;yes, get previous entry
+		CAMN	nr,lasdir##	;start entry ?
+		 JRST	finee6		;yes
+		JRST	finee9]		;no
+
+	CAMN	nr,lasdir##		;no, start entry ?
+	 JRST	finee6			;yes
+	CALL	geforw			;no, get next forward
+	JRST	finee9
+
+finee6:	SETZM	nexflg##		;yes, no next entry
+	SETZM	nxrenr##		;clear entry
+finee9:	return
+
+
+;+
+;GEBACK		get previous
+;accepts	NR/	current record number
+;		GP1/	file
+;returns	NR/	new record
+;		BFP/	new record
+;-
+
+geback:	SOJA	nr,gebac7		;get previous entry
+gebac5:	CALL	gelaob##		;get last entry
+gebac7:	CALL	find##			;get entry
+	 JRST	gebac5			;end of file
+	return
+
+
+;+
+;ALLREV		REVIEW ALL entries
+;accepts	NXRENR/	argument
+;-
+
+allrev:	save	<nr,gp1,bfp,str>
+	MOVE	nr,nxrenr##		;get last seen entry
+	CALL	geplac##		;get place
+	 Bug(hlt,<allrev revfun>,<nxrenr##>) ;+1 object# was no good
+	CALL	fineen			;+2 find next entry
+	SKIPE	nxrenr##		;next entry got ?
+	 CALL	chalre			;check entry
+	  nop				;<KPJ.7> error return
+allre9:	return
+
+
+;+
+;DITOFU		REVIEW TO function
+;accepts	TONR/	receiver
+;-
+
+ditofu::save	<nr>
+	MOVE	nr,tonr##		;get receiver
+	SETZM	tonr##			;clear receiver restriction
+	CALL	allifu			;get all in list
+	return
+
+
+;+
+;ALLIFU		display all in list function
+;accepts	NR/	object
+;-
+
+allifu:	save	<bfp,gp1,gp2>
+	MOVE	gp2,curlis		;get current list
+	CALL	gethdf##		;get entry
+	CALL	gnxlnk			;get first link
+	CALL	genere			;get next entry
+	MOVEI	t,gnxlis		;review list
+	MOVEM	t,nexfun##
+	return
+
+
+;+
+;GNXLNK		get next link
+;accepts	BFP/	link element
+;returns	NR/	next link
+;-
+
+gnxlnk:	SKIPL	bacfl##			;backwards ?
+	 SKIPA	nr,2(bfp)		;no, get next link
+	  MOVE	nr,0(bfp)		;yes get previous link
+	return
+
+
+;+
+;GENERE		get next entry to review
+;accepts	NR/	last link
+;returns	NXRENR\
+;		       next entry to review in NXRENR and NXRELN
+;		NXRELN/
+;-
+
+genere:	save	<nr,bfp,gp1,gp2>
+	MOVE	gp2,curlis		;get current list
+gener0:	MOVEM	nr,nxreln		;save last link
+	CALL	getobj##		;get it
+	 JRST	gener8			;no previous link
+	SKIPLE	0(bfp)			;link deleted ?
+	 JRST	gener1			;no
+gener2:	ADD	bfp,lnplac##(gp2)	;get link place
+gener3:	CALL	gnxlnk			;get previous link
+	JRST	gener0
+
+gener1:	CALL	gnxent			;get next entry
+	MOVEM	nr,nxrenr		;save it
+	CALL	chkdir##		;entry ?
+	 JRST	gener2			;no, get next
+	CALL	chnere			;check entry
+	SKIPGE	nexflg			;next found ?
+	 JRST	gener9
+	MOVE	nr,nxreln		;get last seen link
+	MOVE	gp2,curlis		;get current list
+	CALL	getlnf##		;get it
+	 TRNA				;no last link
+	  JRST	gener3
+
+gener8:	SETZM	nxrenr			;no next entry
+	SETZM	nexflg			;no next entry
+gener9:	return
+
+
+;+
+;GNXENT		get next entry
+;accepts	BFP/	link
+;		GP2/	link block
+;returns	NR/	entry
+;-
+
+gnxent: CAIN	gp2,hdtoob##		;to list ?
+	  SKIPA	nr,lnkobj(bfp)		;get next entry
+	   MOVE	nr,lnkrec(bfp)		;get receiver
+	return
+
+
+;+
+;CHNERE		check next entry to review
+;accepts	NR/	entry
+;		NXRELN/	entry
+;-
+
+chnere:	save	<bfp,gp1>
+	CALL	getobj##		;get entry
+	 JRST	chner2			;no entry, get next
+	MOVE	t,objtim(bfp)		;[BCQ] get creation time
+	CAML	t,afttim		;[BCQ] in bounds?
+	 CAMLE	t,bfrtim		;[BCQ] ...
+	 JRST	chner2			;[BCQ] not in bounds
+	CALL	chkent			;check entry
+	 JRST	chner2			;get next
+	SKIPG	0(bfp)			;entry deleted ?
+	 JRST	chner4			;yes
+	CALL	qrirea			;right to read ?
+	 JRST	chner3			;no, get next
+	SETOM	nexflg			;set next flag on
+	JRST	chner9
+
+chner4:	CALL	txdele##		;report text deleted
+	TRNA
+chner3:	 CALL	sanori			;say no right to read
+chner2:	SETZM	nxrenr			;clear next entry
+	SETZM	nexflg			;no next entry
+chner9:	return
+
+
+;+
+;CHKENT		check entry
+;accepts	BFP/	entry
+;		BYNR/	wanted author
+;		TONR/	wanted receiver
+;returns	+1 if entry not wanted
+;		+2 if good entry
+;-
+
+chkent:	save	<nr,bfp,gp1,gp2>
+	SKIPE	gp2,bynr##		;author given ?
+	 JRST[	CAME	gp2,objcre(bfp)	;yes, correct author ?
+		 JRST	chken9		;no
+		JRST	.+1]		;yes, continue
+
+	SKIPE	gp2,abonr##		;subject given ?
+	 JRST[	MOVE	nr,dirsub(bfp)	;yes, get subject link
+		CALL	getobj##	;get link
+		 JRST	chken9		;no subject
+		CAME	gp2,lnkrec(bfp)	;right subject ?
+		 JRST	chken9		;no
+		JRST	.+1]		;yes
+
+	CALL	goodre			;good receiver ?
+	 skpret				;yes, good entry
+chken9:	return
+
+
+;+
+;GOODRE		test for good receiver
+;accepts	TONR/	wanted receiver (0=any receiver)
+;		BFP/	entry
+;returns	+1 if good
+;		+2 if receiver not found
+;-
+
+goodre:	save	<nr,bfp,gp1,gp2>
+	SKIPN	gp2,tonr##		;receiver given ?
+	 JRST	goodr9			;no, good entry
+	MOVE	nr,objlfr+2(bfp)	;get first receiver
+goodr1:	CALL	getobj##		;get link
+	 JRST	goodr8			;not found
+	camn	gp2,lnkrec(bfp)		;wanted receiver ?
+	 JRST	goodr9			;yes
+	MOVE	nr,lnklfr+2(bfp)	;get next receiver
+	JRST	goodr1
+
+goodr8:	skpret				;not found
+goodr9:	return
+
+
+;+
+;GNXLIS		get next entry to review from a list
+;accepts	NXRELN/	argument
+;-
+
+gnxlis:	save	<bfp,gp1,gp2,nr>
+	MOVE	nr,nxreln		;get last seen link
+	MOVE	gp2,curlis		;get current list
+	CALL	getlnf##		;get last link
+	 JRST	gnxli7			;no last link
+	CALL	gnxlnk			;get next link
+	CALL	genere			;get next entry
+	JRST	gnxli9
+
+gnxli7:	SETZM	nxrenr			;clear next entry
+	SETZM	nexflg			;no next entry
+gnxli9:	return
+
+
+;+
+;GELALE		get last letter
+;-
+
+gelale::save	<nr,bfp,gp1>
+	SKIPGE	bacfl##
+	 JRST	gelal1			;backwards ?
+	CALL	ditofu			;no, get all
+	JRST	gelal9
+
+gelal1:	MOVEI	t,gnxlis		;review backwards
+	MOVEM	t,nexfun##
+	MOVE	nr,crenr##		;get self
+	CALL	getobj##		;get self
+	 JRST	gelal9			;error
+	MOVE	nr,perlsl(bfp)		;get last seen letter link
+	CALL	genere			;get last letter
+gelal9:	return
+
+
+;+
+;DICOFU		display comments function
+;-
+
+dicofu::save	<nr>
+	SKIPL	wriflg##		;writeing ?
+	 JRST	dicof1			;no
+	MOVE	t,comlis##		;yes, get comment list
+	MOVEM	t,entlis##
+	CALL	enlifu			;get comments
+	JRST	dicof9
+
+dicof1:	SKIPN	nr,lastnr##		;get last seen entry
+	 JRST	dicof8			;no entry got
+	CALL	allifu			;get all in list
+	TRNA
+dicof8:	 SETOM	errfl##			;error
+dicof9:	return
+
+
+;+
+;DIBYFU		REVIEW BY function
+;accepts	BYNR/	author
+;-
+
+dibyfu::save	<nr,gp1,gp2,bfp>
+	MOVE	nr,bynr##		;get author
+	CALL	getobj##		;<KPJ.11> get object
+	 JRST	dibyf9			;<KPJ.11> does not exist
+	SETZM	bynr##			;clear author restriction
+	MOVEI	t,hdbyob##		;get author list
+	MOVEM	t,curlis
+	MOVE	gp2,curlis		;get it
+	CALL	gethdf##		;get list element
+	CALL	gelare			;get last entry
+	MOVEI	t,revby			;set next function
+	MOVEM	t,nexfun##
+dibyf9:	return
+
+
+;+
+;GELARE		get last entry to review
+;accepts	BFP/	list element
+;returns	NXRENR/	entry
+;-
+
+gelare:	save	<nr,gp1,bfp>
+gelar1:	CALL	gnxlnk			;get last entry
+	MOVEM	nr,nxrenr##		;save last entry
+	CALL	getobj##		;get entry
+	 JRST	gelar9			;no entries
+	SKIPLE	0(bfp)			;entry deleted ?
+	 JRST	gelar7			;no
+gelar2:	ADD	bfp,lnplac##(gp2)	;get link place
+	JRST	gelar1			;get previous entry
+
+gelar7:	CALL	qrirea			;right to read ?
+	 JRST	gelar2			;no
+	SETOM	nexflg##		;next entry got
+gelar9:	return
+
+
+;+
+;REVBY		REVIEW BY an author
+;accepts	NXRENR/	argument
+;-
+
+revby:	save	<bfp,gp1,gp2,nr>
+	MOVE	gp2,curlis		;get current list
+	MOVE	nr,nxrenr##		;get last seen entry
+	CALL	getlnf##		;get list element
+	 JRST	revby9			;end of list
+	CALL	gelare			;get next entry
+revby9:	return
+
+
+;+
+;DIABFU		REVIEW ABOUT function
+;accepts	ABONR/	subject
+;-
+
+diabfu::save	<nr>
+	MOVE	nr,tonr##		;get receiver
+	CAMN	nr,conf##		;current conference ?
+	 SETZM	tonr##			;yes, remove receiver
+	MOVE	nr,abonr##		;get subject
+	SETZM	abonr##			;clear restriction
+	CALL	allifu			;get all in list
+	return
+
+
+;+
+;DIAGFU		REVIEW AGAIN function
+;-
+
+diagfu::MOVEI	t,revaga		;review again
+	MOVEM	t,nexfun##
+	MOVE	t,agaptr##		;get again list pointer
+	MOVEM	t,agacur
+	CALL	revaga			;get entry
+	return
+
+
+;+
+;REVAGA		get next again entry
+;accepts	AGACUR/	argument
+;-
+
+revaga:	save	<nr>
+revag0:	SOS	nr,agacur		;get previous element
+	CAIL	nr,agalis##		;start of list ?
+	 JRST	revag1			;no
+	MOVEI	nr,agaend##-1		;get end of list
+	MOVEM	nr,agacur		;save it
+revag1:	CAIN	nr,agaptr##		;end of list ?
+	 JRST	revag8			;yes
+	MOVE	nr,0(nr)		;get entry
+	CALL	getobj##		;get entry
+	 JRST	revag8			;end of list
+	CALL	qrirea			;[KPJ] are we allowed to read it again?
+	 JRST	revag0			;[KPJ] no, forget that entry
+	CALL	chkent			;check entry
+	 JRST	revag0			;get next
+	MOVEM	nr,nxrenr##		;entry got
+	SETOM	nexflg##		;entry got
+	JRST	revag9
+
+revag8:	SETZM	nxrenr##		;clear next entry
+	SETZM	nexflg##		;no entry got
+revag9:	return
+
+
+;+
+;DIMAFU		REVIEW MARKED entries function
+;-
+
+dimafu::save	<nr>
+	CALL	gelama##		;get last marked entry
+	 JRST	dimaf9			;<KPJ.12> failed
+	CALL	chmark			;check it
+	MOVEI	t,revmar		;review marked entries
+	MOVEM	t,nexfun##
+dimaf9:	return				;<KPJ.12>
+
+
+;+
+
+;CHMARK		check entry
+;accepts	NR/	entry
+;-
+
+chmark:	save	<nr,bfp,gp1>
+chmar0:	CALL	getobj##		;get entry
+	 JRST	chmar9			;no entry
+	CALL	chkent			;check entry
+	 JRST	chmar1			;not good
+	SETOM	nexflg##		;set next flag
+	JRST	chmar9
+
+chmar1:	CALL	geprma##		;get previous marked entry
+	JRST	chmar0			;check it
+
+chmar9:	MOVEM	nr,nxrenr##		;set next entry to review
+	return
+
+
+;+
+;REVMAR		get next marked entry
+;accepts	NXREMA/	argument
+;-
+
+revmar:	save	<nr>
+	CALL	geprma##		;get previous marked entry
+	CALL	chmark			;check entry
+	return
+
+	END
+..and no more

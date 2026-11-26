@@ -1,0 +1,212 @@
+;Oden::DSKG:CRELOC.MAC<62,7777,MAC> 1986-11-11 03:16:27, Edit by KPJ @ H.HOLE
+;6	Handle +2 return from ALLOCM.
+;Oden::DSKG:CRELOC.MAC<62,7777,MAC> 1986-11-10 15:42:26, Edit by KPJ @ L89
+;5	Implement +2 return from ISLURP (no more "islurp creloc")
+;Oden::DSKD:CRELOC.MAC<62,7777,MAC> 1985-09-25 15:03:09, Edit by KPJ
+;4	Introduced PROLOG macro. Sanitized code.
+;Freja::<Kom.6-Sources>Creloc.Mac.2 10-Dec-84 16:13:21,Editor:KPJ-Jaakkola
+;3	Misspelling.
+;Oden::DSKD:CRELOC.MAC[62,7777] 1984-12-01 07:13:33, Edit by KPJ @ NADJA
+;2	Brush up your code! Got rid of useless macros.
+;Oden::Dskd:Creloc.Mac[62,7777] 1984-05-14 16:00:09, Edit by KPJ Jaakkola
+;1	Merged T20 and T10 versions. Updated copyright notice.
+
+	SEARCH	kommac
+	PROLOG	(creloc)
+
+;     Copyright (c) Swedish National Defense Research Institute
+;	QZ Computing Centre, 1984-05-14 15:59:47
+
+;	D A T A   A R E A
+
+	CODE
+
+;+
+;CRELOC		creates a new directory member block
+;accepts	OBJNR/	owner
+;returns	NR/	number of new member block
+;-
+
+creloc:	CALL	allloc			;allocate member block number
+	CALL	makloc			;create a member block block
+	return
+
+
+
+
+
+;+
+;ALLLOC		allocate member block number
+;returns	NR/	number of new member block
+;-
+
+allloc:	save	<gp1>
+	MOVEI	gp1,loc			;get block file
+	CALL	allold##		;get oldest record
+	CALL	makpoi##		;make pointer
+	CALL	remloc			;remove member block
+	return
+
+
+;+
+;REMLOC		remove old member block
+;accepts	NR/	block number
+;-
+
+remloc:	save	<bfp,gp1,nr>
+	CALL	updobj##		;get member block
+	 JRST	remlo9			;error
+	SKIPG	0(bfp)			;already deleted ?
+	 JRST	remlo9			;yes
+	MOVE	nr,locobj(bfp)		;get owner
+	CALL	updobj##		;get it
+	 JRST	remlo9			;error
+	MOVE	nr,recloc+2(bfp)	;get start of list
+	CALL	clmeli			;clear member list
+remlo1:	CALL	getobj##		;get member block
+	 JRST	remlo9			;end of local data base
+	CALL	delrec##		;delete block
+	CALL	delact##		;delete activity record
+	MOVE	nr,loclis+2(bfp)	;get next block
+	JRST	remlo1
+
+remlo9:	return
+
+
+
+
+
+;+
+;CLMELI		clear member list
+;accepts	BFP/	object
+;-
+
+clmeli:	SETZM	recloc+0(bfp)		;clear member list
+	SETZM	recloc+1(bfp)
+	SETZM	recloc+2(bfp)
+	return
+
+
+
+
+
+;+
+;MAKLOC		make a new member block
+;accepts	NR/	number of member block
+;-
+
+makloc:	save	<bfp,gp1>
+	CALL	newrec##		;create new record
+	CALL	admbbl			;add member block
+	CALL	makact##		;make active record
+	MOVE	t,objnr##		;save creator
+	MOVEM	t,lacobj(bfp)
+	return
+
+
+
+
+
+;+
+;ADMBBL		add member block
+;-
+
+admbbl:	save	<gp1,gp2>
+	MOVE	gp1,objnr##		;get owner
+	MOVEI	gp2,hdmbbl		;get link block
+	CALL	addlnk##		;add link
+	return
+
+
+
+
+
+;+
+;HDMBBL		link block for member block list
+;-
+
+hdmbbl:	EXP	recloc			;member list head
+	EXP	loclis			;text member list
+	EXP	locobj			;owner
+
+
+
+
+
+;+
+;ISLURP		splurp in a local data base
+;accepts	NR/	object
+;returns	+1	some kind of failure
+;		+2	success, with
+;		GP2/	start of data area
+;		FREE/	end of area
+;-
+
+islurp::save	<nr,gp1,bfp>		
+	MOVEM	nr,objnr##		;save object number
+	CALL	getobj##		;get object
+	 JRST	islur9			;<KPJ.5> failed, give up
+	MOVE	nr,recloc+2(bfp)	;get first block
+	CALL	getobj##		;get it
+	 JRST	islur7			;<KPJ.5> no local base
+	MOVE	gp2,free		;get start of area
+islur1:	MOVE	nr,locobj(bfp)		;get owner
+	CAME	nr,objnr##		;correct owner ?
+	 JRST	islur8			;<KPJ.5> no, error
+	HRLI	txt,locreg(bfp)		;get from
+	HRR	txt,free		;get to
+	ADDI	free,losize		;get end
+	CALL	allocm##		;allocate area
+	 JRST	islur9			;<KPJ.6> failure, give up
+	BLT	txt,-1(free)		;transfer data
+	MOVE	nr,loclis+2(bfp)	;get next block
+	CALL	getobj##		;get local block
+	 JRST	islur8			;<KPJ.5> end of local data base
+	JRST	islur1
+
+islur7:	MOVE	gp2,free		;<KPJ.5> get start of area
+islur8:	ADDI	free,losize		;<KPJ.5> get one more block
+	CALL	allocm##		;allocate it
+	 JRST	islur9			;<KPJ.6> failed, give up
+	SETZM	-losize(free)		;set end mark
+	HRLI	txt,-losize(free)	;clear whole area
+	HRRI	txt,-losize+1(free)
+	BLT	txt,-1(free)
+	skpret				;<KPJ.5> +2 return means success
+islur9:	return				;<KPJ.5>
+
+
+
+
+
+;+
+;OSLURP		slurp out a local data base
+;accepts	NR/	owner
+;		TXT/	start of data area
+;		GP2/	end of data area
+;-
+
+oslurp::save	<nr,bfp,gp1,txt>
+	MOVEM	nr,objnr##		;save object number
+	CALL	getobj##		;get object
+	 error	<oslurp creloc>
+	MOVE	nr,recloc+2(bfp)	;get first block
+oslur1:	CAML	txt,gp2			;ready ?
+	 JRST	oslur9			;yes
+	SKIPGE	actflg##		;activate ?
+	 CALL	actact##		;yes
+	JUMPN	nr,oslur2		;more blocks ?
+	CALL	creloc			;no, create a new
+oslur2:	CALL	updobj##		;get block
+	 JRST	oslur9			;error
+	HRL	t,txt			;get from
+	HRRI	t,locreg(bfp)		;get to
+	BLT	t,locsiz-1(bfp)		;output block
+	ADDI	txt,losize		;get next block of data
+	MOVE	nr,loclis+2(bfp)	;get next block
+	JRST	oslur1
+
+oslur9:	return
+
+	END
+..and no more
